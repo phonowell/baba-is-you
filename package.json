@@ -1,0 +1,29 @@
+{
+  "bin": {
+    "baba-cli": "./src/cli.ts"
+  },
+  "description": "Terminal Baba Is You (simplified) CLI",
+  "devDependencies": {
+    "@types/node": "^25.0.2",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
+    "eslint": "^9.39.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "globals": "^16.5.0",
+    "prettier": "^3.7.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "license": "MIT",
+  "main": "src/index.ts",
+  "name": "baba-is-you-cli",
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "start": "tsx src/cli.ts",
+    "type-check": "tsc -p tsconfig.json --noEmit"
+  },
+  "type": "module",
+  "version": "0.1.0"
+}
