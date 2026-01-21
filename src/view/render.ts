@@ -81,6 +81,9 @@ const pickItem = (items: Item[]): Item => {
   const youItem = items.find((item) => item.props.includes('you'))
   if (youItem) return youItem
 
+  const textItem = items.find((item) => item.isText)
+  if (textItem) return textItem
+
   const nonText = items.find((item) => !item.isText)
   if (nonText) return nonText
 

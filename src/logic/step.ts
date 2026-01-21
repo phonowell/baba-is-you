@@ -25,6 +25,13 @@ const buildGrid = (items: Item[], width: number): Map<number, Item[]> => {
   return grid
 }
 
+const MOVE_DELTAS: Record<Direction, [number, number]> = {
+  up: [0, -1],
+  right: [1, 0],
+  down: [0, 1],
+  left: [-1, 0],
+}
+
 const moveItems = (
   items: Item[],
   direction: Direction,
@@ -33,24 +40,21 @@ const moveItems = (
 ): { items: Item[]; moved: boolean } => {
   const next = items.map((item) => ({ ...item }))
   const byId = new Map<number, Item>()
-  for (const item of next) byId.set(item.id, item)
-
-  const movers = next
-    .filter((item) => hasProp(item, 'you'))
-    .map((item) => item.id)
-  const moverSet = new Set<number>(movers)
+  const movers: number[] = []
+  const pushIds = new Set<number>()
+  const stopIds = new Set<number>()
+  for (const item of next) {
+    byId.set(item.id, item)
+    if (hasProp(item, 'you')) movers.push(item.id)
+    if (hasProp(item, 'push')) pushIds.add(item.id)
+    if (hasProp(item, 'stop')) stopIds.add(item.id)
+  }
   const moved = new Set<number>()
   let anyMoved = false
 
   const grid = buildGrid(next, width)
 
-  const deltas: Record<Direction, [number, number]> = {
-    up: [0, -1],
-    right: [1, 0],
-    down: [0, 1],
-    left: [-1, 0],
-  }
-  const [dx, dy] = deltas[direction]
+  const [dx, dy] = MOVE_DELTAS[direction]
 
   const canMove = (id: number, visiting: Set<number>): boolean => {
     if (visiting.has(id)) return true
@@ -65,19 +69,18 @@ const moveItems = (
     if (nx < 0 || ny < 0 || nx >= width || ny >= height) return false
 
     const targetKey = keyFor(nx, ny, width)
-    const targets = grid.get(targetKey) ?? []
+    const targets = grid.get(targetKey)
+    if (!targets?.length) return true
 
+    const pushTargets: Item[] = []
     for (const target of targets) {
-      const pushable = hasProp(target, 'push') || moverSet.has(target.id)
-      if (hasProp(target, 'stop') && !pushable) return false
+      const pushable = pushIds.has(target.id)
+      if (stopIds.has(target.id) && !pushable) return false
+      if (pushable) pushTargets.push(target)
     }
 
-    for (const target of targets) {
-      const pushable = hasProp(target, 'push') || moverSet.has(target.id)
-      if (!pushable) continue
-
+    for (const target of pushTargets)
       if (!canMove(target.id, visiting)) return false
-    }
 
     return true
   }
@@ -91,11 +94,10 @@ const moveItems = (
     const nx = item.x + dx
     const ny = item.y + dy
     const targetKey = keyFor(nx, ny, width)
-    const targets = grid.get(targetKey) ?? []
-
-    for (const target of targets) {
-      const pushable = hasProp(target, 'push') || moverSet.has(target.id)
-      if (pushable) doMove(target.id)
+    const targets = grid.get(targetKey)
+    if (targets?.length) {
+      for (const target of targets)
+        if (pushIds.has(target.id)) doMove(target.id)
     }
 
     const oldKey = keyFor(item.x, item.y, width)
