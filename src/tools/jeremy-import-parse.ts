@@ -35,6 +35,9 @@ export const parseMapLayers = (
   lines: string[],
   delimiterIndex: number,
 ): string[][] => {
+  const isBlankLine = (line: string | undefined): boolean =>
+    (line?.trim().length ?? 0) === 0
+
   const layers: string[][] = [[]]
   for (const line of lines.slice(delimiterIndex + 1)) {
     if (line === '---' || line === '+++') {
@@ -46,23 +49,27 @@ export const parseMapLayers = (
     current.push(line)
   }
 
-  while (layers.length > 0) {
-    const last = layers[layers.length - 1]
-    if (!last || last.some((line) => line.length > 0)) break
-    layers.pop()
+  const trimLayerEdges = (layer: string[]): string[] => {
+    let start = 0
+    let end = layer.length - 1
+    while (start <= end && isBlankLine(layer[start])) start += 1
+    while (end >= start && isBlankLine(layer[end])) end -= 1
+    if (start > end) return []
+    return layer.slice(start, end + 1)
   }
 
-  if (!layers.length) return [[]]
+  const normalized = layers.map((layer) => trimLayerEdges(layer))
 
-  return layers.map((layer) => {
-    const next = [...layer]
-    while (next.length > 0) {
-      const last = next[next.length - 1]
-      if (last && last.length > 0) break
-      next.pop()
-    }
-    return next
-  })
+  while (normalized.length > 0 && (normalized[0]?.length ?? 0) === 0)
+    normalized.shift()
+  while (
+    normalized.length > 0 &&
+    (normalized[normalized.length - 1]?.length ?? 0) === 0
+  )
+    normalized.pop()
+
+  if (!normalized.length) return [[]]
+  return normalized
 }
 
 export const parseCoordinateList = (

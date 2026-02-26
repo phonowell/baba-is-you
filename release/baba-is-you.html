@@ -1,0 +1,2910 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Baba Is You - Single File</title><style>:root {
+  --bg: #edf1f4;
+  --panel: #eef2f5;
+  --panel-soft: #f4f7fa;
+  --panel-strong: #e4e9ee;
+  --well-bg: #e9edf1;
+  --messages-bg: #ebeff3;
+  --text: #1f2a34;
+  --muted: #62707d;
+
+  --accent: #2d6da8;
+  --success: #2f8f67;
+  --warning: #ad7d2c;
+  --danger: #b34d4d;
+
+  --bubble-agent-bg: #f5f8fb;
+  --bubble-agent-text: #1f2a34;
+  --bubble-agent-border: #c8d2dd;
+  --bubble-user-bg: #eaf2fc;
+  --bubble-user-text: #16324d;
+  --bubble-user-border: #bfd2e8;
+  --bubble-system-bg: #e7edf2;
+  --bubble-system-text: #2d3944;
+  --bubble-system-border: #c1ccd7;
+
+  --status-running: #2d6da8;
+  --status-success: #2f8f67;
+  --status-fail: #b34d4d;
+  --status-pending: #8a99a8;
+  --status-canceled: #7c6f8f;
+
+  --shadow-raised: -5px -5px 10px rgb(255 255 255 / 90%), 5px 5px 12px rgb(170 181 193 / 35%);
+  --shadow-raised-soft: -3px -3px 6px rgb(255 255 255 / 85%), 3px 3px 7px rgb(176 186 197 / 30%);
+  --shadow-inset: inset 4px 4px 8px rgb(182 192 202 / 38%), inset -4px -4px 8px rgb(255 255 255 / 90%);
+  --shadow-inset-soft: inset 2px 2px 4px rgb(182 192 202 / 26%), inset -2px -2px 4px rgb(255 255 255 / 88%);
+  --shadow-floating: 0 12px 24px rgb(113 127 142 / 26%);
+  --shadow-dialog: 0 18px 36px rgb(98 112 127 / 28%);
+
+  --radius: 14px;
+  --radius-sm: 9px;
+  --focus-ring: 0 0 0 3px rgb(67 122 173 / 40%);
+  --cell-size: 44px;
+  --grid-line: rgb(228 233 238 / 50%);
+  --grid-dash-size: 5px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+}
+
+button,
+.btn {
+  user-select: none;
+}
+
+.btn {
+  border: none;
+  border-radius: 8px;
+  background: var(--panel-soft);
+  color: var(--text);
+  box-shadow: var(--shadow-raised-soft);
+  padding: 6px 10px;
+  font: inherit;
+  cursor: pointer;
+  transition: box-shadow 160ms ease-out, transform 160ms ease-out;
+}
+
+.btn:active,
+.btn[aria-pressed='true'] {
+  box-shadow: var(--shadow-inset-soft);
+  transform: translateY(1px);
+}
+
+*:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.game-screen,
+.menu-screen {
+  margin: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+
+.game-screen {
+  padding-bottom: 60px;
+}
+
+.title {
+  margin: 0;
+  color: var(--accent);
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: 0.02em;
+}
+
+.section-title {
+  margin: 14px 0 8px;
+  font-size: 17px;
+  color: var(--accent);
+}
+
+.status,
+.meta {
+  margin: 8px 0;
+  color: var(--muted);
+}
+
+.status {
+  font-weight: 700;
+}
+
+.game-toolbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgb(237 241 244 / 80%);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  z-index: 100;
+}
+
+.game-toolbar .status {
+  margin: 0;
+  font-size: 0.88rem;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reference-btn {
+  font-size: 0.92rem;
+  flex-shrink: 0;
+}
+
+.board-wrap {
+  margin: 12px auto 14px;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--well-bg);
+  border: 1px solid var(--panel-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-inset-soft);
+  padding: 8px;
+  overflow: hidden;
+}
+
+.board {
+  --gap: 1px;
+  --slot: calc(var(--cell-size) + var(--gap));
+  position: relative;
+  width: calc(var(--board-width) * var(--slot) - var(--gap));
+  height: calc(var(--board-height) * var(--slot) - var(--gap));
+  contain: layout;
+  background-color: var(--panel-soft);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.board::before,
+.board::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.board::before {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--grid-line) 0 var(--grid-dash-size),
+    transparent var(--grid-dash-size) calc(var(--grid-dash-size) * 2)
+  );
+  -webkit-mask-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent var(--cell-size),
+    #000 var(--cell-size),
+    #000 calc(var(--cell-size) + var(--gap)),
+    transparent calc(var(--cell-size) + var(--gap)),
+    transparent var(--slot)
+  );
+  mask-image: repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent var(--cell-size),
+    #000 var(--cell-size),
+    #000 calc(var(--cell-size) + var(--gap)),
+    transparent calc(var(--cell-size) + var(--gap)),
+    transparent var(--slot)
+  );
+}
+
+.board::after {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--grid-line) 0 var(--grid-dash-size),
+    transparent var(--grid-dash-size) calc(var(--grid-dash-size) * 2)
+  );
+  -webkit-mask-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--cell-size),
+    #000 var(--cell-size),
+    #000 calc(var(--cell-size) + var(--gap)),
+    transparent calc(var(--cell-size) + var(--gap)),
+    transparent var(--slot)
+  );
+  mask-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--cell-size),
+    #000 var(--cell-size),
+    #000 calc(var(--cell-size) + var(--gap)),
+    transparent calc(var(--cell-size) + var(--gap)),
+    transparent var(--slot)
+  );
+}
+
+.cell {
+  position: absolute;
+  left: calc(var(--cx, 0) * var(--slot));
+  top: calc(var(--cy, 0) * var(--slot));
+  width: var(--cell-size);
+  height: var(--cell-size);
+  border-radius: 8px;
+  border: 0;
+  background: var(--panel-soft);
+  box-shadow: var(--shadow-raised-soft);
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: left 150ms ease-out, top 150ms ease-out, box-shadow 160ms ease-out;
+}
+
+.cell .value {
+  width: 100%;
+  text-align: center;
+  line-height: 1.04;
+  font-size: calc(var(--cell-size) * 0.28);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.cell.text .value {
+  font-size: calc(var(--cell-size) * 0.46);
+  line-height: 0.76;
+}
+
+.cell.text.three .value {
+  font-size: calc(var(--cell-size) * 0.38);
+}
+
+.cell.text.long .value {
+  font-size: calc(var(--cell-size) * 0.36);
+}
+
+.cell.object .value {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: calc(var(--cell-size) * 0.56);
+  line-height: 1;
+  font-weight: 400;
+}
+
+.cell.object.fallback .value {
+  font-size: calc(var(--cell-size) * 0.27);
+  font-weight: 700;
+}
+
+.cell.text.normal {
+  color: var(--bubble-user-text);
+  background: var(--bubble-user-bg);
+}
+
+.cell.text.syntax {
+  color: #6f561a;
+  background: #f5edda;
+}
+
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: scale(0.93) translateY(-8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.reference-backdrop {
+  position: fixed;
+  inset: 0;
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  background: rgb(232 238 243 / 78%);
+  z-index: 1200;
+  animation: backdrop-in 200ms ease-out;
+}
+
+.reference-backdrop[hidden] {
+  display: none;
+}
+
+.reference-backdrop::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    rgb(215 223 231 / 35%) 0,
+    rgb(215 223 231 / 35%) 6px,
+    rgb(233 239 245 / 15%) 6px,
+    rgb(233 239 245 / 15%) 12px
+  );
+  pointer-events: none;
+}
+
+.reference-dialog {
+  position: relative;
+  width: min(560px, 90vw);
+  max-height: min(80vh, 760px);
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--panel-strong);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-dialog);
+  padding: 14px;
+  animation: dialog-in 200ms ease-out;
+}
+
+.reference-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.reference-subtitle {
+  margin: 12px 0 8px;
+  color: var(--accent);
+  font-size: 15px;
+}
+
+.rules-list,
+.legend-list {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.menu-list {
+  background: var(--messages-bg);
+  border: 1px solid var(--panel-strong);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-inset-soft);
+  padding: 8px 10px;
+}
+
+.menu-list {
+  margin: 0;
+  padding-left: 10px;
+}
+
+.legend-row,
+.menu-row {
+  margin: 3px 0;
+}
+
+.legend-text {
+  display: inline-flex;
+  min-width: 6ch;
+  justify-content: center;
+  border-radius: 6px;
+  border: 1px solid var(--panel-strong);
+  padding: 2px 5px;
+  font-weight: 700;
+  margin-right: 8px;
+  box-shadow: var(--shadow-raised-soft);
+}
+
+.legend-text.normal {
+  color: var(--bubble-user-text);
+  background: var(--bubble-user-bg);
+  border-color: var(--bubble-user-border);
+}
+
+.legend-text.syntax {
+  color: #6f561a;
+  background: #f5edda;
+  border-color: #dfcfab;
+}
+
+.legend-name {
+  margin-right: 6px;
+  color: var(--muted);
+}
+
+.legend-glyph {
+  font-size: 1.06rem;
+}
+
+.menu-row {
+  list-style: none;
+  display: grid;
+  grid-template-columns: 14px 52px 1fr;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  cursor: default;
+}
+
+.menu-row:not(.muted) {
+  cursor: pointer;
+}
+
+.menu-row:not(.muted):not(.selected):hover {
+  color: var(--accent);
+}
+
+.menu-row.selected {
+  color: var(--accent);
+  background: var(--panel-soft);
+  box-shadow: var(--shadow-raised-soft);
+}
+
+.menu-row.muted {
+  color: #8693a0;
+}
+
+@media (max-width: 640px) {
+  .reference-dialog {
+    width: min(420px, 92vw);
+  }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+}
+
+::view-transition-group(*) {
+  animation-duration: 120ms;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style></head><body><div id="app"></div><script>"use strict";(()=>{var g1=[`
+Title BABA IS YOU;
+Size 33x9;
+Background transparent;
+baba 12,4;
+Baba 11,0;
+flag 20,4;
+Flag 19,0;
+Is 12,0 20,0 12,8 20,8;
+Push 21,8;
+rock 16,3 16,4 16,5;
+Rock 19,8;
+Stop 13,8;
+tile 11,3 12,3 13,3 14,3 15,3 17,3 18,3 19,3 20,3 21,3 11,4 13,4 14,4 15,4 17,4 18,4 19,4 21,4 11,5 12,5 13,5 14,5 15,5 17,5 18,5 19,5 20,5 21,5 1,0;
+wall 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 21,2 11,6 12,6 13,6 14,6 15,6 16,6 17,6 18,6 19,6 20,6 21,6;
+Wall 11,8;
+Win 21,0;
+You 13,0;
+`,`
+Title WHERE DO I GO;
+Size 24x16;
+Background transparent;
+baba 14,12;
+Baba 6,11;
+flag 11,7;
+Flag 7,7;
+grass 7,0 22,1 17,2 18,3 20,6 1,7 2,8 21,11 20,12 21,12 2,14 19,15;
+Is 11,3 6,12 11,12;
+Stop 11,13;
+tile 6,6 7,6 8,6 9,6 6,7 8,7 9,7 6,8 7,8 8,8 9,8 1,0;
+wall 9,1 10,1 11,1 12,1 13,1 14,1 15,1 16,1 9,2 16,2 9,3 16,3 9,4 16,4 5,5 6,5 7,5 8,5 9,5 16,5 5,6 16,6 5,7 16,7 5,8 16,8 5,9 6,9 7,9 8,9 9,9 10,9 11,9 12,9 13,9 14,9 15,9 16,9 9,10 16,10 9,11 16,11 9,12 16,12 9,13 16,13 9,14 16,14 9,15 10,15 11,15 12,15 13,15 14,15 15,15 16,15;
+Wall 11,11;
+Win 14,5;
+You 6,13;
+`,`
+Title NOW WHAT IS THIS;
+Size 24x16;
+Background transparent;
+Baba 7,7;
+flag 9,1 10,1 11,1 12,1 13,1 14,1 15,1 16,1 9,2 16,2 9,3 16,3 9,4 16,4 5,5 6,5 7,5 8,5 9,5 16,5 5,6 16,6 5,7 16,7 5,8 16,8 5,9 6,9 7,9 8,9 9,9 10,9 11,9 12,9 13,9 14,9 15,9 16,9 9,10 16,10 9,11 16,11 9,12 16,12 9,13 16,13 9,14 13,14 14,14 15,14 16,14 9,15 10,15 11,15 12,15 13,15;
+Flag 11,11;
+grass 6,6 7,6 8,6 9,6 6,7 8,7 9,7 6,8 7,8 8,8 9,8;
+Is 11,3 6,12 11,12;
+Stop 11,13;
+tile 7,0 2,1 22,1 5,2 17,2 5,3 18,3 2,7 1,8 20,8 3,13 18,13 17,14 4,15 17,15;
+wall 14,12;
+Wall 6,11;
+Win 14,5;
+You 6,13;
+`,`
+Title OUT OF REACH;
+Size 22x15;
+Background transparent;
+baba 9,3;
+Baba 0,0;
+flag 5,13;
+Flag 13,12;
+grass 16,0 4,1 16,1 5,3 3,5 4,5 0,7 19,7 1,8 20,9 1,12 2,12 18,12 1,13 2,13 20,13 21,13 20,14;
+Is 0,1 1,1 6,5 14,9 14,12;
+Push 15,9;
+rock 12,3 12,5;
+Rock 13,9;
+Sink 6,6;
+Stop 1,2;
+tile 8,2 9,2 10,2 11,2 12,2 13,2 8,3 10,3 11,3 13,3 8,4 9,4 10,4 11,4 12,4 13,4 8,5 9,5 10,5 11,5 13,5 8,6 9,6 10,6 11,6 12,6 13,6 1,0;
+wall 2,0 2,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 14,1 2,2 7,2 14,2 0,3 1,3 2,3 7,3 14,3 7,4 14,4 7,5 14,5 7,6 14,6 4,7 5,7 6,7 7,7 11,7 12,7 13,7 14,7 15,7 16,7 17,7 4,8 11,8 17,8 4,9 11,9 17,9 4,10 11,10 17,10 4,11 9,11 17,11 4,12 11,12 17,12 4,13 11,13 17,13 4,14 5,14 6,14 7,14 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14 16,14 17,14;
+Wall 1,0;
+water 8,7 9,7 10,7 5,11 6,11 7,11 5,12 6,12 7,12 6,13 7,13;
+Water 6,4;
+Win 15,12;
+You 0,2;
+`,`
+Title STILL OUT OF REACH;
+Size 24x14;
+Background transparent;
+baba 6,12;
+Baba 0,1;
+Defeat 15,7;
+flag 18,9;
+Flag 0,0;
+Is 1,0 1,1 3,5 15,6;
+Push 4,5;
+rock 6,8 6,9 6,10;
+Rock 2,5;
+Skull 15,5;
+skull@down 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 21,3 13,4 21,4 13,5 21,5 13,6 21,6 5,7 7,7 13,7 21,7 5,8 7,8 13,8 21,8 3,9 4,9 5,9 7,9 8,9 9,9 13,9 21,9 3,10 9,10 13,10 21,10 3,11 9,11 13,11 14,11 15,11 16,11 17,11 18,11 19,11 20,11 21,11 3,12 9,12 3,13 9,13;
+Win 2,0;
+You 2,1;
+`,`
+Title VOLCANO;
+Size 33x18;
+Background transparent;
+baba 14,1;
+Baba 8,3 8,12;
+flag 26,12;
+Flag 25,14;
+Hot 10,14;
+Is 1,0 9,3 7,8 9,12 9,14 26,14;
+lava 3,0 4,0 20,0 21,0 22,0 23,0 24,0 25,0 26,0 0,1 1,1 2,1 3,1 19,1 20,1 21,1 22,1 23,1 24,1 25,1 0,2 1,2 19,2 20,2 21,2 22,2 23,2 24,2 0,3 18,3 19,3 20,3 21,3 22,3 23,3 24,3 18,4 19,4 20,4 21,4 22,4 23,4 18,5 19,5 20,5 21,5 22,5 23,5 17,6 18,6 19,6 20,6 21,6 22,6 23,6 17,7 18,7 19,7 20,7 21,7 22,7 17,8 18,8 19,8 20,8 21,8 22,8 16,9 17,9 18,9 19,9 20,9 21,9 22,9 16,10 17,10 18,10 19,10 20,10 21,10 15,11 16,11 17,11 18,11 19,11 20,11 15,12 16,12 17,12 18,12 19,12 20,12 14,13 15,13 16,13 17,13 18,13 19,13 14,14 15,14 16,14 17,14 18,14 13,15 14,15 15,15 16,15 17,15 18,15 32,15 12,16 13,16 14,16 15,16 16,16 17,16 31,16 32,16 11,17 12,17 13,17 14,17 15,17 16,17 17,17 30,17 31,17 32,17;
+Lava 12,10 8,14;
+Melt 10,12;
+Push 7,9;
+rock 12,5;
+Rock 7,7;
+Stop 2,0;
+wall 6,0 12,0 16,0 6,1 16,1 6,2 12,2 16,2 6,3 12,3 13,3 14,3 15,3 16,3 6,4 7,4 11,4 12,4 6,5 6,6 7,6 8,6 9,6 10,6 11,6 12,6 6,7 8,7 7,12 11,12 7,13 8,13 9,13 10,13 11,13 7,14 11,14 7,15 8,15 9,15 10,15 11,15;
+Wall 0,0;
+Win 27,14;
+You 10,3;
+`,`
+Title OFF LIMITS;
+Size 24x14;
+Background transparent;
+baba 8,6;
+Baba 8,10;
+brick 9,2 8,3 9,3 16,6 17,6 16,8 17,8 16,9;
+Defeat 2,2;
+flag 17,3;
+Flag 0,4;
+flower 8,1 22,5 3,7 21,9 19,10 17,12;
+grass 5,0 6,0 7,0 8,0 9,0 21,0 22,0 23,0 6,1 7,1 22,1 23,1 23,2 2,9 1,10 2,10 3,10 2,11 3,11 21,12 22,12 19,13 20,13 21,13 22,13 23,13;
+Is 1,0 1,2 1,4 13,9 8,11;
+rock 4,0 4,1 4,2 4,3 4,4 4,5 0,6 1,6 2,6 3,6 4,6;
+Rock 0,0;
+Skull 0,2;
+skull@down 12,0 12,1 12,2 12,3 12,4 12,5 12,6 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 21,7 22,7 23,7;
+Stop 2,0 14,9;
+tile 16,2 17,2 18,2 16,3 18,3 16,4 17,4 18,4 7,5 8,5 9,5 7,6 9,6 7,7 8,7 9,7 1,0;
+wall 10,1 11,1 13,1 14,1 15,1 16,1 17,1 18,1 19,1 10,2 15,2 19,2 10,3 19,3 6,4 7,4 8,4 9,4 10,4 15,4 19,4 6,5 10,5 15,5 16,5 17,5 18,5 19,5 6,6 13,6 14,6 15,6 6,7 10,7 6,8 7,8 8,8 9,8 10,8 15,8 10,9 15,9 10,10 15,10 10,11 11,11 12,11 13,11 14,11 15,11;
+Wall 12,9;
+Win 2,4;
+You 8,12;
+`,`
+Title GRASS YARD;
+Size 24x10;
+Background transparent;
+baba 9,5;
+Baba 7,2;
+flag 16,2;
+Flag 14,6;
+grass 10,1 6,3 13,3 14,4 16,4 12,5 15,5 17,5 6,6 12,6 7,7 12,7 15,7 10,8 13,8;
+Grass 23,4;
+Is 8,2 23,5;
+Stop 23,6;
+wall 5,0 6,0 7,0 8,0 9,0 10,0 11,0 12,0 13,0 14,0 15,0 16,0 17,0 18,0 5,1 18,1 5,2 18,2 5,3 18,3 5,4 18,4 5,5 18,5 5,6 18,6 5,7 18,7 5,8 18,8 5,9 6,9 7,9 8,9 9,9 10,9 11,9 12,9 13,9 14,9 15,9 16,9 17,9 18,9;
+Win 16,6;
+You 9,2;
+`,`
+Title INDEX;
+Size 33x18;
+Background transparent;
+Baba 30,15;
+Flag 30,17;
+flower 14,6 11,7 12,8;
+fungi 14,4 17,4 16,5 19,5 15,6;
+glyph-u6f 9,2 15,3 10,4 11,4 12,7 23,9 15,13 26,15;
+husks 22,10 21,11 17,12 19,12 21,13 6,1;
+Is 31,15 31,17;
+line 12,4 15,4 19,4 12,5 13,5 14,5 15,5 16,5 18,5 19,5 12,6 17,6 17,7 15,8 16,8 18,8 19,8 19,9 15,10 19,10 12,11 13,11 14,11 15,11 19,11 19,12 12,13 13,13 14,13 10,14 10,15;
+map 19,3 17,5 20,5 17,8 15,9 20,12 1,3 3,1 6,1 6,2 5,3 3,2;
+marker-u30 9,15;
+marker-u31 10,13 1,1;
+marker-u32 10,12 1,1;
+marker-u33 11,13 1,1;
+marker-u34 11,12 1,1;
+marker-u35 10,11 1,1;
+marker-u36 12,12 1,1;
+marker-u37 11,11 1,1;
+rocket@up 19,2 0,2;
+star 29,0;
+trees 16,4 20,4 21,5 20,6;
+Win 32,17;
+You 32,15;
+`];var b1=[`
+Title ICY WATERS;
+Size 28x16;
+Background transparent;
+And 11,11;
+baba 7,5;
+Baba 8,11;
+flag 24,4;
+Flag 0,0;
+ice 3,0 4,0 5,0 11,0 12,0 13,0 16,0 17,0 0,1 1,1 2,1 3,1 12,1 13,1 14,1 15,1 16,1 18,1 0,2 1,2 13,2 14,2 15,2 16,2 19,2 0,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 14,4 15,4 16,4 17,4 18,4 19,4 20,4 14,5 15,5 16,5 20,5 21,5 14,6 15,6 21,6 15,7 21,7 22,7 15,8 21,8 22,8 23,8 15,9 16,9 20,9 21,9 22,9 23,9 16,10 17,10 18,10 19,10 20,10 21,10 22,10 24,10 17,11 18,11 19,11 20,11 21,11 22,11 24,11 25,11 18,12 19,12 20,12 21,12 22,12 23,12 0,13 19,13 20,13 21,13 22,13 23,13 24,13 25,13 0,14 1,14 20,14 21,14 22,14 23,14 24,14 25,14 26,14 0,15 1,15 2,15 3,15 4,15 6,15 11,15 21,15 22,15 23,15 24,15;
+Is 1,0 26,0 9,11 26,15;
+jelly 23,2 24,2 25,2 22,3 23,3 25,3 26,3 22,4 26,4 22,5 23,5 25,5 26,5 23,6 24,6 25,6;
+Jelly 25,0;
+Sink 27,0 12,11;
+Stop 27,15;
+wall 5,3 6,3 7,3 8,3 9,3 5,4 9,4 5,5 9,5 5,6 9,6 5,7 6,7 8,7 9,7 8,10 9,10 10,10 11,10 5,11 13,11 5,12 6,12 7,12 8,12 9,12 10,12 11,12;
+Wall 18,7 25,15;
+Win 2,0;
+You 10,11;
+`,`
+Title TURNS;
+Size 28x16;
+Background transparent;
+algae 1,0 21,0 22,0 0,1 25,1 26,2 0,12 25,13 0,14 22,14 23,14 24,14 0,15 1,15 7,15 25,15;
+And 15,9;
+baba 23,8;
+Baba 6,9;
+Crab 6,6;
+crab@down 2,6;
+Defeat 7,2;
+flag 3,11;
+Flag 2,13;
+Is 6,2 14,5 22,5 14,7 6,10 3,13;
+jelly 24,3 23,12 19,14;
+Push 15,7;
+rock 21,7 13,9;
+Rock 13,7;
+seastar 10,6;
+Seastar 13,5;
+Sink 15,5;
+skull 8,6;
+Skull 5,2;
+Stop 23,5;
+tile 5,4 6,4 7,4 5,5 7,5 5,7 7,7 22,7 24,7 5,8 6,8 7,8 22,8 23,8 24,8 22,9 24,9 1,0;
+wall 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 4,3 5,3 6,3 7,3 8,3 20,3 4,4 8,4 20,4 4,5 8,5 9,5 10,5 20,5 4,6 20,6 21,6 22,6 23,6 24,6 25,6 4,7 8,7 9,7 10,7 23,7 25,7 4,8 8,8 20,8 21,8 25,8 4,9 5,9 7,9 8,9 20,9 21,9 23,9 25,9 5,10 7,10 8,10 20,10 21,10 22,10 23,10 24,10 25,10 5,11 7,11 8,11 20,11 5,12 6,12 7,12 8,12 9,12 10,12 11,12 12,12 13,12 14,12 15,12 16,12 17,12 18,12 19,12 20,12;
+Wall 21,5;
+Win 4,13;
+You 6,11;
+`,`
+Title AFFECTION;
+Size 24x14;
+Background transparent;
+algae 14,5 15,5 16,5 17,5 18,5 14,6 18,6 14,7 18,7 14,8 18,8 14,9 15,9 16,9 17,9 18,9;
+Algae 0,0;
+baba 3,9;
+Baba 21,13;
+brick 14,4 4,6 3,7 4,7 15,7 13,8 15,8 16,8 17,8 12,9 13,9 19,9 6,10 7,10 13,10 14,10 15,10 5,11 6,11 7,11;
+Defeat 2,0;
+Is 1,0 10,5 10,9 0,12 22,13;
+keke 6,3;
+Keke 9,5;
+keke@down 12,10;
+keke@up 7,7;
+love 16,7;
+Love 9,9 0,11;
+Move 11,5;
+Push 11,9;
+Win 0,13;
+You 23,13;
+`,`
+Title PILLAR YARD;
+Size 24x14;
+Background transparent;
+algae 1,1 16,1 17,2 22,2 20,3 10,8 20,8 1,11 15,12 19,12 14,13;
+baba 6,7;
+Baba 5,12;
+brick 3,4 4,4 5,4 7,4 9,4 3,5 9,5 3,6 9,6 14,6 16,6 17,6 18,6 3,7 9,7 10,7 11,7 12,7 13,7 14,7 16,7 18,7 3,8 9,8 16,8 17,8 18,8 3,9 9,9 3,10 4,10 7,10 8,10 9,10;
+Defeat 23,13;
+flag 17,7;
+Flag 0,0;
+Is 1,0 6,2 0,7 6,12 22,13;
+pillar 18,1 10,2 12,3 8,7 11,11 17,12;
+Pillar 5,2;
+Push 7,2;
+seastar 15,5 16,5 17,5 18,5 19,5 15,6 19,6 15,7 19,7 15,8 19,8 15,9 16,9 17,9 18,9 19,9;
+Seastar 21,13;
+Stop 0,8;
+tile 5,6 6,6 7,6 5,7 7,7 5,8 6,8 7,8 1,0;
+wall 4,5 5,5 6,5 7,5 8,5 4,6 8,6 4,7 4,8 8,8 4,9 5,9 6,9 7,9 8,9;
+Wall 0,6;
+Win 2,0;
+You 7,12;
+`,`
+Title BRICK WALL;
+Size 15x8;
+Background transparent;
+algae 1,0 13,0 0,1 2,7 12,7;
+baba 1,4;
+Baba 4,2;
+brick 10,3 11,3 12,3 10,4 12,4 10,5 11,5 12,5;
+flag 11,4;
+Flag 4,5;
+Is 5,2 14,4 5,5;
+Stop 14,5;
+tile 3,1 4,1 5,1 6,1 7,1 3,2 7,2 3,3 4,3 5,3 6,3 7,3 3,4 4,4 5,4 6,4 7,4 3,5 7,5 3,6 4,6 5,6 6,6 7,6 1,0;
+wall 9,2 10,2 11,2 12,2 13,2 14,2 9,3 13,3 9,4 13,4 9,5 13,5 9,6 10,6 11,6 12,6 13,6 14,6;
+Wall 14,3;
+Win 6,5;
+You 6,2;
+`,`
+Title LOCK;
+Size 28x16;
+Background transparent;
+algae 25,0 26,1 27,3 4,14 3,15;
+baba 9,7;
+Baba 6,2;
+brick 12,7 13,7 14,7 15,7 14,8 14,9 14,10 14,11 0,12 1,12 2,12 14,12 0,13 1,13 2,13 11,13 12,13 13,13 14,13 11,14 11,15;
+bubble 13,1 1,2 3,6 26,7 24,13;
+door 11,7 16,7 19,9;
+Door 18,2 18,4;
+flag 19,11;
+Flag 18,13;
+Is 7,2 19,2 7,4 19,4 10,11 9,12 19,13;
+key 7,7 14,7;
+Key 9,11;
+Open 11,11;
+pillar 1,11 2,14;
+Push 9,13;
+rock 13,7;
+Rock 19,7;
+Shut 20,4;
+Stop 20,2 8,4;
+tile 6,6 7,6 8,6 9,6 10,6 6,7 7,7 8,7 9,7 10,7 6,8 7,8 8,8 9,8 10,8 1,0;
+wall 5,1 6,1 7,1 8,1 9,1 17,1 18,1 19,1 20,1 21,1 5,2 9,2 17,2 21,2 5,3 6,3 7,3 8,3 9,3 17,3 18,3 19,3 20,3 21,3 5,4 9,4 17,4 21,4 5,5 6,5 7,5 8,5 9,5 10,5 11,5 16,5 17,5 18,5 19,5 20,5 21,5 22,5 5,6 11,6 16,6 22,6 5,7 22,7 5,8 11,8 16,8 22,8 5,9 6,9 7,9 8,9 9,9 10,9 11,9 16,9 17,9 18,9 20,9 21,9 22,9 16,10 21,10 16,11 21,11 16,12 17,12 21,12 17,13 21,13 17,14 18,14 19,14 20,14 21,14;
+Wall 6,4;
+Win 20,13;
+You 8,2;
+`,`
+Title NOVICE LOCKSMITH;
+Size 28x15;
+Background transparent;
+algae 4,1 19,1 1,4 25,4 3,9 25,9 2,10 24,12 5,14;
+baba 9,10;
+Baba 8,0;
+bubble 24,0 16,1 3,6 1,12 26,12;
+door 12,8 17,10;
+Door 8,1 16,6;
+flag 17,12;
+Flag 16,14;
+Is 10,9 17,14 9,0 9,1 9,2 17,6;
+key 8,9;
+Key 8,5 8,7;
+Open 10,5;
+Push 10,7;
+seastar 24,6;
+Shut 18,6;
+Stop 10,1 10,2;
+tile 7,0 8,0 9,0 10,0 11,0 7,1 8,1 9,1 10,1 11,1 7,2 8,2 9,2 10,2 11,2 7,4 8,4 9,4 10,4 11,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 20,4 7,5 9,5 11,5 13,5 14,5 15,5 16,5 17,5 18,5 19,5 20,5 7,6 8,6 9,6 10,6 11,6 13,6 14,6 15,6 16,6 17,6 18,6 19,6 20,6 7,7 9,7 11,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 7,8 8,8 9,8 10,8 11,8 13,8 14,8 15,8 16,8 17,8 18,8 19,8 20,8 7,9 9,9 11,9 13,9 14,9 15,9 16,9 17,9 18,9 19,9 20,9 7,10 8,10 9,10 10,10 11,10 7,11 8,11 9,11 10,11 11,11;
+wall 6,0 12,0 6,1 12,1 6,2 12,2 6,3 7,3 8,3 9,3 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 21,3 6,4 12,4 21,4 6,5 12,5 21,5 6,6 12,6 21,6 6,7 12,7 21,7 6,8 21,8 6,9 12,9 21,9 6,10 12,10 13,10 14,10 15,10 16,10 18,10 19,10 20,10 21,10 6,11 12,11 6,12 7,12 8,12 9,12 10,12 11,12 12,12;
+Wall 8,2;
+Win 18,14;
+You 10,0;
+`,`
+Title LOCKED IN;
+Size 24x14;
+Background transparent;
+algae 5,0 18,1 22,2 1,3 20,6 6,7 21,7 4,9 2,10 18,10 21,13;
+baba 9,3;
+Baba 2,7;
+Defeat 2,13;
+Flag 2,5;
+Is 3,5 14,5 3,7 11,8 1,13;
+jelly 11,4 9,5 10,5 11,5;
+Jelly 10,8;
+seastar 3,2 20,9;
+Stop 14,6 12,8;
+tile 10,3 11,3 12,3 13,3 14,3 15,3 9,4 10,4 12,4 13,4 15,4 12,5 13,5 15,5 9,6 10,6 11,6 12,6 13,6 15,6 9,7 10,7 11,7 12,7 13,7 14,7 15,7 9,8 13,8 14,8 15,8 9,9 10,9 11,9 12,9 13,9 14,9 15,9 9,10 10,10 11,10 12,10 13,10 14,10 15,10 1,0;
+wall 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 8,3 16,3 8,4 16,4 8,5 16,5 8,6 16,6 8,7 16,7 8,8 16,8 8,9 16,9 8,10 16,10 8,11 9,11 10,11 11,11 12,11 13,11 14,11 15,11 16,11;
+Wall 14,4 0,13;
+Win 4,5;
+You 4,7;
+`,`
+Title CHANGELESS;
+Size 15x8;
+Background transparent;
+algae 13,0 14,1 1,2;
+baba 3,3;
+Baba 0,7;
+flag 7,3;
+Flag 6,5 12,7;
+Is 7,1 14,4 7,5 1,7 13,7;
+Rock 6,1 8,1 8,5;
+Stop 14,5;
+wall 5,0 6,0 7,0 8,0 9,0 0,6 1,6 2,6 3,6 11,6 12,6 13,6 14,6 3,7 11,7;
+Wall 14,3;
+Win 14,7;
+You 2,7;
+`,`
+Title TWO DOORS;
+Size 28x14;
+Background transparent;
+algae 1,0 25,0 26,2 25,8 26,11 1,12 25,12 3,13 21,13;
+And 21,4 5,6;
+door 16,5;
+Door 13,1 21,5;
+flag 19,5;
+Flag 10,9;
+hedge 4,2 5,2 6,2 16,2 17,2 18,2 19,2 20,2 21,2 22,2 4,3 16,3 22,3 4,4 7,4 16,4 22,4 4,5 22,5 4,6 6,6 16,6 22,6 4,7 8,7 16,7 22,7 4,8 5,8 8,8 10,8 11,8 12,8 16,8 17,8 18,8 19,8 20,8 21,8 22,8 8,9 12,9 8,10 9,10 12,10 8,11 9,11 12,11 8,12 9,12 10,12 11,12 12,12;
+Hedge 21,3;
+Is 10,2 13,2 5,4 21,6 11,10;
+keke 11,5;
+Keke 10,1;
+key 9,7;
+Key 5,3;
+Open 5,7;
+Push 5,5;
+seastar 18,12;
+Shut 13,3;
+Stop 21,7;
+tile 17,3 18,3 19,3 20,3 17,4 18,4 19,4 20,4 17,5 18,5 19,5 20,5 17,6 18,6 19,6 20,6 17,7 18,7 19,7 20,7 1,0;
+Win 11,11;
+You 10,3;
+`,`
+Title JELLY THRONE;
+Size 33x18;
+Background transparent;
+baba 14,11;
+Baba 9,13;
+brick 11,15 12,15 13,15 11,16 13,16 11,17 12,17 13,17;
+flag 18,10;
+Flag 15,4 17,4 14,9 20,14;
+grass 13,0 14,0 15,0 20,0 21,0 22,0 23,0 24,0 25,0 26,0 31,0 3,1 4,1 12,1 13,1 14,1 22,1 23,1 24,1 2,2 3,2 4,2 23,2 29,2 28,3 29,3 31,4 32,4 0,5 23,5 31,5 32,5 0,6 1,6 22,6 23,6 24,6 30,6 31,6 32,6 7,14 6,15 7,15 6,16 7,16 4,17 5,17 6,17 7,17;
+Is 16,4 15,9 10,13 21,14 10,16 31,17;
+jelly 12,16;
+Jelly 16,11 10,15;
+Push 16,9;
+Stop 22,14 32,17;
+wall 0,7 1,7 2,7 3,7 4,7 5,7 6,7 7,7 8,7 9,7 10,7 11,7 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 21,7 22,7 23,7 24,7 25,7 26,7 27,7 28,7 29,7 30,7 31,7 32,7 18,8 24,8 18,9 24,9 20,10 24,10 18,11 24,11 11,12 18,12 24,12 8,13 18,13 24,13 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14 16,14 17,14 18,14 24,14 8,15 24,15 8,16 24,16 8,17 24,17;
+Wall 30,17;
+Win 10,17;
+You 11,13;
+`,`
+Title CRAB STORAGE;
+Size 24x18;
+Background transparent;
+algae 23,0 2,14 23,16 22,17 23,17;
+And 13,17;
+baba 8,12;
+Baba 9,5 12,9 0,17;
+Crab 17,11;
+crab@down 10,12;
+Defeat 13,4;
+door 15,11;
+Door 10,17;
+flag 6,12;
+Flag 5,9;
+hedge 10,2 11,2 12,2 13,2 14,2 10,3 14,3 8,4 9,4 10,4 14,4 8,5 12,5 13,5 14,5 4,6 5,6 6,6 7,6 8,6 10,6 12,6 13,6 14,6 15,6 4,7 15,7 4,8 15,8 4,9 15,9 16,9 17,9 18,9 19,9 4,10 15,10 19,10 4,11 19,11 4,12 15,12 19,12 4,13 15,13 16,13 17,13 18,13 19,13 4,14 5,14 6,14 7,14 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14;
+Hedge 0,0;
+Is 1,0 12,3 12,4 10,5 6,9 12,10 1,17 11,17;
+Open 12,11;
+Push 7,9;
+seastar 19,2 1,3 17,4 20,4 18,5 2,7 11,15;
+Shut 12,17;
+Stop 2,0 14,17;
+Win 13,3;
+You 2,17;
+`,`
+Title BURGLARY;
+Size 28x16;
+Background transparent;
+algae 7,0 19,0 20,0 26,0 27,0 26,2 27,2 7,12 7,13 20,13 0,14 7,14 20,14 27,14 0,15 1,15 6,15 7,15 8,15 9,15 16,15 17,15 18,15 19,15 21,15 25,15 26,15 27,15;
+baba 15,11;
+Baba 0,0;
+bubble 3,9 23,11 2,13 26,13 4,14;
+Defeat 23,1;
+door 14,5;
+Door 0,2;
+Is 1,0 22,1 1,2 13,2 10,6 17,6 11,11 16,11;
+key 11,9;
+Key 21,1 10,11;
+Open 12,11;
+Push 11,6;
+seastar 16,9;
+Seastar 9,6;
+Shut 17,11;
+Stop 2,2 18,6;
+wall 3,0 4,0 5,0 6,0 22,0 23,0 24,0 0,1 1,1 2,1 3,1 4,1 24,1 25,1 26,1 27,1 3,2 22,2 23,2 24,2 0,3 1,3 2,3 3,3 21,3 22,3 24,3 25,3 26,3 27,3 0,4 1,4 25,4 26,4 0,5 8,5 9,5 10,5 11,5 12,5 13,5 15,5 16,5 17,5 18,5 19,5 26,5 0,6 8,6 19,6 26,6 8,7 17,7 19,7 26,7 27,7 8,8 19,8 27,8 8,9 19,9 27,9 8,10 19,10 8,11 19,11 8,12 19,12 8,13 19,13 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14 16,14 17,14 18,14 19,14;
+Wall 16,6;
+Win 15,2;
+You 2,0;
+`,`
+Title SUBMERGED RUINS;
+Size 15x8;
+Background transparent;
+baba 3,1;
+Baba 2,2;
+Crab 11,1;
+crab@left 4,6 5,6;
+Defeat 12,3;
+flag 6,6;
+Flag 12,1;
+Is 3,2 12,2 13,2 11,6 1,7;
+Push 12,6;
+rock 8,1;
+Rock 10,6;
+Stop 2,7;
+wall 8,0 9,0 10,0 11,0 12,0 13,0 14,0 14,1 8,2 11,2 14,2 8,3 11,3 14,3 4,4 5,4 6,4 7,4 8,4 11,4 12,4 13,4 14,4 4,5 8,5 14,5 8,6 14,6 3,7 4,7 8,7 14,7;
+Wall 0,7;
+Win 13,3;
+You 4,2;
+`,`
+Title SUNKEN TEMPLE;
+Size 15x8;
+Background transparent;
+baba 3,1;
+Baba 2,2;
+Crab 11,1;
+crab@left 4,6;
+Defeat 12,3;
+flag 6,6;
+Flag 12,1;
+Is 3,2 12,2 13,2 14,2 11,6 1,7;
+jelly 9,1;
+Jelly 14,1;
+Push 14,3 12,6;
+rock 8,1;
+Rock 10,6;
+Stop 2,7;
+wall 8,0 9,0 10,0 11,0 12,0 13,0 14,0 8,2 11,2 8,3 11,3 4,4 5,4 6,4 7,4 8,4 11,4 12,4 13,4 14,4 4,5 8,5 14,5 8,6 14,6 3,7 4,7 8,7 14,7;
+Wall 0,7;
+Win 13,3;
+You 4,2;
+`,`
+Title INDEX;
+Size 33x18;
+Background transparent;
+algae 0,0 1,0 2,0 0,1 1,1 2,1 32,1 9,2 32,2 20,3 28,3 17,4 19,4 20,4 21,4 24,4 18,5 20,5 25,5 4,7 21,7 32,8 32,9 21,12 20,16 21,16 22,16 20,17 21,17 22,17;
+brick 9,3 11,3 8,4 9,4 10,4 11,4 12,4 13,4 8,5 9,5 10,5 11,5 12,5 9,6 11,6;
+crab@down 15,2;
+hedge 3,0 4,0 5,0 6,0 27,0 28,0 29,0 30,0 31,0 32,0 3,1 31,1 0,2 1,2 2,2 3,2 31,2 31,3 32,3 31,7 32,7 31,8 0,9 1,9 2,9 31,9 2,10 30,10 31,10 32,10 2,11 30,11 2,12 30,12 0,13 1,13 2,13 3,13 4,13 30,13 4,14 23,14 24,14 25,14 26,14 27,14 28,14 29,14 30,14 4,15 19,15 20,15 21,15 22,15 23,15 30,15 4,16 5,16 6,16 7,16 19,16 23,16 30,16 4,17 7,17 19,17 23,17 30,17;
+jelly 26,8 23,9 24,11;
+line 15,7 14,8 15,8 12,9 14,12 14,13;
+marker-u1d7ce 15,5 1,1;
+marker-u1d7cf 18,8 1,1;
+marker-u1d7d0 19,8 1,1;
+marker-u1d7d1 14,5 1,1;
+marker-u1d7d9 11,9 1,3;
+marker-u1d7da 10,9 1,3;
+marker-u2022 14,14 4,1;
+marker-u31 14,11 1,1;
+marker-u32 14,10 1,1;
+marker-u33 13,10 1,1;
+marker-u34 14,9 1,1;
+marker-u35 13,9 1,1;
+marker-u36 15,6 1,1;
+marker-u37 14,6 1,1;
+marker-u38 16,8 1,1;
+marker-u39 17,8 1,1;
+pillar 8,3 10,3 12,3 8,6 10,6 12,6;
+seastar 8,13 10,14;
+`];var h1=[`
+Title POEM;
+Size 24x13;
+Background transparent;
+Baba 6,7;
+baba@left 12,6;
+Blue 8,5;
+flag 18,6;
+Flag 6,6;
+Is 7,4 7,5 7,6 7,7 1,12;
+Red 8,4;
+rose 18,0 4,1 2,2 11,2 20,2 11,9 3,10 16,10 4,11 3,2;
+Rose 6,4;
+Stop 2,12;
+violet 9,0 8,1 13,2 1,6 22,10 8,11 21,11 5,2;
+Violet 6,5;
+wall 4,4 5,4 9,4 16,4 17,4 18,4 19,4 20,4 4,5 9,5 16,5 20,5 4,6 5,6 9,6 16,6 20,6 5,7 9,7 16,7 20,7 16,8 17,8 18,8 19,8 20,8;
+Wall 0,12;
+Win 8,6;
+You 8,7;
+`,`
+Title FLOAT;
+Size 24x11;
+Background transparent;
+baba 8,7;
+Baba 0,0 7,4;
+flag 16,7;
+Flag 15,4;
+Float 2,0;
+Is 1,0 8,4 16,4 8,10 16,10;
+Push 17,10;
+rock 12,6 12,7 12,8;
+Rock 15,10;
+Stop 9,10;
+tile 7,6 8,6 9,6 10,6 11,6 13,6 14,6 15,6 16,6 17,6 7,7 9,7 10,7 11,7 13,7 14,7 15,7 17,7 7,8 8,8 9,8 10,8 11,8 13,8 14,8 15,8 16,8 17,8 1,0;
+wall 7,5 8,5 9,5 10,5 11,5 12,5 13,5 14,5 15,5 16,5 17,5 7,9 8,9 9,9 10,9 11,9 12,9 13,9 14,9 15,9 16,9 17,9;
+Wall 7,10;
+Win 17,4;
+You 9,4;
+`,`
+Title WARM RIVER;
+Size 15x8;
+Background transparent;
+And 4,5 13,7;
+baba 6,4;
+Baba 4,2 0,7;
+Defeat 12,7;
+flag 13,1;
+Flag 12,0;
+Float 4,6 14,7;
+Hot 2,0;
+Is 1,0 13,0 4,3 1,7 11,7;
+Melt 2,7;
+Skull 10,7;
+skull@down 12,3 13,3 14,3;
+skull@left 11,0 11,1 11,2;
+water 8,0 8,1 8,2 8,3 8,4 8,5 8,6 8,7;
+Water 0,0;
+Win 14,0;
+You 4,4;
+`,`
+Title BRIDGE BUILDING;
+Size 24x14;
+Background transparent;
+baba 8,6;
+Baba 6,11;
+flag 16,6;
+Flag 16,2;
+Float 6,1;
+hedge 10,0 11,0 12,0 13,0 14,0 15,0 16,0 17,0 18,0 9,1 10,1 18,1 9,2 18,2 9,3 18,3 6,4 7,4 8,4 9,4 18,4 6,5 18,5 6,6 18,6 5,7 6,7 18,7 5,8 6,8 18,8 5,9 6,9 13,9 14,9 15,9 16,9 17,9 18,9 5,10 6,10 13,10 14,10 15,10 16,10 17,10 18,10 5,11 13,11 14,11 18,11 5,12 6,12 12,12 13,12 14,12 18,12 6,13 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13;
+Hedge 15,12;
+Is 5,1 16,3 9,9 7,11 16,11 16,12;
+Push 10,9;
+rock 10,2 10,7;
+Rock 8,9;
+Sink 17,11;
+Stop 17,12;
+Text 4,1;
+water 13,1 14,1 13,2 14,2 13,3 14,3 13,4 14,4 13,5 14,5 13,6 14,6 13,7 14,7 13,8 14,8;
+Water 15,11;
+Win 16,4;
+You 8,11;
+`,`
+Title BRIDGE BUILDING Q;
+Size 24x15;
+Background transparent;
+baba 8,7;
+Baba 6,12;
+flag 16,7;
+Flag 16,3;
+Float 6,2;
+hedge 10,1 11,1 12,1 13,1 14,1 15,1 16,1 17,1 18,1 9,2 10,2 18,2 9,3 18,3 9,4 18,4 6,5 7,5 8,5 9,5 18,5 6,6 18,6 6,7 18,7 5,8 6,8 18,8 5,9 6,9 18,9 5,10 6,10 13,10 14,10 15,10 16,10 17,10 18,10 5,11 6,11 13,11 14,11 15,11 16,11 17,11 18,11 5,12 13,12 14,12 18,12 5,13 6,13 12,13 13,13 14,13 18,13 6,14 7,14 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14 16,14 17,14 18,14;
+Hedge 15,13;
+Is 6,1 16,4 9,10 7,12 16,12 16,13;
+Push 10,10;
+rock 10,6 10,8;
+Rock 6,0 8,10;
+Sink 17,12;
+Stop 17,13;
+water 13,2 14,2 13,3 14,3 13,4 14,4 13,5 14,5 13,6 14,6 13,7 14,7 13,8 14,8 13,9 14,9;
+Water 15,12;
+Win 16,5;
+You 8,12;
+`,`
+Title VICTORY SPRING;
+Size 15x6;
+Background transparent;
+Baba 6,0;
+baba@left 11,4;
+cog 13,3 12,5;
+Cog 12,0;
+Float 3,4;
+Is 1,0 7,0 13,0 2,4;
+Push 14,0;
+Sink 2,0;
+Text 1,4;
+water 6,3 7,3 8,3 6,4 7,4 8,4 6,5 7,5 8,5;
+Water 0,0;
+Win 7,4;
+You 8,0;
+`,`
+Title ASSEMBLY TEAM;
+Size 24x18;
+Background transparent;
+baba 16,11;
+Baba 7,8;
+flag 16,6;
+Flag 15,3;
+grass 1,0 2,0 3,0 4,0 5,0 18,0 19,0 20,0 21,0 22,0 23,0 2,1 3,1 4,1 21,1 22,1 23,1 23,2 1,8 0,9 1,9 2,9 23,9 1,10 23,10 0,11 0,12 23,12 0,13 1,13 0,14 0,15 4,16 5,16 23,16 3,17 4,17 5,17 6,17 22,17 23,17 1,0;
+Is 8,2 8,3 16,3 11,9 9,14 9,15;
+pipe 10,0 14,0 10,1 12,1 13,1 14,1 0,2 1,2 10,2 11,2 12,2 0,3 1,3 2,3 3,3 4,3 5,3 12,3 1,4 4,4 5,4 6,4 7,4 8,4 9,4 10,4 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 22,4 23,4 0,5 1,5 4,5 13,5 19,5 22,5 0,6 1,6 2,6 3,6 4,6 13,6 19,6 20,6 21,6 22,6 2,7 4,7 13,7 19,7 21,7 2,8 3,8 4,8 13,8 19,8 21,8 4,9 13,9 19,9 4,10 13,10 19,10 4,11 13,11 19,11 20,11 21,11 2,12 3,12 4,12 13,12 19,12 2,13 4,13 5,13 6,13 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 2,14 15,14 2,15 15,15 16,15 21,15 2,16 15,16 16,16 17,16 20,16 21,16 22,16 0,17 1,17 2,17 17,17;
+Pipe 8,15;
+Robot 7,2 7,3;
+robot@down 6,6 6,11;
+Sink 10,14;
+Stop 9,3 10,15;
+water 9,5 9,6 9,7 9,8 9,9 9,10 9,11 9,12;
+Water 8,14;
+Win 17,3;
+You 9,2 11,10;
+`,`
+Title CATCH THE THIEF;
+Size 24x14;
+Background transparent;
+baba 10,3;
+Baba 14,8;
+Defeat 22,0;
+grass 2,6 3,6 4,6 5,6 0,7 1,7 2,7 4,7 5,7 0,8 1,8 2,8 3,8 4,8 5,8 0,9 1,9 2,9 3,9 4,9 5,9 0,10 1,10 2,10 4,10 5,10 0,11 1,11 2,11 3,11 4,11 5,11 0,12 1,12 2,12 3,12 4,12 5,12 0,13 1,13 2,13 3,13 4,13 5,13 1,0;
+Is 21,0 23,2 14,9 18,11;
+Move 19,11;
+pipe 17,0 19,0 23,0 17,1 18,1 19,1 20,1 21,1 22,1 3,2 13,2 18,2 22,2 0,3 1,3 18,3 22,3 1,4 2,4 18,4 19,4 20,4 21,4 22,4 23,4 1,5 2,5 0,6 1,6 3,7 17,7 22,10 9,11;
+Pipe 23,1;
+robot 3,10;
+Robot 17,11;
+Skull 20,0;
+skull@down 4,4 5,4 6,4 7,4 4,5 5,5 6,5 7,5 6,6 7,6 6,7 7,7 6,8 7,8 6,9 7,9 6,10 7,10 6,11 7,11 6,12 7,12 6,13 7,13;
+Stop 23,3;
+tile 2,1 3,1 4,1 12,1 13,1 14,1 2,2 4,2 9,2 10,2 11,2 12,2 14,2 2,3 3,3 4,3 9,3 11,3 12,3 13,3 14,3 9,4 10,4 11,4 16,6 17,6 18,6 16,7 18,7 16,8 17,8 18,8 21,9 22,9 23,9 8,10 9,10 10,10 21,10 23,10 8,11 10,11 21,11 22,11 23,11 8,12 9,12 10,12 1,0;
+Win 3,5;
+You 14,10;
+`,`
+Title TINY POND;
+Size 24x14;
+Background transparent;
+And 8,7 22,13;
+baba 11,3;
+Baba 8,4;
+cog 13,1 22,5 2,6 1,7 16,10 15,11 10,12;
+flag 2,10;
+Flag 2,9;
+grass 0,0 1,0 2,0 3,0 4,0 5,0 17,0 18,0 20,0 21,0 22,0 23,0 0,1 1,1 2,1 3,1 22,1 23,1 0,2 23,2 0,3 23,3 23,7 23,8 22,9 23,9 21,10 22,10 23,10 21,11 22,11 23,11 3,0;
+Is 8,5 20,13;
+key 4,10;
+Key 4,9;
+Open 8,8;
+Shut 23,13;
+Stop 21,13;
+tile 8,3 9,3 14,3 9,4 12,4 13,4 14,4 15,4 14,5 15,5 11,6 12,6 14,6 10,7 12,7 7,8 8,9 9,9 8,10 1,0;
+water 9,5 10,5 11,5 12,5 13,5 9,6 10,6 13,6 9,7 13,7 9,8 11,8 12,8 13,8 18,12 19,12 20,12 21,12 22,12 23,12 18,13;
+Water 19,13;
+Win 11,7;
+You 8,6;
+`,`
+Title RESEARCH FACILITY;
+Size 24x18;
+Background transparent;
+baba 15,11;
+Baba 2,7;
+bolt 17,11;
+Bolt 15,7 21,7;
+cog 9,1 6,2 22,4 2,11 16,16;
+Defeat 10,4 11,8;
+Hot 4,8;
+Is 9,4 4,7 16,7 2,8 21,8 9,11;
+keke 11,6;
+Keke 8,4;
+Melt 21,9;
+Move 16,8;
+pipe 3,0 22,0 0,1 1,1 2,1 3,1 22,1 23,1 1,2 0,3 1,3 0,12 1,12 1,13 1,14 22,14 23,14 0,15 1,15 2,15 22,15 2,16 19,16 20,16 21,16 22,16 23,16 2,17 19,17;
+Push 17,7;
+Skull 4,6;
+skull@down 6,6 6,8 5,9;
+Stop 10,11;
+tile 5,10 5,11 5,12 5,13 10,13 12,13 13,13 5,14 6,14 7,14 8,14 9,14 10,14 12,14 13,14 1,0;
+wall 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 11,4 20,4 2,5 3,5 4,5 5,5 6,5 7,5 8,5 9,5 10,5 11,5 20,5 2,6 20,6 0,7 1,7 3,7 5,7 6,7 7,7 8,7 9,7 10,7 11,7 20,7 20,8 0,9 1,9 3,9 4,9 6,9 7,9 8,9 9,9 10,9 11,9 20,9 4,10 6,10 11,10 20,10 4,11 6,11 11,11 20,11 4,12 6,12 9,12 10,12 11,12 12,12 20,12 4,13 6,13 7,13 8,13 9,13 14,13 20,13 4,14 11,14 14,14 15,14 16,14 17,14 18,14 19,14 20,14 4,15 5,15 6,15 7,15 8,15 9,15 10,15 11,15 12,15 13,15 14,15;
+Wall 8,11;
+Win 11,13;
+You 2,9;
+`,`
+Title WIRELESS CONNECTION;
+Size 28x16;
+Background transparent;
+And 10,4;
+Baba 0,2;
+baba@down 6,4;
+bog 15,0 16,0 15,1 16,1 15,2 16,2 15,3 16,3 15,4 16,4 15,5 16,5 15,6 16,6 15,7 16,7 15,8 16,8 15,9 16,9 15,10 16,10 15,11 16,11 27,11 0,12 15,12 16,12 27,12 0,13 1,13 15,13 16,13 25,13 26,13 27,13 0,14 1,14 15,14 16,14 24,14 25,14 26,14 27,14 0,15 1,15 2,15 15,15 16,15 23,15 24,15 25,15 26,15;
+Bog 0,6;
+cog 8,2;
+Cog 6,0;
+Defeat 2,6;
+flag 6,2;
+Flag 22,1 0,4 2,4;
+Is 1,0 1,2 1,4 1,6 7,0 7,6;
+Move 10,2;
+pipe 3,0 5,0 25,0 0,1 1,1 2,1 3,1 4,1 5,1 21,1 23,1 24,1 25,1 3,2 25,2 0,3 1,3 2,3 3,3 21,3 23,3 24,3 25,3 3,4 25,4 0,5 1,5 2,5 3,5 21,5 23,5 24,5 25,5 26,5 3,6 26,6 0,7 1,7 2,7 3,7 26,7 26,8 27,8 5,12 6,12 7,12 8,12 9,12 5,13 9,13 5,14 9,14 10,14 11,14 12,14 13,14 5,15 9,15 13,15;
+Pipe 0,0;
+Push 8,6;
+reed 13,0 17,1 14,5 14,7 17,10 14,13 18,13 17,15;
+Robot 6,6;
+robot@down 8,4;
+Rock 22,3;
+Stop 2,0 8,0;
+tile 4,0 26,0 27,0 26,1 27,1 26,2 27,2 6,3 7,3 8,3 26,3 27,3 6,4 7,4 8,4 26,4 27,4 6,5 7,5 8,5 9,5 10,5 27,5 6,6 7,6 8,6 9,6 10,6 27,6 6,7 7,7 8,7 9,7 10,7 27,7 6,8 7,8 8,8 6,9 7,9 8,9 10,15 11,15 12,15 1,0;
+Win 22,5;
+You 2,2;
+`,`
+Title PRISON;
+Size 33x17;
+Background transparent;
+baba 14,2;
+Baba 14,0;
+flower 2,3 27,4 5,9 30,9 4,10 1,16 28,16;
+grass 20,0 31,0 32,0 2,1 10,1 11,1 18,1 32,1 6,2 7,2 25,2 7,3 30,4 31,4 31,5 4,6 1,7 24,7 24,8 25,8 25,9 8,11 7,12 28,12 2,13 10,14 10,15 11,15 12,15 23,15 24,15 31,15 4,16 5,16 11,16 16,16 23,16 30,16 6,3;
+Is 15,0 22,5;
+Keke 14,4;
+keke@left 16,2;
+Push 16,4;
+Stop 22,6;
+tile 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 11,5 12,5 13,5 14,5 15,5 16,5 17,5 18,5 19,5 11,6 12,6 13,6 14,6 15,6 16,6 17,6 18,6 19,6 11,7 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 11,8 12,8 13,8 14,8 15,8 16,8 17,8 18,8 19,8 20,8 21,8 22,8 11,9 12,9 13,9 14,9 15,9 16,9 17,9 18,9 19,9 20,9 21,9 22,9 11,10 12,10 13,10 14,10 15,10 16,10 17,10 18,10 19,10 20,10 21,10 22,10 11,11 12,11 13,11 14,11 15,11 16,11 17,11 18,11 19,11 20,11 21,11 22,11 11,12 12,12 13,12 14,12 15,12 16,12 17,12 18,12 19,12 20,12 21,12 22,12 1,0;
+wall 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 10,3 20,3 10,4 20,4 10,5 20,5 10,6 20,6 10,7 20,7 21,7 22,7 23,7 10,8 23,8 10,9 23,9 10,10 23,10 10,11 23,11 10,12 23,12 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 20,13 21,13 22,13 23,13;
+Wall 22,4;
+Win 22,5;
+You 16,0;
+`,`
+Title BOILING RIVER;
+Size 15x8;
+Background transparent;
+And 4,4 0,5 13,7;
+baba 6,3;
+Baba 4,1 0,7;
+Defeat 12,7;
+flag 13,1;
+Flag 12,0;
+Float 4,5 14,7;
+Hot 0,6;
+Is 13,0 4,2 0,3 1,7 11,7;
+Melt 2,7;
+Skull 10,7;
+skull@down 12,3 13,3 14,3;
+skull@left 11,0 11,1 11,2;
+water 8,0 8,1 8,2 8,3 8,4 8,5 8,6 8,7;
+Water 0,2 0,4;
+Win 14,0;
+You 4,3;
+`,`
+Title BRIDGES Q;
+Size 24x15;
+Background transparent;
+baba 8,7;
+Baba 6,12;
+flag 16,7;
+Flag 16,3;
+Float 6,2;
+hedge 10,1 11,1 12,1 13,1 14,1 15,1 16,1 17,1 18,1 9,2 10,2 18,2 9,3 18,3 9,4 18,4 6,5 7,5 8,5 9,5 18,5 6,6 18,6 6,7 18,7 5,8 6,8 18,8 5,9 6,9 18,9 5,10 6,10 13,10 14,10 15,10 16,10 17,10 18,10 5,11 6,11 13,11 14,11 15,11 16,11 17,11 18,11 5,12 13,12 14,12 18,12 5,13 6,13 12,13 13,13 14,13 18,13 6,14 7,14 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14 16,14 17,14 18,14;
+Hedge 15,13;
+Is 6,1 5,2 16,4 9,10 7,12 16,12 16,13;
+Push 10,10;
+rock 10,3 10,8;
+Rock 6,0 8,10;
+Sink 17,12;
+Stop 17,13;
+Text 4,2;
+water 13,2 14,2 13,3 14,3 13,4 14,4 13,5 14,5 13,6 14,6 13,7 14,7 13,8 14,8 13,9 14,9;
+Water 15,12;
+Win 16,5;
+You 8,12;
+`,`
+Title TINY ISLE;
+Size 24x14;
+Background transparent;
+And 8,7 22,13;
+baba 11,3;
+Baba 8,4;
+cog 13,1 22,5 2,6 1,7 16,10 15,11 10,12;
+flag 2,10;
+Flag 2,9;
+grass 0,0 1,0 2,0 3,0 4,0 5,0 17,0 18,0 20,0 21,0 22,0 23,0 0,1 1,1 2,1 3,1 22,1 23,1 0,2 23,2 0,3 23,3 23,7 23,8 22,9 23,9 21,10 22,10 23,10 21,11 22,11 23,11 3,0;
+Is 8,5 20,13;
+key 4,10;
+Key 4,9;
+Open 8,8;
+Shut 23,13;
+Stop 21,13;
+tile 8,3 9,3 14,3 9,4 12,4 13,4 14,4 15,4 14,5 15,5 11,6 12,6 14,6 10,7 12,7 7,8 8,9 9,9 8,10 1,0;
+water 9,5 10,5 11,5 12,5 13,5 9,6 10,6 13,6 9,7 13,7 9,8 10,8 11,8 12,8 13,8 18,12 19,12 20,12 21,12 22,12 23,12 18,13;
+Water 19,13;
+Win 11,7;
+You 8,6;
+`,`
+Title DIM SIGNAL;
+Size 28x16;
+Background transparent;
+And 12,6 10,4;
+Baba 0,2;
+baba@down 6,4;
+bog 15,0 16,0 15,1 16,1 15,2 16,2 15,3 16,3 15,4 16,4 15,5 16,5 15,6 16,6 15,7 16,7 15,8 16,8 15,9 16,9 15,10 16,10 0,11 15,11 16,11 0,12 1,12 15,12 16,12 26,12 27,12 0,13 1,13 15,13 16,13 25,13 26,13 27,13 0,14 1,14 2,14 15,14 16,14 23,14 24,14 25,14 26,14 0,15 1,15 2,15 15,15 16,15 22,15 23,15 24,15 25,15;
+Bog 0,6;
+cog 8,2;
+Cog 6,0;
+Defeat 2,6;
+flag 6,2;
+Flag 22,1 0,4 2,4;
+Ice 22,5;
+Is 1,0 1,2 1,4 1,6 7,0 7,6;
+Move 10,2;
+pipe 3,0 5,0 25,0 0,1 1,1 2,1 3,1 4,1 5,1 21,1 23,1 24,1 25,1 3,2 25,2 0,3 1,3 2,3 3,3 21,3 23,3 24,3 25,3 3,4 25,4 0,5 1,5 2,5 3,5 21,5 23,5 24,5 25,5 3,6 25,6 0,7 1,7 2,7 3,7 21,7 23,7 24,7 25,7 26,7 26,8 26,9 26,10 27,10 5,12 6,12 7,12 8,12 9,12 5,13 9,13 5,14 9,14 10,14 11,14 12,14 13,14 5,15 9,15 13,15;
+Pipe 0,0;
+Push 8,6;
+reed 12,0 18,1 14,2 17,4 13,5 14,8 17,11 13,12 18,14;
+Robot 6,6;
+robot@down 8,4;
+Rock 22,3;
+Stop 2,0 8,0;
+tile 4,0 26,0 27,0 26,1 27,1 26,2 27,2 6,3 7,3 8,3 26,3 27,3 6,4 7,4 8,4 26,4 27,4 6,5 7,5 8,5 9,5 10,5 26,5 27,5 6,6 7,6 8,6 9,6 10,6 26,6 27,6 6,7 7,7 8,7 9,7 10,7 27,7 6,8 7,8 8,8 27,8 6,9 7,9 8,9 27,9 6,13 7,13 8,13 6,14 7,14 8,14 6,15 7,15 8,15 10,15 11,15 12,15 1,0;
+Win 22,7;
+You 2,2;
+`,`
+Title DUNGEON;
+Size 33x17;
+Background transparent;
+baba 14,2;
+Baba 14,0;
+flower 2,3 27,4 5,9 30,9 4,10 1,16 28,16;
+grass 20,0 31,0 32,0 2,1 10,1 11,1 18,1 32,1 6,2 7,2 25,2 7,3 30,4 31,4 31,5 4,6 1,7 24,7 24,8 25,8 25,9 8,11 7,12 28,12 2,13 10,14 10,15 11,15 12,15 23,15 24,15 31,15 4,16 5,16 11,16 16,16 23,16 30,16 6,3;
+Is 15,0 15,4 22,5;
+Keke 14,4;
+keke@left 16,2;
+Stop 22,6;
+tile 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 11,5 12,5 13,5 14,5 15,5 16,5 17,5 18,5 19,5 11,6 12,6 13,6 14,6 15,6 16,6 17,6 18,6 19,6 11,7 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 11,8 12,8 13,8 14,8 15,8 16,8 17,8 18,8 19,8 20,8 21,8 22,8 11,9 12,9 13,9 14,9 15,9 16,9 17,9 18,9 19,9 20,9 21,9 22,9 11,10 12,10 13,10 14,10 15,10 16,10 17,10 18,10 19,10 20,10 21,10 22,10 11,11 12,11 13,11 14,11 15,11 16,11 17,11 18,11 19,11 20,11 21,11 22,11 11,12 12,12 13,12 14,12 15,12 16,12 17,12 18,12 19,12 20,12 21,12 22,12 1,0;
+wall 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 10,3 20,3 10,4 20,4 10,5 20,5 10,6 20,6 10,7 20,7 21,7 22,7 23,7 10,8 23,8 10,9 23,9 10,10 23,10 10,11 23,11 10,12 23,12 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 20,13 21,13 22,13 23,13;
+Wall 22,4;
+Win 22,5;
+You 16,0;
+`,`
+Title EVAPORATING RIVER;
+Size 15x8;
+Background transparent;
+And 13,0;
+baba 5,4;
+Baba 0,0;
+cog 10,2;
+Cog 10,0;
+Defeat 14,3;
+flag 10,5;
+Flag 1,1;
+Hot 14,7;
+Is 1,0 11,0 0,2 14,2 3,4 1,7 13,7;
+Melt 14,0;
+Push 12,0;
+Sink 3,5;
+Skull 14,1;
+skull@down 2,1 3,1 4,1;
+Stop 2,7;
+wall 9,0 0,4;
+Wall 0,7;
+water 7,0 7,1 7,2 7,3 7,4 7,5 7,6 7,7;
+Water 3,3 12,7;
+Win 0,3;
+You 2,0;
+`,`
+Title INDEX;
+Size 33x18;
+Background transparent;
+cog 20,3 4,9 2,11 7,11 25,11 29,13 26,14 4,16 0,0;
+grass 7,8 8,8 8,9 9,9 8,10 9,10 17,10 11,11 17,11 18,11 10,12 11,12 12,12 11,13 12,13 13,13 18,13 20,13 11,14 12,14 13,14 17,14 18,14 19,14 22,14 9,15 12,15 16,15 17,15 18,15 19,15 21,15 22,15 15,16 16,16 17,16 18,16 16,17 1,0;
+line 18,4 19,5 15,6 16,7 20,7 18,8 15,9 14,10 15,12 16,13;
+marker-u1d7ce 19,7 2,1;
+marker-u1d7cf 18,5 2,1;
+marker-u1d7d9 13,10 5,1;
+marker-u1d7da 15,5 5,1;
+marker-u1d7db 18,9 2,1;
+marker-u1d7dc 21,7 2,1;
+marker-u1d7dd 18,3 2,1;
+marker-u1d7de 20,5 2,1;
+marker-u2022 15,13 4,1;
+marker-u30 17,13 4,1;
+marker-u31 15,11 5,1;
+marker-u32 15,10 5,1;
+marker-u33 15,8 5,1;
+marker-u34 15,7 5,1;
+marker-u35 17,7 2,1;
+marker-u36 17,6 2,1;
+marker-u37 18,6 2,1;
+marker-u38 18,7 2,1;
+marker-u39 19,6 2,1;
+pipe 3,1 4,1 5,1 2,2 3,2 5,2 6,2 7,2 16,2 17,2 22,2 23,2 24,2 25,2 26,2 27,2 5,3 7,3 8,3 12,3 13,3 14,3 23,3 27,3 28,3 29,3 8,4 9,4 13,4 21,4 22,4 23,4 27,4 29,4 30,4 6,5 7,5 8,5 23,5 24,5 27,5 30,5 7,6 24,6 25,6 26,6 27,6 30,6 31,6 26,7 30,7 26,8 21,9 22,9 22,10 20,11 21,11 22,11 23,11;
+robot 24,13;
+robot@down 28,16;
+robot@left 5,13;
+robot@up 2,6;
+tile 14,0 15,0 16,0 17,0 29,0 30,0 31,0 32,0 11,1 15,1 16,1 28,1 29,1 30,1 31,1 32,1 31,2 32,2 24,3 32,3 24,4 25,4 32,4 29,7 29,8 30,8 28,9 29,9 30,9 31,9 29,10 30,10 29,11 1,0;
+water 11,5 12,5 11,6 12,6 13,6 10,7 11,7 12,7 13,7 11,8 12,8 3,2;
+`];var k1=[`
+Title FRAGILITY;
+Size 24x18;
+Background transparent;
+baba 6,7;
+Baba 12,6;
+Defeat 19,4;
+flag 7,15;
+Flag 6,13;
+glyph-u5f 12,8;
+grass 9,5 9,6 9,7 9,8;
+Is 10,2 18,4 13,6 12,7 14,11 7,13;
+Push 15,11;
+rock 18,7 12,14;
+Rock 13,11;
+Skull 17,4;
+skull@down 17,9 18,9 19,9 17,10 18,10 19,10;
+Stop 11,2;
+wall 8,0 8,1 8,2 8,3 9,3 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 20,4 20,5 20,6 20,7 20,8 0,9 1,9 2,9 3,9 4,9 5,9 6,9 7,9 8,9 9,9 10,9 16,9 20,9 10,10 11,10 12,10 13,10 14,10 15,10 16,10 20,10 12,11 20,11 12,12 20,12 12,13 20,13 10,14 20,14 12,15 20,15 12,16 13,16 14,16 15,16 16,16 17,16 18,16 19,16 20,16 12,17;
+Wall 9,2;
+Win 8,13;
+You 14,6;
+`,`
+Title TUNNEL VISION;
+Size 28x16;
+Background transparent;
+baba 2,9;
+Baba 9,2;
+brick 21,0 21,2 21,3 21,4 20,8 21,8 22,8 0,9 1,9 3,9 4,9 5,9 6,9 7,9 9,9 10,9 11,9 12,9 13,9 15,9 20,9 22,9 26,9 20,10 21,10 22,10 21,14 21,15;
+flag 21,9;
+Flag 0,4;
+grass 18,0 4,1 17,1 18,1 19,1 23,1 18,2 19,2 26,2 8,3 26,3 27,4 0,6 1,6 0,7 2,11 3,12 8,13 9,13 12,13 13,13 13,14 11,15;
+Has 10,2;
+Is 1,0 5,0 1,2 9,3 1,4 1,15;
+keke 6,13;
+Keke 0,15;
+Move 9,4;
+Push 6,0;
+Rock 4,0 11,2;
+Sink 2,2;
+Stop 2,0;
+wall 3,0 14,0 0,1 1,1 2,1 3,1 14,1 3,2 14,2 0,3 1,3 2,3 3,3 14,3 3,4 14,4 0,5 1,5 2,5 3,5 4,5 5,5 6,5 14,5 8,6 12,6 6,7 7,7 8,7 9,7 10,7 11,7 12,7 13,7 14,7 0,14 1,14 2,14 3,14 3,15;
+Wall 0,0;
+water 17,5 18,5 19,5 20,5 21,5 22,5 23,5 24,5 25,5 17,6 18,6 19,6 20,6 21,6 22,6 23,6 24,6 25,6 17,7 18,7 19,7 20,7 21,7 22,7 23,7 24,7 25,7 17,8 18,8 19,8 23,8 24,8 25,8 17,9 18,9 19,9 23,9 24,9 25,9 17,10 18,10 19,10 23,10 24,10 25,10 17,11 18,11 19,11 20,11 21,11 22,11 23,11 24,11 25,11 17,12 18,12 19,12 20,12 21,12 22,12 23,12 24,12 25,12 17,13 18,13 19,13 20,13 21,13 22,13 23,13 24,13 25,13;
+Water 0,2;
+Win 2,4;
+You 2,15;
+`,`
+Title A PRESENT FOR YOU;
+Size 28x16;
+Background transparent;
+box 15,8;
+Box 15,2 17,7;
+brick 14,4 15,4 16,4 17,4 18,4 14,5 15,5 16,5 18,5 8,6 9,6 10,6 12,6 13,6 14,6 15,6 16,6 17,6 18,6 7,7 8,7 11,7 13,7 14,7 15,7 16,7 18,7 7,8 8,8 10,8 11,8 12,8 13,8 16,8 18,8 7,9 8,9 10,9 11,9 13,9 14,9 15,9 16,9 18,9 8,10 9,10 10,10 11,10 12,10 13,10 14,10 15,10 16,10 17,10 18,10 14,11 16,11 17,11 18,11 14,12 15,12 16,12 17,12;
+Flag 0,0 17,2;
+flower 11,2 9,3 25,3 4,5 1,7 26,7 2,8 25,8 4,12 12,14;
+grass 4,0 5,0 6,0 7,0 24,0 25,0 26,0 27,0 0,2 0,3 0,11 0,12 0,13 0,14 0,15 1,15 2,15 3,15 4,15 5,15 6,15 7,15 8,15 9,15 25,15 26,15 27,15;
+Has 16,2;
+Hot 22,6;
+Is 1,0 22,5 9,8 17,8 22,12 16,14;
+love 14,8;
+Love 9,7 22,11;
+Melt 22,13;
+Push 17,9;
+Stop 17,14;
+wall 3,0 8,0 23,0 0,1 1,1 2,1 3,1 4,1 5,1 6,1 7,1 8,1 14,1 15,1 16,1 17,1 18,1 23,1 24,1 25,1 26,1 27,1 1,2 14,2 18,2 1,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 0,4 1,4 13,4 19,4 6,5 7,5 8,5 9,5 10,5 11,5 12,5 13,5 19,5 6,6 19,6 6,7 6,8 6,9 0,10 1,10 6,10 19,10 1,11 6,11 7,11 8,11 9,11 10,11 11,11 12,11 13,11 19,11 1,12 13,12 19,12 1,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 1,14 2,14 3,14 4,14 5,14 6,14 7,14 8,14 9,14 10,14 14,14 18,14 24,14 25,14 26,14 27,14 10,15 14,15 15,15 16,15 17,15 18,15 24,15;
+Wall 15,14;
+water 19,7 19,8 19,9;
+Water 22,4;
+Win 2,0;
+You 9,9;
+`,`
+Title UNREACHABLE SHORES;
+Size 28x16;
+Background transparent;
+box 3,10;
+Box 5,3 2,8;
+brick 4,2 6,2 7,2 8,2 9,2 10,2 4,3 8,3 4,4 6,4 8,4 4,5 5,5 6,5 7,5 8,5;
+Defeat 9,5;
+flag 24,8;
+Flag 23,6;
+Float 2,15;
+Has 6,3;
+husk 20,1 26,1 23,2 25,4 20,7 27,9 5,1;
+Is 9,4 10,4 24,6 3,8 7,13 26,14 1,15 26,15;
+Keke 6,13;
+keke@down 9,9;
+Love 7,3 9,3 10,3 10,5;
+Push 4,8;
+Sink 27,15;
+Stop 27,14;
+stump 21,4 21,10 24,12 20,13;
+Text 0,15;
+wall 3,1 4,1 5,1 6,1 7,1 8,1 9,1 10,1 11,1 3,2 11,2 3,3 11,3 3,4 11,4 3,5 11,5 3,6 4,6 5,6 7,6 8,6 9,6 10,6 11,6 8,12 9,12 9,13 0,14 1,14 2,14 3,14 3,15 6,0;
+Wall 25,14;
+water 14,0 15,0 16,0 17,0 18,0 14,1 15,1 16,1 17,1 18,1 14,2 15,2 16,2 17,2 18,2 14,3 15,3 16,3 17,3 18,3 14,4 15,4 16,4 17,4 18,4 14,5 15,5 16,5 17,5 18,5 6,6 14,6 15,6 16,6 17,6 18,6 14,7 15,7 16,7 17,7 18,7 14,8 15,8 16,8 17,8 18,8 14,9 15,9 16,9 17,9 18,9 14,10 15,10 16,10 17,10 18,10 14,11 15,11 16,11 17,11 18,11 14,12 15,12 16,12 17,12 18,12 14,13 15,13 16,13 17,13 18,13 14,14 15,14 16,14 17,14 18,14 14,15 15,15 16,15 17,15 18,15;
+Water 25,15;
+Win 25,6;
+You 8,13;
+`,`
+Title BUT WHERES THE KEY;
+Size 28x16;
+Background transparent;
+And 9,8 3,15;
+Baba 11,11 25,15 27,15;
+baba@down 12,8;
+Box 11,5 15,7;
+brick 11,7 12,7 13,7 11,8 13,8 11,9 12,9 13,9;
+door 21,7;
+Door 0,15;
+flag 21,4;
+Flag 20,2;
+glyph-u5f 13,5;
+grass 27,0 9,1 15,1 16,1 4,3 5,3 26,3 27,3 3,4 4,4 5,4 27,4 4,5 1,7 0,8 1,8 2,8 1,9 2,9 25,9 26,9 6,10 23,10 25,10 26,10 5,11 6,11 6,12 7,12 19,12 18,13;
+Has 15,8;
+Is 1,0 21,2 12,5 12,11 26,14 1,15 26,15;
+Key 0,0 15,9;
+Open 2,0;
+Shut 2,15;
+Stop 27,14 4,15;
+tile 19,2 23,2 19,3 20,3 21,3 22,3 23,3 19,4 20,4 22,4 23,4 19,5 20,5 21,5 22,5 23,5 19,6 20,6 21,6 22,6 23,6 1,0;
+tree 12,0 1,4 0,5 26,7 22,13 21,14 9,15;
+wall 3,0 0,1 1,1 2,1 3,1 18,1 19,1 20,1 21,1 22,1 23,1 24,1 18,2 24,2 18,3 24,3 18,4 24,4 18,5 24,5 18,6 24,6 18,7 19,7 20,7 22,7 23,7 24,7 24,13 25,13 26,13 27,13 0,14 1,14 2,14 3,14 4,14 5,14 24,14 5,15 24,15;
+Wall 25,14;
+Win 22,2;
+You 13,11;
+`,`
+Title LOVE IS OUT THERE;
+Size 33x18;
+Background transparent;
+And 16,8 9,17;
+Baba 14,17;
+baba@down 17,6;
+box 12,10;
+Box 19,7 14,10;
+door 20,10 22,10;
+Door 16,14 10,17;
+glyph-u5f 19,9;
+grass 6,0 7,0 8,0 15,0 16,0 23,0 4,1 5,1 6,1 7,1 8,1 9,1 22,1 23,1 24,1 27,1 5,2 6,2 7,2 8,2 9,2 22,2 23,2 24,2 6,3 7,3 8,3 9,3 22,3 23,3 24,3 8,4 27,4 28,4 29,4 23,5 24,5 25,5 26,5 27,5 28,5 23,6 24,6 25,6 26,6 27,6 4,7 24,7 25,7 26,7 8,8 9,8 7,9 8,9 7,10 8,10 9,10 23,10 7,11 8,11 9,11 26,11 2,12 7,12 8,12 8,13 29,14 5,15 6,15 26,15 27,15 4,16 5,16 25,16 26,16 24,17 25,17;
+Has 15,3;
+Is 19,8 15,10 23,13 13,14 17,14 11,17 15,17;
+Key 14,8 12,14;
+love 23,15;
+Love 22,13;
+Open 14,14;
+Push 16,10;
+Shut 18,14;
+Stop 12,17;
+wall 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 21,2 10,3 21,3 10,4 20,4 21,4 10,5 20,5 10,6 20,6 10,7 20,7 10,8 20,8 10,9 20,9 21,9 22,9 10,10 10,11 20,11 21,11 22,11 10,12 20,12 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 20,13;
+Wall 8,17;
+Win 24,13;
+You 16,17;
+`,`
+Title PERILOUS GANG;
+Size 24x18;
+Background transparent;
+baba 4,15;
+Baba 0,1;
+brick 13,9 14,9 18,9 19,9 13,10 19,10 19,11 22,14 23,14 23,15 12,16 22,16 23,16 12,17 13,17 14,17 17,17 18,17 20,17 21,17 22,17 23,17;
+Defeat 19,13;
+Flag 11,4;
+ghost 1,12 1,15;
+Ghost 5,12;
+Is 1,0 1,1 12,4 6,12 18,13 7,14;
+Move 7,16;
+Push 7,12;
+Skull 17,13;
+skull@down 0,8 1,8 2,8 3,8 4,8 5,8 6,8 7,8 8,8 9,8 10,8 11,8 12,8 13,8 14,8 15,8 16,8 17,8 18,8 19,8 10,10 11,10 10,11 11,11 10,12 11,12 10,13 11,13 10,14 11,14 10,15 11,15 10,17 11,17;
+skull@left 10,16 11,16;
+Stop 2,0;
+tree 6,1 18,1 7,3 15,3 21,3 5,4 16,4 2,6 9,6 19,6;
+wall 3,0 3,1 0,2 1,2 2,2 3,2 20,8 21,8 22,8 23,8 0,9 1,9 2,9 3,9 4,9 5,9 6,9 7,9 8,9 9,9 10,9 11,9 12,9 20,9 12,10 20,10 12,11 20,11 20,12 20,13 21,13 22,13 23,13 6,0;
+Wall 0,0;
+Win 13,4;
+You 2,1;
+`,`
+Title DOUBLE MOAT;
+Size 33x18;
+Background transparent;
+And 19,11;
+baba 8,12;
+Baba 8,5;
+brick 8,0 9,0 10,0 11,0 13,0 14,0 15,0 24,0 25,0 26,0 27,0 9,1 26,1 27,4 28,4 29,4 28,5 29,5 32,5 31,6 32,6 29,10 29,11 30,11 31,11 27,12 28,12 29,12 30,12 31,12 32,12 28,13 29,13 31,13 32,13 20,15 21,15 22,15 28,16 27,17 28,17 29,17;
+Defeat 14,2;
+door 17,7;
+Door 18,9 20,11;
+flag 23,5;
+Flag 22,4;
+grass 0,0 1,0 2,0 4,0 0,1 1,1 2,1 0,2 1,2 0,3 4,3 0,4 4,4 2,5 3,7 4,7 3,8 4,8 5,8 1,9 0,10 1,10 2,10 1,11 2,11 0,12 0,14 3,14 0,15 0,16 1,16 0,17 1,17 2,17 4,17;
+Has 9,5;
+Is 13,2 23,4 8,6 19,9 21,11 10,12 19,13;
+Keke 10,5 18,13;
+keke@down 8,10;
+Move 6,12;
+Open 20,13;
+Shut 20,9;
+Stop 22,11;
+stump 22,0 29,3 32,8 28,9 23,16 31,16;
+tree 29,0 32,0 31,1 32,2;
+W 6,1 6,2;
+wall 6,0 6,1 6,2 6,3 7,3 8,3 9,3 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 21,3 22,3 23,3 24,3 25,3 17,4 25,4 17,5 25,5 17,6 25,6 25,7 17,8 18,8 19,8 20,8 21,8 22,8 23,8 24,8 25,8 17,9 21,9 22,9 23,9 24,9 25,9 17,10 18,10 19,10 20,10 21,10 22,10 23,10 24,10 25,10 17,11 23,11 24,11 25,11 17,12 18,12 19,12 20,12 21,12 22,12 23,12 24,12 25,12 17,13 21,13 22,13 23,13 24,13 25,13 17,14 18,14 19,14 20,14 21,14 22,14 23,14 24,14 25,14 26,14 27,14 28,14 29,14 30,14 31,14 32,14 17,15 6,16 7,16 8,16 9,16 10,16 11,16 12,16 13,16 14,16 15,16 16,16 17,16 6,17 17,17 6,0;
+Wall 18,11;
+water 12,4 13,4 20,4 12,5 13,5 20,5 12,6 13,6 20,6 12,7 13,7 20,7 12,8 13,8 12,9 13,9 12,10 13,10 12,11 13,11 12,12 13,12 12,13 13,13 12,14 13,14 12,15 13,15;
+Water 12,2;
+Win 24,4;
+You 8,7;
+`,`
+Title WALLS OF GOLD;
+Size 33x16;
+Background transparent;
+And 1,15;
+baba 12,9;
+Baba 19,0;
+brick 11,7 12,7 13,7 14,7 15,7 16,7 17,7 19,7 20,7 21,7 22,7 10,8 11,8 12,8 13,8 14,8 15,8 16,8 17,8 18,8 19,8 21,8 22,8 10,9 11,9 13,9 15,9 16,9 17,9 18,9 19,9 21,9 10,10 11,10 12,10 13,10 14,10 15,10 16,10 17,10 21,10 22,10 12,11 13,11 15,11 16,11 17,11 18,11 19,11 20,11 22,11;
+ice 18,0 22,0 18,1 19,1 20,1 21,1 22,1 18,2 22,2;
+Ice 2,15;
+Is 20,0 20,2 20,9 19,10 3,15;
+Push 21,2;
+rock 14,9;
+Rock 19,2 18,10;
+Stop 4,15;
+W 2,1 2,3;
+wall 9,6 10,6 11,6 12,6 13,6 14,6 15,6 16,6 17,6 18,6 19,6 20,6 21,6 22,6 23,6 9,7 23,7 9,8 23,8 9,9 23,9 9,10 23,10 9,11 23,11 9,12 10,12 11,12 12,12 13,12 14,12 15,12 16,12 17,12 18,12 19,12 20,12 21,12 22,12 23,12 2,3;
+Wall 20,8 0,15;
+Win 20,10;
+You 21,0;
+`,`
+Title FURTHER FIELDS;
+Size 24x18;
+Background transparent;
+And 20,5;
+baba 2,14;
+Baba 20,2 20,4 4,5;
+baba@left 3,3 6,11;
+brick 0,0 1,0 9,0 22,0 23,0 0,1 1,1 4,1 8,1 9,1 10,1 22,1 23,1 0,2 9,2 10,2 22,2 23,2 0,3 10,3 22,3 23,3 22,4 23,4 22,5 23,5 22,6 23,6 3,7 23,7 2,8 3,8 4,8 2,9 3,9 4,9 3,10 0,12 0,13 9,13 0,14 8,14 9,14 10,14 9,15 23,15 3,16 22,16 23,16 2,17 3,17 4,17 22,17 23,17;
+Defeat 20,6;
+flag 18,12;
+Flag 17,14;
+glyph-u61 13,3;
+grass 11,0 12,0 11,1 12,1 11,2 12,2 11,3 12,3 11,4 12,4 11,5 12,5 11,6 12,6 11,7 12,7 11,8 12,8 11,9 12,9 11,10 12,10 11,11 12,11 11,12 12,12 11,13 12,13 11,14 12,14 11,15 12,15 11,16 12,16 11,17 12,17;
+Grass 18,6;
+Is 19,0 20,3 5,5 19,6 8,8 18,14;
+keke 5,7;
+Keke 8,7;
+Move 6,5;
+Push 5,9;
+Stop 20,0;
+wall 17,0 21,0 17,1 18,1 19,1 20,1 21,1 21,2 21,3 21,4 19,5 21,5 21,6 18,7 21,7 22,7 22,8 23,8 22,14 23,14 21,15 22,15 15,16 21,16 21,17;
+Wall 18,0;
+Win 19,14;
+You 8,9;
+`,`
+Title INDEX;
+Size 33x18;
+Background transparent;
+brick 19,3 20,3 9,4 10,4 12,4 19,4 20,4 9,5 10,5 11,5 12,5 19,5 20,5 11,6 11,7 11,8 13,8 19,8 28,8 29,8 31,8 32,8 18,9 19,9 20,9 21,9 22,9 23,9 25,9 26,9 28,9 0,10 1,10 2,10 4,10 5,10 6,10 8,10 10,10 11,10 19,10 20,10 20,11 20,13 21,13 22,13 8,14 10,14 11,14 12,14 13,14 15,14 22,14 8,15 9,15 10,15 12,15 13,15 22,16 22,17;
+door 21,4 9,13;
+flower 4,0 9,0 2,1 7,1;
+grass 24,0 25,0 27,0 28,0 29,0 30,0 31,0 32,0 14,1 29,1 30,1 31,1 32,1 12,2 13,2 14,2 15,2 31,2 32,2 14,3 15,3 22,3 32,3 14,4 22,4 23,4 24,4 32,4 6,5 22,5 23,5 24,5 6,6 7,6 22,6 23,6 4,7 5,7 6,7 7,7 8,7 6,8 22,10 23,10 10,11 11,11 21,11 22,11 23,11 0,12 9,12 10,12 13,12 19,12 22,12 0,13 18,13 19,13 18,14 19,14 20,14 0,15 1,15 17,15 19,15 0,16 1,16 2,16 0,17 1,17 2,17 3,17 4,17;
+husk 5,2 1,6 5,1;
+line 17,5 16,9 16,11;
+marker-u1d7d9 17,4 6,2;
+marker-u2022 16,12 4,1;
+marker-u31 16,10 6,2;
+marker-u32 16,8 6,2;
+marker-u33 16,7 6,2;
+marker-u34 15,7 6,2;
+marker-u35 17,7 6,2;
+marker-u36 16,6 6,2;
+marker-u37 15,6 6,2;
+marker-u38 16,5 6,2;
+marker-u39 17,6 6,2;
+pillar 21,8 3,9 5,9 7,9 21,10 3,11 5,11 7,11 21,12;
+statue@down 10,7 12,7 0,2;
+stump 26,11 28,13 25,15;
+tree 32,6 29,9 31,10 30,12 29,15 27,17 31,17;
+wall 17,2 18,2 19,2 20,2 21,2 8,3 9,3 10,3 11,3 12,3 13,3 21,3 8,4 13,4 8,5 13,5 21,5 8,6 9,6 10,6 12,6 13,6 19,6 20,6 21,6 7,13 8,13 10,13 11,13 12,13 13,13 14,13 7,14 14,14 7,15 7,16 8,16 9,16 10,16 11,16 12,16 6,0;
+water 3,3 4,3 2,4 3,4 4,4 5,4 4,5 5,5 24,6 25,6 26,6 23,7 24,7 25,7 26,7 27,7 24,8 25,8;
+`];var S1=[`
+Title HOP;
+Size 24x14;
+Background transparent;
+baba 5,5;
+Baba 19,13;
+Defeat 2,0;
+fence 3,0 18,0 0,1 1,1 2,1 3,1 18,1 18,2 19,2 19,3 20,3 21,3 22,3 23,3 0,9 1,9 2,9 3,9 4,9 5,9 6,9 2,10 6,10 22,10 23,10 2,11 3,11 4,11 5,11 6,11 22,11 4,12 18,12 19,12 20,12 21,12 22,12 4,13 18,13 22,13;
+Fence 23,11;
+flag 19,11;
+Flag 3,10;
+Is 1,0 17,8 4,10 23,12 20,13;
+love 10,6 14,6;
+Love 16,8;
+Push 7,5;
+Stop 23,13;
+Tele 18,8;
+water 12,0 12,1 12,2 12,3 12,4 12,5 12,6 12,7 12,8 12,9 12,10 18,10 19,10 20,10 12,11 18,11 20,11 12,12 12,13;
+Water 0,0;
+Win 5,10;
+You 21,13;
+`,`
+Title GRAND STREAM;
+Size 24x14;
+Background transparent;
+baba 16,5;
+Baba 21,4;
+box 1,5;
+Box 1,11;
+Defeat 23,8;
+Flag 1,13;
+Has 1,12;
+Is 5,0 22,4 22,6 1,8 22,8 8,9 2,11 6,12 2,13;
+Keke 4,0 6,0 1,7;
+keke@down 9,5;
+key 17,5;
+Key 7,9 5,12;
+Move 1,9;
+Open 7,12;
+Pull 9,9;
+Shut 3,11;
+Stop 23,6;
+wall 3,0 15,0 3,1 4,1 5,1 6,1 7,1 8,1 15,1 3,2 8,2 9,2 10,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 0,3 1,3 2,3 3,3 20,3 21,3 22,3 23,3 3,4 20,4 3,5 20,5 21,5 22,5 23,5 20,6 9,7 20,7 21,7 22,7 23,7 20,8 3,9 10,9 20,9 21,9 22,9 23,9 0,10 1,10 2,10 3,10 4,10 5,10 6,10 7,10 8,10 13,10 15,10 16,10 17,10 18,10 19,10 20,10 0,11 4,11 8,11 9,11 15,11 0,12 4,12 8,12 15,12 0,13 4,13 8,13 15,13;
+Wall 21,6;
+water 0,0 1,0 2,0 10,0 11,0 12,0 13,0 22,0 23,0 0,1 1,1 10,1 11,1 12,1 23,1 0,2 11,2 12,2 11,3 12,3 13,3 11,4 12,4 13,4 11,5 12,5 13,5 11,6 12,6 13,6 11,7 12,7 11,8 12,8 11,9 12,9 11,10 12,10 11,11 12,11 23,11 22,12 23,12 11,13 12,13 18,13 19,13 21,13 22,13 23,13;
+Water 21,8;
+Win 3,13;
+You 23,4;
+`,`
+Title ROCKY ROAD;
+Size 24x18;
+Background transparent;
+And 15,15;
+baba 7,9;
+Baba 4,2;
+brick 2,4 3,4 20,4 21,4 2,5 21,5 2,8 2,9 3,9 2,10 3,10 4,10 6,10 21,10 17,11 17,12 17,14;
+Defeat 12,2 15,16;
+flag 17,13;
+Flag 17,2;
+grass 2,0 3,0 11,0 12,0 13,0 0,1 1,1 2,1 13,1 1,2 2,2 6,12 7,13 8,13 9,13 22,13 23,13 8,14 9,14 10,14 11,14 12,14 21,14 22,14 23,14 9,15 10,15 11,15 12,15 13,15 20,15 21,15 22,15 11,16 12,16 13,16 20,16 21,16;
+Hot 19,14;
+husk 22,0 23,1 1,14 5,15 3,16 7,17;
+Is 5,2 11,2 18,2 6,5 5,6 11,12 15,13 19,13;
+love 7,7 17,7;
+Love 5,5 19,12;
+Melt 15,14;
+Push 5,7;
+rock 10,4 11,4 12,4 13,4 10,5 11,5 12,5 13,5 10,6 11,6 12,6 13,6 10,7 11,7 12,7 13,7 10,8 11,8 12,8 13,8 10,9 11,9 12,9 13,9 10,10 11,10 12,10 13,10;
+Rock 10,2;
+Stop 12,12;
+Tele 7,5;
+tree 15,0 3,13 0,16 1,17;
+wall 1,3 2,3 3,3 4,3 5,3 6,3 7,3 8,3 9,3 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 21,3 22,3 1,4 22,4 1,5 22,5 1,6 22,6 1,7 22,7 1,8 22,8 1,9 22,9 1,10 22,10 1,11 2,11 3,11 4,11 5,11 6,11 7,11 8,11 9,11 10,11 11,11 12,11 13,11 14,11 15,11 16,11 18,11 19,11 20,11 21,11 22,11 16,12 18,12 16,13 18,13 16,14 18,14 16,15 17,15 18,15;
+Wall 10,12;
+water 16,10 17,10 18,10;
+Water 15,12;
+Win 19,2;
+You 6,2;
+`,`
+Title TELEPHONE;
+Size 33x18;
+Background transparent;
+And 3,17;
+baba 12,3 7,12;
+Baba 16,3;
+door 24,3;
+Door 0,17;
+flag 26,3;
+Flag 5,11;
+Float 2,2;
+ice 10,12 23,12;
+Ice 16,5;
+Is 1,0 1,2 17,3 18,5 5,12 12,12 23,14 1,16 1,17;
+key 23,10;
+Key 22,14 0,16;
+Open 2,16;
+Push 24,14;
+Shut 2,17;
+Stop 2,0 12,13 4,17;
+Tele 19,5;
+Text 0,2;
+tree 4,0 32,0 11,1 12,1 13,1 14,1 15,1 10,2 10,3 0,4 1,4 10,4 0,5 10,5 24,6 14,7 15,7 16,7 17,7 18,7 19,7 20,7 21,7 22,7 23,7 32,16 31,17 32,17;
+Tree 0,0;
+wall 3,0 0,1 1,1 2,1 3,1 16,1 17,1 18,1 19,1 20,1 21,1 22,1 23,1 24,1 25,1 26,1 27,1 28,1 3,2 24,2 28,2 0,3 1,3 2,3 3,3 28,3 24,4 28,4 24,5 25,5 26,5 27,5 28,5 10,6 10,7 11,7 12,7 13,7 4,10 5,10 6,10 7,10 8,10 9,10 10,10 11,10 12,10 13,10 4,11 13,11 4,12 13,12 4,13 13,13 4,14 5,14 6,14 7,14 8,14 9,14 10,14 11,14 12,14 13,14;
+Wall 12,11;
+Win 5,13;
+You 18,3;
+`,`
+Title HAUNT;
+Size 28x16;
+Background transparent;
+baba 13,11;
+Baba 11,5;
+Defeat 14,2;
+foliage 3,0 13,0 23,0 25,0 27,0 0,1 1,1 2,1 9,1 10,1 11,1 12,1 13,1 14,1 15,1 24,1 0,2 4,2 8,2 9,2 16,2 24,2 3,3 8,3 16,3 17,3 18,3 19,3 8,4 18,4 8,5 18,5 26,5 1,6 8,6 19,6 20,6 20,7 8,8 20,8 25,8 8,9 9,9 20,9 24,9 9,10 10,10 19,10 20,10 10,11 11,11 20,11 27,11 5,12 11,12 20,12 6,13 11,13 18,13 20,13 23,13 26,13 12,14 13,14 14,14 15,14 16,14 17,14 18,14 19,14 25,14 4,15 16,15 24,15 26,15;
+Foliage 0,0;
+Ghost 12,4;
+ghost@left 16,8 16,11;
+Is 1,0 13,2 12,5;
+leaf 8,7;
+Leaf 12,2;
+love 4,10;
+Love 19,11;
+Push 14,8;
+Stop 2,0;
+Tele 12,6;
+Win 19,13;
+You 13,5;
+`,`
+Title CRATE SQUARE;
+Size 15x8;
+Background transparent;
+And 5,5;
+baba 9,1;
+Baba 0,0;
+box 8,3 9,3 8,4 9,4;
+Box 0,7;
+brick 11,3 12,3 13,3 11,4 13,4 11,5 12,5 13,5;
+Brick 4,2;
+Defeat 5,4;
+flag 12,4;
+Flag 0,2 5,2;
+hedge 3,0 0,1 1,1 2,1 3,1 4,1 5,1 6,1 1,2 2,2 6,2 1,3 2,3 6,3 1,4 2,4 0,5 1,5 2,5 3,5 0,6 1,6 2,6 3,6 4,6 6,6 3,7 4,7 5,7 6,7;
+Hedge 4,0;
+Hot 4,4;
+Is 1,0 5,0 0,3 3,3 4,3 5,3 1,7;
+Melt 0,4;
+Pull 5,6 2,7;
+Stop 6,0;
+water 12,4;
+Water 3,2;
+Win 6,4;
+You 2,0;
+`,`
+Title GHOST FRIEND;
+Size 28x16;
+Background transparent;
+And 7,4 16,11;
+baba 4,6;
+Baba 4,4 6,4;
+Defeat 15,3;
+flag 4,2;
+Flag 6,0 24,5;
+fungi 22,0 27,1 27,11 1,14 21,14 26,15;
+fungus 18,1 17,2 25,13 23,14 3,15;
+Ghost 4,8 13,11 15,11;
+ghost@down 6,7;
+glyph-u5f 17,11;
+hedge 2,1 3,1 4,1 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 2,2 12,2 0,3 1,3 2,3 3,3 4,3 5,3 6,3 7,3 8,3 9,3 10,3 11,3 12,3 3,4 9,4 10,4 11,4 12,4 13,4 14,4 15,4 16,4 11,5 12,5 13,5 14,5 15,5 16,5 17,5 18,5 19,5 20,5 21,5 22,5 25,5 26,5 11,6 12,6 13,6 14,6 26,6 26,7 26,8 11,9 12,9 13,9 14,9 26,9 11,10 12,10 13,10 14,10 15,10 16,10 17,10 18,10 19,10 20,10 21,10 22,10 23,10 24,10 25,10 26,10 11,11 12,11 0,12 1,12 2,12 3,12 4,12 5,12 6,12 7,12 8,12 9,12 10,12 11,12 12,12 13,12 5,13 6,13 9,13 10,13 11,13 12,13 11,14 12,14 12,15;
+Hedge 2,13;
+Is 7,0 14,3 1,4 5,4 5,8 4,9 14,11 3,13;
+Move 5,10;
+Pull 6,8;
+Skull 13,3;
+skull@down 11,2 22,2 23,2 24,2 25,2 26,2 21,3 22,3 23,3 24,3 25,3 26,3 27,3 21,4 22,4 26,4 27,4;
+Stop 4,13;
+Win 2,4;
+You 8,0 8,4;
+`,`
+Title GHOST GUARD;
+Size 28x16;
+Background transparent;
+And 18,1;
+baba 13,10;
+Baba 10,12;
+Flag 18,0 12,4;
+Float 10,10;
+foliage 21,7;
+Foliage 12,6;
+ghost 17,5;
+Ghost 16,0 15,1;
+Has 17,0;
+hedge 4,0 11,0 4,1 11,1 4,2 11,2 15,2 16,2 17,2 18,2 19,2 20,2 4,3 11,3 12,3 13,3 14,3 15,3 20,3 21,3 22,3 23,3 24,3 4,4 11,4 15,4 24,4 4,5 11,5 12,5 13,5 14,5 15,5 20,5 22,5 24,5 4,6 11,6 15,6 20,6 24,6 4,7 5,7 6,7 7,7 8,7 9,7 10,7 11,7 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 22,7 23,7 24,7 11,8 17,8 23,8 11,9 23,9 11,10 17,10 23,10 11,11 17,11 23,11 11,12 17,12 18,12 19,12 20,12 21,12 22,12 23,12 11,13 17,13 11,14 12,14 13,14 14,14 15,14 16,14 17,14;
+Hedge 14,15;
+Is 6,1 16,1 9,3 13,4 6,5 13,6 10,9 10,13 19,13 15,15;
+key 15,9;
+Key 18,13;
+leaf 7,3 20,9;
+Leaf 5,5;
+Open 20,13;
+Push 7,1 19,1;
+rock 15,11;
+Rock 5,1;
+Shut 17,1;
+Sink 14,6;
+Stop 16,15;
+Tele 7,5;
+Text 10,8;
+tree 2,0 13,0 26,0 0,1 24,1 27,1 26,4 1,6 0,9 27,10 27,12 0,14 26,14 0,15 1,15 25,15;
+Win 14,4;
+You 10,14;
+`,`
+Title LEAF CHAMBER;
+Size 28x16;
+Background transparent;
+And 3,2 24,8;
+Baba 5,13;
+baba@up 8,14;
+Defeat 24,11;
+Flag 0,4;
+foliage 16,2 17,2 18,2 16,3 17,3 18,3 16,4 17,4 18,4;
+Foliage 24,9;
+fungus 17,1;
+Fungus 0,2;
+Has 0,3;
+hedge 16,0 17,0 18,0 11,1 12,1 13,1 14,1 15,1 16,1 18,1 19,1 20,1 21,1 11,2 21,2 10,3 11,3 21,3 9,4 10,4 21,4 9,5 16,5 18,5 21,5 22,5 9,6 22,6 7,7 8,7 9,7 17,7 22,7 23,7 7,8 23,8 7,9 9,9 23,9 7,10 9,10 23,10 6,11 7,11 9,11 10,11 11,11 12,11 21,11 22,11 23,11 6,12 10,12 21,12 6,13 10,13 20,13 21,13 6,14 19,14 20,14 21,14 6,15 10,15 11,15 12,15 13,15 14,15 15,15 16,15 17,15 18,15 19,15;
+Hedge 13,0;
+husk 22,0 6,1 7,5 25,5 5,7 1,11 2,12 26,13 25,14;
+Is 1,0 14,0 1,2 1,4 25,7 17,9 24,10 17,11 5,14;
+key 8,8;
+Key 0,0 16,11;
+Leaf 24,7 26,7 16,9;
+leaf@up 11,12 12,14;
+Move 18,9;
+Open 2,0;
+Pull 4,2 17,13;
+Push 18,11;
+Shut 2,2;
+Stop 15,0;
+Win 2,4;
+You 5,15;
+`,`
+Title NOT THERE;
+Size 33x18;
+Background transparent;
+Baba 15,8;
+baba@down 13,8;
+brick 12,4 11,5 12,5 13,5 19,5 20,5 12,6 19,6 20,6 18,7 19,7 20,7 20,8 12,9 11,10 12,10 13,10 12,11 13,11 18,11 19,11 17,12 18,12 19,12;
+fence 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 21,3 10,4 21,4 10,5 21,5 10,6 21,6 10,7 21,7 10,8 21,8 10,9 21,9 10,10 21,10 10,11 21,11 10,12 21,12 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 20,13 21,13;
+Fence 0,0 0,1 16,5;
+ghost@down 8,12;
+ghost@left 10,15;
+grass 13,0 14,0 15,0 16,0 17,0 22,0 23,0 24,0 25,0 26,0 27,0 28,0 31,0 32,0 7,1 8,1 24,1 25,1 26,1 32,1 6,2 7,2 8,2 23,2 24,2 25,2 7,3 24,3 25,3 24,4 30,5 31,5 30,6 31,6 2,7 29,7 30,7 1,8 2,8 3,8 4,8 2,9 3,9 4,9 3,10 4,10 24,12 7,13 24,13 25,13 30,13 7,14 23,14 24,14 25,14 29,14 30,14 31,14 1,15 6,15 7,15 8,15 23,15 24,15 25,15 30,15 6,16 7,16 8,16 9,16 21,16 22,16 23,16 24,16 0,17 7,17 8,17 9,17 10,17 22,17 23,17 1,0;
+husk 25,0 11,1 20,1 2,3 29,3 8,5 7,6 2,8 23,8 8,9 24,9 29,11 2,12 3,13 7,15 19,15 8,16 12,16 28,16;
+Is 1,0 1,1 16,8 16,15;
+Not 2,0 18,5;
+Stop 2,1 14,5;
+Win 16,16;
+You 3,0 17,8;
+`,`
+Title CATCH;
+Size 24x17;
+Background transparent;
+And 16,12;
+Baba 0,0 10,10;
+baba@left 12,3;
+flag 11,13;
+Flag 15,14;
+Float 2,2;
+hedge 3,0 0,1 1,1 2,1 3,1 3,2 0,3 1,3 2,3 3,3 15,3 16,3 17,3 17,4 11,5 12,5 13,5 14,5 15,5 17,5 6,6 11,6 17,6 5,7 6,7 11,7 17,7 18,7 19,7 5,8 17,8 19,8 5,9 12,9 14,9 15,9 16,9 17,9 19,9 5,10 6,10 17,10 19,10 6,11 10,11 12,11 13,11 14,11 15,11 16,11 17,11 18,11 19,11 6,12 7,12 8,12 9,12 10,12 12,12 19,12 6,13 10,13 12,13 14,13 15,13 16,13 17,13 18,13 19,13 6,14 7,14 8,14 9,14 10,14 11,14 12,14 14,14 18,14 12,15 13,15 14,15 15,15 16,15 17,15 18,15;
+Hedge 13,12 13,14;
+husk 20,1 22,3 1,9 0,11 23,13 2,15 4,16 22,16;
+Is 1,0 1,2 8,2 18,9 11,10 14,12 8,13 13,13 16,14;
+Not 6,2 13,10 17,12;
+Push 9,3 18,12;
+rock 13,7 15,7;
+Rock 7,2 18,8 18,10;
+Sink 9,13;
+Stop 15,12;
+Text 0,2;
+tree 16,4;
+water 7,6 8,6 9,6 10,6 7,7 8,7 9,7 10,7 6,8 7,8 8,8 6,9 7,9 7,10 8,10 7,11 8,11 9,11;
+Water 7,13;
+Win 17,14;
+You 2,0 14,10;
+`,`
+Title DEAD END;
+Size 28x16;
+Background transparent;
+And 3,0 5,0 3,1 3,15;
+box 11,10 13,10;
+Box 0,12 8,13 0,14;
+fence 12,0 13,0 14,0 18,0 9,1 10,1 11,1 12,1 18,1 27,1 9,2 18,2 27,2 0,3 1,3 2,3 3,3 4,3 5,3 6,3 7,3 8,3 9,3 18,3 19,3 20,3 21,3 22,3 23,3 24,3 25,3 26,3 27,3 0,7 1,7 1,8 1,9 18,9 19,9 20,9 1,10 20,10 24,10 25,10 26,10 0,11 1,11 18,11 19,11 20,11 24,11 26,11 1,12 24,12 26,12 1,13 20,13 21,13 22,13 23,13 24,13 26,13 1,14 20,14 24,14 26,14 27,14 20,15 24,15 26,15;
+Fence 0,15;
+flag 15,12;
+Flag 0,8 0,10 5,13;
+Float 2,2;
+Is 1,0 1,1 1,2 0,9 0,13 6,13 5,14 1,15;
+Me 0,1;
+me@down 13,5;
+Not 6,0 4,1 18,10 7,13 4,15;
+Push 19,10;
+Sink 4,0;
+Stop 2,15;
+tree 24,0 19,1 22,1 7,2 21,2 25,2 21,14 22,15 27,15;
+Tree 0,2;
+water 10,2 11,2 12,2 13,2 14,2 15,2 16,2 10,3 11,3 12,3 13,3 14,3 15,3 16,3 10,4 11,4 15,4 16,4 10,5 11,5 15,5 16,5 10,6 11,6 15,6 16,6 10,7 11,7 12,7 13,7 14,7 15,7 16,7 10,8 11,8 12,8 13,8 14,8 15,8 16,8;
+Water 0,0 2,0;
+Win 2,1;
+You 7,0 5,1 5,15;
+`,`
+Title LITERACY;
+Size 28x16;
+Background transparent;
+Defeat 27,15;
+flag 8,2;
+Flag 2,1;
+foliage 20,0 24,0 25,0 27,0 26,1 27,3 27,4 0,10 0,13 0,14 1,14 2,15 5,15;
+Is 2,2 9,6 11,11 19,14 26,15;
+leaf 18,0 24,3 25,4 1,7 3,13 10,15;
+Me 10,11;
+me@down 11,9;
+Push 20,14;
+rock 15,7;
+Rock 18,14;
+Text 16,4;
+wall 1,0 2,0 3,0 1,1 3,1 1,2 3,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 21,2 1,3 3,3 14,3 21,3 1,4 2,4 3,4 14,4 21,4 7,5 8,5 9,5 10,5 11,5 12,5 13,5 14,5 21,5 7,6 11,6 14,6 15,6 16,6 17,6 19,6 21,6 7,7 8,7 9,7 10,7 11,7 21,7 7,8 15,8 16,8 17,8 18,8 19,8 20,8 21,8 7,9 15,9 7,10 15,10 7,11 15,11 7,12 15,12 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13;
+Wall 8,6 10,6 25,15;
+Win 2,3;
+You 12,11;
+`,`
+Title BROKEN PLAYGROUND;
+Size 33x18;
+Background transparent;
+And 29,17;
+box 17,8;
+Box 15,6 30,17;
+flag 19,8;
+Flag 19,6;
+Float 2,17;
+Is 28,2 16,11 1,16 1,17 31,17;
+keke 11,9;
+Keke 15,11;
+Stop 32,17;
+Tele 2,16;
+Text 17,6 0,17;
+tree 7,4 7,8 22,8 7,12;
+wall 25,0 25,1 25,2 6,3 7,3 8,3 25,3 6,4 8,4 25,4 6,5 7,5 8,5 25,5 25,6 26,6 27,6 28,6 29,6 30,6 31,6 32,6 6,7 7,7 8,7 21,7 22,7 23,7 6,8 8,8 21,8 23,8 6,9 7,9 8,9 21,9 22,9 23,9 6,11 7,11 8,11 6,12 8,12 6,13 7,13 8,13 0,15 1,15 2,15 3,15 3,16 27,16 28,16 29,16 30,16 31,16 32,16 3,17 27,17;
+Wall 28,17;
+water 30,2 11,7;
+Water 0,16;
+Win 30,4;
+You 17,11;
+`,`
+Title FETCHING;
+Size 28x16;
+Background transparent;
+And 7,7;
+Baba 18,12;
+baba@down 14,8;
+Defeat 2,0 17,4 6,7;
+flag 8,4;
+Flag 6,12;
+fungi 14,0 3,1 3,4 27,11 23,14 24,15;
+fungus 15,1 2,3 1,4 26,13;
+Ghost 4,7;
+ghost@down 11,7;
+glyph-u5f 13,11;
+hedge 6,2 7,2 8,2 9,2 10,2 5,3 6,3 10,3 11,3 14,3 15,3 16,3 17,3 18,3 19,3 5,4 11,4 12,4 13,4 14,4 19,4 20,4 21,4 5,5 6,5 12,5 13,5 21,5 22,5 6,6 7,6 8,6 9,6 12,6 15,6 22,6 23,6 9,7 23,7 6,8 7,8 8,8 9,8 11,8 23,8 5,9 6,9 9,9 10,9 11,9 23,9 4,10 5,10 11,10 12,10 23,10 4,11 11,11 12,11 23,11 4,12 5,12 10,12 11,12 12,12 13,12 21,12 22,12 23,12 5,13 9,13 10,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 20,13 21,13 5,14 6,14 7,14 8,14 9,14;
+Hedge 15,14;
+Hot 19,8;
+husk 21,0 25,1 27,3 1,12 2,14;
+Is 1,0 16,4 5,7 18,8 19,12 7,13 16,14;
+Keke 17,8;
+keke@down 8,10;
+Melt 8,7;
+Push 18,9;
+Skull 15,4;
+skull@down 12,7 6,11;
+Stop 17,14;
+Text 0,0 18,7;
+Win 8,13;
+You 20,12;
+`,`
+Title SCENIC POND;
+Size 24x18;
+Background transparent;
+And 13,16;
+baba 7,12;
+Baba 6,8;
+Defeat 2,7;
+fence 9,0 12,0 9,1 12,1 5,2 6,2 7,2 8,2 9,2 12,2 13,2 14,2 15,2 16,2 5,3 16,3 15,9 16,9 17,9 18,9 19,9 20,9 21,9 15,10 21,10 21,11 15,12 21,12 15,13 21,13 22,13 15,14 22,14 15,15 16,15 17,15 18,15 19,15 20,15 21,15 22,15;
+Fence 12,16;
+flag 11,12;
+Flag 11,2;
+Float 20,13;
+foliage 23,13 19,17;
+grass 0,0 1,0 2,0 20,0 21,0 22,0 23,0 0,1 1,1 22,1 23,1 0,2 0,16 0,17 1,17;
+Has 18,3 11,8;
+husk 16,0 19,1 23,5 0,11 1,14;
+Is 7,1 3,3 14,3 2,6 7,8 20,12 15,16;
+Keke 11,7;
+leaf 22,16;
+Sink 8,1 4,3;
+Skull 6,1 17,3;
+skull@left 10,3;
+Stop 16,16;
+Text 2,5 11,9;
+wall 3,4 4,4 5,4 9,4 10,4 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 20,4 21,4 3,5 21,5 3,6 21,6 3,7 21,7 3,8 21,8 3,9 3,10 3,11 17,11 3,12 3,13 3,14 3,15 4,15 5,15 6,15 7,15 8,15 9,15 10,15 11,15 12,15 13,15 14,15;
+Wall 19,3 14,16;
+water 6,3 7,3 8,3 6,4 7,4 8,4 20,11;
+Water 2,3;
+Win 15,3;
+You 8,8;
+`,`
+Title SKELETAL DOOR;
+Size 33x18;
+Background transparent;
+baba 15,9;
+Baba 14,6;
+Defeat 17,3;
+fence 4,0 29,0 4,1 29,1 30,1 31,1 32,1 0,2 1,2 2,2 3,2 4,2 0,12 1,12 31,12 32,12 1,13 31,13 1,14 31,14 0,15 1,15 2,15 3,15 4,15 31,15 4,16 26,16 27,16 28,16 29,16 30,16 31,16 32,16 4,17 26,17;
+flag 27,9;
+Flag 19,3;
+foliage 14,0 17,1 5,3 30,5 26,6 28,7 4,8 3,9 30,10 25,11 29,11 7,12 27,12 17,16 19,17;
+grass 0,0 1,0 2,0 3,0 30,0 31,0 32,0 0,1 1,1 2,1 3,1 0,13 32,13 0,14 32,14 32,15 0,16 1,16 2,16 3,16 0,17 1,17 2,17 3,17 27,17 28,17 29,17 30,17 31,17 32,17;
+Is 12,3 16,3 20,3 15,6;
+leaf 27,1 25,2 25,14;
+Push 16,12;
+Skull 15,3;
+skull@left 21,7 21,8 21,9 21,10 21,11;
+Stop 13,3;
+Text 14,12;
+tree 7,1 2,4 3,5 1,7 6,8 4,12 3,13 7,16 8,17;
+wall 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 21,2 22,2 10,3 14,3 18,3 22,3 10,4 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 20,4 21,4 22,4 10,5 22,5 10,6 22,6 10,7 10,8 10,9 10,10 10,11 10,12 22,12 10,13 22,13 10,14 11,14 12,14 13,14 14,14 15,14 16,14 17,14 18,14 19,14 20,14 21,14 22,14;
+Wall 11,3;
+Win 21,3;
+You 16,6;
+`,`
+Title JUMP;
+Size 24x14;
+Background transparent;
+baba 5,5;
+Baba 19,13;
+Defeat 2,0;
+fence 3,0 18,0 0,1 1,1 2,1 3,1 18,1 18,2 19,2 19,3 20,3 21,3 22,3 23,3 0,9 1,9 2,9 3,9 4,9 5,9 6,9 2,10 6,10 22,10 23,10 2,11 3,11 4,11 5,11 6,11 22,11 4,12 18,12 19,12 20,12 21,12 22,12 4,13 18,13 22,13;
+Fence 23,11;
+flag 4,8;
+Flag 3,10;
+Is 1,0 17,8 4,10 23,12 20,13;
+love 10,6 14,6;
+Love 16,8;
+Push 7,5;
+Stop 23,13;
+Tele 18,8;
+water 12,0 12,1 12,2 12,3 12,4 12,5 12,6 3,7 4,7 5,7 12,7 3,8 5,8 12,8 12,9 12,10 12,11 12,12 12,13;
+Water 0,0;
+Win 5,10;
+You 21,13;
+`,`
+Title EVEN LESS THERE;
+Size 33x18;
+Background transparent;
+Baba 15,8;
+baba@down 13,8;
+brick 12,4 11,5 12,5 13,5 19,5 20,5 12,6 19,6 20,6 18,7 19,7 20,7 20,8 12,9 11,10 12,10 13,10 12,11 13,11 18,11 19,11 17,12 18,12 19,12;
+fence 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 21,3 10,4 21,4 10,5 21,5 10,6 21,6 10,7 21,7 10,8 21,8 10,9 21,9 10,10 21,10 10,11 21,11 10,12 21,12 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 20,13 21,13;
+Fence 0,0 0,1 16,5;
+ghost@down 8,12;
+ghost@left 10,15;
+grass 13,0 14,0 15,0 16,0 17,0 22,0 23,0 24,0 25,0 26,0 27,0 28,0 31,0 32,0 7,1 8,1 24,1 25,1 26,1 32,1 6,2 7,2 8,2 23,2 24,2 25,2 7,3 24,3 25,3 24,4 30,5 31,5 30,6 31,6 2,7 29,7 30,7 1,8 2,8 3,8 4,8 2,9 3,9 4,9 3,10 4,10 24,12 7,13 24,13 25,13 30,13 7,14 23,14 24,14 25,14 29,14 30,14 31,14 1,15 6,15 7,15 8,15 23,15 24,15 25,15 30,15 6,16 7,16 8,16 9,16 21,16 22,16 23,16 24,16 0,17 7,17 8,17 9,17 10,17 22,17 23,17 1,0;
+husk 25,0 11,1 20,1 2,3 29,3 8,5 7,6 2,8 23,8 8,9 24,9 29,11 2,12 3,13 7,15 19,15 8,16 12,16 28,16;
+Is 1,0 1,1 16,8;
+Not 2,0 18,5;
+Stop 2,1 14,5;
+Win 16,16;
+You 3,0 17,8;
+`,`
+Title DEEP POOL;
+Size 24x18;
+Background transparent;
+And 13,16;
+baba 7,12;
+Baba 6,8;
+Defeat 8,1 2,7;
+fence 9,0 12,0 9,1 12,1 5,2 6,2 7,2 8,2 9,2 12,2 13,2 14,2 15,2 16,2 5,3 16,3 15,9 16,9 17,9 18,9 19,9 20,9 21,9 15,10 21,10 15,11 21,11 15,12 21,12 15,13 21,13 22,13 15,14 22,14 15,15 16,15 17,15 18,15 19,15 20,15 21,15 22,15;
+Fence 12,16;
+flag 11,12;
+Flag 11,2;
+foliage 22,11 23,13 19,17;
+grass 0,0 1,0 2,0 20,0 21,0 22,0 23,0 0,1 1,1 22,1 23,1 0,2 0,16 0,17 1,17;
+Has 11,8;
+husk 16,0 19,1 23,5 0,11 1,14;
+Is 7,1 3,3 14,3 2,6 7,8 15,16;
+Keke 11,7;
+leaf 22,16;
+Sink 4,3;
+Skull 6,1;
+skull@left 10,3;
+Stop 16,16;
+Text 2,5 11,9;
+wall 3,4 4,4 5,4 9,4 10,4 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 20,4 21,4 3,5 21,5 3,6 21,6 3,7 21,7 3,8 21,8 3,9 3,10 3,11 17,11 3,12 3,13 3,14 3,15 4,15 5,15 6,15 7,15 8,15 9,15 10,15 11,15 12,15 13,15 14,15;
+Wall 14,16;
+water 6,3 7,3 8,3 6,4 7,4 8,4 20,11;
+Water 2,3;
+Win 15,3;
+You 8,8;
+`,`
+Title INDEX;
+Size 33x18;
+Background transparent;
+fence 27,0 27,1 27,2 27,3 27,4 28,4 29,4 30,4 31,4 32,4 30,6 31,6 32,6 30,7 30,8 30,9 30,10 30,11 31,11 32,11 28,14 29,14 30,14 31,14 32,14 28,15 28,16 28,17;
+fruit 19,14 21,15 24,15 20,16;
+grass 28,0 29,0 30,0 31,0 32,0 28,1 29,1 30,1 31,1 32,1 28,2 29,2 30,2 31,2 32,2 28,3 29,3 30,3 31,3 32,3 31,7 32,7 31,8 32,8 31,9 32,9 31,10 32,10 8,11 9,11 7,12 8,12 9,12 9,13 11,14 12,14 11,15 12,15 29,15 30,15 31,15 32,15 12,16 13,16 29,16 30,16 31,16 32,16 29,17 30,17 31,17 32,17;
+husk 13,1 8,9 15,10 10,13 8,14 16,14 13,15 10,16 15,16 14,17;
+line 19,5 18,6 20,6 13,7 14,7 15,7 19,7 19,8 17,9 13,10 17,10 17,11 19,11;
+marker-u1d538 12,7 4,2;
+marker-u1d539 13,8 4,2;
+marker-u1d53b 13,9 4,2;
+marker-u1d53c 12,9 4,2;
+marker-u1d7ce 18,11 2,3;
+marker-u1d7cf 17,12 2,3;
+marker-u1d7d0 18,12 2,3;
+marker-u1d7d9 19,4 2,2;
+marker-u1d7da 20,11 2,3;
+marker-u1d7db 13,11 4,2;
+marker-u2022 21,6 4,1;
+marker-u2102 12,8 4,2;
+marker-u31 19,6 2,2;
+marker-u32 17,6 2,2;
+marker-u33 18,8 2,2;
+marker-u34 17,8 2,2;
+marker-u35 17,7 2,2;
+marker-u36 16,7 2,2;
+marker-u37 16,6 2,2;
+marker-u38 16,8 2,2;
+marker-u39 15,8 2,2;
+tree 2,0 4,0 1,1 5,1 20,1 0,2 2,2 3,2 7,2 16,2 1,3 3,3 4,3 5,3 10,3 17,3 22,3 0,4 2,4 4,4 1,5 6,5 0,7 3,7 6,7 0,8 1,9 4,9 3,10 0,11 0,14 4,14 3,17;
+water 11,11 11,12 12,12;
+`];var I1=[`
+Title RENOVATING;
+Size 33x18;
+Background transparent;
+Belt 11,13;
+belt@down 10,6 10,7 10,8 1,1;
+Defeat 17,7;
+flag 22,13;
+Flag 21,10;
+flower 21,3 22,4 4,6 1,8 30,12 26,16;
+grass 16,0 29,0 30,0 31,0 15,1 16,1 17,1 31,1 32,1 0,2 5,2 17,2 0,3 4,3 14,3 17,3 0,4 14,4 0,5 24,5 24,6 25,6 5,9 3,10 4,10 5,10 0,13 4,13 28,13 32,13 0,14 27,14 28,14 32,14 1,16 2,17 3,17;
+hedge 0,0 1,0 32,0 0,1 0,15 32,15 0,16 32,16 0,17 1,17 31,17 32,17;
+Is 16,7 20,7 20,8 22,10 12,13;
+Keke 19,7;
+keke@down 10,3;
+Push 15,10;
+Shift 13,13;
+Stop 21,8;
+wall 17,11 18,11 17,12 18,12 17,13 18,13 17,14 18,14;
+Wall 15,7;
+water 23,0 24,0 25,0 8,1 9,1 10,1 11,1 12,1 25,1 26,1 8,2 12,2 25,2 26,2 27,2 8,3 12,3 26,3 27,3 28,3 29,3 8,4 12,4 27,4 28,4 29,4 8,5 12,5 28,5 29,5 30,5 8,6 9,6 11,6 12,6 13,6 14,6 15,6 16,6 17,6 18,6 30,6 31,6 32,6 8,7 9,7 11,7 12,7 13,7 14,7 18,7 31,7 32,7 8,8 9,8 11,8 12,8 13,8 14,8 15,8 16,8 17,8 18,8 31,8 32,8 8,9 17,9 18,9 19,9 20,9 21,9 22,9 23,9 24,9 32,9 8,10 17,10 18,10 24,10 8,11 24,11 8,12 24,12 8,13 24,13 8,14 24,14 8,15 17,15 18,15 19,15 20,15 21,15 22,15 23,15 24,15 8,16 9,16 10,16 11,16 12,16 13,16 14,16 15,16 16,16 17,16;
+Water 19,8;
+Win 23,10;
+You 21,7;
+`,`
+Title TOOLSHED;
+Size 24x14;
+Background transparent;
+baba 6,8;
+Baba 3,8;
+brick 14,6 15,6 16,6 16,7 16,8 16,9 17,9 18,9 19,9 20,9;
+door 13,6;
+Door 14,3;
+fungus 16,1 22,4 21,13;
+Is 4,3 3,4 14,4 9,7 3,9 8,9;
+key 6,5;
+Key 8,7;
+Open 10,7;
+Push 8,10;
+Shut 14,5;
+Stop 3,5;
+tree 0,0 12,0 22,0 2,1 19,1 20,2 21,10 0,11 18,11 22,11 1,12 15,12;
+wall 2,2 3,2 4,2 5,2 6,2 7,2 8,2 9,2 10,2 11,2 12,2 13,2 2,3 6,3 13,3 2,4 13,4 2,5 13,5 2,6 19,6 20,6 21,6 2,7 3,7 4,7 13,7 19,7 21,7 2,8 4,8 13,8 19,8 20,8 21,8 2,9 4,9 13,9 2,10 4,10 13,10 2,11 3,11 4,11 5,11 6,11 7,11 8,11 9,11 10,11 11,11 12,11 13,11;
+Wall 3,3 5,3;
+Win 20,7;
+You 3,10;
+`,`
+Title KEEP OUT;
+Size 28x16;
+Background transparent;
+belt 12,6 1,1;
+Belt 7,2;
+Bug 9,0;
+bug@down 5,3 6,3 7,3 8,3 9,3;
+Defeat 11,0;
+Flag 7,0 27,13;
+fungus 18,2;
+Fungus 5,0 16,0;
+grass 0,0 1,0 3,0 24,0 26,0 27,0 0,1 1,1 3,1 24,1 3,2 24,2 25,2 26,2 27,2 0,3 1,3 2,3 3,3 27,3 0,4 1,4 2,4 3,4 27,4 0,5 27,5 0,6 27,6 0,7 27,7 0,13;
+Has 6,0;
+hedge 2,0 4,0 8,0 12,0 13,0 14,0 23,0 25,0 2,1 4,1 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 14,1 23,1 25,1 26,1 27,1 0,2 1,2 2,2 4,2 10,2 12,2 13,2 14,2 23,2 4,3 10,3 12,3 23,3 24,3 25,3 26,3 4,4 12,4 14,4 23,4 26,4 1,5 2,5 3,5 4,5 12,5 14,5 15,5 16,5 17,5 18,5 20,5 21,5 22,5 23,5 26,5 1,6 20,6 26,6 1,7 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 26,7 0,8 1,8 26,8 27,8 0,12 1,12 24,12 25,12 26,12 27,12 1,13 24,13 26,13 0,14 1,14 2,14 3,14 24,14 26,14 3,15 24,15 26,15;
+Hedge 22,2;
+Hot 25,15;
+Is 10,0 16,1 8,2 22,3 15,10 25,14 27,14 1,15;
+keke 8,6;
+Keke 0,15;
+Melt 16,2;
+Pull 16,10;
+reed 22,7 4,8 25,9 1,10 24,10 6,11 5,14;
+Shift 9,2;
+Stop 22,4;
+tree 15,12;
+Tree 14,10 25,13;
+Win 27,15;
+You 2,15;
+`,`
+Title BABA DOESNT RESPOND;
+Size 28x16;
+Background transparent;
+And 20,13;
+Baba 14,10;
+baba@down 11,10;
+Belt 15,2;
+belt@down 9,7 1,1;
+belt@up 16,7;
+Defeat 20,12;
+door 21,4;
+Door 17,0 20,10;
+flag 24,5;
+Flag 23,3;
+flower 12,0 2,1 1,2 27,3 3,6 26,9 27,10 24,12 2,13 3,14;
+hedge 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 14,1 15,1 16,1 17,1 18,1 19,1 5,2 19,2 5,3 18,3 19,3 20,3 21,3 5,4 18,4 5,5 20,5 21,5 5,6 19,6 20,6 5,7 19,7 5,8 19,8 5,9 19,9 20,9 21,9 22,9 5,10 19,10 22,10 5,11 19,11 22,11 5,12 13,12 22,12 5,13 6,13 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 21,13 22,13 19,14 21,14 19,15 20,15 21,15;
+Hedge 20,7;
+Is 18,0 7,2 16,2 24,3 21,7 21,8 15,10 20,11 21,11;
+Keke 6,2;
+keke@down 8,10;
+Move 6,12;
+Open 20,14;
+Push 16,10;
+reed 19,4;
+Reed 21,10;
+Shift 17,2;
+Shut 19,12;
+Stop 19,0 22,7 22,8;
+tree 4,0 26,2 2,4 6,7 7,7 8,7 10,7 11,7 12,7 13,7 14,7 15,7 17,7 18,7 25,11 3,12 26,14;
+Tree 20,8;
+Win 25,3;
+You 8,2;
+`,`
+Title PATROL;
+Size 28x16;
+Background transparent;
+And 14,13;
+baba 10,4;
+Baba 9,9;
+brick 17,9 18,9 19,9 17,10 19,10 17,11 18,11 19,11;
+Defeat 13,13;
+door 8,6 18,8;
+Door 14,2;
+flag 18,10;
+Flag 11,10;
+Float 15,11;
+Has 14,3;
+Is 10,2 15,2 12,9 9,10 12,10 15,10 12,11 12,13;
+Move 15,13;
+Push 11,2;
+reed 2,2 24,2 25,3 20,4 4,5 23,7 5,9 25,11 2,12 3,13 6,14 19,14;
+Sink 16,2;
+Skull 11,13;
+skull@left 10,7 11,7 12,7 13,7 14,7 15,7 16,7 17,7;
+Stop 13,9;
+Text 15,9;
+Tree 9,2 14,4 11,11 13,11;
+wall 7,6 9,6 10,6 11,6 12,6 13,6 14,6 15,6 16,6 17,6 18,6 19,6 20,6 7,7 20,7 7,8 8,8 9,8 10,8 11,8 12,8 13,8 14,8 15,8 16,8 17,8 19,8 20,8 8,9 10,9 14,9 16,9 20,9 8,10 10,10 14,10 16,10 20,10 8,11 10,11 14,11 16,11 20,11 8,12 9,12 10,12 11,12 12,12 13,12 14,12 15,12 16,12 17,12 18,12 19,12 20,12 10,13 16,13 10,14 11,14 12,14 13,14 14,14 15,14 16,14;
+Wall 11,9;
+water 0,0 1,0 2,0 3,0 5,0 0,1 1,1 0,2 27,8 27,9 27,10 26,11 27,11 25,12 26,12 27,12 24,13 25,13 26,13 27,13 23,14 24,14 25,14 26,14 27,14 21,15 22,15 23,15 24,15 25,15 26,15;
+Win 13,10;
+You 9,11;
+`,`
+Title CANYON;
+Size 28x16;
+Background transparent;
+And 8,12 23,14;
+Baba 8,2;
+baba@left 6,6;
+belt 14,7 1,1;
+Belt 19,5;
+Defeat 23,13;
+flag 19,14;
+Flag 21,13;
+Float 15,14;
+flower 2,0 26,0 27,1 1,2 0,3 1,6 27,11 0,12 19,12 19,13 2,14 19,15 25,15;
+Flower 23,11;
+Ghost 5,12;
+ghost@down 14,12;
+hedge 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 18,1 19,1 20,1 21,1 22,1 23,1 4,2 5,2 13,2 15,2 16,2 17,2 18,2 23,2 24,2 4,3 13,3 15,3 24,3 4,4 13,4 15,4 24,4 4,5 13,5 15,5 24,5 4,6 13,6 14,6 15,6 24,6 4,7 24,7 4,8 13,8 14,8 15,8 24,8 4,9 13,9 15,9 20,9 21,9 22,9 23,9 24,9 4,10 13,10 15,10 20,10 4,11 5,11 6,11 7,11 8,11 9,11 10,11 12,11 13,11 14,11 15,11 16,11 18,11 20,11 10,12 18,12 20,12 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 20,13 18,14 20,14 18,15 20,15;
+Hedge 14,3;
+Hot 9,12;
+Is 9,2 14,4 20,5 6,12 23,12 14,14 21,14;
+Melt 23,15;
+Push 7,12;
+Shift 21,5;
+Stop 14,5;
+Text 13,14;
+Up 10,6;
+Win 21,15;
+You 10,2;
+`,`
+Title CONCRETE GOALS;
+Size 33x18;
+Background transparent;
+Baba 0,15;
+baba@down 10,9;
+belt 13,8 14,8 15,8 16,8 17,8 18,8 19,8 1,1;
+Belt 8,7;
+flag 23,8;
+Flag 4,4 32,15;
+foliage 1,1 2,2 22,2 23,3 17,4 31,8 4,13 18,13 19,14 6,15 5,0;
+grass 10,0 11,0 12,0 13,0 14,0 25,0 26,0 27,0 28,0 29,0 30,0 31,0 32,0 11,1 12,1 13,1 14,1 15,1 28,1 29,1 30,1 31,1 32,1 13,2 14,2 15,2 31,2 32,2 14,3 32,3 0,6 0,7 1,7 0,8 1,8 2,8 0,9 1,9 2,9 0,10 1,10 1,11 11,13 12,13 10,14 11,14 12,14 13,14 14,14 24,14 11,15 12,15 13,15 14,15 24,15 25,15 13,16 14,16 15,16;
+Is 5,4 9,7 8,8 21,8 0,16 30,16 32,16;
+Push 10,7;
+Shift 8,9;
+Stop 21,9 30,17 32,17;
+tree 3,3 4,3 5,3 6,3 7,3 3,4 7,4 0,13 1,13 2,13 28,13 29,13 30,13 31,13 32,13 2,14 28,14 2,15 28,15 2,16 28,16 2,17 28,17 5,1;
+Tree 30,15;
+wall 19,5 20,5 21,5 22,5 23,5 19,6 23,6 24,6 25,6 13,7 14,7 15,7 16,7 17,7 18,7 19,7 25,7 25,8 13,9 14,9 15,9 16,9 17,9 18,9 19,9 25,9 19,10 23,10 24,10 25,10 19,11 20,11 21,11 22,11 23,11;
+Wall 21,7;
+Win 6,4;
+You 0,17;
+`,`
+Title VICTORY IN THE OPEN;
+Size 28x16;
+Background transparent;
+baba 7,11;
+Baba 4,7;
+bog 0,0 1,0 2,0 5,0 6,0 0,1 1,1 0,2 0,3 0,5 0,6 1,6 0,7 1,7 27,7 0,8 1,8 26,8 27,8 0,9 26,9 27,9 0,10 27,10 27,13 0,14 26,14 27,14 0,15 1,15 5,15 21,15 22,15 25,15 26,15 27,15 5,2;
+Defeat 13,1;
+flower 12,3 12,4 12,5 12,6 12,7 12,8 12,10 12,11 12,12;
+Flower 11,1;
+husk 3,0 18,0 25,0 21,1 2,2 27,2 26,5 25,11 27,12 1,13 3,15 16,15 24,15 5,1;
+Is 12,1 8,5 7,6 4,8 12,14;
+keke 9,11;
+Keke 11,4 7,5;
+Move 9,5;
+Right 7,7;
+Stop 13,14;
+tile 13,3 13,4 13,5 18,5 19,5 20,5 13,6 18,6 20,6 13,7 18,7 19,7 20,7 13,8 1,0;
+Up 13,6;
+W 6,1 6,2;
+wall 5,2 6,2 7,2 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 21,2 22,2 23,2 5,3 14,3 23,3 5,4 14,4 23,4 5,5 14,5 23,5 5,6 14,6 23,6 5,7 14,7 23,7 5,8 14,8 23,8 5,9 11,9 12,9 13,9 14,9 23,9 5,10 23,10 5,11 23,11 5,12 23,12 5,13 6,13 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 19,13 20,13 21,13 22,13 23,13 6,0;
+Wall 11,14;
+Win 19,6;
+You 4,9;
+`,`
+Title MOVING FLOOR;
+Size 24x16;
+Background transparent;
+Baba 18,9;
+baba@left 17,10;
+belt 13,4 14,4 15,4 13,7 14,7 1,1;
+Belt 19,0;
+belt@down 10,9 10,10;
+Bug 19,6;
+bug@left 12,4 12,7;
+bug@up 10,8;
+Defeat 21,6;
+flag 8,5 10,5;
+Flag 6,7;
+hedge 6,0 7,0 8,0 9,0 10,0 11,0 12,0 13,0 14,0 15,0 6,1 15,1 16,1 4,2 5,2 6,2 13,2 16,2 4,3 13,3 14,3 16,3 17,3 4,4 17,4 4,5 13,5 16,5 17,5 4,6 13,6 15,6 16,6 4,7 16,7 4,8 13,8 15,8 16,8 17,8 18,8 19,8 4,9 6,9 7,9 8,9 9,9 11,9 12,9 13,9 15,9 19,9 4,10 13,10 15,10 19,10 4,11 5,11 6,11 7,11 8,11 9,11 11,11 15,11 19,11 9,12 10,12 11,12 12,12 13,12 19,12 12,13 19,13 12,14 17,14 18,14 19,14 12,15 13,15 14,15 15,15 16,15 17,15;
+Hedge 19,4;
+Is 20,0 20,2 10,3 20,4 20,6 7,7 18,10;
+Keke 19,2;
+keke@left 6,5;
+Push 8,7;
+Shift 21,0;
+Stop 21,4;
+Win 13,11;
+You 21,2;
+`,`
+Title LOVELY HOUSE;
+Size 28x16;
+Background transparent;
+And 4,7 11,8;
+Baba 14,4;
+baba@down 10,5;
+brick 0,0 1,0 2,0 3,0 4,0 7,0 21,0 22,0 24,0 25,0 26,0 27,0 0,1 1,1 2,1 26,1 27,1 0,2 27,2 0,3 27,3 5,4 2,5 4,5 5,5 2,6 3,6 5,6 1,7 2,7 3,7 2,8 3,11 27,11 0,12 27,12 0,13 1,13 0,14 1,14 2,14 26,14 0,15 1,15 2,15 3,15 4,15 23,15 25,15 26,15;
+door 18,7;
+Door 4,8 13,15;
+flag 21,13;
+Flag 27,13;
+Float 11,1;
+Is 10,1 14,1 14,5 4,9 11,10 27,14 10,15 14,15;
+Key 11,7 9,15;
+love 7,2 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 7,3 18,3 7,4 18,4 7,5 18,5 7,6 18,6 7,7 7,8 18,8 7,9 18,9 7,10 18,10 7,11 18,11 7,12 18,12 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 4,0;
+Love 4,6;
+Open 11,15;
+Push 11,11;
+rock 15,10;
+Rock 11,9;
+Shut 15,15;
+Sink 15,1;
+Stop 4,10;
+Text 9,1;
+water 19,4 20,4 21,4 22,4 23,4 24,4 24,5 24,6 24,7 24,8 24,9 19,10 20,10 21,10 22,10 23,10 24,10;
+Water 13,1;
+Win 27,15;
+You 14,6;
+`,`
+Title SUPERMARKET;
+Size 28x16;
+Background transparent;
+And 15,6;
+baba 13,11;
+Baba 11,15;
+belt 15,11 16,11 17,11 18,11 1,1;
+Belt 10,0 10,5 10,11;
+belt@down 12,3 12,4 5,5 12,5 5,6 12,6 5,7 12,7 5,8 12,8;
+belt@up 13,3 13,4 13,5 13,6 13,7 13,8;
+bog 0,0 1,0 18,0 19,0 20,0 23,0 24,0 25,0 26,0 27,0 0,1 25,1 26,1 27,1 26,2 27,2 27,3 27,6 26,7 27,7 26,8 27,8 27,9 0,10 27,10 0,11 0,13 27,13 0,14 1,14 27,14 0,15 1,15 2,15 3,15 26,15 27,15 5,2;
+brick 4,1 5,1 6,1 4,2 6,2 4,3 5,3 6,3 4,4 5,4 6,4 9,9 14,9 19,9 20,9 21,9 23,9 5,10 19,10 5,11 6,11 5,12 6,12 9,12 22,12 23,12 9,13 10,13 19,13 21,13 22,13 23,13;
+flag 5,2;
+Flag 11,1;
+grass 21,0 16,1 21,1 22,1 16,2 17,2 20,2 21,2 22,2 17,3 21,3 22,3 24,4 25,4 18,5 22,5 24,5 25,5 17,6 18,6 19,6 20,6 23,6 24,6 18,7 19,7;
+husk 1,2 23,2 19,3 9,4 0,5 21,5 2,9 1,12 26,12 17,14 5,1;
+Is 11,0 12,2 15,4 10,6 11,11 6,14 12,15;
+Push 7,14;
+Right 12,12;
+rock 12,10;
+Rock 5,14;
+Shift 10,7;
+Stop 15,7;
+Up 21,11;
+W 5,1 6,1;
+wall 3,0 4,0 5,0 6,0 7,0 9,0 13,0 14,0 3,1 7,1 9,1 10,1 14,1 3,2 7,2 10,2 11,2 14,2 3,3 7,3 11,3 14,3 3,4 7,4 11,4 14,4 3,5 4,5 6,5 7,5 11,5 14,5 4,6 7,6 11,6 14,6 4,7 7,7 11,7 14,7 4,8 7,8 8,8 9,8 10,8 11,8 14,8 15,8 18,8 19,8 20,8 21,8 22,8 23,8 24,8 4,9 8,9 15,9 18,9 24,9 4,10 8,10 15,10 16,10 17,10 18,10 24,10 4,11 24,11 4,12 8,12 15,12 16,12 17,12 18,12 24,12 4,13 5,13 6,13 7,13 8,13 15,13 18,13 24,13 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14 18,14 19,14 20,14 21,14 22,14 23,14 24,14 6,0;
+Wall 12,1 15,3 15,5;
+Win 13,1;
+You 13,15;
+`,`
+Title LOCK THE DOOR;
+Size 28x16;
+Background transparent;
+Baba 6,10;
+baba@down 11,3;
+Belt 25,2 27,2 8,7;
+belt@up 16,10 1,1;
+Bug 25,0 27,0 13,4;
+bug@left 16,7;
+Defeat 22,14;
+Float 27,4;
+flower 17,0 16,1 18,3 19,4;
+fungus 15,3;
+Fungus 21,12;
+hedge 14,0 15,0 20,0 24,0 0,1 14,1 20,1 24,1 25,1 26,1 27,1 0,2 14,2 16,2 20,2 24,2 0,3 16,3 20,3 24,3 25,3 26,3 27,3 0,4 1,4 14,4 15,4 16,4 20,4 24,4 1,5 14,5 15,5 16,5 17,5 18,5 19,5 20,5 24,5 25,5 26,5 27,5 1,6 14,6 15,6 16,6 17,6 18,6 19,6 20,6 1,7 18,7 19,7 1,8 2,8 14,8 15,8 17,8 18,8 19,8 20,8 21,8 2,9 3,9 4,9 15,9 17,9 20,9 21,9 22,9 23,9 24,9 3,10 4,10 5,10 20,10 24,10 5,11 20,11 21,11 22,11 23,11 24,11 5,12 24,12 5,13 6,13 21,13 24,13 4,14 5,14 21,14 24,14 3,15 4,15 5,15 21,15 22,15 23,15 24,15 25,15;
+Hedge 21,10;
+Is 26,0 26,2 26,4 13,5 9,7 22,10 6,11 22,13 23,13;
+love 18,1;
+Love 22,12;
+Push 13,6;
+Shift 10,7;
+Stop 23,10;
+Text 25,4;
+tree 21,1 23,3 22,6 0,7 27,7 26,8 0,10 25,11 3,12 27,13 1,14;
+Win 23,14;
+You 6,12;
+`,`
+Title FACTORY;
+Size 33x18;
+Background transparent;
+And 21,12 12,13;
+box 19,3 20,3 21,3 19,4 20,4 21,4 19,5 20,5 21,5;
+Box 12,0 9,11;
+Bug 24,0;
+bug@left 16,5 16,6 16,7 16,8 16,9 6,1;
+Defeat 24,2;
+door 16,16 17,16 18,16 19,16 20,16;
+Door 20,12 13,17;
+flag 23,15;
+Flag 22,17;
+glyph-u5f 14,0 13,13;
+Has 9,12;
+Is 13,0 24,1 23,12 10,13 8,17 14,17 23,17;
+key 11,7;
+Key 9,13 7,17;
+Open 9,17;
+Shut 15,17;
+Stop 24,12;
+tile 0,0 1,0 2,0 4,0 5,0 6,0 26,0 27,0 28,0 29,0 30,0 31,0 32,0 26,1 27,1 28,1 29,1 30,1 31,1 32,1 0,2 26,2 27,2 28,2 29,2 30,2 31,2 32,2 0,3 26,3 27,3 28,3 29,3 30,3 31,3 32,3 0,4 26,4 27,4 28,4 29,4 30,4 31,4 32,4 0,5 0,12 1,12 0,13 1,13 32,13 32,14 0,15 1,15 2,15 3,15 4,15 5,15 0,16 1,16 2,16 3,16 4,16 5,16 31,16 32,16 0,17 1,17 2,17 3,17 4,17 5,17 31,17 32,17 1,0;
+wall 3,0 7,0 11,0 15,0 25,0 0,1 1,1 2,1 3,1 4,1 5,1 6,1 7,1 11,1 12,1 13,1 14,1 15,1 25,1 1,2 15,2 25,2 1,3 15,3 25,3 1,4 15,4 16,4 25,4 1,5 25,5 26,5 27,5 28,5 29,5 30,5 31,5 32,5 0,6 1,6 16,10 0,11 1,11 2,11 16,11 22,11 2,12 16,12 25,12 31,12 32,12 2,13 16,13 20,13 21,13 22,13 23,13 24,13 25,13 26,13 31,13 0,14 1,14 2,14 3,14 4,14 5,14 6,14 16,14 20,14 26,14 31,14 6,15 16,15 17,15 18,15 19,15 20,15 26,15 30,15 31,15 32,15 6,16 7,16 26,16 30,16 6,17 16,17 17,17 18,17 19,17 20,17 26,17 30,17;
+Wall 22,12;
+Win 24,17;
+You 11,13;
+`,`
+Title TINY PASTURE;
+Size 24x18;
+Background transparent;
+baba 13,10;
+Baba 5,9;
+fence 2,2 3,2 4,2 5,2 6,2 7,2 8,2 2,3 8,3 2,4 2,5 2,6 2,7 2,8 3,8 4,8 5,8 6,8 7,8 0,12 1,12 2,12 2,13 2,14 2,15 3,15 4,15 4,16 4,17;
+Fence 11,1;
+flag 15,11 15,14;
+Flag 18,7;
+fungus 17,2 21,2 20,3 23,5 1,10 4,13 5,16 9,17;
+grass 6,1 7,1 4,3 6,3 7,3 7,4 1,6 3,6 1,7 3,7 4,7 3,9 4,9 4,10;
+Is 11,2 10,3 17,5 16,8 18,8 6,9 8,12;
+keke 11,11;
+Keke 16,5 18,5 16,7 8,11;
+Push 16,9;
+Shift 9,13;
+Stop 11,3;
+Tele 18,9;
+tile 8,5 9,5 10,5 11,5 12,5 8,7 9,7 1,0;
+tree 15,0 19,0 22,0 23,3 22,4 23,9 1,13 2,16;
+wall 8,4 9,4 10,4 11,4 12,4 13,4 14,4 14,5 15,5 8,6 9,6 10,6 11,6 12,6 14,6 15,6 16,6 17,6 18,6 19,6 20,6 21,6 10,7 14,7 21,7 8,8 21,8 8,9 9,9 21,9 7,10 8,10 9,10 21,10 7,11 9,11 21,11 7,12 9,12 20,12 21,12 7,13 19,13 20,13 21,13 7,14 8,14 9,14 18,14 19,14 20,14 8,15 9,15 10,15 11,15 12,15 13,15 14,15 15,15 16,15 17,15 18,15 19,15;
+Wall 9,3;
+water 23,15 21,16 22,16 23,16 19,17 20,17 21,17 22,17 23,17;
+Win 5,5;
+You 7,9;
+`,`
+Title NEARLY;
+Size 15x8;
+Background transparent;
+baba 6,6;
+Baba 6,2 0,7;
+flag 8,6;
+Flag 7,1;
+grass 0,0 1,0 13,0 14,0 0,1 14,1 0,5 14,5 0,6 1,6 13,6 14,6 3,7 11,7 12,7 13,7 14,7;
+Is 7,2 1,7;
+Swap 2,7;
+Win 7,3;
+You 8,2;
+`,`
+Title NOT QUITE;
+Size 15x8;
+Background transparent;
+baba 6,6;
+Baba 6,2;
+flag 8,6;
+Flag 7,1 0,7;
+grass 0,0 1,0 2,0 3,0 12,0 13,0 14,0 0,1 1,1 14,1 0,2 14,3 0,5 0,6 1,6 13,6 14,6 3,7 11,7 12,7 13,7 14,7;
+Is 7,2 1,7;
+Swap 2,7;
+Win 7,3;
+You 8,2;
+`,`
+Title PASSING THROUGH;
+Size 24x14;
+Background transparent;
+Baba 0,0;
+baba@down 3,6;
+Defeat 23,0;
+grass 3,0 4,0 5,0 6,0 7,0 8,0 9,0 10,0 11,0 12,0 13,0 0,1 1,1 2,1 3,1 4,1 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 0,2 1,2 2,2 3,2 4,2 5,2 6,2 7,2 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 19,2 20,2 21,2 22,2 23,2 0,3 1,3 2,3 8,3 9,3 10,3 11,3 12,3 13,3 22,3 23,3 0,4 1,4 11,4 12,4 23,4 0,5 1,5 11,5 12,5 23,5 0,6 12,6 0,7 12,7 0,8 12,8 0,9 12,9 0,10 12,10 0,11 1,11 12,11 0,12 1,12 11,12 12,12 13,12 0,13 1,13 2,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 5,1;
+Grass 21,0;
+Is 1,0 16,0 22,0 22,1 5,10;
+Keke 21,1 4,10;
+keke@down 5,8;
+Move 6,11;
+Push 6,10;
+rock 19,0;
+Rock 15,0;
+Skull 4,11;
+Swap 23,1;
+Win 17,0;
+You 2,0;
+`,`
+Title SALVAGE;
+Size 28x16;
+Background transparent;
+And 12,7;
+baba 13,10;
+Baba 0,0;
+Defeat 2,1;
+flag 26,10;
+Flag 14,5;
+fungi 13,0 6,2 24,6 2,10 23,12 5,14 6,15 19,15;
+fungus 5,3 24,3 26,4 3,12 21,13;
+grass 3,0 4,0 5,0 6,0 7,0 8,0 17,0 18,0 19,0 20,0 21,0 3,1 7,1 19,1 20,1 0,2 1,2 0,3 1,3 2,3 0,4 1,4 0,5 1,5 0,6 0,13 27,13 0,14 1,14 26,14 27,14 0,15 1,15 2,15 4,15 23,15 24,15 25,15 26,15 27,15;
+Is 1,0 25,0 1,1 15,5;
+Not 26,0;
+Pull 14,7;
+Skull 0,1;
+skull@down 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 9,3 18,3 9,4 18,4 9,5 18,5 9,6 18,6 9,7 18,7 9,8 18,8 9,9 18,9 9,10 18,10 9,11 18,11 9,12 18,12 9,13 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13;
+Swap 5,7;
+Text 24,0 12,5;
+Win 27,0 16,5;
+You 2,0;
+`,`
+Title INSULATION;
+Size 24x14;
+Background transparent;
+And 20,0 22,0 19,13;
+baba 5,5;
+Baba 0,0 18,13;
+flag 18,7;
+Flag 20,6;
+flower 18,3 21,4 22,10 21,11 18,12;
+grass 2,0 3,0 4,0 5,0 6,0 8,0 2,1 3,1 23,11 5,12 22,12 23,12 5,13 6,13 7,13 8,13 10,13 13,13 14,13 23,13;
+Hot 1,13;
+Is 18,0 0,1 14,6 20,7 0,12 1,12 21,13;
+Keke 14,5;
+keke@down 7,8;
+keke@up 23,3;
+Melt 22,13;
+Move 21,0;
+Push 14,7;
+Skull 17,0 19,0 9,8;
+Stop 0,13;
+Swap 23,0;
+Text 20,13;
+Up 14,10;
+wall 1,0 1,1 22,1 1,2 2,2 3,2 4,2 5,2 6,2 7,2 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 22,2 0,3 1,3 2,3 15,3 16,3 22,3 0,4 1,4 2,4 15,4 16,4 22,4 23,4 0,5 1,5 2,5 15,5 16,5 0,6 1,6 2,6 15,6 16,6 0,7 1,7 2,7 15,7 16,7 0,8 1,8 2,8 15,8 16,8 0,9 1,9 2,9 15,9 16,9 0,10 1,10 15,10 16,10 3,11 4,11 5,11 6,11 7,11 8,11 9,11 10,11 11,11 12,11 13,11 14,11 15,11 16,11 3,12 4,12 3,13 4,13;
+Wall 1,11;
+Win 20,8;
+You 0,2;
+`,`
+Title CRUMBLING FLOOR;
+Size 24x16;
+Background transparent;
+Baba 18,9;
+baba@left 17,10;
+belt 13,4 14,4 13,7 14,7 1,1;
+Belt 18,0;
+belt@down 10,9 10,10;
+Bug 18,6;
+bug@left 12,4 12,7;
+bug@up 10,8;
+Defeat 20,6;
+flag 8,5 10,5;
+Flag 6,7;
+hedge 6,0 7,0 8,0 9,0 10,0 11,0 12,0 13,0 14,0 15,0 6,1 15,1 4,2 5,2 6,2 13,2 15,2 4,3 13,3 15,3 16,3 4,4 16,4 4,5 13,5 15,5 16,5 4,6 13,6 15,6 16,6 4,7 16,7 4,8 13,8 15,8 16,8 17,8 18,8 19,8 4,9 6,9 7,9 8,9 9,9 11,9 12,9 13,9 15,9 19,9 4,10 13,10 15,10 19,10 4,11 5,11 6,11 7,11 8,11 9,11 11,11 15,11 19,11 9,12 10,12 11,12 12,12 13,12 19,12 12,13 19,13 12,14 17,14 18,14 19,14 12,15 13,15 14,15 15,15 16,15 17,15;
+Hedge 18,4;
+Is 19,0 19,2 19,4 19,6 7,7 18,10;
+Keke 18,2;
+keke@left 6,5;
+Push 8,7;
+Shift 20,0;
+Stop 20,4;
+Win 13,11;
+You 20,2;
+`,`
+Title SKULL HOUSE;
+Size 28x16;
+Background transparent;
+And 4,7;
+Baba 14,4;
+baba@down 10,5;
+brick 0,0 1,0 2,0 3,0 4,0 7,0 21,0 22,0 24,0 25,0 26,0 27,0 0,1 1,1 2,1 26,1 27,1 0,2 27,2 0,3 27,3 5,4 2,5 4,5 5,5 2,6 3,6 5,6 1,7 2,7 3,7 2,8 3,11 27,11 0,12 27,12 0,13 1,13 26,13 0,14 1,14 2,14 26,14 0,15 1,15 2,15 3,15 4,15 23,15 25,15 26,15;
+door 18,7;
+Door 4,8 13,15;
+flag 21,13;
+Flag 27,13;
+Float 11,1;
+Is 10,1 14,1 14,5 4,9 11,10 10,11 27,14 10,15 14,15;
+Key 9,11 9,15;
+Open 11,15;
+Push 11,11;
+rock 15,10;
+Rock 11,9;
+Shut 15,15;
+Sink 15,1;
+skull 18,3 18,4 18,5 18,6 18,8 18,9 18,10 18,11 18,12;
+Skull 4,6;
+skull@down 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13;
+skull@left 7,3 7,4 7,5 7,6 7,7 7,8 7,9 7,10 7,11 7,12;
+skull@up 7,2 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2;
+Stop 4,10;
+Text 9,1;
+water 19,4 20,4 21,4 22,4 23,4 24,4 24,5 24,6 24,7 24,8 24,9 19,10 20,10 21,10 22,10 23,10 24,10;
+Water 13,1;
+Win 27,15;
+You 14,6;
+`,`
+Title INDEX;
+Size 33x18;
+Background transparent;
+brick 10,4 9,5 11,5 20,5 21,5 22,5 10,6 20,6 22,6 11,11 10,12 11,12 12,12 11,13 10,14 11,14 12,14 18,14 11,15 18,15 20,15 17,16 15,17;
+fungi 14,0 30,0 25,1 7,2 14,2 28,2 2,3 6,3 31,4 0,5 4,7;
+fungus 3,0 17,1 13,3 24,7 5,10 25,11 7,12 22,13;
+line 14,5 15,5 12,8 14,8 16,8 14,9 14,10 18,10 15,11;
+marker-u1d538 19,10 5,2;
+marker-u1d539 19,9 5,2;
+marker-u1d53b 20,9 5,2;
+marker-u1d53c 21,9 5,2;
+marker-u1d7ce 14,6 1,3;
+marker-u1d7cf 9,8 5,3;
+marker-u1d7d0 17,9 1,3;
+marker-u1d7d1 13,6 1,3;
+marker-u1d7d2 13,5 1,3;
+marker-u1d7d9 16,7 1,3;
+marker-u1d7da 16,5 1,3;
+marker-u2022 15,12 4,1;
+marker-u2102 20,10 5,2;
+marker-u31 15,10 1,3;
+marker-u32 13,8 1,3;
+marker-u33 16,10 1,3;
+marker-u34 14,7 1,3;
+marker-u35 13,7 1,3;
+marker-u36 11,8 5,3;
+marker-u37 17,10 1,3;
+marker-u38 10,8 5,3;
+marker-u39 16,9 1,3;
+pillar 9,4 11,4 9,6 11,6 10,11 12,11 10,13 10,15 12,15;
+tree 10,0 19,0 29,0 1,1 5,1 12,1 23,1 26,1 31,1 4,2 9,2 21,2 19,3 25,3 24,4 3,5 5,6 7,7 2,8;
+water 0,12 1,12 31,12 32,12 0,13 1,13 2,13 30,13 31,13 32,13 0,14 1,14 2,14 3,14 28,14 29,14 30,14 31,14 32,14 0,15 1,15 2,15 3,15 4,15 5,15 25,15 26,15 27,15 28,15 29,15 30,15 31,15 32,15 0,16 1,16 2,16 3,16 4,16 5,16 6,16 7,16 8,16 23,16 24,16 25,16 26,16 27,16 28,16 29,16 30,16 31,16 32,16 0,17 1,17 2,17 3,17 4,17 5,17 6,17 7,17 8,17 9,17 21,17 22,17 23,17 24,17 25,17 26,17 27,17 28,17 29,17 30,17 31,17 32,17;
+`];var y1=[`
+Title EMPTY;
+Size 15x8;
+Background transparent;
+baba 6,5;
+Baba 0,0;
+Belt 0,4;
+belt@down 10,5 11,5 12,5 10,6 11,6 12,6 1,1;
+cloud 9,1 10,1 11,1 12,1 13,1 9,2 13,2 0,3 1,3 2,3 3,3 9,3 13,3 3,4 9,4 13,4 9,5 13,5;
+Cloud 5,7;
+Empty 6,2;
+flag 11,3;
+Flag 12,0;
+Is 1,0 13,0 7,2 1,4 6,7;
+Shift 2,4;
+star 4,1 2,6 14,7;
+Stop 7,7;
+Win 14,0;
+You 2,0;
+`,`
+Title LONELY FLAG;
+Size 24x14;
+Background transparent;
+Anni 3,2;
+anni@down 4,1;
+baba 10,10;
+Baba 5,11;
+Best 5,2;
+cloud 16,0 17,0 18,0 19,0 20,0 21,0 22,0 23,0 7,1 8,1 20,1 21,1 22,1 23,1 7,2 17,2 21,2 22,2 23,2 16,3 18,3 22,3 23,3 0,4 1,4 2,4 3,4 4,4 17,4 23,4 0,5 1,5 2,5 0,6 1,6 2,6 0,7 1,7 0,8 1,8 0,9 1,9 0,10 1,10 23,10 0,11 1,11 2,11 22,11 23,11 0,12 1,12 2,12 3,12 20,12 21,12 22,12 23,12 0,13 1,13 2,13 3,13 4,13 18,13 19,13 20,13 21,13 22,13 23,13 1,2;
+door 7,7 8,7 9,7 10,7 11,7 12,7 13,7 7,8 13,8 14,8 15,8 16,8 7,9 16,9 7,10 16,10 7,11 16,11 7,12 8,12 9,12 10,12 11,12 12,12 13,12 14,12 15,12 16,12;
+Door 13,9;
+dust 13,2 9,3 12,4 20,8 3,9;
+Empty 11,9;
+flag 17,3;
+Flag 10,0;
+Is 11,0 4,2 23,6 9,9 14,9 5,12;
+love 4,0;
+Stop 23,7 15,9;
+wall 0,0 1,0 2,0 6,0 7,0 8,0 9,0 0,1 1,1 2,1 6,1 15,1 16,1 17,1 18,1 19,1 0,2 1,2 2,2 6,2 15,2 19,2 0,3 1,3 2,3 3,3 4,3 5,3 6,3 15,3 19,3 15,4 19,4 15,5 16,5 17,5 18,5 19,5 23,8;
+Wall 23,5;
+Win 12,0;
+You 5,13;
+`,`
+Title BABAS ARE YOU;
+Size 18x18;
+Background transparent;
+And 3,7 6,17;
+baba 11,10;
+Baba 5,7 3,17;
+cloud 4,0 5,0 6,0 10,0 11,0 12,0 13,0 2,1 3,1 4,1 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 14,1 15,1 1,2 2,2 3,2 4,2 5,2 6,2 7,2 8,2 9,2 11,2 12,2 13,2 14,2 15,2 16,2 0,3 1,3 3,3 4,3 5,3 6,3 7,3 8,3 9,3 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 0,4 1,4 2,4 3,4 4,4 5,4 6,4 7,4 8,4 9,4 10,4 11,4 12,4 13,4 14,4 15,4 16,4 17,4 0,5 1,5 2,5 3,5 4,5 5,5 6,5 7,5 8,5 9,5 10,5 11,5 12,5 13,5 14,5 15,5 16,5 17,5 0,6 1,6 2,6 3,6 4,6 5,6 6,6 7,6 10,6 11,6 12,6 13,6 14,6 15,6 16,6 17,6 7,7 8,7 9,7 10,7 11,7 12,7 13,7 14,7 15,7 16,7 17,7 14,8 15,8 16,8 17,8 0,9 1,9 2,9 3,9 4,9 5,9 6,9 7,9 8,9 9,9 10,9 11,9 12,9 14,9 15,9 16,9 17,9 0,10 1,10 2,10 3,10 4,10 5,10 6,10 7,10 8,10 9,10 10,10 12,10 14,10 15,10 16,10 17,10 0,11 2,11 3,11 4,11 5,11 6,11 7,11 8,11 9,11 10,11 11,11 12,11 14,11 15,11 16,11 17,11 0,12 1,12 2,12 3,12 4,12 5,12 6,12 7,12 8,12 9,12 10,12 11,12 12,12 14,12 15,12 17,12 0,13 1,13 2,13 3,13 4,13 5,13 6,13 7,13 11,13 12,13 15,13 16,13 0,14 1,14 2,14 3,14 4,14 5,14 6,14 7,14 8,14 9,14 10,14 11,14 12,14 14,14 15,14 16,14 17,14 0,15 1,15 2,15 4,15 5,15 6,15 7,15 8,15 9,15 10,15 11,15 14,15 16,15 17,15 1,16 2,16 4,16 5,16 6,16 7,16 8,16 9,16 10,16 12,16 14,16 15,16 16,16 17,16 2,17 8,17 9,17 10,17 11,17 12,17 14,17 15,17 17,17 1,1;
+Defeat 2,7;
+dust 0,0 1,0 2,0 3,0 7,0 8,0 9,0 14,0 15,0 16,0 0,1 1,1 16,1 0,2 0,16 0,17 1,17;
+Empty 3,15;
+ice 10,2;
+Ice 8,6;
+Is 17,1 9,6 1,7 9,13 3,16 4,17;
+moon 17,13;
+Not 4,7;
+Push 10,13;
+rock 2,3;
+Rock 0,7 8,13;
+star 1,11 16,12 14,13 12,15 11,16 16,17;
+Stop 17,2 7,17;
+W 3,2 1,3;
+wall 6,7 0,8 1,8 2,8 3,8 4,8 5,8 6,8 7,8 8,8 9,8 10,8 11,8 12,8 13,8 13,9 13,10 13,11 13,12 13,13 13,14 13,15 13,16 13,17 1,3;
+Wall 17,0;
+Win 15,15;
+You 5,17;
+`,`
+Title INDEX;
+Size 33x17;
+Background transparent;
+cloud 4,3 6,3 8,3 4,8 0,9 0,10 0,11 1,11 3,11 4,11 5,11 10,11 29,11 0,12 1,12 2,12 3,12 4,12 5,12 6,12 23,12 0,13 1,13 2,13 3,13 4,13 5,13 6,13 22,13 31,13 32,13 0,14 1,14 2,14 3,14 4,14 5,14 6,14 7,14 8,14 9,14 14,14 30,14 31,14 32,14 0,15 1,15 2,15 3,15 4,15 5,15 6,15 7,15 8,15 9,15 10,15 19,15 20,15 21,15 28,15 29,15 30,15 31,15 32,15 0,16 1,16 2,16 3,16 4,16 5,16 6,16 7,16 8,16 9,16 10,16 11,16 12,16 17,16 18,16 19,16 20,16 21,16 22,16 23,16 25,16 26,16 27,16 28,16 29,16 30,16 31,16 32,16;
+dust 1,0 16,0 12,1 20,2 24,2 31,3 6,5 23,5 2,6 29,6 8,9 15,9 22,9 31,9;
+line 18,3 14,7 18,7 18,8 13,9 18,9 13,10 18,10 13,11 14,11 15,11 17,11 18,11;
+marker-u1d7ce 19,4 1,1;
+marker-u1d7cf 18,4 1,1;
+marker-u1d7d0 13,6 1,2;
+marker-u1d7d1 13,5 1,2;
+marker-u1d7d9 15,7 1,1;
+marker-u1d7da 18,2 1,3;
+marker-u2022 16,11 4,1;
+marker-u31 13,8 1,2;
+marker-u32 12,8 1,2;
+marker-u33 12,7 1,2;
+marker-u34 18,6 1,1;
+marker-u35 13,7 1,2;
+marker-u36 18,5 1,1;
+marker-u37 19,6 1,1;
+marker-u38 12,6 1,2;
+marker-u39 19,5 1,1;
+moon 26,0;
+rocket@right 10,3;
+star 19,0 3,1 28,3 9,7 24,7;
+`];var w1=[...g1,...b1,...h1,...k1,...S1,...I1,...y1];var b2=/^(\d+)x(\d+)$/i,h2=/^(.*)@(up|right|down|left)$/i,T1=e=>{let t=[],n="Untitled",r=0,a=0,o=1,s=e.split(";");for(let i of s){let p=i.trim();if(!p)continue;let u=p.split(/\s+/),c=u.shift();if(!c)continue;let l=c.toLowerCase();if(l==="title"){let f=u.join(" ").trim();n=f.length?f:"Untitled";continue}if(l==="size"){let f=u[0]??"",g=f.match(b2);if(!g)throw new Error(`Invalid size token: ${f}`);r=Number(g[1]),a=Number(g[2]);continue}if(l==="background")continue;let d=c!==l,h=l,b,T=l.match(h2);if(T){let f=T[1],g=T[2];f&&g&&(h=f,b=g)}for(let f of u){let[g,I]=f.split(",");if(!g||!I)continue;let k=Number(g),w=Number(I);Number.isNaN(k)||Number.isNaN(w)||t.push({id:o++,name:h,x:k,y:w,isText:d,...b?{dir:b}:{}})}}if(!r||!a)throw new Error("Level size is missing");return{title:n,width:r,height:a,items:t}};var x1=["you","win","stop","push","move","open","shut","defeat","sink","hot","melt","weak","float","tele","pull","shift","swap","up","right","down","left","red","blue","best"];var P=new Set(x1),ge=new Set([...x1,"is","and","has","not","text","empty"]);var v1=(e,t)=>{let n=t.subjectNegated??!1;return t.subject==="text"?n?!e.isText:e.isText:t.subject==="empty"||e.isText?!1:n?e.name!==t.subject:e.name===t.subject},k2=(e,t,n)=>{let r=new Set,a=new Set;for(let o of t)o.kind===n&&v1(e,o)&&(o.objectNegated?a.add(o.object):r.add(o.object));return Array.from(r).filter(o=>!a.has(o))},S2=(e,t)=>t==="empty"?null:t==="text"?{...e,name:e.isText?"text":e.name,isText:!0}:{...e,name:t,isText:!1},I2=(e,t,n,r)=>r==="empty"?null:r==="text"?{id:e,name:"empty",x:t,y:n,isText:!0}:{id:e,name:r,x:t,y:n,isText:!1},y2=e=>{let t=new Set,n=new Set;for(let r of e)r.kind==="transform"&&r.subject==="empty"&&(r.subjectNegated||(r.objectNegated?n.add(r.object):t.add(r.object)));return Array.from(t).filter(r=>!n.has(r))},q=(e,t,n,r)=>{let a=t.filter(u=>u.kind==="transform");if(!a.length)return{items:e,changed:!1};let o=[],s=e.reduce((u,c)=>Math.max(u,c.id),0)+1,i=!1;for(let u of e){let c=k2(u,a,"transform");if(!c.length){o.push(u);continue}let l=c.map(b=>S2(u,b)).filter(b=>b!==null);if(l.some(b=>b.name===u.name&&b.isText===u.isText)){o.push(u);continue}if(!l.length){i=!0;continue}i=!0;let h=l[0];if(h){o.push({...h,id:u.id});for(let b of l.slice(1))o.push({...b,id:s++})}}let p=y2(a);if(p.length){let u=new Set;for(let c of o)u.add(c.y*n+c.x);for(let c=0;c<r;c+=1)for(let l=0;l<n;l+=1){let d=c*n+l;if(!u.has(d))for(let h of p){let b=I2(s,l,c,h);b&&(o.push(b),s+=1,i=!0)}}}return{items:o,changed:i}},M=(e,t)=>e.map(n=>{let r=new Set,a=new Set;n.isText&&r.add("push");for(let s of t)s.kind==="property"&&P.has(s.object)&&v1(n,s)&&(s.objectNegated?a.add(s.object):r.add(s.object));let o=Array.from(r).filter(s=>!a.has(s)).map(s=>s).sort();return{...n,props:o}});var w2=new Set(["is","and","has","not","on","make"]),T2=new Set(["is","has"]),t1=e=>P.has(e)?!1:!w2.has(e),r1=(e,t,n)=>t*n+e,n1=(e,t,n,r)=>e>=0&&t>=0&&e<n&&t<r,a1=(e,t,n,r)=>e.get(r1(n,r,t))??[],x2=(e,t,n,r)=>{let a=new Map,o=(u,c,l)=>{n(u)&&a.set(`${u}:${c?"1":"0"}:${l}`,{word:u,negated:c,next:l})},s=e(t);if(!(r&&e(t+1).includes("not")))for(let u of s)o(u,!1,t+1);let p=0;for(;e(t+p).includes("not");){p+=1;let u=p%2===1;for(let c of e(t+p))o(c,u,t+p+1)}if(r){let u=1;for(;e(t+u).includes("not");){let c=u%2===1;for(let l of s)o(l,c,t+u+1);u+=1}}return Array.from(a.values())},Q=(e,t,n,r,a,o,s)=>{if(r>a)return{chains:[],cutByBoundary:!1};let i=x2(e,t,n,o);if(!i.length)return{chains:[],cutByBoundary:!1};let p=[],u=!1;for(let c of i){let l=e(c.next);if(s&&r>0&&l.some(h=>T2.has(h))){u=!0;continue}if(!l.includes("and")){p.push([{word:c.word,negated:c.negated}]);continue}let d=Q(e,c.next+1,n,r+1,a,o,s);if(d.chains.length)for(let h of d.chains)p.push([{word:c.word,negated:c.negated},...h]);else d.cutByBoundary&&p.push([{word:c.word,negated:c.negated}]);d.cutByBoundary&&(u=!0)}return{chains:p,cutByBoundary:u}},o1=e=>{let t=new Map;for(let n of e)for(let r of n)t.set(`${r.word}:${r.negated?"1":"0"}`,r);return Array.from(t.values())},B1=e=>t1(e)||e==="text"||e==="empty",E1=e=>P.has(e)||t1(e)||e==="text"||e==="empty",R1=e=>t1(e)||e==="text"||e==="empty";var C=(e,t,n)=>{let r=new Map;for(let i of e){if(!i.isText||i.x<0||i.x>=t||i.y<0||i.y>=n)continue;let p=r1(i.x,i.y,t),u=r.get(p)??[];u.push(i.name),r.set(p,u)}let a=t+n,o=[],s=new Set;for(let i of e){if(!i.isText||i.name!=="is"&&i.name!=="has")continue;let p=[[1,0],[0,1]];for(let[u,c]of p){let l=g=>{let I=i.x-u*g,k=i.y-c*g;return n1(I,k,t,n)?a1(r,t,I,k):[]},d=g=>{let I=i.x+u*g,k=i.y+c*g;return n1(I,k,t,n)?a1(r,t,I,k):[]},h=Q(l,1,B1,0,a,!0,!0),b=o1(h.chains);if(!b.length)continue;let T=Q(d,1,i.name==="is"?E1:R1,0,a,!1,!1),f=o1(T.chains);if(f.length)for(let g of b)for(let I of f){let k={subject:g.word,...g.negated?{subjectNegated:!0}:{},object:I.word,...I.negated?{objectNegated:!0}:{},kind:i.name==="has"?"has":P.has(I.word)?"property":"transform"},w=`${k.subjectNegated?"!":""}${k.subject}:${k.kind}:${k.objectNegated?"!":""}${k.object}`;s.has(w)||(s.add(w),o.push(k))}}}return o};var s1=(e,t)=>{let n=C(e.items,e.width,e.height),r=q(e.items,n,e.width,e.height),a=C(r.items,e.width,e.height),o=M(r.items,a);return{levelIndex:t,title:e.title,width:e.width,height:e.height,items:o,rules:a,status:"playing",turn:0}},W1=e=>({...e,status:"complete"});var v=(e,t,n)=>t*n+e,S=(e,t)=>e.props.includes(t),N=(e,t)=>{let n=new Map;for(let r of e){let a=v(r.x,r.y,t),o=n.get(a)??[];o.push(r),n.set(a,o)}return n},H={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]},l1=e=>{switch(e){case"up":return"down";case"down":return"up";case"left":return"right";case"right":return"left"}},J=e=>{let t=e.filter(a=>S(a,"float")),n=e.filter(a=>!S(a,"float")),r=[];return t.length&&r.push(t),n.length&&r.push(n),r},v2=(e,t)=>{let n=t.subjectNegated??!1;return t.subject==="text"?n?!e.isText:e.isText:t.subject==="empty"||e.isText?!1:n?e.name!==t.subject:e.name===t.subject},B2=(e,t)=>{let n=new Set,r=new Set;for(let a of t)v2(e,a)&&(a.objectNegated?r.add(a.object):n.add(a.object));return Array.from(n).filter(a=>!r.has(a))},j=(e,t,n,r)=>{if(!n.length||!t.length)return{items:e,changed:!1};let a=[...e,...t].reduce((s,i)=>Math.max(s,i.id),0)+1,o=[];for(let s of t){let i=B2(s,n);if(i.length){for(let p of i)if(p!=="empty"){if(p==="text"){o.push({id:a++,name:s.isText?"text":s.name,x:s.x,y:s.y,isText:!0,props:[],...r&&s.dir?{dir:s.dir}:{}});continue}o.push({id:a++,name:p,x:s.x,y:s.y,isText:!1,props:[],...r&&s.dir?{dir:s.dir}:{}})}}}return o.length?{items:[...e,...o],changed:!0}:{items:e,changed:!1}};var E2=(e,t)=>{let n=e.filter(s=>S(s,"open")),r=e.filter(s=>S(s,"shut")),a=Math.min(n.length,r.length);if(!a)return!1;let o=!1;for(let s=0;s<a;s+=1){let i=n[s],p=r[s];i&&(t.add(i.id),o=!0),p&&(t.add(p.id),o=!0)}return o},M1=(e,t,n)=>{let r=new Map;for(let c of e){let l=v(c.x,c.y,t),d=r.get(l)??[];d.push(c),r.set(l,d)}let a=new Set,o=!1;for(let c of r.values())for(let l of J(c)){if(!l.length)continue;let d=l.length>1;if(d&&l.some(g=>S(g,"sink"))){for(let g of l)a.add(g.id);o=!0}if(l.some(f=>S(f,"defeat")))for(let f of l)S(f,"you")&&(a.add(f.id),o=!0);if(l.some(f=>S(f,"hot")))for(let f of l)S(f,"melt")&&(a.add(f.id),o=!0);if(E2(l,a)&&(o=!0),d)for(let f of l)S(f,"weak")&&(a.add(f.id),o=!0)}if(!a.size)return{items:e,changed:o};let s=n.filter(c=>c.kind==="has"),i=e.filter(c=>!a.has(c.id)),p=e.filter(c=>a.has(c.id)),u=j(i,p,s,!1);return{items:u.items,changed:o||u.changed}};var D1=(e,t,n)=>{let[r,a]=H[t],o=(l,d)=>e.openIds.has(l.id)&&e.shutIds.has(d.id)||e.shutIds.has(l.id)&&e.openIds.has(d.id),s=l=>n&&e.moverIds.has(l),i=l=>{if(e.removed.has(l.id))return;e.removed.add(l.id),e.removedItems.push(l),e.byId.delete(l.id);let d=v(l.x,l.y,e.width),h=e.grid.get(d)??[];e.grid.set(d,h.filter(b=>b.id!==l.id))},p=(l,d)=>{if(d.has(l))return!0;d.add(l);let h=e.byId.get(l);if(!h)return!1;let b=h.x+r,T=h.y+a;if(b<0||T<0||b>=e.width||T>=e.height)return!1;let f=v(b,T,e.width),g=(e.grid.get(f)??[]).filter(k=>!e.removed.has(k.id));if(!g.length||g.some(k=>o(h,k)))return!0;let I=[];for(let k of g){if(e.weakIds.has(k.id))continue;let w=e.pushIds.has(k.id),y=e.swapIds.has(k.id)&&!w,E=e.stopIds.has(k.id)&&!w&&!y,W=e.pullIds.has(k.id)&&!w&&!y;if(E||W)return!1;w&&I.push(k)}for(let k of I)if(!p(k.id,d)&&!(e.weakIds.has(k.id)&&!s(k.id)))return!1;return!0},u=(l,d,h)=>{let b=v(l.x,l.y,e.width),T=e.grid.get(b)??[];e.grid.set(b,T.filter(I=>I.id!==l.id)),l.x=d,l.y=h;let f=v(d,h,e.width),g=e.grid.get(f)??[];g.push(l),e.grid.set(f,g)},c=l=>{if(e.moved.has(l)||e.removed.has(l))return;let d=e.byId.get(l);if(!d)return;let h=d.x,b=d.y,T=d.x+r,f=d.y+a,g=v(T,f,e.width),I=[...e.grid.get(g)??[]],k=I.filter(m=>e.pushIds.has(m.id)),w=I.filter(m=>!e.pushIds.has(m.id)&&e.swapIds.has(m.id)),y=h-r,E=b-a,W=y<0||E<0||y>=e.width||E>=e.height?[]:[...e.grid.get(v(y,E,e.width))??[]].filter(m=>e.pullIds.has(m.id));for(let m of k)if(!(e.moved.has(m.id)||e.removed.has(m.id))){if(!p(m.id,new Set)){e.weakIds.has(m.id)&&!s(m.id)&&(i(m),e.status.anyMoved=!0);continue}c(m.id)}let A=[...e.grid.get(g)??[]].filter(m=>!e.removed.has(m.id)).filter(m=>o(d,m));if(A.length){i(d),e.moved.add(d.id),e.status.anyMoved=!0;for(let m of A)i(m);for(let m of W)e.moved.has(m.id)||e.removed.has(m.id)||p(m.id,new Set)&&c(m.id);return}u(d,T,f),e.moved.add(d.id),e.status.anyMoved=!0;for(let m of w){if(e.moved.has(m.id)||e.removed.has(m.id))continue;let Y=e.byId.get(m.id);Y&&(u(Y,h,b),e.moved.add(Y.id),e.status.anyMoved=!0)}for(let m of W)e.moved.has(m.id)||e.removed.has(m.id)||p(m.id,new Set)&&c(m.id)};return{canMove:p,doMove:c}};var L1=(e,t,n,r,a,o,s)=>{let i=e.map(m=>({...m})),p=new Map,u=[],c=new Set,l=new Set,d=new Set,h=new Set,b=new Set,T=new Set,f=new Set,g=new Set;for(let m of i)p.set(m.id,m),o(m)&&(u.push(m.id),c.add(m.id)),S(m,"push")&&l.add(m.id),S(m,"stop")&&d.add(m.id),S(m,"pull")&&h.add(m.id),S(m,"swap")&&b.add(m.id),S(m,"open")&&T.add(m.id),S(m,"shut")&&f.add(m.id),S(m,"weak")&&g.add(m.id);let I=new Set,k=new Set,w=[],y={anyMoved:!1},E=D1({byId:p,grid:N(i,n),height:r,moverIds:c,moved:I,openIds:T,pullIds:h,pushIds:l,removed:k,removedItems:w,status:y,stopIds:d,swapIds:b,weakIds:g,width:n,shutIds:f},t,s);for(let m of u)if(!(I.has(m)||k.has(m))){if(!E.canMove(m,new Set)){let Y=p.get(m);Y&&g.has(m)&&!s&&(k.add(Y.id),w.push(Y),y.anyMoved=!0);continue}E.doMove(m)}let W=i.filter(m=>!k.has(m.id)),K=a.filter(m=>m.kind==="has"),A=j(W,w,K,!0);return{items:A.items,moved:y.anyMoved||A.changed,movedIds:I}};var A1=(e,t)=>{let n=[];for(let[r,a]of t.entries())a.status==="moving"&&(e.removed.has(r)||n.push(r));for(let r of n){let a=e.byId.get(r),o=t.get(r);if(!a||!o)continue;a.dir!==o.dir&&(a.dir=o.dir,e.status.changed=!0);let s=v(a.x,a.y,e.width),i=e.grid.get(s)??[];e.grid.set(s,i.filter(d=>d.id!==r));let[p,u]=H[o.dir];a.x+=p,a.y+=u;let c=v(a.x,a.y,e.width),l=e.grid.get(c)??[];l.push(a),e.grid.set(c,l),e.status.changed=!0}};var R2=(e,t,n)=>e.openIds.has(t.id)&&e.shutIds.has(n.id)||e.shutIds.has(t.id)&&e.openIds.has(n.id),i1=(e,t,n)=>t>=0&&n>=0&&t<e.width&&n<e.height,u1=(e,t)=>{if(e.removed.has(t.id))return;e.removed.add(t.id),e.removedItems.push(t),e.byId.delete(t.id),e.status.changed=!0;let n=v(t.x,t.y,e.width),r=e.grid.get(n)??[];e.grid.set(n,r.filter(a=>a.id!==t.id))},N1=(e,t)=>{let n=new Map,r=[],a=(o,s,i)=>{e.removed.has(o)||n.has(o)||(n.set(o,{dir:s,flipped:!1,isMove:i,status:"pending"}),r.push(o))};for(let o of t)a(o.id,o.dir,o.isMove);for(;r.length;){let o=r.shift();if(o===void 0||e.removed.has(o))continue;let s=n.get(o);if(s?.status!=="pending")continue;let i=e.byId.get(o);if(!i)continue;let[p,u]=H[s.dir],c=i.x+p,l=i.y+u;if(i1(e,c,l)){let I=v(c,l,e.width),k=e.grid.get(I)??[],w=!1;for(let y of k)e.removed.has(y.id)||e.pushIds.has(y.id)&&(n.has(y.id)||(a(y.id,s.dir,!1),w=!0));if(w){r.push(o);continue}}let d=!i1(e,c,l),h=!1;if(!d){let I=v(c,l,e.width),k=e.grid.get(I)??[];for(let w of k){if(e.removed.has(w.id))continue;if(R2(e,i,w)){u1(e,i),u1(e,w);continue}let y=e.stopIds.has(w.id),E=e.pushIds.has(w.id),W=e.pullIds.has(w.id);if(e.weakIds.has(w.id)||d||!E&&!y&&!W)continue;let A=n.get(w.id);if(A?.dir===s.dir){if(A.status==="moving")continue;if(A.status==="stopped"){d=!0;continue}h=!0;continue}(y||W)&&(d=!0)}}if(d){if(e.weakIds.has(o)&&!s.isMove){u1(e,i);continue}if(s.isMove&&!s.flipped){s.dir=l1(s.dir),s.flipped=!0,r.push(o);continue}s.status="stopped";continue}if(h){r.push(o);continue}let[b,T]=H[l1(s.dir)],f=i.x+b,g=i.y+T;if(i1(e,f,g)){let I=v(f,g,e.width),k=e.grid.get(I)??[];for(let w of k)e.removed.has(w.id)||e.pullIds.has(w.id)&&a(w.id,s.dir,!1)}s.status="moving"}return n};var c1=(e,t,n,r,a)=>{let o=e.map(y=>({...y})),s=new Map,i=new Set,p=new Set,u=new Set,c=new Set,l=new Set,d=new Set;for(let y of o)s.set(y.id,y),S(y,"push")&&i.add(y.id),S(y,"stop")&&p.add(y.id),S(y,"pull")&&u.add(y.id),S(y,"open")&&c.add(y.id),S(y,"shut")&&l.add(y.id),S(y,"weak")&&d.add(y.id);let h=new Set,b=[],T={changed:!1},f={byId:s,grid:N(o,t),height:n,openIds:c,pullIds:u,pushIds:i,removed:h,removedItems:b,shutIds:l,status:T,stopIds:p,weakIds:d,width:t},g=N1(f,a);A1(f,g);let I=o.filter(y=>!h.has(y.id)),k=r.filter(y=>y.kind==="has"),w=j(I,b,k,!0);return{items:w.items,moved:T.changed||w.changed}};var O1=(e,t,n,r)=>{let a=e.filter(o=>S(o,"move")).map(o=>({id:o.id,dir:o.dir??"right",isMove:!0}));return a.length?c1(e,t,n,r,a):{items:e,moved:!1}},F1=(e,t,n,r)=>{let a=e.map(c=>({...c})),o=N(a,t),s=new Map;for(let c of a)s.set(c.id,c);let i=[],p=!1;for(let c of o.values()){let l=c.filter(h=>S(h,"shift"));if(!l.length)continue;let d=l[0];if(d)for(let h=0;h<l.length;h+=1){let b=l[h];if(!b)continue;let T=s.get(b.id);if(!T)continue;let f=T.dir??"right";for(let g of c){if(g.id===b.id||h>0&&g.id!==d.id)continue;let I=s.get(g.id);I&&(I.dir!==f&&(I.dir=f,p=!0),i.push({id:g.id,dir:f,isMove:!1}))}}}if(!i.length)return{items:e,moved:!1};let u=c1(a,t,n,r,i);return{items:u.items,moved:u.moved||p}},Y1=e=>{let t=!1;return{items:e.map(r=>{let{dir:a}=r;if(S(r,"up")&&(a="up"),S(r,"down")&&(a="down"),S(r,"left")&&(a="left"),S(r,"right")&&(a="right"),a===r.dir)return r;if(t=!0,!a){let{dir:o,...s}=r;return s}return{...r,dir:a}}),changed:t}};var P1=747796405,C1=2891336453,H1=277803737,D=e=>e>>>0,W2=e=>{let t=Math.imul(D(e^C1),P1),n=D((t>>>28)+4),r=Math.imul(D(t>>>n^t),H1);return D(r>>>22^r)},M2=e=>{let t=W2(e),n=()=>{t=D(Math.imul(t,P1)+C1);let r=D((t>>>28)+4),a=Math.imul(D(t>>>r^t),H1);return D(a>>>22^a)};return(r,a)=>{if(r>=a)return r;let o=D(a-r);if(o<=1)return r;let s=n(),i=BigInt(s)*BigInt(o),p=Number(i&0xffffffffn)>>>0;if(p<o){let u=D(0-o)%o;for(;p<u;)s=n(),i=BigInt(s)*BigInt(o),p=Number(i&0xffffffffn)>>>0}return r+(Number(i>>32n&0xffffffffn)>>>0)}},z1=(e,t,n)=>{let r=e.map(l=>({...l})),a=N(r,t),o=Array.from(a.keys()).sort((l,d)=>l-d),s=new Map,i=[];for(let l of o){let d=a.get(l);if(!d?.length)continue;let h=d.filter(f=>S(f,"tele"));if(!h.length)continue;let b=h[0];if(!b)continue;let T=new Set;for(let f of h)T.add(S(f,"float"));s.set(l,{x:b.x,y:b.y,floatLayers:T}),i.push({x:b.x,y:b.y})}if(i.length<2)return{items:e,moved:!1};let p=M2(n),u=new Map;for(let l of o){let d=a.get(l);if(!d?.length)continue;let h=s.get(l);if(h)for(let b of[!0,!1]){if(!h.floatLayers.has(b)||!d.some(g=>S(g,"tele")&&S(g,"float")===b))continue;let f=i.filter(g=>g.x!==h.x||g.y!==h.y);if(f.length)for(let g of d){if(S(g,"tele")||S(g,"float")!==b)continue;let I=f[p(0,f.length)];I&&u.set(g.id,I)}}}if(!u.size)return{items:e,moved:!1};let c=!1;for(let l of r){let d=u.get(l.id);d&&(l.x=d.x,l.y=d.y,c=!0)}return{items:r,moved:c}};var D2=(e,t)=>{let n=new Map;for(let r of e){let a=v(r.x,r.y,t),o=n.get(a)??[];o.push(r),n.set(a,o)}return n},j1=(e,t)=>{let n=D2(e,t);for(let r of n.values())for(let a of J(r))if(a.some(s=>S(s,"you"))&&a.some(s=>S(s,"win")))return!0;return!1},K1=e=>{for(let t of e)if(S(t,"you"))return!0;return!1};var G1=(e,t)=>{let n=C(e.items,e.width,e.height),r=M(e.items,n),a=L1(r,t,e.width,e.height,n,K=>S(K,"you"),!1),o=M(a.items,n),s=O1(o,e.width,e.height,n),i=M(s.items,n),p=F1(i,e.width,e.height,n),u=C(p.items,e.width,e.height),c=M(p.items,u),l=Y1(c),d=q(l.items,u,e.width,e.height),h=M(d.items,u),b=M1(h,e.width,u),T=M(b.items,u),f=z1(T,e.width,e.turn),g=j1(f.items,e.width),I=!g&&!K1(f.items),k=C(f.items,e.width,e.height),w=M(f.items,k),y={...e,items:w,rules:k,status:g?"win":I?"lose":"playing",turn:e.turn+1},E=e.status==="win"!==g||e.status==="lose"!==I,W=a.moved||s.moved||p.moved||l.changed||d.changed||b.changed||f.moved||E;return{state:y,changed:W}};var $1=e=>{switch(e.name){case"up":return{type:"move",direction:"up"};case"right":return{type:"move",direction:"right"};case"down":return{type:"move",direction:"down"};case"left":return{type:"move",direction:"left"};case"w":return{type:"move",direction:"up"};case"d":return{type:"move",direction:"right"};case"s":return{type:"move",direction:"down"};case"a":return{type:"move",direction:"left"};case"u":return{type:"undo"};case"r":return{type:"restart"};case"n":case"return":case"enter":return{type:"next"};case"q":return{type:"back-menu"};default:return{type:"noop"}}},U1=e=>{switch(e.name){case"up":case"w":return{type:"up"};case"down":case"s":return{type:"down"};case"left":case"a":return{type:"page-left"};case"right":case"d":return{type:"page-right"};case"n":case"return":case"enter":case"space":return{type:"start"};case"q":return{type:"quit-app"};default:return{type:"noop"}}};var L2=e=>{switch(e){case"ArrowUp":return"up";case"ArrowRight":return"right";case"ArrowDown":return"down";case"ArrowLeft":return"left";case"Enter":return"enter";case" ":case"Spacebar":return"space";default:return e.length===1?e.toLowerCase():void 0}},_1=e=>{let t=L2(e.key);return{...t?{name:t}:{},ctrl:!!e.ctrlKey,meta:!!e.metaKey}},V1=e=>$1(_1(e)),X1=e=>U1(_1(e));var A2=new Intl.Segmenter("en",{granularity:"grapheme"}),Z={algae:"\u{1FAB8}",anni:"\u{1F467}",baba:"\u{1F411}",belt:"\u{1F9F5}",bog:"\u{1F7E4}",bolt:"\u{1F529}",box:"\u{1F4E6}",brick:"\u{1F9F1}",bubble:"\u{1FAE7}",bug:"\u{1F41E}",cloud:"\u2601\uFE0F",cog:"\u2699\uFE0F",crab:"\u{1F980}",door:"\u{1F6AA}",dust:"\u{1F32B}\uFE0F",fence:"\u{1F6A7}",flag:"\u{1F6A9}",flower:"\u{1F338}",foliage:"\u{1F343}",fruit:"\u{1F34E}",fungi:"\u{1F344}",fungus:"\u{1F344}\u200D\u{1F7EB}",ghost:"\u{1F47B}","glyph-u5f":"\u2796","glyph-u61":"\u{1F170}\uFE0F","glyph-u6f":"\u2B55",grass:"\u{1F33F}",hedge:"\u{1F333}",husk:"\u{1F965}",husks:"\u{1F965}",ice:"\u{1F9CA}",jelly:"\u{1FABC}",keke:"\u{1F436}",key:"\u{1F511}",lava:"\u{1F30B}",leaf:"\u{1F342}",line:"\u{1F4CF}",love:"\u2764\uFE0F",map:"\u{1F5FA}\uFE0F","marker-u1d538":"\u{1F1E6}","marker-u1d539":"\u{1F1E7}","marker-u1d53b":"\u{1F1E9}","marker-u1d53c":"\u{1F1EA}","marker-u1d7ce":"0\uFE0F\u20E3","marker-u1d7cf":"1\uFE0F\u20E3","marker-u1d7d0":"2\uFE0F\u20E3","marker-u1d7d1":"3\uFE0F\u20E3","marker-u1d7d2":"4\uFE0F\u20E3","marker-u1d7d9":"1\uFE0F\u20E3","marker-u1d7da":"2\uFE0F\u20E3","marker-u1d7db":"3\uFE0F\u20E3","marker-u1d7dc":"4\uFE0F\u20E3","marker-u1d7dd":"5\uFE0F\u20E3","marker-u1d7de":"6\uFE0F\u20E3","marker-u2022":"\u26AB","marker-u2102":"\u{1F1E8}","marker-u30":"0\uFE0F\u20E3","marker-u31":"1\uFE0F\u20E3","marker-u32":"2\uFE0F\u20E3","marker-u33":"3\uFE0F\u20E3","marker-u34":"4\uFE0F\u20E3","marker-u35":"5\uFE0F\u20E3","marker-u36":"6\uFE0F\u20E3","marker-u37":"7\uFE0F\u20E3","marker-u38":"8\uFE0F\u20E3","marker-u39":"9\uFE0F\u20E3",me:"\u{1F9D1}",moon:"\u{1F319}",pillar:"\u{1F5FC}",pipe:"\u{1F6BF}",reed:"\u{1F33E}",robot:"\u{1F916}",rock:"\u{1FAA8}",rocket:"\u{1F680}",rose:"\u{1F339}",seastar:"\u2B50",skull:"\u{1F480}",star:"\u2B50",statue:"\u{1F5FF}",stump:"\u{1FAB5}",tile:"\u25FD\uFE0F",tree:"\u{1F332}",trees:"\u{1F332}",violet:"\u{1FABB}",wall:"\u{1F9F1}",water:"\u{1F30A}"};var q1=new Set(["move","push","pull"]);var N2=e=>!e.isText&&e.props.some(t=>q1.has(t)),O2=e=>!e.isText&&e.props.some(t=>t!=="you"&&!q1.has(t)),F2=(e,t)=>!e.isText&&t.has(e.name),Y2=(e,t)=>!e.isText&&!t.has(e.name),Q1=(e,t)=>{let n=e.find(u=>u.props.includes("you"));if(n)return n;let r=e.find(u=>u.isText);if(r)return r;let a=e.find(N2);if(a)return a;let o=e.find(O2);if(o)return o;let s=e.find(u=>F2(u,t));if(s)return s;let i=e.find(u=>Y2(u,t));if(i)return i;let p=e[0];if(!p)throw new Error("No items available to render.");return p},J1=e=>e.length?e.map(t=>{let n=`${t.subjectNegated?"NOT ":""}${t.subject}`.toUpperCase(),r=t.kind==="has"?"HAS":"IS",a=`${t.objectNegated?"NOT ":""}${t.object}`.toUpperCase();return`${n} ${r} ${a}`}).sort():["(no rules)"];var P2={up:"\u2B06\uFE0F",right:"\u27A1\uFE0F",down:"\u2B07\uFE0F",left:"\u2B05\uFE0F"},Z1=new Set(["is","and","not","has"]),G=e=>e.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"),d1=e=>e.toUpperCase(),C2=e=>{if(e.name==="belt"){let t=e.dir??"right";return P2[t]}return Z[e.name]},H2=e=>e==="belt"?"\u2B06\uFE0F\u27A1\uFE0F\u2B07\uFE0F\u2B05\uFE0F":Z[e]??"",z2=e=>{if(e.isText){let n=d1(e.name),r=n.length>4?" long":n.length===3?" three":"";return{className:Z1.has(e.name)?`cell text syntax${r}`:`cell text normal${r}`,value:n}}let t=C2(e);return t?{className:"cell object",value:t}:{className:"cell object fallback",value:d1(e.name)}},j2=e=>Array.from(e).sort().map(t=>{let n=Z1.has(t)?"syntax":"normal",r=H2(t),a=r?`<span class="legend-glyph">${G(r)}</span>`:"";return`<li class="legend-row"><span class="legend-text ${n}">${G(d1(t))}</span><span class="legend-name">${G(t)}</span>${a}</li>`}),m1=e=>{switch(e){case"win":return"WIN! Press N/Enter for next level.";case"lose":return"DEFEAT! Press R to restart, Q to menu.";case"complete":return"ALL LEVELS CLEARED! Press N to restart.";default:return"WASD/Arrows move, U=Undo, R=Restart, Q=Menu"}},e2=e=>{let t=new Map,n=new Set;for(let a of e.items){let o=a.y*e.width+a.x,s=t.get(o)??[];s.push(a),t.set(o,s),a.isText&&n.add(a.name)}let r=[];for(let a of t.values()){let o=Q1(a,n),s=z2(o);r.push({id:o.id,x:o.x,y:o.y,...s})}return{entities:r,textNames:n}},t2=e=>e2(e).entities,r2=(e,t={showReferenceDialog:!1})=>{let{textNames:n}=e2(e),r=J1(e.rules).map(i=>`<li>${G(i)}</li>`),a=j2(n),o=t.showReferenceDialog,s=o?"":" hidden";return['<section class="game-screen" aria-label="Game">','<div class="game-toolbar">',`<span class="status" aria-live="polite">${G(m1(e.status))}</span>`,`<button class="btn reference-btn" data-action="toggle-reference" aria-haspopup="dialog" aria-expanded="${o?"true":"false"}">Rules & Legend</button>`,"</div>",'<div class="board-wrap">',`<div class="board" role="grid" style="--board-width:${e.width};--board-height:${e.height};"></div>`,"</div>",`<div class="reference-backdrop" data-role="reference-backdrop"${s}>`,'<section class="reference-dialog" data-role="reference-dialog" role="dialog" aria-modal="true" aria-label="Rules and legend">','<header class="reference-header">','<button class="btn reference-close" data-action="close-reference" aria-label="Close rules and legend">Close</button>',"</header>",'<h3 class="reference-subtitle">Rules</h3>',`<ul class="rules-list">${r.length?r.join(""):"<li>(no rules)</li>"}</ul>`,'<h3 class="reference-subtitle">Legend</h3>',`<ul class="legend-list">${a.length?a.join(""):"<li>(no text tiles)</li>"}</ul>`,"</section>","</div>","</section>"].join("")};var n2=e=>e.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;"),a2=(e,t,n)=>Math.min(n,Math.max(t,e)),K2=(e,t,n)=>{if(e<=n)return[0,e];let r=Math.floor(n/2),a=a2(t-r,0,e-n);return[a,a+n]},o2=e=>{let t=e.levels.length,n=a2(e.selectedLevelIndex,0,Math.max(0,t-1)),r=e.levels[n]?.title??"(unknown)",[a,o]=K2(t,n,10),s=[];a>0&&s.push('<li class="menu-row muted" role="option" aria-hidden="true">...</li>');for(let i=a;i<o;i+=1){let p=e.levels[i];if(!p)continue;let u=i===n?"&gt;":"&nbsp;",c=String(i+1).padStart(3," "),l=n2(p.title),d=i===n?"menu-row selected":"menu-row";s.push(`<li class="${d}" role="option" data-action="start-level" data-level-index="${i}" aria-selected="${i===n?"true":"false"}"><span class="marker">${u}</span><span class="num">${c}.</span><span class="name">${l}</span></li>`)}return o<t&&s.push('<li class="menu-row muted" role="option" aria-hidden="true">...</li>'),['<section class="menu-screen" aria-label="Level Menu">','<h1 class="title">BABA IS YOU</h1>',`<p class="meta"><strong>Levels:</strong> ${t}</p>`,`<p class="meta" aria-live="polite"><strong>Selected:</strong> ${n+1}. ${n2(r)}</p>`,'<p class="meta">W/S or Up/Down: select | A/D or Left/Right: page | Enter/N or Click: start</p>','<p class="meta">In game: Q returns to menu</p>','<h2 class="section-title">Select Level</h2>','<ol class="menu-list" role="listbox" aria-label="Level list">',...s,"</ol>","</section>"].join("")};var G2=150,z=w1.map(e=>T1(e)),p2=z[0];if(!p2)throw new Error("No levels available.");var $2=z.map(e=>({title:e.title})),U2=window.matchMedia("(prefers-reduced-motion: reduce)"),_=globalThis.document.getElementById("app");if(!_)throw new Error("Missing #app container.");var f2=0,s2=z.length-1,B="menu",R=f2,L=f2,V=[],x=s1(z[L]??p2,L),F=!1,l2=0,i2=null,u2=!1,c2=null,f1=null,p1=null,$=new Map,X=()=>{F=!1},U=e=>{let t=z[e];if(!t)throw new Error(`Invalid level index: ${e}`);L=e,V=[],X(),x=s1(t,L)},g2=e=>{U(e),B="game"},_2=()=>{R=L,V=[],X(),B="menu"},V2=()=>{let t=window.innerWidth-18,n=window.innerHeight-104,r=Math.floor((t-1*(x.width-1))/x.width),a=Math.floor((n-1*(x.height-1))/x.height);return Math.min(44,Math.max(12,Math.min(r,a)))},d2=()=>{if(!f1)return;let e=t2(x),t=new Set;for(let n of e){t.add(n.id);let r=$.get(n.id);if(r){r.className!==n.className&&(r.className=n.className);let a=r.querySelector(".value");a instanceof HTMLSpanElement&&a.textContent!==n.value&&(a.textContent=n.value),r.style.setProperty("--cx",String(n.x)),r.style.setProperty("--cy",String(n.y))}else{r=document.createElement("div"),r.className=n.className;let a=document.createElement("span");a.className="value",a.textContent=n.value,r.appendChild(a),r.style.setProperty("--cx",String(n.x)),r.style.setProperty("--cy",String(n.y)),f1.appendChild(r),$.set(n.id,r)}}for(let[n,r]of $)t.has(n)||(r.remove(),$.delete(n))},X2=e=>{!U2.matches&&document.startViewTransition?document.startViewTransition(e):e()},O=()=>{document.title=B==="game"?`${L+1}. ${x.title} \u2013 Baba Is You`:"Baba Is You",B==="game"&&document.documentElement.style.setProperty("--cell-size",`${V2()}px`);let e=B!==i2,t=F!==u2,n=B==="game"?`${L}:${x.width}x${x.height}`:null,r=n!==c2;if(i2=B,u2=F,c2=n,e||t||B==="menu"||r){let a=B==="menu"?o2({levels:$2,selectedLevelIndex:R}):r2(x,{showReferenceDialog:F});X2(()=>{_.innerHTML=a,f1=_.querySelector(".board"),p1=_.querySelector(".status"),$.clear(),B==="game"&&d2()});return}d2(),p1&&(p1.textContent=m1(x.status))},q2=e=>{if(x.status!=="playing")return!1;let t=G1(x,e);return t.changed?(V.push(x),x=t.state,!0):!1},Q2=e=>{switch(e.type){case"move":return q2(e.direction);case"undo":return V.length?(x=V.pop()??x,!0):!1;case"restart":return x.status==="complete"?(U(0),!0):(U(L),!0);case"next":return x.status==="win"?L===z.length-1?(x=W1(x),!0):(U(L+1),!0):x.status==="complete"?(U(0),!0):!1;case"back-menu":return _2(),!0;case"noop":return!1}},J2=e=>{switch(e.type){case"up":return R>0&&(R-=1),!0;case"down":return R<s2&&(R+=1),!0;case"page-left":return R=Math.max(0,R-10),!0;case"page-right":return R=Math.min(s2,R+10),!0;case"start":return g2(R),!0;case"quit-app":return!0;case"noop":return!1}};_.addEventListener("click",e=>{let t=e.target;if(!(t instanceof HTMLElement))return;let n=t.closest("[data-action]");if(n){let o=n.dataset.action;if(o==="start-level"&&B==="menu"){let s=parseInt(n.dataset.levelIndex??"",10);!isNaN(s)&&s>=0&&s<z.length&&(R=s,g2(s),O());return}if(o==="toggle-reference"&&B==="game"){F=!F,O();return}o==="close-reference"&&B==="game"&&(X(),O());return}if(!F||B!=="game")return;let r=t.closest('[data-role="reference-backdrop"]'),a=t.closest('[data-role="reference-dialog"]');r&&!a&&(X(),O())});globalThis.window.addEventListener("keydown",e=>{if(B==="game"&&F){e.key==="Escape"&&(X(),e.preventDefault(),O());return}B==="game"&&Date.now()-l2<G2||!(B==="menu"?J2(X1(e)):Q2(V1(e)))||(e.preventDefault(),B==="game"&&(l2=Date.now()),O())});var m2=0;window.addEventListener("resize",()=>{clearTimeout(m2),m2=window.setTimeout(O,60)});O();})();
+</script></body></html>

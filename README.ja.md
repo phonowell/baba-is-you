@@ -9,6 +9,7 @@
 ```bash
 pnpm install
 pnpm start
+pnpm build:single-html
 pnpm lint
 pnpm type-check
 ```
@@ -18,6 +19,7 @@ pnpm type-check
 | コマンド | 説明 |
 |---------|------|
 | `pnpm start` | ゲーム起動（`src/cli.ts`） |
+| `pnpm build:single-html` | 単一 HTML 生成（`release/baba-is-you.html`） |
 | `pnpm lint` | `src/**/*.ts` を lint + 自動修正 |
 | `pnpm type-check` | 出力なしの型チェック |
 
@@ -41,6 +43,17 @@ pnpm type-check
 - テキストは 2 文字コード；IS は別色
 - 盤面下にルールと凡例を表示
 - ANSI カラー対応
+
+## 単一 HTML
+
+```bash
+pnpm build:single-html
+```
+
+- 出力先：`release/baba-is-you.html`
+- 生成物は自己完結した 1 ファイルで、オフラインで直接開けます
+- Web 盤面セルは常に正方形です
+- テキストタイルは省略せず全文字表示、空セルは空白表示です
 
 ## レベル元データ
 

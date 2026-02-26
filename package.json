@@ -7,6 +7,7 @@
     "@types/node": "^25.3.0",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
+    "esbuild": "^0.25.11",
     "eslint": "^9.39.3",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^5.5.5",
@@ -21,6 +22,7 @@
   "name": "baba-is-you-cli",
   "scripts": {
     "audit-levels:jeremy-meta": "tsx src/tools/audit-jeremy-level-metadata.ts",
+    "build:single-html": "node scripts/build-single-html.mjs",
     "import-levels:jeremy": "tsx src/tools/import-jeremy-levels.ts",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "start": "tsx src/cli.ts",

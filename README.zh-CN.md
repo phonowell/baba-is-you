@@ -9,6 +9,7 @@
 ```bash
 pnpm install
 pnpm start
+pnpm build:single-html
 pnpm lint
 pnpm type-check
 ```
@@ -18,6 +19,7 @@ pnpm type-check
 | 命令 | 说明 |
 |------|------|
 | `pnpm start` | 运行游戏（`src/cli.ts`） |
+| `pnpm build:single-html` | 构建单文件网页产物（`release/baba-is-you.html`） |
 | `pnpm lint` | 检查并自动修复 `src/**/*.ts` |
 | `pnpm type-check` | 仅类型检查，不产出 |
 
@@ -41,6 +43,17 @@ pnpm type-check
 - 文字块使用 2 字母缩写；IS 单独颜色
 - 棋盘下方显示规则与字典
 - 可用 ANSI 颜色
+
+## 单文件 HTML
+
+```bash
+pnpm build:single-html
+```
+
+- 输出：`release/baba-is-you.html`
+- 产物为离线可运行的单文件，浏览器直接打开即可
+- Web 棋盘格子固定为正方形
+- 文本块显示完整单词；空格子保持留白
 
 ## 关卡来源
 

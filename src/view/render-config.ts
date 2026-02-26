@@ -87,7 +87,7 @@ export const OBJECT_GLYPHS: Record<string, string> = {
   star: '⭐',
   statue: '🗿',
   stump: '🪵',
-  tile: '🟫',
+  tile: '◽️',
   tree: '🌲',
   trees: '🌲',
   violet: '🪻',
