@@ -1,6 +1,7 @@
 import type { LevelData, LevelItem } from './types.js'
 
 const SIZE_RE = /^(\d+)x(\d+)$/i
+const DIRECTION_SUFFIX_RE = /^(.*)@(up|right|down|left)$/i
 
 export const parseLevel = (levelText: string): LevelData => {
   const items: LevelItem[] = []
@@ -39,7 +40,17 @@ export const parseLevel = (levelText: string): LevelData => {
     if (lowerKey === 'background') continue
 
     const isText = key !== lowerKey
-    const name = lowerKey
+    let name = lowerKey
+    let dir: LevelItem['dir']
+    const directionMatch = lowerKey.match(DIRECTION_SUFFIX_RE)
+    if (directionMatch) {
+      const baseName = directionMatch[1]
+      const parsedDir = directionMatch[2]
+      if (baseName && parsedDir) {
+        name = baseName
+        dir = parsedDir as LevelItem['dir']
+      }
+    }
 
     for (const token of tokens) {
       const [xRaw, yRaw] = token.split(',')
@@ -55,6 +66,7 @@ export const parseLevel = (levelText: string): LevelData => {
         x,
         y,
         isText,
+        ...(dir ? { dir } : {}),
       })
     }
   }

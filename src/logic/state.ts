@@ -8,7 +8,12 @@ export const createInitialState = (
   levelIndex: number,
 ): GameState => {
   const baseRules = collectRules(level.items, level.width, level.height)
-  const transformResult = applyTransforms(level.items, baseRules)
+  const transformResult = applyTransforms(
+    level.items,
+    baseRules,
+    level.width,
+    level.height,
+  )
   const rules = collectRules(transformResult.items, level.width, level.height)
   const items = applyProperties(transformResult.items, rules)
 

@@ -2,12 +2,13 @@
 
 ## 关键约束
 - 逻辑/视图严格分离：logic 纯函数无副作用；view 仅渲染与输入映射
-- 状态不可变：logic 只接收 action 并返回新 state
-- 规则范围：仅 X IS Y；核心属性 you/win/stop/push/defeat/sink/hot/melt；无 Has/And/Not/On/Make
-- 终端渲染：固定单元宽度 2；文本块 2 字母；IS 单独颜色；显示规则+字典；允许 ANSI
+- 状态不可变：logic 仅接收 action 并返回新 state
+- 规则范围：仅 X IS Y；核心属性 you/win/stop/push/defeat/sink/hot/melt；禁 Has/And/Not/On/Make
+- 终端渲染：单元宽 2；文本块 2 字母；IS 单独颜色；显示规则+字典；允许 ANSI
 - 输入：WASD/方向键；U 撤销；R 重开；N 过关/通关重开
-- 运行方式：tsx 直接运行 TS；禁止引入 build/dist 输出
+- 运行方式：`tsx` 直接运行 TS；禁止引入 build/dist 输出
 - 元原则：精简冗余 · 冲突信代码
+- 异常处理：`try-catch` 仅用于高 ROI 边界（IO/外部依赖/可恢复流程）
 
 ## 技术栈
 - Node.js + TypeScript + ESM
@@ -29,9 +30,12 @@
 - 改规则：仅改 `src/logic/`
 - 改渲染：仅改 `src/view/`
 - 更新关卡：同步 `../kikyo/source/static/script/include/data.coffee` → `src/levels.ts`
+- ≥3 步任务：先建 `/plans/task_plan_{suffix}.md`，执行中实时更新状态
 
 ## Skill 使用
-- 命中 skill 必须读取 `SKILL.md` 并按流程执行；多 skill 取最小集合顺序
+- 命中 skill 必须读取 `SKILL.md` 并按流程执行
+- 多 skill 取最小集合并按顺序执行；前一 skill 完成后再进入下一步
+- `AGENTS.md` 必须存在且无需询问用户；固定使用 symlink（syslink）`AGENTS.md -> CLAUDE.md`
 
 ## 代码规范
 - 函数用表达式：`const fn = (...) => {}`
@@ -40,5 +44,7 @@
 
 ## 输出格式
 - 客观诚实：不主观评价 · 不因用户情绪转移立场 · 不编造事实 · 立刻暴露不确定信息
-- TodoWrite：≥3 步任务必须建 todo · 实时更新状态 · 完成立即标记
-- 约束：禁预告文字 · 状态用符号 ✓/✗/→ · 一次性批量 Edit · 数据优先 · 直达结论 · 工具间隔零输出 · 错误格式 ✗ {位置}:{类型} · 代码块零注释 · ≥2 条用列表 · 路径缩写（. 项目根 · ~ 主目录）· 禁总结性重复 · 进度 {当前}/{总数} · 提问直入
+- 计划管理：≥3 步任务建 todo/计划并实时更新，完成即标记
+- 约束：禁预告文字 · 状态符号 ✓/✗/→ · 一次性批量 Edit · 数据优先 · 直达结论 · 工具间隔零输出
+- 约束：错误格式 `✗ {位置}:{类型}` · 代码块零注释 · ≥2 条用列表 · 路径缩写（`.`
+  项目根 · `~` 主目录）· 禁总结性重复 · 进度 `{当前}/{总数}` · 提问直入
