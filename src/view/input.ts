@@ -11,6 +11,8 @@ export type GameCommand =
 export type MenuCommand =
   | { type: 'up' }
   | { type: 'down' }
+  | { type: 'page-left' }
+  | { type: 'page-right' }
   | { type: 'start' }
   | { type: 'quit-app' }
   | { type: 'noop' }
@@ -63,6 +65,12 @@ export const mapMenuKeypress = (key: Keypress): MenuCommand => {
     case 'down':
     case 's':
       return { type: 'down' }
+    case 'left':
+    case 'a':
+      return { type: 'page-left' }
+    case 'right':
+    case 'd':
+      return { type: 'page-right' }
     case 'n':
     case 'return':
     case 'enter':

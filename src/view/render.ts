@@ -29,7 +29,7 @@ export const render = (state: GameState): string => {
         row += formatCell('.')
         continue
       }
-      row += cellForItem(pickItem(list))
+      row += cellForItem(pickItem(list, textNames))
     }
     rows.push(row)
   }

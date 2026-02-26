@@ -44,7 +44,7 @@ pnpm type-check
 
 ## 关卡来源
 
-- `src/levels.ts` 由 `../kikyo/source/static/script/include/data.coffee` 生成
+- `src/levels.ts`
 
 ## 目录结构
 

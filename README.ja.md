@@ -44,7 +44,7 @@ pnpm type-check
 
 ## レベル元データ
 
-- `src/levels.ts` は `../kikyo/source/static/script/include/data.coffee` から生成
+- `src/levels.ts`
 
 ## 構成
 

@@ -24,12 +24,11 @@
 - `src/cli.ts`：CLI 入口/IO
 - `src/logic/`：纯逻辑
 - `src/view/`：渲染与输入映射
-- `src/levels.ts`：关卡数据（来源：`../kikyo/source/static/script/include/data.coffee`）
+- `src/levels.ts`：关卡数据
 
 ## 工作流
 - 改规则：仅改 `src/logic/`
 - 改渲染：仅改 `src/view/`
-- 更新关卡：同步 `../kikyo/source/static/script/include/data.coffee` → `src/levels.ts`
 - ≥3 步任务：先建 `./plans/task_plan_{suffix}.md`，执行中实时更新状态
 
 ## Skill 使用

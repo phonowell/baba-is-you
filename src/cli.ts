@@ -6,7 +6,7 @@ import { parseLevel } from './logic/parse-level.js'
 import { createInitialState, markCampaignComplete } from './logic/state.js'
 import { step } from './logic/step.js'
 import { mapGameKeypress, mapMenuKeypress } from './view/input.js'
-import { renderMenu } from './view/render-menu.js'
+import { MENU_WINDOW_SIZE, renderMenu } from './view/render-menu.js'
 import { render } from './view/render.js'
 
 import type { GameState } from './logic/types.js'
@@ -26,11 +26,12 @@ if (!firstLevel) {
   process.exit(1)
 }
 
+const firstLevelIndex = 0
 const latestLevelIndex = levelData.length - 1
 let mode: AppMode = 'menu'
-let menuSelectedLevelIndex = latestLevelIndex
+let menuSelectedLevelIndex = firstLevelIndex
 
-let levelIndex = latestLevelIndex
+let levelIndex = firstLevelIndex
 let history: GameState[] = []
 let state = createInitialState(levelData[levelIndex] ?? firstLevel, levelIndex)
 
@@ -120,8 +121,19 @@ const handleMenuCommand = (cmd: ReturnType<typeof mapMenuKeypress>): void => {
       if (menuSelectedLevelIndex > 0) menuSelectedLevelIndex -= 1
       break
     case 'down':
-      if (menuSelectedLevelIndex < levelData.length - 1)
-        menuSelectedLevelIndex += 1
+      if (menuSelectedLevelIndex < latestLevelIndex) menuSelectedLevelIndex += 1
+      break
+    case 'page-left':
+      menuSelectedLevelIndex = Math.max(
+        0,
+        menuSelectedLevelIndex - MENU_WINDOW_SIZE,
+      )
+      break
+    case 'page-right':
+      menuSelectedLevelIndex = Math.min(
+        latestLevelIndex,
+        menuSelectedLevelIndex + MENU_WINDOW_SIZE,
+      )
       break
     case 'start':
       enterGame(menuSelectedLevelIndex)

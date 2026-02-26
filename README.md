@@ -44,7 +44,7 @@ pnpm type-check
 
 ## Level Source
 
-- `src/levels.ts` is generated from `../kikyo/source/static/script/include/data.coffee`
+- `src/levels.ts`
 
 ## Structure
 

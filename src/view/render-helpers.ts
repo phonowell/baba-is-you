@@ -7,42 +7,83 @@ import {
 } from './render-config.js'
 import { formatCell, measureDisplayWidth, stripAnsi } from './render-width.js'
 
-import type { Item, Rule } from '../logic/types.js'
+import type { Direction, Item, Rule } from '../logic/types.js'
+
+const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
+  up: '⬆️',
+  right: '➡️',
+  down: '⬇️',
+  left: '⬅️',
+}
+
+const MOVABLE_PROPS = new Set<Item['props'][number]>(['move', 'push', 'pull'])
+const SYNTAX_WORDS = new Set(['is', 'and', 'not', 'has'])
 
 const colorize = (value: string, color: string): string =>
   `${color}${value}${ANSI_RESET}`
 
+const textColorForName = (name: string): string =>
+  SYNTAX_WORDS.has(name) ? ANSI_IS : ANSI_TEXT
+
+const glyphForItem = (item: Item): string | undefined => {
+  if (item.name === 'belt') {
+    const dir = item.dir ?? 'right'
+    return BELT_DIRECTION_GLYPHS[dir]
+  }
+
+  return OBJECT_GLYPHS[item.name]
+}
+
+const glyphForLegendName = (name: string): string => {
+  if (name === 'belt') return '⬆️➡️⬇️⬅️'
+  return OBJECT_GLYPHS[name] ?? ''
+}
+
 export const cellForItem = (item: Item): string => {
   if (item.isText) {
     const code = TEXT_CODES[item.name] ?? item.name.slice(0, 2).toUpperCase()
-    const color = item.name === 'is' ? ANSI_IS : ANSI_TEXT
+    const color = textColorForName(item.name)
     return colorize(formatCell(code), color)
   }
 
-  const glyph = OBJECT_GLYPHS[item.name]
+  const glyph = glyphForItem(item)
   if (glyph) return formatCell(glyph)
 
   const fallback = TEXT_CODES[item.name] ?? item.name.slice(0, 2).toUpperCase()
   return formatCell(fallback)
 }
 
-const hasMoverProp = (item: Item): boolean => {
-  const props = item.props as readonly string[]
-  return props.includes('move') || props.includes('pull')
-}
+const isMovableItem = (item: Item): boolean =>
+  !item.isText && item.props.some((prop) => MOVABLE_PROPS.has(prop))
 
-export const pickItem = (items: Item[]): Item => {
-  const moverItem = items.find((item) => !item.isText && hasMoverProp(item))
-  if (moverItem) return moverItem
+const isInteractiveItem = (item: Item): boolean =>
+  !item.isText &&
+  item.props.some((prop) => prop !== 'you' && !MOVABLE_PROPS.has(prop))
 
+const isNormalItem = (item: Item, textNames: Set<string>): boolean =>
+  !item.isText && textNames.has(item.name)
+
+const isDecorativeItem = (item: Item, textNames: Set<string>): boolean =>
+  !item.isText && !textNames.has(item.name)
+
+export const pickItem = (items: Item[], textNames: Set<string>): Item => {
   const youItem = items.find((item) => item.props.includes('you'))
   if (youItem) return youItem
 
   const textItem = items.find((item) => item.isText)
   if (textItem) return textItem
 
-  const nonText = items.find((item) => !item.isText)
-  if (nonText) return nonText
+  const movableItem = items.find(isMovableItem)
+  if (movableItem) return movableItem
+
+  const interactiveItem = items.find(isInteractiveItem)
+  if (interactiveItem) return interactiveItem
+
+  const normalItem = items.find((item) => isNormalItem(item, textNames))
+  if (normalItem) return normalItem
+
+  const decorativeItem = items.find((item) => isDecorativeItem(item, textNames))
+  if (decorativeItem) return decorativeItem
 
   const fallback = items[0]
   if (!fallback) throw new Error('No items available to render.')
@@ -73,9 +114,9 @@ export const renderLegend = (
     .sort()
     .map((name) => {
       const code = TEXT_CODES[name] ?? name.slice(0, 2).toUpperCase()
-      const color = name === 'is' ? ANSI_IS : ANSI_TEXT
+      const color = textColorForName(name)
       const key = colorize(formatCell(code), color)
-      const glyph = OBJECT_GLYPHS[name] ?? ''
+      const glyph = glyphForLegendName(name)
       return `${key}=${name}${glyph}`
     })
 
