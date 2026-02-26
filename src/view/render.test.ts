@@ -9,7 +9,10 @@ const stripAnsi = (value: string): string =>
   value.replace(/\x1b\[[0-9;]*m/g, '')
 
 const graphemes = (value: string): string[] =>
-  Array.from(new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(value), ({ segment }) => segment)
+  Array.from(
+    new Intl.Segmenter('en', { granularity: 'grapheme' }).segment(value),
+    ({ segment }) => segment,
+  )
 
 const measureWidth = (value: string): number =>
   graphemes(stripAnsi(value)).reduce(

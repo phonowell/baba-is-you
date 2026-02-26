@@ -5,13 +5,20 @@ import type { Item, LevelItem, Property, Rule } from './types.js'
 const matchesSubject = (item: LevelItem, rule: Rule): boolean => {
   const subjectNegated = rule.subjectNegated ?? false
 
-  if (rule.subject === 'text') return subjectNegated ? !item.isText : item.isText
+  if (rule.subject === 'text')
+    return subjectNegated ? !item.isText : item.isText
   if (rule.subject === 'empty') return false
   if (item.isText) return false
-  return subjectNegated ? item.name !== rule.subject : item.name === rule.subject
+  return subjectNegated
+    ? item.name !== rule.subject
+    : item.name === rule.subject
 }
 
-const resolveTargets = (item: LevelItem, rules: Rule[], kind: Rule['kind']): string[] => {
+const resolveTargets = (
+  item: LevelItem,
+  rules: Rule[],
+  kind: Rule['kind'],
+): string[] => {
   const yes = new Set<string>()
   const no = new Set<string>()
 
@@ -29,12 +36,13 @@ const resolveTargets = (item: LevelItem, rules: Rule[], kind: Rule['kind']): str
 const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
   if (target === 'empty') return null
 
-  if (target === 'text')
+  if (target === 'text') {
     return {
       ...item,
       name: item.isText ? 'text' : item.name,
       isText: true,
     }
+  }
 
   return {
     ...item,
@@ -50,7 +58,7 @@ const createFromEmpty = (
   target: string,
 ): LevelItem | null => {
   if (target === 'empty') return null
-  if (target === 'text')
+  if (target === 'text') {
     return {
       id,
       name: 'empty',
@@ -58,6 +66,7 @@ const createFromEmpty = (
       y,
       isText: true,
     }
+  }
 
   return {
     id,
@@ -125,7 +134,8 @@ export const applyTransforms = (
     const first = transformed[0]
     if (!first) continue
     next.push({ ...first, id: item.id })
-    for (const rest of transformed.slice(1)) next.push({ ...rest, id: nextId++ })
+    for (const rest of transformed.slice(1))
+      next.push({ ...rest, id: nextId++ })
   }
 
   const emptyTargets = resolveEmptyTargets(transformRules)
@@ -133,7 +143,7 @@ export const applyTransforms = (
     const occupied = new Set<number>()
     for (const item of next) occupied.add(item.y * width + item.x)
 
-    for (let y = 0; y < height; y += 1)
+    for (let y = 0; y < height; y += 1) {
       for (let x = 0; x < width; x += 1) {
         const cellKey = y * width + x
         if (occupied.has(cellKey)) continue
@@ -146,6 +156,7 @@ export const applyTransforms = (
           changed = true
         }
       }
+    }
   }
 
   return { items: next, changed }

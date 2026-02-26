@@ -55,13 +55,17 @@ test('applyTransforms keeps item unchanged when identity target is present', () 
 
 test('applyTransforms spawns objects for EMPTY IS noun', () => {
   const items = [createItem(1, 'wall', 0, 0, false)]
-  const rules: Rule[] = [{ subject: 'empty', object: 'baba', kind: 'transform' }]
+  const rules: Rule[] = [
+    { subject: 'empty', object: 'baba', kind: 'transform' },
+  ]
 
   const result = applyTransforms(items, rules, 2, 1)
 
   assert.equal(result.changed, true)
   assert.equal(
-    result.items.some((item) => !item.isText && item.name === 'baba' && item.x === 1),
+    result.items.some(
+      (item) => !item.isText && item.name === 'baba' && item.x === 1,
+    ),
     true,
   )
 })
@@ -75,9 +79,14 @@ test('applyTransforms does not drop HAS target when transform removes source', (
 
   const result = applyTransforms(items, rules, 3, 1)
 
-  assert.equal(result.items.some((item) => item.name === 'baba'), false)
   assert.equal(
-    result.items.some((item) => !item.isText && item.name === 'key' && item.x === 1),
+    result.items.some((item) => item.name === 'baba'),
+    false,
+  )
+  assert.equal(
+    result.items.some(
+      (item) => !item.isText && item.name === 'key' && item.x === 1,
+    ),
     false,
   )
 })
@@ -94,7 +103,6 @@ test('applyTransforms applies NOT transform constraints', () => {
   assert.equal(result.changed, false)
   assert.equal(result.items[0]?.name, 'baba')
 })
-
 
 test('applyTransforms applies NOT TEXT subject to non-text only', () => {
   const items = [

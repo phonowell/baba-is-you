@@ -18,7 +18,11 @@ const createText = (
   isText: true,
 })
 
-const toRuleKeys = (items: LevelItem[], width: number, height: number): string[] =>
+const toRuleKeys = (
+  items: LevelItem[],
+  width: number,
+  height: number,
+): string[] =>
   collectRules(items, width, height)
     .map(
       (rule) =>
@@ -115,7 +119,6 @@ test('collectRules supports NOT on subject side', () => {
 
   assert.deepEqual(keys, ['!baba:property:you'])
 })
-
 
 test('collectRules does not carry predicate list into following IS subject', () => {
   const items = [
