@@ -29,7 +29,9 @@
     "start": "tsx src/cli.ts",
     "test": "tsx --test src/**/*.test.ts",
     "type-check": "tsc -p tsconfig.json --noEmit",
-    "watch": "node scripts/watch-build.mjs"
+    "watch": "node scripts/watch-build.mjs",
+    "wt-rebase": "node scripts/worktree/rebase-worktree.js --base main",
+    "wt-land": "node scripts/worktree/land-worktree.js --base main --plans-dir plans"
   },
   "type": "module",
   "version": "0.1.0",
