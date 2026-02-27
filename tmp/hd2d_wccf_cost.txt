@@ -1,0 +1,1187 @@
+
+
+
+	
+		
+			
+				
+					
+						Menu
+					
+					
+						 
+						
+					
+				
+				
+					
+						
+						
+					
+					 Home
+					 News
+					
+						
+						Hardware
+						
+							All Hardware
+							Intel
+							AMD
+							NVIDIA
+							TSMC
+						
+					
+					
+						
+						
+							Gaming
+						
+						
+							All Gaming
+							Sony
+							Microsoft
+							Electronic Arts
+							Epic Games
+							PS
+							Xbox
+							Xbox Game Pass
+						
+					
+					
+						
+						Mobile
+						
+							All Mobile
+							Apple
+							Samsung
+							Google
+							Android
+							iOS
+						
+					
+					 Discussions
+					 Interviews
+					 Reviews
+					 How To
+					 Deals
+				
+			
+		
+	
+
+	
+		
+			
+				
+				
+					
+					
+				
+			
+
+			
+								
+					Wccftech
+				
+							
+
+			
+				
+					
+				
+				
+					
+				
+			
+		
+
+		
+			
+				
+				
+					
+				
+				
+			
+		
+	
+
+		
+		
+			News
+			Hardware
+			Gaming
+			Mobile
+			Discussions 15
+			Interviews
+			Reviews
+			How To
+			Deals
+		
+	
+
+
+
+
+    
+        
+            404
+            Oops!
+        
+        
+            Page Not Found
+            The page you're looking for doesn't exist or has been moved. Let's help you find what you need.
+        
+
+        
+            
+            
+        
+
+        
+            Homepage
+            Latest News
+            Hot Deals
+            Report Issue
+        
+    
+
+	
+
+
+
+
+
+	
+
+		
+			Subscribe to get an everyday digest of the latest technology news in your inbox
+			
+				
+					
+					
+					 
+				
+			
+							
+				function do_subscribe() {
+					document.getElementById("traqli_status").innerHTML = '&nbsp;'; 
+					var http = new XMLHttpRequest(); 
+					var email = document.getElementById("traqli_email").value; 
+					var params = 'action=submit_traqli&sub_email=' + email; 
+
+					if (typeof gtag !== 'undefined') { gtag('event', 'Subscribe', { 'event_category': 'Newsletter', 'event_label': email } ); }
+
+					http.open('POST', '/wp-admin/admin-ajax.php', true); 
+					http.setRequestHeader("Content-type", "application/x-www-form-urlencoded; charset=UTF-8"); 
+					http.onreadystatechange = function() { 
+						if(http.readyState == 4 && http.status == 200) { 
+							if(http.responseText == 'success') { 
+								document.getElementById("traqli_success").innerHTML = 'Thank you for subscribing to our newsletter.';
+							} else { 
+								console.log(http.responseText);
+								document.getElementById("traqli_status").classList.add("invalid-feedback"); document.getElementById("traqli_status").innerHTML = http.responseText;
+							}
+						}
+					}
+					http.send(params);
+					return false;
+				}
+			
+		
+
+		
+		
+			
+				Follow us on
+				
+					Twitter
+					Facebook
+					Instagram
+					Threads
+					Youtube
+				
+			
+			
+				Topics
+				
+					Hardware
+					Gaming
+					Mobile
+					Software
+					Security
+					Web
+				
+			
+			
+				Sections
+				
+					Deals
+					Reviews
+					Videos
+					How To's
+					Analysis
+					Exclusives
+					Interviews
+				
+			
+			
+				Company
+				
+					About
+					Advertise with Us
+					Contact
+					Tip Us
+					Careers
+					Terms of Use
+					Privacy & Cookies Policy
+					Editorial Ethics and Guidelines
+					How We Test Hardware
+					How We Test Video Games
+					Appeal Moderation
+				
+			
+		
+
+
+		
+			© 2026 WCCF TECH INC. 700 - 401 West Georgia Street, Vancouver, BC, Canada
+		
+
+		
+		
+			
+			
+			
+			
+			
+		
+
+	
+
+
+	
+		
+			
+				
+				
+				
+			
+			
+				
+				
+				
+			
+			
+				
+				
+			
+			
+				
+			
+			
+				
+			
+				
+		
+			
+				
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+					
+					
+				
+				
+					
+					
+						
+						
+						
+						
+					
+				
+			
+		
+		
+			
+				
+					
+					
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+				
+			
+		
+		
+			
+				
+				
+				
+				
+			
+		
+		
+			
+				
+				
+				
+					
+					
+				
+			
+		
+		
+			
+				
+				
+				
+			
+		
+		
+			
+				
+				
+				
+			
+		
+		
+			
+				
+				
+					
+						
+						
+					
+					
+					
+				
+			
+		
+		
+			
+			
+			
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+		
+		
+			
+				
+					
+					
+				
+				
+				
+					
+					
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+					
+					
+				
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+					
+					
+				
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+				
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+				
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+					
+					
+					
+				
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+					
+					
+					
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+					
+					
+				
+				
+					
+					
+				
+			
+		
+		
+			
+				
+				
+				
+					
+				
+				
+			
+		
+		
+			
+				
+				
+				
+					
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+		
+		
+			
+				
+				
+				
+			
+		
+		
+			
+			
+		
+		
+			
+				
+					
+					
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+			
+		
+		
+			
+				
+				
+					
+					
+				
+				
+					
+					
+				
+			
+		
+		
+			
+				
+				
+				
+			
+		
+		
+			
+				
+					
+					
+				
+				
+				
+			
+		
+		
+            
+                
+                
+            
+		
+		
+			
+				
+				
+				
+			
+		
+		
+			
+				
+				
+					
+						
+						
+					
+				
+			
+		
+		
+			
+				
+					         
+					        
+					       
+				
+			
+			
+				
+			
+		
+		
+	        
+	            
+	        
+	    
+
+	    
+	        
+	        
+	        
+	    
+	    
+			
+				
+				
+				
+				
+			
+		
+		
+			
+				
+				
+					
+					
+				
+				
+				
+					
+					
+				
+			
+		
+		
+			
+				
+				
+				
+			
+		
+		
+	    	
+	 	
+
+		
+	    	
+	  	
+	
+
+	
+	
+{"prefetch":[{"source":"document","where":{"and":[{"href_matches":"/*"},{"not":{"href_matches":["/wp-*.php","/wp-admin/*","/wp-content/uploads/*","/wp-content/*","/wp-content/plugins/*","/wp-content/themes/wccf2021/*","/*\\?(.+)"]}},{"not":{"selector_matches":"a[rel~=\"nofollow\"]"}},{"not":{"selector_matches":".no-prefetch, .no-prefetch a"}}]},"eagerness":"conservative"}]}
+
+
+
+	
+	
+	   const privacyOptOutLink = document.getElementById("fluid-privacy-opt-out-link");
+	window.googlefc = window.googlefc || { callbackQueue: [] };
+	window.googlefc.ccpa = window.googlefc.ccpa || {};
+	window.googlefc.ccpa.overrideDnsLink = true;
+	window.googlefc.callbackQueue.push(
+	  {
+	    "CONSENT_API_READY": () => {
+	      if (!privacyOptOutLink) {
+	        return;
+	      }
+	      !!window.__tcfapi && window.__tcfapi("addEventListener", 2, (tcData, success) => {
+	        if (success && tcData.gdprApplies) {
+	          privacyOptOutLink.innerText = "Change GDPR Consent";
+	          privacyOptOutLink.addEventListener("click", () => googlefc.showRevocationMessage());
+	          return;
+	        }
+	      });
+	    }
+	  });
+	window.googlefc.callbackQueue.push(
+	  {
+	    "INITIAL_CCPA_DATA_READY": () => {
+	      if (!privacyOptOutLink) {
+	        return;
+	      }
+	      if (googlefc.ccpa.getInitialCcpaStatus() && googlefc.ccpa.getInitialCcpaStatus() === googlefc.ccpa.InitialCcpaStatusEnum.NOT_OPTED_OUT) {
+	        privacyOptOutLink.innerText = "Don't sell or share my personal info";
+	        privacyOptOutLink.addEventListener("click", () => googlefc.ccpa.openConfirmationDialog((optedOut) => {
+	          if (optedOut) {
+	            privacyOptOutLink.style.display = "none";
+	          }
+	        }));
+	        return
+	      }
+	    }
+	  });
+	
+
+	
+	✕
+	
+		
+	
+
+
+const google_preferred_source_link = document.getElementById('google_preferred_source_link');
+const google_preferred_source_link_mobile = document.getElementById('google_preferred_source_link_mobile');
+const google_preferred_source_link_single = document.getElementById('google_preferred_source_link_single');
+const google_preferred_source_link_single_top = document.getElementById('google_preferred_source_link_single_top');
+const google_preferred_source_close = document.getElementById('google_preferred_source_close');
+const google_preferred_source_box   = document.getElementById('google_preferred_source_box');
+
+	if(typeof(google_preferred_source_link_mobile) != 'undefined' && google_preferred_source_link_mobile != null) {
+		google_preferred_source_link_mobile.addEventListener('click', () => {
+			send_ga4_event('mobile_cta', 'google_preferred_source', '');
+			console.log('google_preferred_source_link_mobile clicked');
+		});
+	}
+	
+	if(typeof(google_preferred_source_link_single) != 'undefined' && google_preferred_source_link_single != null) {
+		google_preferred_source_link_single.addEventListener('click', () => {
+			send_ga4_event('single_bottom_cta', 'google_preferred_source', '');
+			console.log('google_preferred_source_link_single clicked');
+		});
+	}
+	
+	if(typeof(google_preferred_source_link_single_top) != 'undefined' && google_preferred_source_link_single_top != null) {
+		google_preferred_source_link_single_top.addEventListener('click', () => {
+			send_ga4_event('single_top_cta', 'google_preferred_source', '');
+			console.log('google_preferred_source_link_single_top clicked');
+		});
+	}
+	
+	/*let google_preferred_source = localStorage.getItem('google_preferred_source');
+
+	if (google_preferred_source !== "closed") {
+		setTimeout(showPopup, 1000);
+	}*/
+
+	
+google_preferred_source_link.addEventListener('click', () => {
+	localStorage.setItem("google_preferred_source", "closed");
+	send_ga4_event('dialog_cta', 'google_preferred_source', '');
+	console.log('google_preferred_source clicked');
+});
+	
+google_preferred_source_close.addEventListener('click', () => {
+	localStorage.setItem("google_preferred_source", "closed");
+	send_ga4_event('dialog_close', 'google_preferred_source', '');
+	console.log('google_preferred_source closed');
+	hidePopup();
+});
+
+function showPopup() {
+	send_ga4_event('dialog_open', 'google_preferred_source', '');
+	google_preferred_source_box.classList.add('show');
+	console.log('google_preferred_source shown');
+}
+
+function hidePopup() {
+	google_preferred_source_box.classList.remove('show');
+}
+
+	
+.google_preferred_source_box > div { text-align: center}
+.google_preferred_source_box > p { padding: 10px 10px 1px 10px; margin-bottom: 0; }
+.google_preferred_source_box {
+	overflow: hidden;
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	opacity: 0;
+	transition: transform 0.3s ease-in;
+	transform: translateY(120%);
+	width: 100%;
+	z-index: 50;
+	background: var(--gray-300);
+	padding: 1.5rem 1rem 6.5rem 1rem;
+	box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.google_preferred_source_box.show {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.google_preferred_source_close {
+	background-color: transparent;
+	border: none;
+	color: #acacac;
+	cursor: pointer;
+	font-size: 2rem;
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+.google_preferred_source_close:focus {
+	outline: none;
+}
+	
+@media (min-width: 906px) {
+	.google_preferred_source_box {
+		background: var(--gray-400);
+		padding: 2rem 1rem 2rem 1rem;
+		border-radius: 5px;
+		box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+		overflow: hidden;
+		position: fixed;
+		left: auto;
+		right: 25px;
+		bottom: 100px;
+		opacity: 0;
+		transition: transform 0.3s ease-in;
+		transform: translateX(120%);
+		width: 350px;
+	}
+	.google_preferred_source_box.show {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+	
+
+var yeioo0il6n = document.getElementById("yeioo0il6n");
+	var yeioo0i = document.getElementById("yeioo0i");
+
+var bizdev_side_desktop_wrap = document.getElementById("bizdev_side_desktop_wrap");
+var bizdev_mid_desktop_wrap = document.getElementById("bizdev_mid_desktop_wrap");
+var bizdev_mobile_3_wrap = document.getElementById("bizdev_mobile_3_wrap");
+var bizdev_mobile_4_wrap = document.getElementById("bizdev_mobile_4_wrap");
+
+if(typeof(yeioo0il6n) != 'undefined' && yeioo0il6n != null) {
+	
+	if (window.getComputedStyle(yeioo0il6n).display !== "none") {
+		if (typeof gtag !== 'undefined') { 
+			var key = yeioo0il6n.getAttribute('data-key'); gtag('event', 'bizdev_view', { 'event_category': 'bizdev_atf_desktop', 'event_label': key } );
+		}
+	}
+}
+
+if(typeof(bizdev_side_desktop_wrap) != 'undefined' && bizdev_side_desktop_wrap != null) {
+	
+	var bizdev_side_desktop_key = bizdev_side_desktop_wrap.getAttribute('data-key');
+	var bizdev_side_desktop_link = document.getElementById("bizdev_side_desktop_link");
+
+	if(window.getComputedStyle(bizdev_side_desktop_link).display != 'none') {
+		if (typeof gtag !== 'undefined') {
+			console.log('sending bizdev_side_desktop_view');
+			gtag('event', 'bizdev_side_desktop_view', { 'event_category': bizdev_side_desktop_key } );
+		}
+	}
+}
+
+if(typeof(bizdev_mid_desktop_wrap) != 'undefined' && bizdev_mid_desktop_wrap != null) {
+
+	var bizdev_mid_desktop_key = bizdev_mid_desktop_wrap.getAttribute('data-key');
+	var bizdev_mid_desktop_link = document.getElementById("bizdev_mid_desktop_link");
+
+	if(window.getComputedStyle(bizdev_mid_desktop_link).display != 'none') {
+		if (typeof gtag !== 'undefined') {
+			console.log('sending bizdev_mid_desktop_view');
+			gtag('event', 'bizdev_mid_desktop_view', { 'event_category': bizdev_mid_desktop_key });
+		}
+	}
+}
+
+if(typeof(bizdev_mobile_3_wrap) != 'undefined' && bizdev_mobile_3_wrap != null) {
+
+	var bizdev_mobile_3_key = bizdev_mobile_3_wrap.getAttribute('data-key');
+	var bizdev_mobile_3_link = document.getElementById("bizdev_mobile_3_link");
+	
+	if(window.getComputedStyle(bizdev_mobile_3_link).display != 'none') {
+		if (typeof gtag !== 'undefined') {
+			console.log('sending bizdev_mobile_3_view');
+			gtag('event', 'bizdev_mobile_3_view', { 'event_category': bizdev_mobile_3_key } );
+		}
+	}
+}
+
+if(typeof(bizdev_mobile_4_wrap) != 'undefined' && bizdev_mobile_4_wrap != null) {
+	
+	if (window.getComputedStyle(bizdev_mobile_4_wrap).display !== "none") {
+		if (typeof gtag !== 'undefined') { var key = bizdev_mobile_4_wrap.getAttribute('data-key'); gtag('event', 'bizdev_view', { 'event_category': 'bizdev_mobile_4', 'event_label': key } ); }
+	}
+}
+
+var bizdev_middle_ad = document.getElementById("bizdev_middle_ad");
+
+if(typeof(bizdev_middle_ad) != 'undefined' && bizdev_middle_ad != null) {
+	
+	if (window.getComputedStyle(bizdev_middle_ad).display != "none") {
+		if (typeof gtag !== 'undefined') { 
+			console.log('sending bizdev_middle_ad view');
+			var key = bizdev_middle_ad.getAttribute('data-key'); 
+			gtag('event', 'bizdev_view', { 'event_category': 'bizdev_middle_ad', 'event_label': key } );
+		}
+	}
+}
+
+var bizdev_featured = document.getElementById("featured-stuff");
+
+if(typeof(bizdev_featured) != 'undefined' && bizdev_featured != null) {
+	
+	if (window.getComputedStyle(bizdev_featured).display !== "none") {
+		if (typeof gtag !== 'undefined') { var key = bizdev_featured.getAttribute('data-key'); gtag('event', 'bizdev_view', { 'event_category': 'bizdev_featured', 'event_label': key } ); }
+	}
+}
+
+var req = new XMLHttpRequest();
+req.open('GET', 'https://private.wccftech.com/cdn-cgi/trace', true);
+req.send(null);
+req.onload = function() {
+	let country = null;
+	let lines = req.responseText.split('\n');
+	
+	lines.forEach(function(line) {
+		keyValue = line.split('=');
+		if(keyValue[0] == 'loc') {
+			country = keyValue[1];
+		}
+	});
+
+	if(country == 'US') {
+		/*let google_preferred_source = localStorage.getItem('google_preferred_source');
+
+		if (google_preferred_source !== "closed") {
+			setTimeout(showPopup, 1000);
+		}*/
+
+		//var bizdev_side_desktop_key = bizdev_side_desktop_wrap.getAttribute('data-key');
+		//var bizdev_side_desktop_link = document.getElementById("bizdev_side_desktop_link");
+
+		/*if(window.getComputedStyle(bizdev_side_desktop_link).display != 'none') {
+			if (typeof gtag !== 'undefined') {
+				console.log('sending bizdev_side_desktop_view');
+				gtag('event', 'bizdev_side_desktop_view', { 'event_category': bizdev_side_desktop_key } );
+			}
+		}*/
+	}
+
+	if(country !== 'US') {
+		/*if(typeof(yeioo0il6n) != 'undefined' && yeioo0il6n != null) {
+			yeioo0il6n.innerHTML = "<div id='div-gpt-ad-wccftechcom40009'></div>";
+		}*/
+
+		/*if(typeof(bizdev_side_desktop_wrap) != 'undefined' && bizdev_side_desktop_wrap != null) {
+			bizdev_side_desktop_wrap.innerHTML = "<div id='div-gpt-ad-wccftechcom38564'></div>";
+		}*/	
+
+		/*if(typeof(bizdev_mid_desktop_wrap) != 'undefined' && bizdev_mid_desktop_wrap != null) {
+			bizdev_mid_desktop_wrap.innerHTML = "<div data-pg-ad-spot='div-gpt-ad-wccftechcom38574'></div>";
+		}*/
+
+		/*if(typeof(bizdev_mobile_3_wrap) != 'undefined' && bizdev_mobile_3_wrap != null) {
+			bizdev_mobile_3_wrap.innerHTML = "<pgs-ad data-pg-ad-spot='div-gpt-ad-wccftechcom37854'></pgs-ad>";
+		}*/
+
+		/*if(typeof(bizdev_mobile_4_wrap) != 'undefined' && bizdev_mobile_4_wrap != null) {
+			bizdev_mobile_4_wrap.innerHTML = "<pgs-ad data-pg-ad-spot='div-gpt-ad-wccftechcom37854'></pgs-ad>";
+		}*/
+	}
+};
+
+
+	
+
+	
+	
+
+	
+		const font = new FontFaceObserver("Inter", {
+			weight: 900
+		});
+
+		font.load().then(function() {
+			document.body.classList.add("font-loaded");
+		});
+
+		function send_ga4_event(action, category, label) {
+			if (typeof gtag !== "function") return;
+			gtag('event', action, { 'event_category': category, 'event_label': label } );
+		}
+
+		function toggle_menu() { 
+			document.getElementById("sidenav").classList.toggle("active");
+			send_ga4_event('open','mobile_sidebar', '');
+		}
+
+		function toggle_lights() { document.documentElement.classList.toggle("dark"); if (document.documentElement.classList.contains("dark")) { localStorage.setItem("mode", "dark"); } else { localStorage.setItem("mode", "light"); } if(typeof DISQUS !== 'undefined') { page_identifier = document.getElementById('disqus_thread').getAttribute('data-identifier'); page_url = document.getElementById('disqus_thread').getAttribute('data-pageurl'); DISQUS.reset({ reload: true, config: function () { this.page.identifier = page_identifier; this.page.url = page_url; } }); } }
+
+		function toggle_search() { 
+			document.getElementById('search').style.display = document.getElementById('search').style.display === "block" ? "none" : "block"; 
+			document.getElementById("q").focus({preventScroll:true});
+			send_ga4_event('search','trending_bar', '');
+		}
+
+		function copy_shortlink() { let handleCopyClick = document.querySelector('#copy-shortlink'); let text = document.getElementById('copy-shortlink').getAttribute('data-url'); navigator.clipboard.writeText(`${text}`); handleCopyClick.innerHTML = 'Copied!'; setTimeout(function () { let handleCopyClick = document.querySelector('#copy-shortlink'); handleCopyClick.innerHTML = 'Copy Shortlink'; }, 2500); return false; }
+
+		const searchBar = document.querySelector(".searchBar");
+
+		window.addEventListener("scroll", () => {
+			searchBar.classList.toggle("fixed", window.scrollY > 50);
+		});
+
+		window.addEventListener('mouseup', function (event) {
+			var sidenav = document.getElementById("sidenav");
+			if (event.target == sidenav) {
+				sidenav.classList.remove("active");
+			}
+		});
+
+		$('.widget-analytics a').click(function(e) {
+			if (typeof gtag !== "function") return;
+			event = $(this).closest(".widget-analytics").data('event');
+			label = $(this).attr("href");
+			gtag('event', 'click', { 'event_category': event, 'event_label': label } );
+		});
+	
+
+
+
+
+
+	
+	<article class="post-preview split">
+	<div class="post-thumb">
+			<div class="thumb-img" style="background-image: url( {{ data.images.thumbnail.url.replace('http://', 'https://') }} );"></div>
+	</div>
+	<div class="post-content">
+			<h3 class="post-title"><a href="{{ data.permalink }}">{{{ data._highlightResult.post_title.value }}}</a></h3>
+			<footer class="post-footer">                
+					<div class="post-author"><span>{{ data.post_author.display_name }}</span></div>
+					<div class="dot-sep"><svg width="3" height="3"><use xlink:href="#icn-dot"></use></svg></div>
+					<div class="post-timestamp">{{{ do_time( data.post_date) }}}</div>
+			</footer>
+	</div>
+	</article>
+	
+
+
+
+	let path = window.location.pathname;
+	path = path.replaceAll("/", "");
+	path = path.replaceAll("-", " ");
+	document.getElementById('q2').value = path;
+
+
+
+	
+
+	function do_time(time) {
+	  var units = [
+		{ name: "second", limit: 60, in_seconds: 1 },
+		{ name: "minute", limit: 3600, in_seconds: 60 },
+		{ name: "hour", limit: 86400, in_seconds: 3600  },
+		{ name: "day", limit: 604800, in_seconds: 86400 },
+		{ name: "week", limit: 2629743, in_seconds: 604800  },
+		{ name: "month", limit: 31556926, in_seconds: 2629743 },
+		{ name: "year", limit: null, in_seconds: 31556926 }
+	  ];
+	  var diff = (new Date() - new Date(time*1000)) / 1000;
+	  if (diff < 5) return "now";
+	  
+	  var i = 0, unit;
+	  while (unit = units[i++]) {
+		if (diff < unit.limit || !unit.limit){
+		  var diff =  Math.floor(diff / unit.in_seconds);
+		  return diff + " " + unit.name + (diff>1 ? "s" : "") + " ago";
+		}
+	  };
+	}
+
+	var keyword = new URLSearchParams(window.location.search).get("q");	
+	do_search('wp_searchable_posts', 'search-hits1', keyword);
+
+	function do_search(index, area, keyword) {
+
+		const searchClient = algoliasearch('JP6Z5G2P43', '4784f5ddc534ec220ede8a86867f33c7');
+
+		const search = instantsearch({
+			searchClient,
+			indexName: index,
+			routing: true,
+			initialUiState: {
+				wp_searchable_posts: {
+					query: keyword
+				},
+				wp_searchable_posts_recent: {
+					query: keyword
+				}
+			}
+		});		
+
+		const renderHits = (renderOptions, isFirstRender) => {
+
+			const { hits, widgetParams } = renderOptions;
+
+			widgetParams.container.innerHTML = `
+				
+				${hits
+				.map(
+					item =>
+					`<div class="post">
+						<div class="post-thumb">
+							<img width="564" height="317" src="${(item.images.thumbnail) ? item.images.thumbnail.url : ''}" alt="post-thumb" loading="lazy">
+						</div>
+						<div class="post-content">
+							<h3><a href="${item.permalink}">${item.post_title}</a></h3>
+							<footer>
+								<span class="post-author">${item.post_author.display_name}</span>
+								<span class="post-time">${do_time(item.post_date)}</span>
+							</footer>
+						</div>
+					</div>`
+				)
+				.join('')}
+				
+				`;
+		};
+
+		const customHits = instantsearch.connectors.connectHits(renderHits);
+
+		
+
+		search.addWidget(
+			customHits({
+				container: document.querySelector('#' + area),
+			})
+		);
+		
+		search.start();
+	}
+
+	
+
+
+

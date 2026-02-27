@@ -4,17 +4,7 @@ import test from 'node:test'
 import { parseLevel } from '../logic/parse-level.js'
 import { createInitialState } from '../logic/state.js'
 
-import { getBoardEntities, renderHtml } from './render-html.js'
-
-test('getBoardEntities uses full text words instead of 2-letter abbreviations', () => {
-  const level = parseLevel('title Full; size 1x1; Defeat 0,0')
-  const state = createInitialState(level, 0)
-
-  const entities = getBoardEntities(state)
-
-  assert.equal(entities.length, 1)
-  assert.equal(entities[0]?.value, 'DEFEAT')
-})
+import { renderHtml } from './render-html.js'
 
 test('renderHtml uses CSS background for empty slots without dom nodes', () => {
   const level = parseLevel('title Empty; size 2x1; Baba 0,0')
@@ -26,15 +16,15 @@ test('renderHtml uses CSS background for empty slots without dom nodes', () => {
   assert.doesNotMatch(output, /<span class="value">\.<\/span>/)
 })
 
-test('getBoardEntities returns only occupied cells', () => {
-  const level = parseLevel('title Empty; size 2x1; Baba 0,0')
+test('renderHtml emits board container with board dimensions', () => {
+  const level = parseLevel('title Board; size 3x2; Baba 0,0')
   const state = createInitialState(level, 0)
+  const output = renderHtml(state)
 
-  const entities = getBoardEntities(state)
-
-  assert.equal(entities.length, 1)
-  assert.equal(entities[0]?.x, 0)
-  assert.equal(entities[0]?.y, 0)
+  assert.match(
+    output,
+    /class="board" role="grid" style="--board-width:3;--board-height:2;"/,
+  )
 })
 
 test('renderHtml puts rules and legend into reference dialog', () => {
@@ -53,16 +43,21 @@ test('renderHtml puts rules and legend into reference dialog', () => {
   assert.match(openedOutput, /Rules & Legend/)
 })
 
-test('getBoardEntities marks only 3-letter text with three class', () => {
-  const level = parseLevel('title TextSize; size 2x1; You 0,0; Push 1,0')
+test('renderHtml marks syntax words in legend', () => {
+  const level = parseLevel('title Legend; size 2x1; Is 0,0; Baba 1,0')
   const state = createInitialState(level, 0)
+  const output = renderHtml(state, { showReferenceDialog: true })
 
-  const entities = getBoardEntities(state)
-  const you = entities.find((entity) => entity.value === 'YOU')
-  const push = entities.find((entity) => entity.value === 'PUSH')
+  assert.match(output, /legend-text syntax[^>]*>IS<\/span>/)
+  assert.match(output, /legend-text normal[^>]*>BABA<\/span>/)
+})
 
-  assert.ok(you)
-  assert.ok(push)
-  assert.match(you.className, / three/)
-  assert.doesNotMatch(push.className, / three/)
+test('renderHtml legend skips hidden text entries', () => {
+  const level = parseLevel(
+    'title HideLegend; size 3x2; Baba 0,0; Text 0,1; Is 1,1; Hide 2,1',
+  )
+  const state = createInitialState(level, 0)
+  const output = renderHtml(state, { showReferenceDialog: true })
+
+  assert.doesNotMatch(output, /legend-text normal[^>]*>BABA<\/span>/)
 })

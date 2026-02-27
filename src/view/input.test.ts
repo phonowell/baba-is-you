@@ -39,6 +39,7 @@ test('mapGameKeypress maps arrows and WASD to move', () => {
 })
 
 test('mapGameKeypress maps utility and fallback commands', () => {
+  assert.deepEqual(mapGameKeypress({ name: 'space' }), { type: 'wait' })
   assert.deepEqual(mapGameKeypress({ name: 'u' }), { type: 'undo' })
   assert.deepEqual(mapGameKeypress({ name: 'r' }), { type: 'restart' })
   assert.deepEqual(mapGameKeypress({ name: 'n' }), { type: 'next' })

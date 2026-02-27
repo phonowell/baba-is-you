@@ -1,4 +1,4 @@
-import { keyFor, MOVE_DELTAS } from './shared.js'
+import { moveOne } from './move-core.js'
 
 import type { Arrow, BatchMoveContext } from './move-batch-runtime.js'
 
@@ -23,22 +23,18 @@ export const applyBatchMovement = (
       context.status.changed = true
     }
 
-    const oldKey = keyFor(item.x, item.y, context.width)
-    const oldList = context.grid.get(oldKey) ?? []
-    context.grid.set(
-      oldKey,
-      oldList.filter((other) => other.id !== id),
-    )
-
-    const [dx, dy] = MOVE_DELTAS[arrow.dir]
-    item.x += dx
-    item.y += dy
-
-    const newKey = keyFor(item.x, item.y, context.width)
-    const newList = context.grid.get(newKey) ?? []
-    newList.push(item)
-    context.grid.set(newKey, newList)
-
-    context.status.changed = true
+    const nx =
+      arrow.dir === 'left'
+        ? item.x - 1
+        : arrow.dir === 'right'
+          ? item.x + 1
+          : item.x
+    const ny =
+      arrow.dir === 'up'
+        ? item.y - 1
+        : arrow.dir === 'down'
+          ? item.y + 1
+          : item.y
+    if (moveOne(context, item, nx, ny)) context.status.changed = true
   }
 }

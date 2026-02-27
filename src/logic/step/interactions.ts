@@ -1,3 +1,5 @@
+import { matchesRuleObjectWord, matchesRuleSubject } from '../rule-match.js'
+
 import {
   appendHasSpawns,
   hasProp,
@@ -5,7 +7,8 @@ import {
   splitByFloatLayer,
 } from './shared.js'
 
-import type { Item, Rule } from '../types.js'
+import type { RuleRuntime } from '../rule-runtime.js'
+import type { Item } from '../types.js'
 
 const applyOpenShut = (items: Item[], removed: Set<number>): boolean => {
   const opens = items.filter((item) => hasProp(item, 'open'))
@@ -32,9 +35,9 @@ const applyOpenShut = (items: Item[], removed: Set<number>): boolean => {
 
 export const applyInteractions = (
   items: Item[],
-  width: number,
-  rules: Rule[],
+  runtime: RuleRuntime,
 ): { items: Item[]; changed: boolean } => {
+  const { height, width } = runtime
   const byCell = new Map<number, Item[]>()
   for (const item of items) {
     const key = keyFor(item.x, item.y, width)
@@ -45,6 +48,8 @@ export const applyInteractions = (
 
   const removed = new Set<number>()
   let changed = false
+  const eatRules = runtime.buckets.eat
+  const ruleContext = runtime.context
 
   for (const list of byCell.values()) {
     for (const layer of splitByFloatLayer(list)) {
@@ -82,6 +87,32 @@ export const applyInteractions = (
       const openShutChanged = applyOpenShut(layer, removed)
       if (openShutChanged) changed = true
 
+      if (eatRules.length) {
+        for (const eater of layer) {
+          if (removed.has(eater.id)) continue
+          for (const rule of eatRules) {
+            if (!matchesRuleSubject(eater, rule, ruleContext)) continue
+
+            for (const target of layer) {
+              if (target.id === eater.id) continue
+              if (removed.has(target.id)) continue
+
+              const targetMatched = matchesRuleObjectWord(
+                target,
+                rule.object,
+                ruleContext.groupMembers,
+              )
+              const shouldEat = rule.objectNegated
+                ? !targetMatched
+                : targetMatched
+              if (!shouldEat) continue
+              removed.add(target.id)
+              changed = true
+            }
+          }
+        }
+      }
+
       if (occupied) {
         for (const item of layer) {
           if (hasProp(item, 'weak')) {
@@ -95,10 +126,17 @@ export const applyInteractions = (
 
   if (!removed.size) return { items, changed }
 
-  const hasRules = rules.filter((rule) => rule.kind === 'has')
   const survivors = items.filter((item) => !removed.has(item.id))
   const removedItems = items.filter((item) => removed.has(item.id))
-  const spawned = appendHasSpawns(survivors, removedItems, hasRules, false)
+  const spawned = appendHasSpawns(
+    survivors,
+    removedItems,
+    runtime.buckets.has,
+    false,
+    width,
+    height,
+    items,
+  )
 
   return {
     items: spawned.items,

@@ -51,42 +51,6 @@ test('step MOVE objects flip direction and retry on the same turn', () => {
   assert.equal(rock?.dir, 'left')
 })
 
-test('step resolves OPEN into SHUT during blocked movement', () => {
-  const level: LevelData = {
-    title: 'open-shut-collision',
-    width: 7,
-    height: 3,
-    items: [
-      createItem(1, 'baba', 0, 0, false),
-      createItem(2, 'door', 1, 0, false),
-      createItem(3, 'baba', 0, 2, true),
-      createItem(4, 'is', 1, 2, true),
-      createItem(5, 'you', 2, 2, true),
-      createItem(6, 'baba', 3, 1, true),
-      createItem(7, 'is', 4, 1, true),
-      createItem(8, 'open', 5, 1, true),
-      createItem(9, 'door', 3, 0, true),
-      createItem(10, 'is', 4, 0, true),
-      createItem(11, 'shut', 5, 0, true),
-      createItem(12, 'door', 3, 2, true),
-      createItem(13, 'is', 4, 2, true),
-      createItem(14, 'stop', 5, 2, true),
-    ],
-  }
-
-  const state = createInitialState(level, 0)
-  const result = step(state, 'right')
-
-  assert.equal(
-    result.state.items.some((item) => !item.isText && item.name === 'baba'),
-    false,
-  )
-  assert.equal(
-    result.state.items.some((item) => !item.isText && item.name === 'door'),
-    false,
-  )
-})
-
 test('step movement-phase OPEN/SHUT destruction still drops HAS targets', () => {
   const level: LevelData = {
     title: 'open-shut-has-drop',

@@ -1,6 +1,13 @@
-import { keyFor, MOVE_DELTAS, reverseDirection } from './shared.js'
+import {
+  getLiveCellItems,
+  inBounds,
+  isOpenShutPair,
+  removeOne,
+} from './move-core.js'
+import { MOVE_DELTAS, reverseDirection } from './shared.js'
 
-import type { Direction, Item } from '../types.js'
+import type { MoveCoreContext } from './move-core.js'
+import type { Direction } from '../types.js'
 
 type ArrowStatus = 'pending' | 'moving' | 'stopped'
 
@@ -11,42 +18,9 @@ export type Arrow = {
   status: ArrowStatus
 }
 
-export type BatchMoveContext = {
-  byId: Map<number, Item>
-  grid: Map<number, Item[]>
-  height: number
-  openIds: Set<number>
-  pullIds: Set<number>
-  pushIds: Set<number>
-  removed: Set<number>
-  removedItems: Item[]
-  shutIds: Set<number>
+export type BatchMoveContext = MoveCoreContext & {
+  emptyBlocked: boolean
   status: { changed: boolean }
-  stopIds: Set<number>
-  weakIds: Set<number>
-  width: number
-}
-
-const isOpenShutPair = (context: BatchMoveContext, a: Item, b: Item): boolean =>
-  (context.openIds.has(a.id) && context.shutIds.has(b.id)) ||
-  (context.shutIds.has(a.id) && context.openIds.has(b.id))
-
-const inBounds = (context: BatchMoveContext, x: number, y: number): boolean =>
-  x >= 0 && y >= 0 && x < context.width && y < context.height
-
-const removeOne = (context: BatchMoveContext, item: Item): void => {
-  if (context.removed.has(item.id)) return
-  context.removed.add(item.id)
-  context.removedItems.push(item)
-  context.byId.delete(item.id)
-  context.status.changed = true
-
-  const key = keyFor(item.x, item.y, context.width)
-  const list = context.grid.get(key) ?? []
-  context.grid.set(
-    key,
-    list.filter((other) => other.id !== item.id),
-  )
 }
 
 export const resolveBatchArrows = (
@@ -84,11 +58,9 @@ export const resolveBatchArrows = (
     const ny = item.y + dy
 
     if (inBounds(context, nx, ny)) {
-      const targetKey = keyFor(nx, ny, context.width)
-      const targets = context.grid.get(targetKey) ?? []
+      const targets = getLiveCellItems(context, nx, ny)
       let pushed = false
       for (const target of targets) {
-        if (context.removed.has(target.id)) continue
         if (!context.pushIds.has(target.id)) continue
         if (arrows.has(target.id)) continue
         addArrow(target.id, arrow.dir, false)
@@ -104,14 +76,13 @@ export const resolveBatchArrows = (
     let defer = false
 
     if (!blocked) {
-      const targetKey = keyFor(nx, ny, context.width)
-      const targets = context.grid.get(targetKey) ?? []
+      const targets = getLiveCellItems(context, nx, ny)
+      if (!targets.length && context.emptyBlocked) blocked = true
 
       for (const target of targets) {
-        if (context.removed.has(target.id)) continue
         if (isOpenShutPair(context, item, target)) {
-          removeOne(context, item)
-          removeOne(context, target)
+          if (removeOne(context, item)) context.status.changed = true
+          if (removeOne(context, target)) context.status.changed = true
           continue
         }
 
@@ -138,7 +109,7 @@ export const resolveBatchArrows = (
 
     if (blocked) {
       if (context.weakIds.has(id) && !arrow.isMove) {
-        removeOne(context, item)
+        if (removeOne(context, item)) context.status.changed = true
         continue
       }
 
@@ -162,10 +133,8 @@ export const resolveBatchArrows = (
     const px = item.x + bx
     const py = item.y + by
     if (inBounds(context, px, py)) {
-      const pullKey = keyFor(px, py, context.width)
-      const behind = context.grid.get(pullKey) ?? []
+      const behind = getLiveCellItems(context, px, py)
       for (const target of behind) {
-        if (context.removed.has(target.id)) continue
         if (!context.pullIds.has(target.id)) continue
         addArrow(target.id, arrow.dir, false)
       }

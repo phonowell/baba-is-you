@@ -2,6 +2,7 @@ import type { Direction } from '../logic/types.js'
 
 export type GameCommand =
   | { type: 'move'; direction: Direction }
+  | { type: 'wait' }
   | { type: 'undo' }
   | { type: 'restart' }
   | { type: 'next' }
@@ -42,6 +43,8 @@ export const mapGameKeypress = (key: Keypress): GameCommand => {
       return { type: 'move', direction: 'down' }
     case 'a':
       return { type: 'move', direction: 'left' }
+    case 'space':
+      return { type: 'wait' }
     case 'u':
       return { type: 'undo' }
     case 'r':

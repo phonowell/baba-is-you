@@ -1,3 +1,4 @@
+import { inBounds, keyFor } from './grid.js'
 import { PROPERTY_WORDS } from './types.js'
 
 export type ParsedTerm = {
@@ -10,30 +11,40 @@ type ParseChainResult = {
   cutByBoundary: boolean
 }
 
+export type ParsedTermChain = {
+  terms: ParsedTerm[]
+  next: number
+}
+
+type ParseChainWithNextResult = {
+  chains: ParsedTermChain[]
+  cutByBoundary: boolean
+}
+
 const OPERATOR_WORDS = new Set<string>([
   'is',
   'and',
   'has',
+  'eat',
+  'near',
+  'lonely',
   'not',
   'on',
   'make',
+  'facing',
+  'write',
 ])
-const CHAIN_BOUNDARY_WORDS = new Set<string>(['is', 'has'])
+const CHAIN_BOUNDARY_WORDS = new Set<string>([
+  'is',
+  'has',
+  'make',
+  'eat',
+  'write',
+])
 
-const isNounWord = (word: string): boolean => {
-  if (PROPERTY_WORDS.has(word)) return false
-  return !OPERATOR_WORDS.has(word)
-}
+const isNounWord = (word: string): boolean => !OPERATOR_WORDS.has(word)
 
-export const keyFor = (x: number, y: number, width: number): number =>
-  y * width + x
-
-export const inBounds = (
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-): boolean => x >= 0 && y >= 0 && x < width && y < height
+export { inBounds, keyFor }
 
 export const getWordsAt = (
   grid: Map<number, string[]>,
@@ -86,7 +97,7 @@ const parseTermOptions = (
   return Array.from(result.values())
 }
 
-export const parseTermChains = (
+export const parseTermChainsWithNext = (
   readWordsAt: (position: number) => string[],
   position: number,
   isValidWord: (word: string) => boolean,
@@ -94,7 +105,7 @@ export const parseTermChains = (
   maxDepth: number,
   allowTrailingNot: boolean,
   stopAtOperatorBoundary: boolean,
-): ParseChainResult => {
+): ParseChainWithNextResult => {
   if (depth > maxDepth) return { chains: [], cutByBoundary: false }
 
   const termOptions = parseTermOptions(
@@ -105,7 +116,7 @@ export const parseTermChains = (
   )
   if (!termOptions.length) return { chains: [], cutByBoundary: false }
 
-  const chains: ParsedTerm[][] = []
+  const chains: ParsedTermChain[] = []
   let cutByBoundary = false
   for (const option of termOptions) {
     const nextWords = readWordsAt(option.next)
@@ -119,11 +130,14 @@ export const parseTermChains = (
     }
 
     if (!nextWords.includes('and')) {
-      chains.push([{ word: option.word, negated: option.negated }])
+      chains.push({
+        terms: [{ word: option.word, negated: option.negated }],
+        next: option.next,
+      })
       continue
     }
 
-    const rest = parseTermChains(
+    const rest = parseTermChainsWithNext(
       readWordsAt,
       option.next + 1,
       isValidWord,
@@ -134,15 +148,51 @@ export const parseTermChains = (
     )
 
     if (rest.chains.length) {
-      for (const chain of rest.chains)
-        chains.push([{ word: option.word, negated: option.negated }, ...chain])
-    } else if (rest.cutByBoundary)
-      chains.push([{ word: option.word, negated: option.negated }])
+      for (const chain of rest.chains) {
+        chains.push({
+          terms: [
+            { word: option.word, negated: option.negated },
+            ...chain.terms,
+          ],
+          next: chain.next,
+        })
+      }
+    } else {
+      chains.push({
+        terms: [{ word: option.word, negated: option.negated }],
+        next: option.next,
+      })
+    }
 
     if (rest.cutByBoundary) cutByBoundary = true
   }
 
   return { chains, cutByBoundary }
+}
+
+export const parseTermChains = (
+  readWordsAt: (position: number) => string[],
+  position: number,
+  isValidWord: (word: string) => boolean,
+  depth: number,
+  maxDepth: number,
+  allowTrailingNot: boolean,
+  stopAtOperatorBoundary: boolean,
+): ParseChainResult => {
+  const parsed = parseTermChainsWithNext(
+    readWordsAt,
+    position,
+    isValidWord,
+    depth,
+    maxDepth,
+    allowTrailingNot,
+    stopAtOperatorBoundary,
+  )
+
+  return {
+    chains: parsed.chains.map((chain) => chain.terms),
+    cutByBoundary: parsed.cutByBoundary,
+  }
 }
 
 export const uniqueTerms = (chains: ParsedTerm[][]): ParsedTerm[] => {

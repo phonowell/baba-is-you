@@ -1,7 +1,11 @@
+import { keyFor as gridKeyFor } from '../grid.js'
+import { resolveRuleTargets } from '../resolve-targets.js'
+import { createRuleMatchContext, matchesRuleSubject } from '../rule-match.js'
+
 import type { Direction, Item, Rule } from '../types.js'
 
 export const keyFor = (x: number, y: number, width: number): number =>
-  y * width + x
+  gridKeyFor(x, y, width)
 
 export const hasProp = (item: Item, prop: Item['props'][number]): boolean =>
   item.props.includes(prop)
@@ -49,37 +53,18 @@ export const splitByFloatLayer = (items: Item[]): Item[][] => {
   return result
 }
 
-const matchesSubject = (item: Item, rule: Rule): boolean => {
-  const subjectNegated = rule.subjectNegated ?? false
-  if (rule.subject === 'text')
-    return subjectNegated ? !item.isText : item.isText
-  if (rule.subject === 'empty') return false
-  if (item.isText) return false
-  return subjectNegated
-    ? item.name !== rule.subject
-    : item.name === rule.subject
-}
-
-const resolveHasTargets = (item: Item, hasRules: Rule[]): string[] => {
-  const yes = new Set<string>()
-  const no = new Set<string>()
-  for (const rule of hasRules) {
-    if (!matchesSubject(item, rule)) continue
-    if (rule.objectNegated) no.add(rule.object)
-    else yes.add(rule.object)
-  }
-
-  return Array.from(yes).filter((target) => !no.has(target))
-}
-
 export const appendHasSpawns = (
   survivors: Item[],
   removedItems: Item[],
   hasRules: Rule[],
   preserveDirection: boolean,
+  width: number,
+  height: number,
+  sourceItems: Item[],
 ): { items: Item[]; changed: boolean } => {
   if (!hasRules.length || !removedItems.length)
     return { items: survivors, changed: false }
+  const context = createRuleMatchContext(sourceItems, hasRules, width, height)
 
   let nextId =
     [...survivors, ...removedItems].reduce(
@@ -89,7 +74,9 @@ export const appendHasSpawns = (
   const spawned: Item[] = []
 
   for (const item of removedItems) {
-    const targets = resolveHasTargets(item, hasRules)
+    const targets = resolveRuleTargets(item, hasRules, (candidate, rule) =>
+      matchesRuleSubject(candidate, rule, context),
+    )
     if (!targets.length) continue
 
     for (const target of targets) {

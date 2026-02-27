@@ -3,8 +3,10 @@ import {
   ANSI_RESET,
   ANSI_TEXT,
   OBJECT_GLYPHS,
-  TEXT_CODES,
+  textCodeForName,
 } from './render-config.js'
+import { sortRenderStack } from './stack-policy.js'
+import { SYNTAX_WORDS } from './syntax-words.js'
 import { formatCell, measureDisplayWidth, stripAnsi } from './render-width.js'
 
 import type { Direction, Item, Rule } from '../logic/types.js'
@@ -15,9 +17,6 @@ const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
   down: '⬇️',
   left: '⬅️',
 }
-
-const MOVABLE_PROPS = new Set<Item['props'][number]>(['move', 'push', 'pull'])
-const SYNTAX_WORDS = new Set(['is', 'and', 'not', 'has'])
 
 const colorize = (value: string, color: string): string =>
   `${color}${value}${ANSI_RESET}`
@@ -41,7 +40,7 @@ const glyphForLegendName = (name: string): string => {
 
 export const cellForItem = (item: Item): string => {
   if (item.isText) {
-    const code = TEXT_CODES[item.name] ?? item.name.slice(0, 2).toUpperCase()
+    const code = textCodeForName(item.name)
     const color = textColorForName(item.name)
     return colorize(formatCell(code), color)
   }
@@ -49,46 +48,14 @@ export const cellForItem = (item: Item): string => {
   const glyph = glyphForItem(item)
   if (glyph) return formatCell(glyph)
 
-  const fallback = TEXT_CODES[item.name] ?? item.name.slice(0, 2).toUpperCase()
+  const fallback = textCodeForName(item.name)
   return formatCell(fallback)
 }
 
-const isMovableItem = (item: Item): boolean =>
-  !item.isText && item.props.some((prop) => MOVABLE_PROPS.has(prop))
-
-const isInteractiveItem = (item: Item): boolean =>
-  !item.isText &&
-  item.props.some((prop) => prop !== 'you' && !MOVABLE_PROPS.has(prop))
-
-const isNormalItem = (item: Item, textNames: Set<string>): boolean =>
-  !item.isText && textNames.has(item.name)
-
-const isDecorativeItem = (item: Item, textNames: Set<string>): boolean =>
-  !item.isText && !textNames.has(item.name)
-
-export const pickItem = (items: Item[], textNames: Set<string>): Item => {
-  const youItem = items.find((item) => item.props.includes('you'))
-  if (youItem) return youItem
-
-  const textItem = items.find((item) => item.isText)
-  if (textItem) return textItem
-
-  const movableItem = items.find(isMovableItem)
-  if (movableItem) return movableItem
-
-  const interactiveItem = items.find(isInteractiveItem)
-  if (interactiveItem) return interactiveItem
-
-  const normalItem = items.find((item) => isNormalItem(item, textNames))
-  if (normalItem) return normalItem
-
-  const decorativeItem = items.find((item) => isDecorativeItem(item, textNames))
-  if (decorativeItem) return decorativeItem
-
-  const fallback = items[0]
-  if (!fallback) throw new Error('No items available to render.')
-
-  return fallback
+export const pickItem = (items: Item[]): Item => {
+  const topItem = sortRenderStack(items)[0]
+  if (!topItem) throw new Error('No items available to render.')
+  return topItem
 }
 
 export const renderRules = (rules: Rule[]): string[] => {
@@ -98,10 +65,26 @@ export const renderRules = (rules: Rule[]): string[] => {
     .map((rule) => {
       const subject =
         `${rule.subjectNegated ? 'NOT ' : ''}${rule.subject}`.toUpperCase()
-      const verb = rule.kind === 'has' ? 'HAS' : 'IS'
+      const condition = !rule.condition
+        ? ''
+        : rule.condition.kind === 'lonely'
+          ? ` ${rule.condition.negated ? 'NOT ' : ''}LONELY`
+          : ` ${rule.condition.kind.toUpperCase()} ${
+              rule.condition.objectNegated ? 'NOT ' : ''
+            }${rule.condition.object.toUpperCase()}`
+      const verb =
+        rule.kind === 'has'
+          ? 'HAS'
+          : rule.kind === 'make'
+            ? 'MAKE'
+          : rule.kind === 'eat'
+              ? 'EAT'
+              : rule.kind === 'write'
+                ? 'WRITE'
+              : 'IS'
       const object =
         `${rule.objectNegated ? 'NOT ' : ''}${rule.object}`.toUpperCase()
-      return `${subject} ${verb} ${object}`
+      return `${subject}${condition} ${verb} ${object}`
     })
     .sort()
 }
@@ -113,7 +96,7 @@ export const renderLegend = (
   const entries = Array.from(names)
     .sort()
     .map((name) => {
-      const code = TEXT_CODES[name] ?? name.slice(0, 2).toUpperCase()
+      const code = textCodeForName(name)
       const color = textColorForName(name)
       const key = colorize(formatCell(code), color)
       const glyph = glyphForLegendName(name)

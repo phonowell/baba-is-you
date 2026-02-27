@@ -34,6 +34,7 @@ let menuSelectedLevelIndex = firstLevelIndex
 let levelIndex = firstLevelIndex
 let history: GameState[] = []
 let state = createInitialState(levelData[levelIndex] ?? firstLevel, levelIndex)
+let didExit = false
 
 const resetLevel = (index: number): void => {
   const nextLevel = levelData[index]
@@ -55,8 +56,24 @@ const returnToMenu = (): void => {
   mode = 'menu'
 }
 
-const draw = (): void => {
+const clearCanvas = (): void => {
   process.stdout.write('\x1b[2J\x1b[H')
+}
+
+const exitApp = (code = 0): never => {
+  if (didExit) process.exit(code)
+  didExit = true
+
+  if (process.stdin.isTTY) {
+    process.stdin.setRawMode(false)
+    process.stdin.pause()
+  }
+  clearCanvas()
+  process.exit(code)
+}
+
+const draw = (): void => {
+  clearCanvas()
   if (mode === 'menu') {
     process.stdout.write(
       renderMenu({
@@ -83,6 +100,9 @@ const handleGameCommand = (cmd: ReturnType<typeof mapGameKeypress>): void => {
   switch (cmd.type) {
     case 'move':
       handleMove(cmd.direction)
+      break
+    case 'wait':
+      handleMove(null)
       break
     case 'undo':
       if (history.length) state = history.pop() ?? state
@@ -139,7 +159,8 @@ const handleMenuCommand = (cmd: ReturnType<typeof mapMenuKeypress>): void => {
       enterGame(menuSelectedLevelIndex)
       break
     case 'quit-app':
-      process.exit(0)
+      exitApp(0)
+      break
     case 'noop':
       break
   }
@@ -149,7 +170,7 @@ readline.emitKeypressEvents(process.stdin)
 process.stdin.setRawMode(true)
 
 process.stdin.on('keypress', (_str, key) => {
-  if (key.ctrl && key.name === 'c') process.exit(0)
+  if (key.ctrl && key.name === 'c') exitApp(0)
 
   if (mode === 'menu') handleMenuCommand(mapMenuKeypress(key))
   else handleGameCommand(mapGameKeypress(key))
@@ -158,7 +179,7 @@ process.stdin.on('keypress', (_str, key) => {
 })
 
 process.on('SIGINT', () => {
-  process.exit(0)
+  exitApp(0)
 })
 
 draw()

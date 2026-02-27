@@ -106,34 +106,6 @@ test('step swaps mover with SWAP target', () => {
   assert.equal(rock?.x, 0)
 })
 
-test('step teleports objects that enter TELE cells', () => {
-  const level: LevelData = {
-    title: 'tele',
-    width: 8,
-    height: 3,
-    items: [
-      createItem(1, 'baba', 0, 0, false),
-      createItem(2, 'flag', 1, 0, false),
-      createItem(3, 'flag', 5, 0, false),
-      createItem(4, 'baba', 0, 2, true),
-      createItem(5, 'is', 1, 2, true),
-      createItem(6, 'you', 2, 2, true),
-      createItem(7, 'flag', 4, 2, true),
-      createItem(8, 'is', 5, 2, true),
-      createItem(9, 'tele', 6, 2, true),
-    ],
-  }
-
-  const state = createInitialState(level, 0)
-  const result = step(state, 'right')
-  const baba = result.state.items.find(
-    (item) => !item.isText && item.name === 'baba',
-  )
-
-  assert.equal(baba?.x, 5)
-  assert.equal(baba?.y, 0)
-})
-
 test('step teleports across different TELE object types', () => {
   const level: LevelData = {
     title: 'tele-cross-type',

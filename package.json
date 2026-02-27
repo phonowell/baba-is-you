@@ -5,6 +5,7 @@
   "description": "Terminal Baba Is You (simplified) CLI",
   "devDependencies": {
     "@types/node": "^25.3.0",
+    "@types/three": "^0.183.1",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "esbuild": "^0.25.11",
@@ -21,14 +22,18 @@
   "main": "src/index.ts",
   "name": "baba-is-you-cli",
   "scripts": {
-    "audit-levels:jeremy-meta": "tsx src/tools/audit-jeremy-level-metadata.ts",
-    "build:single-html": "node scripts/build-single-html.mjs",
-    "import-levels:jeremy": "tsx src/tools/import-jeremy-levels.ts",
+    "build": "node scripts/build-single-html.mjs",
+    "import-levels:official": "tsx src/tools/import-official-levels.ts",
+    "verify-levels:official": "tsx src/tools/import-official-levels.ts --verify",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "start": "tsx src/cli.ts",
-    "test": "tsx --test \"src/**/*.test.ts\"",
-    "type-check": "tsc -p tsconfig.json --noEmit"
+    "test": "tsx --test src/**/*.test.ts",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "watch": "node scripts/watch-build.mjs"
   },
   "type": "module",
-  "version": "0.1.0"
+  "version": "0.1.0",
+  "dependencies": {
+    "three": "^0.183.1"
+  }
 }

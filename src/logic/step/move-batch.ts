@@ -1,16 +1,18 @@
+import { emptyHasProp } from '../empty.js'
+
 import { applyBatchMovement } from './move-batch-apply.js'
 import { resolveBatchArrows } from './move-batch-runtime.js'
 import { appendHasSpawns, buildGrid, hasProp } from './shared.js'
 
-import type { Direction, Item, Rule } from '../types.js'
+import type { RuleRuntime } from '../rule-runtime.js'
+import type { Direction, Item } from '../types.js'
 
 export const moveItemsBatch = (
   items: Item[],
-  width: number,
-  height: number,
-  rules: Rule[],
+  runtime: RuleRuntime,
   movers: Array<{ id: number; dir: Direction; isMove: boolean }>,
 ): { items: Item[]; moved: boolean } => {
+  const { height, rules, width } = runtime
   const next = items.map((item) => ({ ...item }))
   const byId = new Map<number, Item>()
 
@@ -34,8 +36,12 @@ export const moveItemsBatch = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { changed: false }
+  const emptyBlocked =
+    emptyHasProp(rules, 'push', next, width, height) ||
+    emptyHasProp(rules, 'stop', next, width, height)
   const context = {
     byId,
+    emptyBlocked,
     grid: buildGrid(next, width),
     height,
     openIds,
@@ -54,8 +60,15 @@ export const moveItemsBatch = (
   applyBatchMovement(context, arrows)
 
   const survivors = next.filter((item) => !removed.has(item.id))
-  const hasRules = rules.filter((rule) => rule.kind === 'has')
-  const spawned = appendHasSpawns(survivors, removedItems, hasRules, true)
+  const spawned = appendHasSpawns(
+    survivors,
+    removedItems,
+    runtime.buckets.has,
+    true,
+    width,
+    height,
+    next,
+  )
 
   return {
     items: spawned.items,

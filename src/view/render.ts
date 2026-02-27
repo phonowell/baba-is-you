@@ -5,6 +5,7 @@ import {
   renderLegend,
   renderRules,
 } from './render-helpers.js'
+import { statusLine } from './status-line.js'
 import { formatCell } from './render-width.js'
 
 import type { GameState, Item } from '../logic/types.js'
@@ -13,6 +14,8 @@ export const render = (state: GameState): string => {
   const grid = new Map<number, Item[]>()
   const textNames = new Set<string>()
   for (const item of state.items) {
+    if (item.props.includes('hide')) continue
+
     const key = item.y * state.width + item.x
     const list = grid.get(key) ?? []
     list.push(item)
@@ -29,26 +32,17 @@ export const render = (state: GameState): string => {
         row += formatCell('.')
         continue
       }
-      row += cellForItem(pickItem(list, textNames))
+      row += cellForItem(pickItem(list))
     }
     rows.push(row)
   }
-
-  const statusLine =
-    state.status === 'win'
-      ? 'WIN! Press N/Enter for next level.'
-      : state.status === 'lose'
-        ? 'DEFEAT! Press R to restart, Q to menu.'
-        : state.status === 'complete'
-          ? 'ALL LEVELS CLEARED! Press N to restart.'
-          : 'WASD/Arrows move, U=Undo, R=Restart, Q=Menu'
 
   const ruleLines = renderRules(state.rules).map((line) => `  ${line}`)
   const legendLines = renderLegend(state.width * CELL_WIDTH, textNames)
 
   return [
     `Level ${state.levelIndex + 1}: ${state.title}`,
-    statusLine,
+    statusLine(state.status),
     '',
     ...rows,
     '',

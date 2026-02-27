@@ -1,5 +1,5 @@
 import { applyProperties, applyTransforms } from './resolve.js'
-import { collectRules } from './rules.js'
+import { collectRuleRuntime } from './rule-runtime.js'
 
 import type { GameState, LevelData } from './types.js'
 
@@ -7,15 +7,14 @@ export const createInitialState = (
   level: LevelData,
   levelIndex: number,
 ): GameState => {
-  const baseRules = collectRules(level.items, level.width, level.height)
-  const transformResult = applyTransforms(
-    level.items,
-    baseRules,
+  const baseRuntime = collectRuleRuntime(level.items, level.width, level.height)
+  const transformResult = applyTransforms(level.items, baseRuntime)
+  const runtime = collectRuleRuntime(
+    transformResult.items,
     level.width,
     level.height,
   )
-  const rules = collectRules(transformResult.items, level.width, level.height)
-  const items = applyProperties(transformResult.items, rules)
+  const items = applyProperties(transformResult.items, runtime)
 
   return {
     levelIndex,
@@ -23,7 +22,7 @@ export const createInitialState = (
     width: level.width,
     height: level.height,
     items,
-    rules,
+    rules: runtime.rules,
     status: 'playing',
     turn: 0,
   }

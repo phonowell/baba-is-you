@@ -27,3 +27,6 @@ test-report.md
 
 # Trae IDE
 /.trae
+
+# Game data
+/data/baba

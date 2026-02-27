@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "programming-architecture": {
+      "source": "pluginagentmarketplace/custom-plugin-game-developer",
+      "sourceType": "github",
+      "computedHash": "d14b85c895c3bceab0ff3d0f673fc72815dbf2379a3a31c1287e64559035f0e8"
+    }
+  }
+}

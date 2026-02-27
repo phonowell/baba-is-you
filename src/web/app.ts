@@ -3,14 +3,16 @@ import { parseLevel } from '../logic/parse-level.js'
 import { createInitialState, markCampaignComplete } from '../logic/state.js'
 import { step } from '../logic/step.js'
 import { mapGameKeyboardEvent, mapMenuKeyboardEvent } from '../view/input-web.js'
-import { getBoardEntities, renderHtml, statusLine } from '../view/render-html.js'
+import { renderHtml } from '../view/render-html.js'
 import { MENU_WINDOW_SIZE } from '../view/render-menu.js'
 import { renderMenuHtml } from '../view/render-menu-html.js'
+import { statusLine } from '../view/status-line.js'
+import { createBoard3dRenderer } from './board-3d.js'
 
 import type { GameState } from '../logic/types.js'
 
 type AppMode = 'menu' | 'game'
-const GAME_INPUT_COOLDOWN_MS = 150
+const GAME_INPUT_COOLDOWN_MS = 100
 
 const levelData = levels.map((level) => parseLevel(level))
 const firstLevel = levelData[0]
@@ -38,7 +40,10 @@ let prevShowDialog = false
 let prevBoardSignature: string | null = null
 let boardEl: HTMLElement | null = null
 let statusEl: HTMLElement | null = null
-const entityElements = new Map<number, HTMLElement>()
+const board3dRenderer = createBoard3dRenderer()
+if (!board3dRenderer.isSupported) {
+  throw new Error('3D renderer is unavailable.')
+}
 
 const closeReferenceDialog = (): void => {
   showReferenceDialog = false
@@ -73,43 +78,6 @@ const computeCellSize = (): number => {
   const maxByW = Math.floor((availW - gap * (state.width - 1)) / state.width)
   const maxByH = Math.floor((availH - gap * (state.height - 1)) / state.height)
   return Math.min(44, Math.max(12, Math.min(maxByW, maxByH)))
-}
-
-const syncBoardEntities = (): void => {
-  if (!boardEl) return
-  const entities = getBoardEntities(state)
-  const seenIds = new Set<number>()
-
-  for (const entity of entities) {
-    seenIds.add(entity.id)
-    let el = entityElements.get(entity.id)
-    if (!el) {
-      el = document.createElement('div')
-      el.className = entity.className
-      const span = document.createElement('span')
-      span.className = 'value'
-      span.textContent = entity.value
-      el.appendChild(span)
-      el.style.setProperty('--cx', String(entity.x))
-      el.style.setProperty('--cy', String(entity.y))
-      boardEl.appendChild(el)
-      entityElements.set(entity.id, el)
-    } else {
-      if (el.className !== entity.className) el.className = entity.className
-      const valueEl = el.querySelector('.value')
-      if (valueEl instanceof HTMLSpanElement && valueEl.textContent !== entity.value)
-        valueEl.textContent = entity.value
-      el.style.setProperty('--cx', String(entity.x))
-      el.style.setProperty('--cy', String(entity.y))
-    }
-  }
-
-  for (const [id, el] of entityElements) {
-    if (!seenIds.has(id)) {
-      el.remove()
-      entityElements.delete(id)
-    }
-  }
 }
 
 const applyWithTransition = (fn: () => void): void => {
@@ -147,13 +115,22 @@ const draw = (): void => {
       root.innerHTML = html
       boardEl = root.querySelector<HTMLElement>('.board')
       statusEl = root.querySelector<HTMLElement>('.status')
-      entityElements.clear()
-      if (mode === 'game') syncBoardEntities()
+      if (mode === 'game') {
+        if (boardEl) {
+          board3dRenderer.mount(boardEl)
+          board3dRenderer.sync(state)
+        }
+      }
     })
     return
   }
 
-  syncBoardEntities()
+  if (mode === 'game') {
+    if (boardEl) {
+      board3dRenderer.mount(boardEl)
+      board3dRenderer.sync(state)
+    }
+  }
   if (statusEl) statusEl.textContent = statusLine(state.status)
 }
 
@@ -174,6 +151,9 @@ const handleGameCommand = (
   switch (cmd.type) {
     case 'move':
       return handleMove(cmd.direction)
+    case 'wait':
+      handleMove(null)
+      return true
     case 'undo':
       if (!history.length) return false
       state = history.pop() ?? state
@@ -311,6 +291,10 @@ let resizeTimer = 0
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer)
   resizeTimer = window.setTimeout(draw, 60)
+})
+
+window.addEventListener('beforeunload', () => {
+  board3dRenderer.dispose()
 })
 
 draw()

@@ -1,17 +1,19 @@
+import { emptyHasProp } from '../empty.js'
+
 import { createSingleMoveRuntime } from './move-single-runtime.js'
 import { appendHasSpawns, buildGrid, hasProp } from './shared.js'
 
-import type { Direction, Item, Rule } from '../types.js'
+import type { RuleRuntime } from '../rule-runtime.js'
+import type { Direction, Item } from '../types.js'
 
 export const moveItems = (
   items: Item[],
   direction: Direction,
-  width: number,
-  height: number,
-  rules: Rule[],
+  runtime: RuleRuntime,
   isMover: (item: Item) => boolean,
   isMovePhase: boolean,
-): { items: Item[]; moved: boolean; movedIds: Set<number> } => {
+): { items: Item[]; moved: boolean } => {
+  const { height, rules, width } = runtime
   const next = items.map((item) => ({ ...item }))
   const byId = new Map<number, Item>()
   const movers: number[] = []
@@ -43,9 +45,13 @@ export const moveItems = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { anyMoved: false }
-  const runtime = createSingleMoveRuntime(
+  const emptyBlocked =
+    emptyHasProp(rules, 'push', next, width, height) ||
+    emptyHasProp(rules, 'stop', next, width, height)
+  const engine = createSingleMoveRuntime(
     {
       byId,
+      emptyBlocked,
       grid: buildGrid(next, width),
       height,
       moverIds,
@@ -66,10 +72,25 @@ export const moveItems = (
     isMovePhase,
   )
 
-  for (const id of movers) {
+  const sortedMovers = [...movers].sort((a, b) => {
+    const itemA = byId.get(a)
+    const itemB = byId.get(b)
+    if (!itemA || !itemB) return a - b
+
+    if (direction === 'up')
+      return itemA.y - itemB.y || itemA.x - itemB.x || itemA.id - itemB.id
+    if (direction === 'down')
+      return itemB.y - itemA.y || itemA.x - itemB.x || itemA.id - itemB.id
+    if (direction === 'left')
+      return itemA.x - itemB.x || itemA.y - itemB.y || itemA.id - itemB.id
+
+    return itemB.x - itemA.x || itemA.y - itemB.y || itemA.id - itemB.id
+  })
+
+  for (const id of sortedMovers) {
     if (moved.has(id) || removed.has(id)) continue
 
-    if (!runtime.canMove(id, new Set())) {
+    if (!engine.canMove(id, new Set())) {
       const item = byId.get(id)
       if (item && weakIds.has(id) && !isMovePhase) {
         removed.add(item.id)
@@ -79,16 +100,22 @@ export const moveItems = (
       continue
     }
 
-    runtime.doMove(id)
+    engine.doMove(id)
   }
 
   const survivors = next.filter((item) => !removed.has(item.id))
-  const hasRules = rules.filter((rule) => rule.kind === 'has')
-  const spawned = appendHasSpawns(survivors, removedItems, hasRules, true)
+  const spawned = appendHasSpawns(
+    survivors,
+    removedItems,
+    runtime.buckets.has,
+    true,
+    width,
+    height,
+    next,
+  )
 
   return {
     items: spawned.items,
     moved: status.anyMoved || spawned.changed,
-    movedIds: moved,
   }
 }

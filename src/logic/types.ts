@@ -25,8 +25,31 @@ export type Property =
   | 'red'
   | 'blue'
   | 'best'
+  | 'fall'
+  | 'more'
+  | 'hide'
+  | 'sleep'
+  | 'group'
+  | 'facing'
 
-export type RuleKind = 'property' | 'transform' | 'has'
+export type RuleKind =
+  | 'property'
+  | 'transform'
+  | 'has'
+  | 'make'
+  | 'eat'
+  | 'write'
+
+export type RuleCondition =
+  | {
+      kind: 'on' | 'near' | 'facing'
+      object: string
+      objectNegated?: boolean
+    }
+  | {
+      kind: 'lonely'
+      negated?: boolean
+    }
 
 export type Rule = {
   subject: string
@@ -34,6 +57,7 @@ export type Rule = {
   object: string
   objectNegated?: boolean
   kind: RuleKind
+  condition?: RuleCondition
 }
 
 export type LevelItem = {
@@ -99,6 +123,12 @@ export const CORE_PROPERTIES: Property[] = [
   'red',
   'blue',
   'best',
+  'fall',
+  'more',
+  'hide',
+  'sleep',
+  'group',
+  'facing',
 ]
 
 export const DIRECTIONS: Direction[] = ['up', 'right', 'down', 'left']
@@ -110,7 +140,15 @@ export const TEXT_WORDS = new Set<string>([
   'is',
   'and',
   'has',
+  'make',
+  'eat',
+  'write',
+  'on',
+  'near',
+  'lonely',
   'not',
   'text',
   'empty',
+  'all',
+  'level',
 ])

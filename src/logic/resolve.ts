@@ -1,37 +1,9 @@
+import { resolveRuleTargets } from './resolve-targets.js'
+import { matchesRuleSubject } from './rule-match.js'
 import { PROPERTY_WORDS } from './types.js'
 
+import type { RuleRuntime } from './rule-runtime.js'
 import type { Item, LevelItem, Property, Rule } from './types.js'
-
-const matchesSubject = (item: LevelItem, rule: Rule): boolean => {
-  const subjectNegated = rule.subjectNegated ?? false
-
-  if (rule.subject === 'text')
-    return subjectNegated ? !item.isText : item.isText
-  if (rule.subject === 'empty') return false
-  if (item.isText) return false
-  return subjectNegated
-    ? item.name !== rule.subject
-    : item.name === rule.subject
-}
-
-const resolveTargets = (
-  item: LevelItem,
-  rules: Rule[],
-  kind: Rule['kind'],
-): string[] => {
-  const yes = new Set<string>()
-  const no = new Set<string>()
-
-  for (const rule of rules) {
-    if (rule.kind !== kind) continue
-    if (!matchesSubject(item, rule)) continue
-
-    if (rule.objectNegated) no.add(rule.object)
-    else yes.add(rule.object)
-  }
-
-  return Array.from(yes).filter((target) => !no.has(target))
-}
 
 const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
   if (target === 'empty') return null
@@ -49,6 +21,22 @@ const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
     name: target,
     isText: false,
   }
+}
+
+const transformVariants = (
+  item: LevelItem,
+  target: string,
+  allTargets: string[],
+): LevelItem[] => {
+  if (target === 'all') {
+    return allTargets
+      .map((name) => toTransformed(item, name))
+      .filter((value): value is LevelItem => value !== null)
+  }
+
+  const transformed = toTransformed(item, target)
+  if (!transformed) return []
+  return [transformed]
 }
 
 const createFromEmpty = (
@@ -92,49 +80,69 @@ const resolveEmptyTargets = (rules: Rule[]): string[] => {
 
 export const applyTransforms = (
   items: LevelItem[],
-  rules: Rule[],
-  width: number,
-  height: number,
+  runtime: RuleRuntime,
 ): {
   items: LevelItem[]
   changed: boolean
 } => {
-  const transformRules = rules.filter((rule) => rule.kind === 'transform')
+  const { context, height, width } = runtime
+  const transformRules = runtime.buckets.transform
   if (!transformRules.length) return { items, changed: false }
+  const allTargets = Array.from(
+    new Set(items.filter((item) => !item.isText).map((item) => item.name)),
+  )
 
   const next: LevelItem[] = []
   let nextId = items.reduce((max, item) => Math.max(max, item.id), 0) + 1
   let changed = false
 
   for (const item of items) {
-    const targets = resolveTargets(item, transformRules, 'transform')
+    const targets = resolveRuleTargets(
+      item,
+      transformRules,
+      (candidate, rule) => matchesRuleSubject(candidate, rule, context),
+    )
     if (!targets.length) {
       next.push(item)
       continue
     }
 
-    const transformed = targets
-      .map((target) => toTransformed(item, target))
-      .filter((value): value is LevelItem => value !== null)
-
-    const hasIdentity = transformed.some(
-      (value) => value.name === item.name && value.isText === item.isText,
-    )
-    if (hasIdentity) {
-      next.push(item)
-      continue
+    const transformedByKey = new Map<string, LevelItem>()
+    for (const target of targets) {
+      const variants = transformVariants(item, target, allTargets)
+      for (const variant of variants) {
+        transformedByKey.set(
+          `${variant.isText ? '1' : '0'}:${variant.name}`,
+          variant,
+        )
+      }
     }
-
+    const transformed = Array.from(transformedByKey.values())
     if (!transformed.length) {
       changed = true
       continue
     }
 
+    const nonIdentity = transformed.filter(
+      (value) => value.name !== item.name || value.isText !== item.isText,
+    )
+    if (!nonIdentity.length) {
+      next.push(item)
+      continue
+    }
+
     changed = true
-    const first = transformed[0]
+    const hasIdentity = transformed.length !== nonIdentity.length
+    if (hasIdentity) {
+      next.push(item)
+      for (const extra of nonIdentity) next.push({ ...extra, id: nextId++ })
+      continue
+    }
+
+    const first = nonIdentity[0]
     if (!first) continue
     next.push({ ...first, id: item.id })
-    for (const rest of transformed.slice(1))
+    for (const rest of nonIdentity.slice(1))
       next.push({ ...rest, id: nextId++ })
   }
 
@@ -162,18 +170,28 @@ export const applyTransforms = (
   return { items: next, changed }
 }
 
-export const applyProperties = (items: LevelItem[], rules: Rule[]): Item[] =>
-  items.map((item) => {
+export const applyProperties = (
+  items: LevelItem[],
+  runtime: RuleRuntime,
+): Item[] => {
+  const propertyRules = runtime.buckets.property
+  if (!propertyRules.length) {
+    return items.map((item) => ({
+      ...item,
+      props: item.isText ? ['push'] : [],
+    }))
+  }
+
+  const { context } = runtime
+  return items.map((item) => {
     const yes = new Set<string>()
     const no = new Set<string>()
 
     if (item.isText) yes.add('push')
 
-    for (const rule of rules) {
-      if (rule.kind !== 'property') continue
+    for (const rule of propertyRules) {
       if (!PROPERTY_WORDS.has(rule.object)) continue
-      if (!matchesSubject(item, rule)) continue
-
+      if (!matchesRuleSubject(item, rule, context)) continue
       if (rule.objectNegated) no.add(rule.object)
       else yes.add(rule.object)
     }
@@ -188,3 +206,4 @@ export const applyProperties = (items: LevelItem[], rules: Rule[]): Item[] =>
       props,
     }
   })
+}

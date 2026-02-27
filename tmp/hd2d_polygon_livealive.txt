@@ -1,0 +1,1772 @@
+
+
+    
+    
+        window.injectGoogleScript = false;
+        window.googleClientId = "637319331038-n3kh7pj2svog1017crp2opl1oo5503fm.apps.googleusercontent.com";
+        window.amazonClientId = "";
+        window.openPassClientId = "e1c0a7e8586b40ffb119da4083e67fd1";
+        window.OPENPASS_IS_ENABLED =  true ;
+        window.facebookClientId = "1274582487631740";
+        window.discordClientId = "";
+        window.appleClientId = "com.polygon.web";
+
+    
+
+              window.paypalClientID = "AWrMHcGU0RN46X5fMGOAQarESxoqlS_swAzbtrutEpvYF-U_EBIDuokZxgk7jk6ei2rPYpUG2VKCNIkY"; 
+    
+        
+
+    
+
+        
+                    
+    
+    
+                
+    
+        
+                                                             
+
+
+
+
+
+
+    
+
+
+                                            
+                                                                        
+    
+        
+        
+    
+                                
+                
+                
+
+
+    
+        
+
+            
+                Menu
+                            
+
+            
+                
+                    
+                    
+                        
+                            
+                            
+
+                                            
+
+                
+            
+
+            
+
+                                                
+                
+                                                                    
+                                                            
+
+                                                            
+                            
+                            Sign in now
+                        
+                                    
+                
+                                                                                                        
+            
+
+                            
+                        
+                
+            
+        
+            
+                
+                    
+                    
+                    
+                                                                                                    
+                                                                    
+                                        
+                                                                                    
+                                                                                    Guides
+                                                                            
+                                                            
+                                                    
+                                                                    
+                                        
+                                                                                    
+                                                                                    Gaming
+                                                                            
+                                                            
+                                                    
+                                                                    
+                                        
+                                                                                    
+                                                                                    Entertainment
+                                                                            
+                                                            
+                                            
+                
+            
+        
+        
+    
+    
+    
+                
+                    
+    
+
+
+
+
+
+    
+
+                    
+                
+            
+        
+        Close
+    
+
+    
+
+    
+
+        
+
+
+        
+                                        
+                    
+                            
+                        
+                
+                    What To Play
+                
+            
+                                
+                
+                    What to Watch
+                
+            
+            
+
+                    
+                
+                                                            
+                    
+                            
+                                        
+                                                                
+                        
+                            Guides
+                            Submenu
+                        
+                                        
+
+                    
+                            
+                        
+                
+                    All Guides
+                
+            
+                                
+                
+                    All Maps
+                
+            
+                                
+                
+                    Pokémon Go
+                
+            
+                                
+                
+                    Donkey Kong Bananza
+                
+            
+                                
+                
+                    Clair Obscur: Expedition 33
+                
+            
+            
+
+                    
+                
+                                                            
+                                                                
+                        
+                            Games
+                            Submenu
+                        
+                                        
+
+                    
+                            
+                        
+                
+                    All Gaming
+                
+            
+                                
+                
+                    Tabletop
+                
+            
+            
+
+                    
+                
+                                                            
+                                                                
+                        
+                            Entertainment
+                            Submenu
+                        
+                                        
+
+                    
+                            
+                        
+                
+                    All Entertainment
+                
+            
+                                
+                
+                    Anime
+                
+            
+                                
+                
+                    Horror
+                
+            
+                                
+                
+                    Sci-Fi
+                
+            
+                                
+                
+                    Fantasy
+                
+            
+            
+
+                    
+                
+                                            
+                
+                    Videos
+                
+            
+            
+
+                    
+                
+                        
+
+
+        
+
+                                                
+                        
+                        Sign in
+                    
+                            
+                            
+                    
+                    Newsletter
+                
+            
+                                                                                
+        
+
+
+                                
+                
+                
+                
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                    
+            
+        
+
+    
+
+    
+
+
+
+
+
+
+    
+            
+
+	
+
+
+
+    
+
+
+							
+	
+		
+
+			
+				Menu
+			
+                            
+                    
+                        
+                        
+                    
+                
+            			
+				
+													
+
+				
+				
+
+				
+
+									
+																																											
+							                                                            
+        
+            
+                
+                
+                                    Follow
+                                
+        
+
+        
+                
+                
+                                            Followed
+                                    
+        
+
+    											
+				
+																										
+                					
+
+    
+
+                    
+                Like
+    
+								
+            
+            					                					
+											
+									
+				
+							
+							Threads
+																				
+					
+						
+						More Action
+						
+					
+					
+				
+
+
+			
+
+		
+
+		
+        			
+											
+		
+						
+					
+
+											
+					
+					
+						Sign in now
+					
+				
+					
+	
+
+    
+
+
+
+                                                                                                                    
+    
+
+ 
+                                    
+        
+
+
+
+    
+
+
+
+
+    
+
+
+
+    
+    
+        Close
+        
+            
+                
+            
+        
+    
+
+
+
+
+
+            
+
+    
+
+        
+                                        
+
+
+
+
+            
+
+                    
+
+                                                                                                                                
+    
+    
+    
+    
+        
+            
+
+                            
+                        
+    
+
+
+                                                                                                                                                                
+
+                                                                        
+                                
+            
+                        
+            
+                
+                
+                                                                        Follow
+                                                            
+            
+
+            
+                
+                
+                                                            Followed
+                                                    
+            
+        
+                    
+
+            
+
+    
+        
+
+                            
+                        Like
+        
+    
+
+        
+        
+            
+            
+                                    Thread
+                                                
+        
+    
+    
+
+
+    Link copied to clipboard
+
+
+
+        
+
+
+    
+        
+        Add us on
+    
+
+                
+
+                
+
+                                            
+                                                            
+                                                                                                                                                                                                                                
+                                            
+                                        
+                                                                    
+                                                    
+                                        
+                                                    
+                                
+                                    
+                                                                                    By 
+                                        
+                                                                                    Oli Welsh
+                                        
+                                                                    
+                            
+                        
+                                                                                                                                            
+                                                                        Published Jul 27, 2022, 9:05 AM EDT
+                                
+                                                    
+                                                
+                        
+                    
+                                                                    
+                                                
+                                                            
+
+                                                                    Live A Live lives again in its beautiful new remake
+                            
+            
+                                                
+
+
+    
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": "1",
+                  "name": "Home",
+                  "item": "https://www.polygon.com/"
+            },
+                        {
+                "@type": "ListItem",
+                "position":"2",
+                "name": "Opinion",
+                "item": "https://www.polygon.com/opinion/"
+            },                        {
+                "@type": "ListItem",
+                "position":"3",
+                "name": "Square Enix\u2019s HD-2D style lets classic games be themselves",
+                "item": "https://www.polygon.com/23278977/live-a-live-hd-2d-remake-square-enix-jrpg/"
+            }            ]
+        }
+    
+                            
+            
+                        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+        
+                
+                    
+                                        
+    Square Enix’s HD-2D style lets classic games be themselves
+
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+        
+                
+                    
+                                        
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+        
+                
+                    
+                            
+                                                    
+                                    
+                                                
+            
+    
+        
+        
+        
+        
+        Image: Square Enix/Nintendo
+
+    
+
+
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+                                         
+
+                                        
+            
+
+            
+                                        
+            
+                                                            
+                                            
+                
+                                
+            
+            
+
+        
+                        
+        
+                                                                                            
+                        
+
+        
+                            
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+                                                                        
+                                    
+        
+                                                                
+                        
+                        
+                                    
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                                                    
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+                                                
+                                                                                                        
+                        
+                                    
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                                                    
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+                            
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+                                                
+                        
+                        
+                                    
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                                                    
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+                                                
+                        
+                        
+                                    
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                                                    
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+                                                
+                        
+                        
+                                    
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                                                    
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+                            
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+        
+                                                
+                        
+                        
+                                    
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                                                    
+                                
+                    
+                        
+    
+    
+    
+        
+    
+
+    
+        
+                        
+        
+        
+                        
+
+        
+                            
+        
+                
+                    
+                                                                                                                                                                                                                                                    
+                                                
+                                
+                    
+                    
+    
+    
+        
+                
+                    
+                                                                
+
+                
+    
+
+
+
+    
+    
+
+
+
+    
+
+        
+            Nintendo and Square Enix’s remake of the cult 1994 role-playing game Live A Live is one of the more interesting reissues of the last few years. Mostly, that’s due to the source material itself. Live A Live, which was previously never released outside Japan, is a sort of portmanteau game, a playable Cloud Atlas that spans a number of bite-size scenarios from prehistory to the far future, taking in Imperial China, the American Wild West, and Edo-period Japan along the way.
+    
+        
+    
+It’s a fascinating curio that takes the format of 1990s Japanese RPGs to places those games didn’t usually go — not just in terms of the varied and colorfully cliched settings, but in terms of its loose, parallelized, nonlinear structure. It’s not always successful, but it’s clearly readable as a kind of eccentric, experimental rehearsal for director Takashi Tokita’s ensuing masterpiece, Chrono Trigger. That, in addition to its previous inaccessibility to most Western players, makes it a very worthwhile release.    Live A Live is also interesting because of the vehicle Square Enix chose for the remake. The game has been remade in “HD-2D,” a kind of style template within Unreal Engine that Square Enix created, alongside developer Acquire, for 2018’s superb retro RPG Octopath Traveler. Square quickly saw the potential in HD-2D for both new releases and rehashes; it has since been employed for the new tactics RPG Triangle Strategy, while a remake of the venerable 1988 classic Dragon Quest 3 is underway.    
+
+                            
+        
+            
+        
+    
+                    Image: NintendoOctopath TravelerImage: Acquire/Square EnixDragon Quest 3Image: Square EnixClockwise from top left: Live A Live, Octopath Traveler, Triangle Strategy, Dragon Quest 3Image: NintendoClose
+            
+Put simply, HD-2D places 2D, pixel-art sprites within 3D environments that mimic the look and feel of classic, hand-drawn backdrops while allowing for smooth camera moves and advanced lighting and atmospheric effects. Placing 2D characters in 3D worlds is nothing new — the Paper Mario series is a good example of how a successful aesthetic can be spun out of these clashing elements. HD-2D’s strength lies in how skillfully its components are blended together. The 3D worlds are wrapped in pixelated textures for consistency with the character sprites, while the lighting seats the 2D characters believably in the scene without emphasizing their flatness. The color palette draws from the rich, jewel-like tones of the 16-bit era, and exaggerated depth-of-field gives the scene a dreamy, tilt-shifted, diorama-like look. It’s at once miniaturized and epic — nostalgic and modern.    It’s a gorgeous style that goes beyond a pure retro look to create something timeless — an extension of a classic ’90s video game aesthetic into the present, which deepens and enriches it whilst staying faithful to its original character. Live A Live is our first look at how HD-2D works when applied to an actual classic RPG, rather than a brand-new release, and it shows how effective the style is at letting an older game stay true to its period idiosyncrasies, even as it polishes it up for a new generation of hardware (and players).    Principally, this is down to the treatment of the characters. Live A Live’s sprites have been redrawn in greater detail for this remake, but they still move and behave in the same way. The exaggerated form, the huge, emotive eyes, the sparing, decisive animation frames — they communicate as much, but also leave as much to the imagination, as the original sprites did. We relate to them in the same way.    
+
+                            
+        
+            
+        
+    
+                    Image: Square Enix/NintendoImage: Square Enix/NintendoImage: Square Enix/NintendoImage: Square Enix/NintendoClose
+            
+This has long been a problem specific to updating games of this era. How can you make them more visually rich without filling in details that might clash with the details in players’ memories and imaginations? On a more fundamental level, how can you avoid changing the very tone and form of the original? HD-2D solves this elegantly. Live A Live looks beautiful on a modern screen, but it still moves, plays and feels like a game from 1994, with the distinctive rhythms and ellipses of the era, in both gameplay and storytelling style. As it should do.    
+
+
+    
+
+        
+            Live A Live is also a perfect choice to show off HD-2D’s range. As the game cycles through different settings, characters, and gameplay styles, skipping from ninja stealth to deep-space intrigue, it’s like flicking through a catalog of lost cult classics, each steeped in its own distinct (and distinctly mid-’90s) genre influences. The HD-2D art brings them all to life without trampling on their simplicity or innocence. It’s hard not to play this tasting menu of a game without wishing to see other classics of the era handled with such imaginative care, reimagined and preserved at the same time. Hopefully Dragon Quest 3 won’t be the last HD-2D remake we see.    
+    
+        
+    
+
+    
+                
+
+            
+                                    
+
+                
+
+                        
+            
+
+                                                                                            
+            
+
+            
+                                                            
+    
+                                    
+                    
+                                            Opinion
+                    
+                
+                            
+                    
+                                            Gaming
+                    
+                
+                            
+                    
+                                            PC
+                    
+                
+                        
+
+            
+
+            
+                                                                                                            
+                                
+            
+                        
+            
+                
+                
+                                                                        Follow
+                                                            
+            
+
+            
+                
+                
+                                                            Followed
+                                                    
+            
+        
+                    
+                                                                                                                                    
+
+    
+        
+
+                            
+                        Like
+        
+    
+                    
+                                                                
+
+                                                                                                                                                                
+
+
+
+
+
+    
+    Share
+
+    
+
+                                                        
+                        
+                        Facebook
+                    
+                                                                                    
+                        
+                        X
+                    
+                                                                                    
+                        
+                        WhatsApp
+                    
+                                                                                    
+                        
+                        Threads
+                    
+                                                                                    
+                        
+                        Bluesky
+                    
+                                                                                    
+                        
+                        LinkedIn
+                    
+                                                                                    
+                        
+                        Reddit
+                    
+                                                                                    
+                        
+                        Flipboard
+                    
+                                                                                    
+                        
+                        Copy link
+                    
+                                                                                    
+                        
+                        Email
+                    
+                                        
+
+
+
+                            
+
+            
+
+
+            
+
+
+                                                                                                                                                                                        
+            
+                                        
+            
+                                                                                    
+                                
+                                
+                    
+        
+        
+        
+            Close
+            
+                
+                    
+                    
+                
+            
+        
+
+                
+    
+
+    
+        
+    
+       
+        
+        
+            
+                
+                    We noticed that ads aren't being displayed.
+                    Ads help keep content available for free and support the contributors who create it.
+
+                    
+                                                Adjusting your ad blocking settings helps sustain quality content.
+                                            
+                
+
+                
+                    How to Allow Ads on This Site
+
+                    Depending on your setup, ads may be blocked by a browser extension, VPN, antivirus software, or other application. Here are some common ways to allow ads:
+                        
+                        
+                    
+
+
+                    Browser Extensions (e.g., Adblock, uBlock, etc.)
+                    
+                        Click the extension icon in your browser toolbar.
+                        Look for an option like "Don't run on pages on this site" or "Pause on this site".
+                        Save the change and refresh the page.
+                    
+
+                    VPNs with Ad Blocking (e.g., NordVPN, Proton VPN, etc.)
+                    
+                        Open your VPN app.
+                        Go to settings or features.
+                        Disable any ad blocking or tracking protection features.
+                        Refresh the page.
+                    
+
+                    Antivirus Software or Other Privacy Tools
+                    
+                        Check for web protection, ad filtering, or browser privacy settings.
+                        Click the power button to disable it for this site.
+                        Refresh the page.
+                    
+
+                    Not sure what's blocking ads? Look for tools with privacy or filtering features, or check your browser extensions. We only use respectful, non-intrusive advertising.
+                
+
+                    
+                        How to Allow Ads on This Site
+                    
+
+                    
+                        Back
+                    
+                
+            
+            
+                
+                    
+                        
+                    
+                
+            
+        
+    
+
+
+            
+            
+
+
+
+
+
+                                                                                                                                                    
+                                        
+                                                    
+    
+    
+                    
+    
+        window.websiteUser = null;
+        window.batchSize = 26;
+        window.childBatchSize = 6;
+        window.allowNewComments  = true
+        window.sortOrder = 'ASC';
+                    window.sortOrder = 'RECOMMENDED';
+        
+                    
+
+    
+    
+        
+            
+        
+        
+           
+            
+                                                
+                
+                                                    
+                Thread
+                                    
+                             
+
+            
+            
+                
+                    
+        
+            
+            
+                        
+            
+
+                            We want to hear from you! Share your opinions in the thread below and remember to keep it respectful.
+                                    
+                        
+                            
+                    
+                    
+                                            
+                    
+
+                        
+                                                    
+                        
+                                                                                                                    
+                                                        
+                            
+                                                                                    
+                                                                                            
+                                    Be the first to post
+                                
+                            
+                            
+                                
+                                    
+                                    
+                                    
+                                    
+                                    
+                                                                            
+                                             
+    
+        
+    
+                                        
+                                                                        Images
+                                
+                                
+                                
+                                    Attachment(s)
+                                    
+                                        
+                                        
+                                    
+                                
+                                
+                                
+                                    Please respect our community guidelines. No links, inappropriate language, or spam.
+                                
+                            
+                        
+                        
+                    
+                
+            
+            
+                Your comment has not been saved
+                Send confirmation email
+            
+
+                            
+                    This thread is open for discussion.
+                                        Be the first to post your thoughts.
+                
+            
+            
+                
+                
+            
+
+                                        
+            
+                
+                                                        
+
+                            
+
+            
+                
+                    Terms
+                    Privacy
+                    Feedback
+                
+            
+        
+
+        
+
+            
+
+                    
+    
+
+    
+
+    
+    
+        
+            
+                            
+
+
+    Recommended
+    
+                                                                    
+                    
+    
+                    
+                
+        
+        
+            
+            
+
+    
+        
+                
+            
+                                        1 day ago
+            
+        
+        
+        
+        
+            
+                                    The new Evangelion anime already has the perfect story, in this secret Asuka short
+                            
+        
+
+            
+
+    
+                                                                    
+                    
+    
+                    
+                
+        
+        
+            
+            
+
+    
+        
+                
+            
+                                        2 days ago
+            
+        
+        
+        
+        
+            
+                                    The greatest Pokémon battle of my life happened on a flight to Disney World
+                            
+        
+
+            
+
+    
+                                                                    
+                    
+    
+                    
+                
+        
+        
+            
+            
+
+    
+        
+                
+            
+                                        1 day ago
+            
+        
+        
+        
+        
+            
+                                    Magic head designer might have the wrong expectations for the TMNT set
+                            
+        
+
+            
+
+    
+                                                                    
+                    
+    
+                    
+                
+        
+        
+            
+            
+
+    
+        
+                
+            
+                                        2 days ago
+            
+        
+        
+        
+        
+            
+                                    A24's Backrooms teaser shows the viral horror property is in exactly the right hands
+                            
+        
+
+            
+
+    
+            
+
+            
+                        
+                    
+        
+
+        
+    
+        
+
+    
+                                                                            
+            
+
+
+
+
+    
+        
+
+            
+                
+                    
+                        
+                            
+                            
+                        
+                    
+                
+                
+                                                                        Join Our Team
+                                                    About Us
+                                                    Press & Events
+                                                    Editorial Ethics and Guidelines
+                                                    Community Guidelines
+                                                    Media Coverage
+                                                    Contact Us
+                                                            
+
+                                    
+                        Follow Us
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    
+                                                    
+                                            
+                
+            
+
+            
+            
+
+            
+                
+                    
+                        
+                    
+                
+
+
+                 
+                    
+                                                                        Advertising
+                                                    Careers
+                                                    Terms
+                                                    Privacy
+                                                    Policies
+                                                            
+
+                
+                    Polygon is part of the
+                            Valnet Publishing Group
+                    
+                
+
+
+            
+            
+            
+        
+    
+
+    
+        
+            
+                Copyright © 2026 Valnet Inc.
+            
+
+        
+    
+
+    
+            
+        
+         window.isUserVerified = false; 
+                
+    
+
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            var queryString = window.location.search || '';
+            var keyValPairs = [];
+            var params      = {};
+
+            queryString     = queryString.substr(1);
+            if (queryString.length)
+            {
+                keyValPairs = queryString.split('&');
+                for (var i = 0; i < keyValPairs.length; i++)
+                {
+                    var key = keyValPairs[i].split('=')[0];
+                    if (!key.length) continue;
+                    if (typeof params[key] === 'undefined')
+                        params[key] = [];
+                    params[key].push(keyValPairs[i].split('=')[1]);
+                }
+
+                if (params['view'] !== undefined) {
+                    if (params['view'] == "list" || params['view'] == "lista") {
+                        valnet_cookie.set("view",params['view']);
+                    }
+                }
+
+                var campaign = null;
+                if (params['utm_source'] !== undefined) {
+                    campaign = params['utm_source'];
+                }
+                if (campaign !== null) {
+                    valnet_cookie.set("campaign",campaign);
+                }
+            }
+        });
+    
+
+        
+                                                        
+    
+        /** For Read More button on LP **/
+        window.toggleReadmoreButton=()=>{
+            let e=document.getElementsByClassName('listing-desc');
+            for(let t=0;t<e.length;t++)e[t].classList.add('js-show-full');
+            let n=document.getElementsByClassName('listing-desc-btn');
+            for(let e=0;e<n.length;e++)n[e].classList.contains('js-show-btn')&&n[e].remove();
+        }
+    
+
+    
+    
+
+    
+	        
+
+			
+    
+
+
+
+;(function() {
+    class AdBlockerDialog {
+        constructor(el) {
+            this.el = el;
+            this.el.showModal();
+            el.addEventListener('close', this.onClosed.bind(this));
+            el.addEventListener('adbd:close', this.onClose.bind(this));
+            el.addEventListener('adbd:toggleInstructions', this.onToggleInstructions.bind(this));
+            el.addEventListener('click', this.onShouldClose.bind(this));
+            this.eventsToBeConsumed = [];
+            this.sentinelWatcher = null;
+            this.sentinelWatcherTimeout = null;
+        }
+
+        onShouldClose(evt) {
+            if (evt.target === this.el) {
+                this.onClose();
+            }
+        }
+
+        onClose() {
+            this.el.close();
+        }
+
+        onClosed() {
+                        this.dispatchTrackEvent({
+                category: 'Promotion',
+                name: 'Ad Blocker Message',
+                value: 'Dismissed Landing Page'
+            }, {
+                category: 'Promotion',
+                name: 'Ad Blocker Message',
+                value: 'Dismissed Page 2+'
+            });
+                    }
+
+        onToggleInstructions() {
+            this.el.classList.toggle("is-instructions");
+        }
+
+        dispatchTrackEvent(eventData = {}, plus2EventData ={}) {
+            let isPlus2 = document.referrer.indexOf("www.polygon.com") > -1;
+            this.sendTrackEvent(isPlus2 ? plus2EventData : eventData);
+        }
+
+        sendTrackEvent(eventData) {
+            if (window.websiteSentinel) {
+                window.websiteSentinel?.sendEvent(eventData.category, eventData.name, eventData.value);
+                console.log('sent', targetEvt);
+            } else {
+                this.eventsToBeConsumed.push(eventData);
+                this.clearTimers();
+                this.sentinelWatcher = window.setInterval(() => {
+                    if (window.websiteSentinel) {
+                        this.consumeEvents();
+                    }
+                }, 16);
+                this.sentinelWatcherTimeout = window.setTimeout(() => {
+                    this.clearTimers();
+                }, 10000);
+            }
+        }
+
+        clearTimers() {
+            window.clearInterval(this.sentinelWatcher);
+            window.clearTimeout(this.sentinelWatcherTimeout);
+        }
+
+        consumeEvents() {
+            for ( let i of this.eventsToBeConsumed) {
+                window.websiteSentinel?.sendEvent(i.category, i.name, i.value);
+                console.log('consumed', i);
+            }
+            this.eventsToBeConsumed = [];
+
+            this.clearTimers();
+        }
+    }
+
+    let adbdEl = document.querySelector('dialog[data-guid="939761557adbdiag"]')
+    let adbd = new AdBlockerDialog(adbdEl);
+
+    let img = document.querySelector(".adblock-img-item");
+    try {
+        let featImg = document.querySelector('[data-is-feature-img="true"] img');
+
+        if (!featImg) {
+            featImg = document.querySelector('[data-is-thread-img="true"] img');
+        }
+
+        let url ="";
+
+        if (featImg) {
+            url = featImg.currentSrc ?? featImg.src;
+        }
+
+        if (!url) {
+            let metaOgImage = document.querySelector('meta[property="og:image"][content]');
+            if (metaOgImage) {
+                url = metaOgImage.getAttribute('content');
+            }
+        }
+
+
+        if (url) {
+            url = url.split('?')[0];
+            img.src = `${url}?q=49&fit=contain&w=825&h=440&dpr=2`;
+            const adbImgContainer = adbdEl.querySelector(".adblock-img");
+        }
+    } catch (e) {
+        console.error(e);
+    }
+            adbd.dispatchTrackEvent({
+            category: 'Promotion',
+            name: 'Ad Blocker Message',
+            value: 'Loaded Landing Page'
+        }, {
+            category: 'Promotion',
+            name: 'Ad Blocker Message',
+            value: 'Loaded Page 2+'
+        });
+    
+})();
+

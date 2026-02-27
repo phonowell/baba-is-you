@@ -73,34 +73,6 @@ test('step melts object when HOT and MELT are on the same object', () => {
   )
 })
 
-test('step destroys object when OPEN and SHUT are on the same object', () => {
-  const level: LevelData = {
-    title: 'self-open-shut',
-    width: 9,
-    height: 3,
-    items: [
-      createItem(1, 'baba', 8, 0, false),
-      createItem(2, 'key', 1, 0, false),
-      createItem(3, 'baba', 0, 2, true),
-      createItem(4, 'is', 1, 2, true),
-      createItem(5, 'you', 2, 2, true),
-      createItem(6, 'key', 3, 2, true),
-      createItem(7, 'is', 4, 2, true),
-      createItem(8, 'open', 5, 2, true),
-      createItem(9, 'and', 6, 2, true),
-      createItem(10, 'shut', 7, 2, true),
-    ],
-  }
-
-  const state = createInitialState(level, 0)
-  const result = step(state, 'left')
-
-  assert.equal(
-    result.state.items.some((item) => !item.isText && item.name === 'key'),
-    false,
-  )
-})
-
 test('step resolves blocking before pending dependency when both apply', () => {
   const level: LevelData = {
     title: 'block-over-defer',

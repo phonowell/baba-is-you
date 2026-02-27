@@ -200,16 +200,15 @@ test('render prefers text over movable in stacked cell when no YOU', () => {
   assert.equal(stripAnsi(row), 'RO')
 })
 
-test('render prefers interactive over normal object in stacked cell', () => {
+test('render prefers move/fall over push/pull in stacked cell', () => {
   const state: GameState = {
     levelIndex: 0,
-    title: 'stack-interactive',
+    title: 'stack-move-fall-over-push-pull',
     width: 1,
     height: 1,
     items: [
-      { id: 1, name: 'rock', x: 0, y: 0, isText: false, props: [] },
-      { id: 2, name: 'door', x: 0, y: 0, isText: false, props: ['open'] },
-      { id: 3, name: 'rock', x: 9, y: 9, isText: true, props: [] },
+      { id: 1, name: 'rock', x: 0, y: 0, isText: false, props: ['pull'] },
+      { id: 2, name: 'ghost', x: 0, y: 0, isText: false, props: ['fall'] },
     ],
     rules: [],
     status: 'playing',
@@ -219,19 +218,18 @@ test('render prefers interactive over normal object in stacked cell', () => {
   const lines = render(state).split('\n')
   const row = lines[3] ?? ''
 
-  assert.equal(row, '🚪')
+  assert.equal(row, '👻')
 })
 
-test('render prefers normal object over decorative object in stacked cell', () => {
+test('render prefers push/pull over open/shut in stacked cell', () => {
   const state: GameState = {
     levelIndex: 0,
-    title: 'stack-normal-vs-decorative',
+    title: 'stack-push-pull-over-open-shut',
     width: 1,
     height: 1,
     items: [
-      { id: 1, name: 'moon', x: 0, y: 0, isText: false, props: [] },
-      { id: 2, name: 'rock', x: 0, y: 0, isText: false, props: [] },
-      { id: 3, name: 'rock', x: 9, y: 9, isText: true, props: [] },
+      { id: 1, name: 'door', x: 0, y: 0, isText: false, props: ['open'] },
+      { id: 2, name: 'rock', x: 0, y: 0, isText: false, props: ['pull'] },
     ],
     rules: [],
     status: 'playing',
@@ -244,15 +242,15 @@ test('render prefers normal object over decorative object in stacked cell', () =
   assert.equal(row, '🪨')
 })
 
-test('render prefers movable object over static object in stacked cell', () => {
+test('render prefers open/shut over else in stacked cell', () => {
   const state: GameState = {
     levelIndex: 0,
-    title: 'stack-priority',
+    title: 'stack-open-shut-over-else',
     width: 1,
     height: 1,
     items: [
-      { id: 1, name: 'rock', x: 0, y: 0, isText: false, props: [] },
-      { id: 2, name: 'water', x: 0, y: 0, isText: false, props: ['move'] },
+      { id: 1, name: 'moon', x: 0, y: 0, isText: false, props: [] },
+      { id: 2, name: 'door', x: 0, y: 0, isText: false, props: ['open'] },
     ],
     rules: [],
     status: 'playing',
@@ -262,5 +260,49 @@ test('render prefers movable object over static object in stacked cell', () => {
   const lines = render(state).split('\n')
   const row = lines[3] ?? ''
 
-  assert.equal(row, '🌊')
+  assert.equal(row, '🚪')
+})
+
+test('render excludes ground-hug objects from upright stack priority', () => {
+  const state: GameState = {
+    levelIndex: 0,
+    title: 'stack-ground-hug-excluded',
+    width: 1,
+    height: 1,
+    items: [
+      { id: 1, name: 'tile', x: 0, y: 0, isText: false, props: ['you'] },
+      { id: 2, name: 'skull', x: 0, y: 0, isText: false, props: ['defeat'] },
+    ],
+    rules: [],
+    status: 'playing',
+    turn: 0,
+  }
+
+  const lines = render(state).split('\n')
+  const row = lines[3] ?? ''
+
+  assert.equal(row, '💀')
+})
+
+test('render does not display HIDE items in board or legend', () => {
+  const state: GameState = {
+    levelIndex: 0,
+    title: 'hide-visibility',
+    width: 1,
+    height: 1,
+    items: [
+      { id: 1, name: 'baba', x: 0, y: 0, isText: true, props: ['hide'] },
+      { id: 2, name: 'rock', x: 0, y: 0, isText: false, props: [] },
+    ],
+    rules: [],
+    status: 'playing',
+    turn: 0,
+  }
+
+  const output = render(state)
+  const lines = output.split('\n')
+  const row = lines[3] ?? ''
+
+  assert.equal(row, '🪨')
+  assert.doesNotMatch(stripAnsi(output), /BA=baba/)
 })
