@@ -1,49 +1,59 @@
 # CLAUDE.md
 
 ## 关键约束
-- 逻辑/视图严格分离：`src/logic` 纯函数无副作用；`src/view` 仅渲染与输入映射
-- 状态不可变：logic 仅接收 `action` 并返回新 `state`
-- 规则范围：仅 `X IS Y`；属性限 `you/win/stop/push/defeat/sink/hot/melt`；禁 `Has/And/Not/On/Make`
-- 终端渲染：单元宽 2；文本块 2 字母；`IS` 单独颜色；显示规则+字典；允许 ANSI
-- 输入：`WASD`/方向键；`U` 撤销；`R` 重开；`N` 过关/通关重开
-- 运行：`tsx` 直接运行 TS；禁止引入 build/dist 输出
-- 元原则：最小心智负担 · 精简冗余 · 冲突信代码
-- 异常处理：`try-catch` 仅用于高 ROI 边界（IO/外部依赖/可恢复流程）
+- 保持分层：`src/logic` 只做规则与状态推进；CLI/Web 输入输出在 `src/cli.ts`、`src/view/*`、`src/web/*`
+- 逻辑保持可组合与可测试：核心入口 `src/logic/step.ts`，避免把 IO、DOM、Three.js 逻辑混入 `src/logic`
+- 状态更新遵循不可变风格：`step(state, action)` 返回新状态，不就地改写旧状态
+- 项目文件编码统一为 UTF-8（新增/修改文件均保持 UTF-8，禁止使用其他编码）
+- 规则系统以当前实现为准：
+  - 操作符：`IS/HAS/MAKE/EAT/WRITE`
+  - 连接与否定：`AND/NOT`
+  - 条件：`ON/NEAR/FACING/LONELY`
+  - 特殊名词：`TEXT/EMPTY/ALL/GROUP/LEVEL`
+  - 属性词：以 `src/logic/types.ts` 的 `CORE_PROPERTIES` 为准
+- 修改规则词表时同步：`src/logic/types.ts`、`src/logic/rules*.ts`、`src/view/syntax-words.ts`、`src/view/render-config.ts`、相关测试
+- CLI 渲染约束：双宽格子、文本两字母码、语法词高亮；避免破坏 `src/view/render*.ts` 的输出兼容
+- Web 渲染约束：`src/web/app.ts` + `src/web/board-3d.ts`；保持可降级与可释放（`dispose`）
 
 ## 技术栈
 - Node.js + TypeScript + ESM
 - Runtime: `tsx`
+- Web: Three.js
 - Lint: ESLint（`eslint.config.mjs`）
 
 ## 核心命令
-- `pnpm start`
+- `pnpm start`：运行 CLI
+- `pnpm build`：构建单文件 Web（`release/baba-is-you.html`）
+- `pnpm watch`：监听并自动 build
+- `pnpm test`：运行 `src/**/*.test.ts`
 - `pnpm lint`
 - `pnpm type-check`
+- `pnpm import-levels:official`
+- `pnpm verify-levels:official`
 
 ## 目录结构
-- `src/cli.ts`：CLI 入口/IO
-- `src/logic/`：纯逻辑
-- `src/view/`：渲染与输入映射
-- `src/levels.ts`：关卡数据
+- `src/cli.ts`：CLI 应用入口
+- `src/web/app.ts`：Web 应用入口
+- `src/logic/`：规则解析、匹配、状态推进
+- `src/view/`：输入映射与 CLI/HTML 渲染
+- `src/levels.ts`、`src/levels-data/*.ts`：关卡入口与数据包
+- `src/tools/import-official-levels.ts`：官方关卡导入/校验
+- `scripts/build-single-html.mjs`：单文件构建脚本
+- `docs/logic-architecture.md`：逻辑流水线说明
 
 ## 工作流
-- 改规则：仅改 `src/logic/`
-- 改渲染：仅改 `src/view/`
-- ≥3 步任务：先建 `./plans/task_plan_{suffix}.md`，执行中实时更新状态
-
-## Skill 使用
-- 命中 skill 必须读取 `SKILL.md` 并按流程执行
-- 多 skill 取最小集合并按顺序执行；前一 skill 完成后再进入下一步
-- `AGENTS.md` 必须存在且无需询问用户；固定使用 symlink（syslink）`AGENTS.md -> CLAUDE.md`
+- 规则/推进改动：优先补或改 `src/logic/*.test.ts`，再跑 `pnpm test && pnpm type-check`
+- 渲染/UI 改动：补 `src/view/*.test.ts` 或 `src/web/*.test.ts`，再跑 `pnpm test`
+- 构建链路改动：至少执行 `pnpm build` 验证输出可打开
+- 涉及 3 步以上任务：在 `plans/task_plan_{suffix}.md` 维护计划与状态
 
 ## 代码规范
-- 函数用表达式：`const fn = (...) => {}`
-- 类型使用 `import type`；避免 `interface`
-- ≥5 处非空断言：立即重构类型架构（🚫 `eslint-disable` 批量压制）
+- 倾向函数表达式：`const fn = (...) => {}`
+- 类型声明优先 `type` + `import type`
+- 非空断言、`eslint-disable` 仅在必要点最小使用并给出理由
+- `try-catch` 仅用于可恢复边界（IO、外部依赖、构建流程）
 
 ## 输出格式
-- 客观诚实：不主观评价 · 不因用户情绪转移立场 · 不编造事实 · 立刻暴露不确定信息
-- 计划管理：≥3 步任务建 todo/计划并实时更新，完成即标记
-- 约束：禁预告文字 · 状态符号 `✓/✗/→` · 一次性批量 Edit · 数据优先 · 直达结论 · 工具间隔零输出
-- 错误格式：`✗ {位置}:{类型}`
-- 表达约束：代码块零注释 · ≥2 条用列表 · 路径缩写（`.` 项目根 · `~` 主目录）· 禁总结性重复 · 进度 `{当前}/{总数}` · 提问直入
+- 结论优先，信息可验证，不编造
+- 报错使用：`✗ {位置}:{类型}`
+- 路径使用项目相对路径并保持可定位
