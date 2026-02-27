@@ -31,10 +31,7 @@ import {
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
-import { HorizontalTiltShiftShader } from 'three/examples/jsm/shaders/HorizontalTiltShiftShader.js'
-import { VerticalTiltShiftShader } from 'three/examples/jsm/shaders/VerticalTiltShiftShader.js'
 
 import {
   CLAY_PRESET,
@@ -160,15 +157,11 @@ const DUST_HEIGHT_MUL = 0.24
 const DUST_LAYER_DEPTH_SCALE = 0.8
 const DUST_PARTICLE_SIZE = 0.18
 const DUST_PARTICLE_OPACITY = 0.2
-const TILT_SHIFT_FOCUS_LINE = 0.5
-const TILT_SHIFT_BLUR_STRENGTH = 0.78
 const MAX_DEVICE_PIXEL_RATIO = 1.4
 const POSTFX_PIXEL_RATIO_SCALE = 1
 const BLOOM_RESOLUTION_SCALE = 0.65
 const BLOOM_DENSE_TEXT_RESOLUTION_SCALE = 0.84
 const BOKEH_ENABLE_MARGIN = 1.12
-const WORLD_LAYER = 0
-const TEXT_OVERLAY_LAYER = 1
 const CAMERA_CARD_FACE_ANGLE_RAD = Math.PI / 4
 const CAMERA_PITCH_RAD = CAMERA_CARD_FACE_ANGLE_RAD
 const CAMERA_DISTANCE_SCALE = 0.56
@@ -692,7 +685,6 @@ const createDustLayer = (): {
     sizeAttenuation: true,
   })
   const points = new Points(geometry, material)
-  points.layers.set(WORLD_LAYER)
   points.position.set(0, 0.32, 0)
   return { points, geometry, material, texture }
 }
@@ -732,10 +724,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   scene.background = new Color(preset.sceneBackground)
   scene.fog = new FogExp2(ATMOSPHERE_FOG_COLOR, ATMOSPHERE_FOG_DENSITY)
   const camera = new PerspectiveCamera(initialCameraTier.fov, 1, 0.1, 180)
-  const worldCamera = camera.clone()
-  worldCamera.layers.set(WORLD_LAYER)
-  const textOverlayCamera = camera.clone()
-  textOverlayCamera.layers.set(TEXT_OVERLAY_LAYER)
   const renderer = new WebGLRenderer({
     antialias: false,
     alpha: false,
@@ -748,33 +736,26 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   renderer.domElement.setAttribute('aria-hidden', 'true')
 
   const composer = new EffectComposer(renderer)
-  const renderPass = new RenderPass(scene, worldCamera)
+  const renderPass = new RenderPass(scene, camera)
   const bloomPass = new UnrealBloomPass(
     new Vector2(1, 1),
     preset.bloom.strength,
     preset.bloom.radius,
     preset.bloom.threshold,
   )
-  const bokehPass = new BokehPass(scene, worldCamera, {
+  const bokehPass = new BokehPass(scene, camera, {
     focus: 10,
     aperture: preset.bokeh.aperture,
     maxblur: preset.bokeh.maxBlur,
   })
-  const horizontalTiltShiftPass = new ShaderPass(HorizontalTiltShiftShader)
-  const verticalTiltShiftPass = new ShaderPass(VerticalTiltShiftShader)
-  ;(horizontalTiltShiftPass.uniforms.r as BokehUniform).value = TILT_SHIFT_FOCUS_LINE
-  ;(verticalTiltShiftPass.uniforms.r as BokehUniform).value = TILT_SHIFT_FOCUS_LINE
   composer.addPass(renderPass)
   composer.addPass(bloomPass)
   composer.addPass(bokehPass)
-  composer.addPass(horizontalTiltShiftPass)
-  composer.addPass(verticalTiltShiftPass)
 
   const ambientLight = new AmbientLight(
     '#f3f5ff',
     preset.lighting.ambientIntensity * 1.135,
   )
-  ambientLight.layers.enable(TEXT_OVERLAY_LAYER)
   scene.add(ambientLight)
 
   const sideLightIntensity = Math.max(0.67, preset.lighting.topLightIntensity * 0.9125)
@@ -795,7 +776,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   leftLight.shadow.bias = -0.00006
   leftLight.shadow.normalBias = 0.04
   leftLight.shadow.radius = SHADOW_RADIUS
-  leftLight.layers.enable(TEXT_OVERLAY_LAYER)
   scene.add(leftLight)
   scene.add(leftLight.target)
 
@@ -808,7 +788,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   rightLight.shadow.bias = -0.00006
   rightLight.shadow.normalBias = 0.04
   rightLight.shadow.radius = SHADOW_RADIUS
-  rightLight.layers.enable(TEXT_OVERLAY_LAYER)
   scene.add(rightLight)
   scene.add(rightLight.target)
 
@@ -861,24 +840,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     )
   }
 
-  const syncPassCamera = (target: PerspectiveCamera, layer: number): void => {
-    target.position.copy(camera.position)
-    target.quaternion.copy(camera.quaternion)
-    target.near = camera.near
-    target.far = camera.far
-    target.fov = camera.fov
-    target.aspect = camera.aspect
-    target.layers.set(layer)
-    target.updateProjectionMatrix()
-    target.updateMatrixWorld()
-  }
-
-  const applyNodeRenderLayers = (node: EntityNode, isText: boolean): void => {
-    node.mesh.layers.set(isText ? TEXT_OVERLAY_LAYER : WORLD_LAYER)
-    node.shadow.layers.set(WORLD_LAYER)
-    node.shadow.visible = !isText
-  }
-
   const getMaterial = (item: Item): CardMaterial => {
     const spec = cardSpecForItem(item, preset.readability.minContrastRatio)
     const cached = materialCache.get(spec.key)
@@ -895,7 +856,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
           map: texture,
           transparent: true,
           alphaTest: 0.08,
-          fog: !item.isText,
+          fog: true,
           side: DoubleSide,
         })
       : new MeshStandardMaterial({
@@ -908,7 +869,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
           emissiveIntensity: item.isText
             ? preset.materials.textEmissiveIntensity
             : preset.materials.objectEmissiveIntensity,
-          fog: !item.isText,
+          fog: true,
           side: DoubleSide,
         })
     materialCache.set(spec.key, material)
@@ -999,8 +960,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     camera.position.set(0, cameraHeight, distance)
     camera.lookAt(0, lookAtY, lookAtZ)
     camera.updateProjectionMatrix()
-    syncPassCamera(worldCamera, WORLD_LAYER)
-    syncPassCamera(textOverlayCamera, TEXT_OVERLAY_LAYER)
     updateLightRig()
     updateDustLayer()
     updateBokehFocus()
@@ -1028,12 +987,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     composer.setPixelRatio(postFxPixelRatio)
     composer.setSize(viewportWidth, viewportHeight)
     updateBloomResolution()
-    ;(horizontalTiltShiftPass.uniforms.h as BokehUniform).value =
-      (TILT_SHIFT_BLUR_STRENGTH * postFxPixelRatio) / Math.max(1, viewportWidth)
-    ;(verticalTiltShiftPass.uniforms.v as BokehUniform).value =
-      (TILT_SHIFT_BLUR_STRENGTH * postFxPixelRatio) / Math.max(1, viewportHeight)
-    ;(horizontalTiltShiftPass.uniforms.r as BokehUniform).value = TILT_SHIFT_FOCUS_LINE
-    ;(verticalTiltShiftPass.uniforms.r as BokehUniform).value = TILT_SHIFT_FOCUS_LINE
     updateCamera()
     return true
   }
@@ -1113,8 +1066,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     const mesh = new Mesh(cardGeometry, getMaterial(item))
     const emoji = isEmojiItem(item)
     const stretchEnabled = emojiStretchEnabledForItem(item)
-    mesh.castShadow = !item.isText
-    mesh.receiveShadow = !item.isText && !emoji
+    mesh.castShadow = true
+    mesh.receiveShadow = !emoji
     entityGroup.add(mesh)
 
     const shadowMaterial = new MeshBasicMaterial({
@@ -1156,8 +1109,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       despawnStartMs: null,
       landStartMs: null,
     }
-    applyNodeRenderLayers(node, item.isText)
-
     return node
   }
 
@@ -1252,14 +1203,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
 
   const render = (): void => {
     composer.render()
-    const prevAutoClear = renderer.autoClear
-    const prevBackground = scene.background
-    renderer.autoClear = false
-    scene.background = null
-    renderer.clearDepth()
-    renderer.render(scene, textOverlayCamera)
-    scene.background = prevBackground
-    renderer.autoClear = prevAutoClear
   }
 
   const removeNode = (id: number): void => {
@@ -1323,12 +1266,11 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       const target = computeEntityBaseTarget(state, view)
       const material = getMaterial(item)
       if (node.mesh.material !== material) node.mesh.material = material
-      applyNodeRenderLayers(node, item.isText)
       const emoji = isEmojiItem(item)
       node.isEmoji = emojiStretchEnabledForItem(item)
       node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)
-      node.mesh.castShadow = !item.isText
-      node.mesh.receiveShadow = !item.isText && !emoji
+      node.mesh.castShadow = true
+      node.mesh.receiveShadow = !emoji
       node.rotX = cardRotXForItem(item)
       const stableRoll = cardRollForItemStep(item, node.rollStep)
       if (!node.moving && Math.abs(node.rotRoll - stableRoll) > 0.0001) {
