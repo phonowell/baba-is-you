@@ -1,5 +1,22 @@
 import type { Rule } from './types.js'
 
+export const keyFor = (x: number, y: number, width: number): number =>
+  y * width + x
+
+export const inBounds = (
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): boolean => x >= 0 && y >= 0 && x < width && y < height
+
+export const keyForLayer = (
+  x: number,
+  y: number,
+  width: number,
+  floating: boolean,
+): number => keyFor(x, y, width) * 2 + (floating ? 1 : 0)
+
 export const resolveRuleTargets = <T>(
   item: T,
   rules: Rule[],

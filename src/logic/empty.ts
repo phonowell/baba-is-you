@@ -1,4 +1,4 @@
-import { keyFor } from './grid.js'
+import { keyFor } from './helpers.js'
 import { PROPERTY_WORDS } from './types.js'
 
 import type { Property, Rule } from './types.js'

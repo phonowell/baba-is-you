@@ -1,4 +1,4 @@
-import { resolveRuleTargets } from '../resolve-targets.js'
+import { resolveRuleTargets } from '../helpers.js'
 import { matchesRuleSubject } from '../rule-match.js'
 
 import { keyFor } from './shared.js'

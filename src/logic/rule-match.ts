@@ -1,4 +1,4 @@
-import { keyFor } from './grid.js'
+import { keyFor } from './helpers.js'
 
 import type { Item, LevelItem, Rule } from './types.js'
 

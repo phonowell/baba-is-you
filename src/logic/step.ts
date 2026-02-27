@@ -1,19 +1,7 @@
-import { applyProperties, applyTransforms } from './resolve.js'
+import { applyProperties } from './resolve.js'
 import { collectRuleRuntime, createRuleRuntime } from './rule-runtime.js'
-import { applyInteractions } from './step/interactions.js'
-import { applyMake } from './step/make.js'
-import { moveItems } from './step/move-single.js'
-import {
-  applyDirectionalFacing,
-  applyFall,
-  applyMore,
-  applyMoveAdjective,
-  applyShift,
-} from './step/phases.js'
-import { hasProp } from './step/shared.js'
-import { applyTeleport } from './step/teleport.js'
+import { buildStepPhases, type StepPhase } from './step/phase-list.js'
 import { checkWin, hasAnyYou } from './step/win.js'
-import { applyWrite } from './step/write.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
 import type {
@@ -24,16 +12,7 @@ import type {
   StepResult,
 } from './types.js'
 
-type RefreshMode = 'none' | 'props' | 'resolve'
 type PhaseItems = Item[] | LevelItem[]
-
-type StepPhase = {
-  refresh: RefreshMode
-  run: (
-    items: Item[],
-    runtime: RuleRuntime,
-  ) => { items: PhaseItems; changed: boolean }
-}
 
 const resolveFrame = (
   items: PhaseItems,
@@ -116,85 +95,7 @@ export const step = (
   let frame = resolveFrame(state.items, state.width, state.height)
   let changed = false
 
-  const phases: StepPhase[] = [
-    {
-      refresh: 'props',
-      run: (items, runtime) => {
-        if (!direction) return { items, changed: false }
-        const moved = moveItems(
-          items,
-          direction,
-          runtime,
-          (item) => hasProp(item, 'you') && !hasProp(item, 'sleep'),
-          false,
-        )
-        return { items: moved.items, changed: moved.moved }
-      },
-    },
-    {
-      refresh: 'none',
-      run: (items, runtime) => {
-        const moved = applyMoveAdjective(items, runtime)
-        return { items: moved.items, changed: moved.moved }
-      },
-    },
-    {
-      refresh: 'props',
-      run: (items, runtime) => {
-        const moved = applyFall(
-          items,
-          runtime.width,
-          runtime.height,
-          runtime.rules,
-        )
-        return { items: moved.items, changed: moved.moved }
-      },
-    },
-    {
-      refresh: 'resolve',
-      run: (items, runtime) => {
-        const moved = applyShift(items, runtime)
-        return { items: moved.items, changed: moved.moved }
-      },
-    },
-    {
-      refresh: 'none',
-      run: (items) => {
-        const rotated = applyDirectionalFacing(items)
-        return { items: rotated.items, changed: rotated.changed }
-      },
-    },
-    {
-      refresh: 'resolve',
-      run: (items, runtime) => {
-        const transformed = applyTransforms(items, runtime)
-        return { items: transformed.items, changed: transformed.changed }
-      },
-    },
-    {
-      refresh: 'resolve',
-      run: (items, runtime) => applyMake(items, runtime),
-    },
-    {
-      refresh: 'resolve',
-      run: (items, runtime) => applyWrite(items, runtime),
-    },
-    {
-      refresh: 'resolve',
-      run: (items, runtime) => applyMore(items, runtime.width, runtime.height),
-    },
-    {
-      refresh: 'resolve',
-      run: (items, runtime) => applyInteractions(items, runtime),
-    },
-    {
-      refresh: 'resolve',
-      run: (items, runtime) => {
-        const teleported = applyTeleport(items, runtime.width, state.turn)
-        return { items: teleported.items, changed: teleported.moved }
-      },
-    },
-  ]
+  const phases: StepPhase[] = buildStepPhases(direction, state.turn)
 
   for (const phase of phases) {
     const phaseResult = runPhase(frame, phase)

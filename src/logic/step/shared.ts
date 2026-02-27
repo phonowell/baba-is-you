@@ -1,5 +1,4 @@
-import { keyFor as gridKeyFor } from '../grid.js'
-import { resolveRuleTargets } from '../resolve-targets.js'
+import { keyFor as gridKeyFor, resolveRuleTargets } from '../helpers.js'
 import { createRuleMatchContext, matchesRuleSubject } from '../rule-match.js'
 
 import type { Direction, Item, Rule } from '../types.js'
