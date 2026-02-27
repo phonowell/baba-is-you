@@ -39,6 +39,21 @@ import {
   readabilityMix,
   selectClayCameraTier,
 } from './clay-config.js'
+import {
+  BOARD3D_LAYOUT_CONFIG,
+  BOARD3D_CAMERA_CONFIG,
+  BOARD3D_LIGHTING_CONFIG,
+  BOARD3D_SHADOW_CONFIG,
+  BOARD3D_POSTFX_CONFIG,
+  BOARD3D_ANIMATION_CONFIG,
+  BOARD3D_RULE_VISUAL_CONFIG,
+  BOARD3D_TEXT_CARD_STYLE_CONFIG,
+  BOARD3D_CARD_TEXTURE_CONFIG,
+  BOARD3D_GROUND_TEXTURE_CONFIG,
+  BOARD3D_DUST_TEXTURE_CONFIG,
+  BOARD3D_SHADOW_TEXTURE_CONFIG,
+  BOARD3D_ATMOSPHERE_CONFIG,
+} from './board-3d-config.js'
 import { OBJECT_GLYPHS } from '../view/render-config.js'
 import {
   STACK_LAYER_PRIORITY,
@@ -50,7 +65,7 @@ import {
 import { SYNTAX_WORDS } from '../view/syntax-words.js'
 
 import type { OrthographicCamera } from 'three'
-import type { Direction, GameState, Item, Property } from '../logic/types.js'
+import type { Direction, GameState, Item } from '../logic/types.js'
 
 type Board3dRenderer = {
   isSupported: boolean
@@ -115,81 +130,276 @@ type PoseStepResult = {
   finishedLeaving: boolean
 }
 
-const CARD_TEXTURE_SIZE = 256
-const EMOJI_CARD_TEXTURE_SIZE = 512
-const CARD_WORLD_SIZE = 0.88
-const CARD_STACK_DEPTH = 0.05
-const CARD_STACK_LATERAL_SPREAD = 0.06
-const CARD_STACK_DEPTH_SPREAD = 0.06
-const CARD_BASE_Z = 0.09
-const CARD_LAYER_DEPTH = 0.045
-const GROUND_SURFACE_Z = -0.22
-const GROUND_ACTIVE_FILL_Z = GROUND_SURFACE_Z + 0.0008
-const GROUND_HUG_BASE_Z = GROUND_SURFACE_Z + 0.001
-const GROUND_HUG_STACK_DEPTH = 0.001
-const FLOAT_ITEM_LIFT_Z = 0.14
-const SHADOW_BASE_Z = -0.08
-const SHADOW_MAP_SIZE_SCALE = 1.25
-const SHADOW_RADIUS = 1.0
-const LIGHT_HEIGHT_Y_BASE = 9.2
-const LIGHT_HEIGHT_Y_SPAN_MUL = 0.84
-const SIDE_LIGHT_OFFSET_X_BASE = 3.4
-const SIDE_LIGHT_OFFSET_X_MUL = 0.36
-const SIDE_LIGHT_OFFSET_Z_BASE = 2.4
-const SIDE_LIGHT_OFFSET_Z_MUL = 0.28
-const SHADOW_FRUSTUM_BASE = 2.1
-const SHADOW_FRUSTUM_SPAN_MUL = 0.62
-const SHADOW_FAR_PADDING = 8
-const SHADOW_FRUSTUM_DISTANCE_SCALE = 2
-const SHADOW_ANGLE_SPAN_BOOST = 0.35
-const GROUND_EXPANDED_MIN_SIZE = 220
-const GROUND_TEXTURE_TILE_SIZE = 16
-const PLAY_AREA_OUTLINE_Z = -0.065
-const PLAY_AREA_OUTLINE_RADIUS = 0.34
-const PLAY_AREA_OUTLINE_OPACITY = 0.88
-const ATMOSPHERE_FOG_COLOR = '#e8ecea'
-const ATMOSPHERE_FOG_DENSITY = 0.022
-const DUST_PARTICLE_COUNT = 260
-const DUST_SPREAD_BASE = 4.4
-const DUST_SPREAD_MUL = 0.62
-const DUST_HEIGHT_BASE = 1.9
-const DUST_HEIGHT_MUL = 0.24
-const DUST_LAYER_DEPTH_SCALE = 0.8
-const DUST_PARTICLE_SIZE = 0.18
-const DUST_PARTICLE_OPACITY = 0.2
-const MAX_DEVICE_PIXEL_RATIO = 1.4
-const POSTFX_PIXEL_RATIO_SCALE = 1
-const BLOOM_RESOLUTION_SCALE = 0.65
-const BLOOM_DENSE_TEXT_RESOLUTION_SCALE = 0.84
-const BOKEH_ENABLE_MARGIN = 1.12
-const CAMERA_CARD_FACE_ANGLE_RAD = Math.PI / 4
-const CAMERA_PITCH_RAD = CAMERA_CARD_FACE_ANGLE_RAD
-const CAMERA_DISTANCE_SCALE = 0.56
-const CAMERA_DISTANCE_MIN = 1.45
-const CAMERA_LOOK_AT_OFFSET_Y = -0.58
-const CAMERA_LOOK_AT_DEPTH_BIAS = 0.14
-const LIGHT_CAMERA_SIDE_TILT_RAD = CAMERA_CARD_FACE_ANGLE_RAD
-const MOVE_ANIM_MS = 170
-const SPAWN_ANIM_MS = 140
-const DESPAWN_ANIM_MS = 120
-const SPAWN_SCALE_FROM = 0.66
-const DESPAWN_SCALE_TO = 0.12
-const LAND_PULSE_MS = 125
-const JUMP_HEIGHT = 0.17
-const CARD_UPRIGHT_ROT_X = Math.PI / 2
-const CARD_BACK_TILT_RAD = CAMERA_CARD_FACE_ANGLE_RAD
-const CARD_FLAT_ROT_X = 0
-const EMOJI_MICRO_STRETCH_CYCLE_MS = 1000
-const EMOJI_MICRO_STRETCH_Y_AMP = 0.035
-const EMOJI_MICRO_STRETCH_X_AMP = 0.014
+const {
+  CARD_WORLD_SIZE,
+  CARD_STACK_DEPTH,
+  CARD_STACK_LATERAL_SPREAD,
+  CARD_STACK_DEPTH_SPREAD,
+  CARD_BASE_Z,
+  CARD_LAYER_DEPTH,
+  GROUND_SURFACE_Z,
+  GROUND_ACTIVE_FILL_Z,
+  GROUND_HUG_BASE_Z,
+  GROUND_HUG_STACK_DEPTH,
+  FLOAT_ITEM_LIFT_Z,
+  GROUND_EXPANDED_MIN_SIZE,
+  PLAY_AREA_OUTLINE_Z,
+  PLAY_AREA_OUTLINE_RADIUS,
+  PLAY_AREA_OUTLINE_OPACITY,
+  CARD_UPRIGHT_ROT_X,
+  CARD_BACK_TILT_RAD,
+  CARD_FLAT_ROT_X,
+  TEXTURE_ANISOTROPY_CAP,
+  CARD_MATERIAL_ALPHA_TEST,
+  CARD_MATERIAL_ROUGHNESS,
+  CARD_MATERIAL_METALNESS,
+  CARD_MATERIAL_EMISSIVE_COLOR,
+  GROUND_EXPANDED_PADDING,
+  GROUND_MATERIAL_ROUGHNESS,
+  GROUND_MATERIAL_METALNESS,
+  PLAY_AREA_FILL_COLOR,
+  PLAY_AREA_FILL_ROUGHNESS,
+  PLAY_AREA_FILL_METALNESS,
+  PLAY_AREA_OUTLINE_COLOR,
+  ENTITY_IDLE_SHADOW_SCALE,
+  POSITION_EPSILON,
+  PLAY_AREA_OUTLINE_SAMPLES_MIN,
+  PLAY_AREA_OUTLINE_SAMPLES_DENSITY,
+  PLAY_AREA_RADIUS_CLAMP_RATIO,
+} = BOARD3D_LAYOUT_CONFIG
+
+const {
+  CAMERA_PITCH_RAD,
+  CAMERA_DISTANCE_SCALE,
+  CAMERA_DISTANCE_MIN,
+  CAMERA_LOOK_AT_OFFSET_Y,
+  CAMERA_LOOK_AT_DEPTH_BIAS,
+  CAMERA_NEAR,
+  CAMERA_FAR,
+  WORLD_ROTATION_X,
+} = BOARD3D_CAMERA_CONFIG
+
+const {
+  LIGHT_HEIGHT_Y_BASE,
+  LIGHT_HEIGHT_Y_SPAN_MUL,
+  SIDE_LIGHT_OFFSET_X_BASE,
+  SIDE_LIGHT_OFFSET_X_MUL,
+  SIDE_LIGHT_OFFSET_Z_BASE,
+  SIDE_LIGHT_OFFSET_Z_MUL,
+  LIGHT_CAMERA_SIDE_TILT_RAD,
+  AMBIENT_LIGHT_COLOR,
+  AMBIENT_LIGHT_INTENSITY_MUL,
+  SIDE_LIGHT_INTENSITY_MIN,
+  SIDE_LIGHT_INTENSITY_MUL,
+  SIDE_LIGHT_INITIAL_Y,
+  SIDE_LIGHT_INITIAL_Z,
+  LIGHT_SHADOW_CAMERA_NEAR,
+  LIGHT_SHADOW_BIAS,
+  LIGHT_SHADOW_NORMAL_BIAS,
+  LIGHT_HEIGHT_Y_EXTRA,
+  LIGHT_DROP_Y_MIN,
+  LIGHT_DROP_Y_SUB,
+  LIGHT_TARGET_Y,
+} = BOARD3D_LIGHTING_CONFIG
+
+const {
+  SHADOW_BASE_Z,
+  SHADOW_MAP_SIZE_SCALE,
+  SHADOW_RADIUS,
+  SHADOW_FRUSTUM_BASE,
+  SHADOW_FRUSTUM_SPAN_MUL,
+  SHADOW_FAR_PADDING,
+  SHADOW_FRUSTUM_DISTANCE_SCALE,
+  SHADOW_ANGLE_SPAN_BOOST,
+  SHADOW_GEOMETRY_SIZE,
+  ENTITY_SHADOW_COLOR,
+  ENTITY_SHADOW_OPACITY,
+  ENTITY_SHADOW_ALPHA_TEST,
+  SHADOW_SCALE_BASE,
+  SHADOW_SCALE_JUMP_MUL,
+  SHADOW_SCALE_LANDING_MUL,
+  SHADOW_OPACITY_MIN,
+  SHADOW_OPACITY_BASE,
+  SHADOW_OPACITY_JUMP_MUL,
+  SHADOW_OPACITY_LANDING_MUL,
+} = BOARD3D_SHADOW_CONFIG
+
+const {
+  MAX_DEVICE_PIXEL_RATIO,
+  POSTFX_PIXEL_RATIO_SCALE,
+  BLOOM_RESOLUTION_SCALE,
+  BLOOM_DENSE_TEXT_RESOLUTION_SCALE,
+  BOKEH_ENABLE_MARGIN,
+  BLOOM_INITIAL_RESOLUTION_X,
+  BLOOM_INITIAL_RESOLUTION_Y,
+  BOKEH_INITIAL_FOCUS,
+  BOKEH_FOCUS_MIN,
+} = BOARD3D_POSTFX_CONFIG
+
+const {
+  EMOJI_CARD_TEXTURE_SIZE,
+  MOVE_ANIM_MS,
+  SPAWN_ANIM_MS,
+  DESPAWN_ANIM_MS,
+  SPAWN_SCALE_FROM,
+  DESPAWN_SCALE_TO,
+  LAND_PULSE_MS,
+  JUMP_HEIGHT,
+  EMOJI_MICRO_STRETCH_CYCLE_MS,
+  EMOJI_MICRO_STRETCH_Y_AMP,
+  EMOJI_MICRO_STRETCH_X_AMP,
+  MOVE_STRETCH_FACTOR,
+  MOVE_SQUASH_FACTOR,
+  LANDING_PULSE_HEIGHT,
+  SPAWN_VERTICAL_OFFSET,
+  DESPAWN_VERTICAL_OFFSET,
+  MOVE_ROLL_AMPLITUDE,
+} = BOARD3D_ANIMATION_CONFIG
+
+const {
+  BELT_DIRECTION_GLYPH_UP,
+  BELT_DIRECTION_GLYPH_RIGHT,
+  BELT_DIRECTION_GLYPH_DOWN,
+  BELT_DIRECTION_GLYPH_LEFT,
+  FACING_ARROW_PROPS,
+  HAS_EMOJI,
+} = BOARD3D_RULE_VISUAL_CONFIG
+
+const {
+  TEXT_CARD_SYNTAX_BACKGROUND,
+  TEXT_CARD_SYNTAX_BORDER,
+  TEXT_CARD_SYNTAX_TEXT,
+  TEXT_CARD_SYNTAX_OUTLINE,
+  TEXT_CARD_NORMAL_BACKGROUND,
+  TEXT_CARD_NORMAL_BORDER,
+  TEXT_CARD_NORMAL_TEXT,
+  TEXT_CARD_NORMAL_OUTLINE,
+} = BOARD3D_TEXT_CARD_STYLE_CONFIG
+
+const {
+  CARD_TEXTURE_SIZE,
+  CARD_TEXTURE_PAD_RATIO,
+  CARD_TEXTURE_SHADOW_OFFSET_X,
+  CARD_TEXTURE_SHADOW_OFFSET_Y,
+  CARD_TEXTURE_CORNER_RADIUS_RATIO,
+  CARD_TEXTURE_SHADOW_COLOR,
+  TRANSPARENT_COLOR,
+  CARD_TEXTURE_BORDER_WIDTH_RATIO,
+  CARD_TEXTURE_BORDER_INSET,
+  CARD_TEXTURE_BORDER_RADIUS_RATIO,
+  CARD_TEXTURE_EMOJI_FONT_RATIO,
+  CARD_TEXTURE_TEXT_LONG_THRESHOLD,
+  CARD_TEXTURE_TEXT_MEDIUM_THRESHOLD,
+  CARD_TEXTURE_TEXT_LONG_FONT_SIZE,
+  CARD_TEXTURE_TEXT_MEDIUM_FONT_SIZE,
+  CARD_TEXTURE_TEXT_SHORT_FONT_SIZE,
+  CARD_TEXTURE_LABEL_OFFSET_Y,
+  CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO,
+  CARD_TEXTURE_LABEL_SHADOW_BLUR,
+  CARD_TEXTURE_LABEL_SHADOW_COLOR,
+  CARD_TEXTURE_NO_SHADOW_COLOR,
+  CARD_TEXTURE_EMOJI_FONT_FAMILY,
+  CARD_TEXTURE_TEXT_FONT_FAMILY,
+  CARD_TEXTURE_DIRECTION_FONT_RATIO,
+  CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO,
+  CARD_TEXTURE_DIRECTION_SHADOW_BLUR,
+  CARD_TEXTURE_DIRECTION_SHADOW_COLOR,
+  CARD_TEXTURE_DIRECTION_OFFSET_Y,
+} = BOARD3D_CARD_TEXTURE_CONFIG
+
+const {
+  GROUND_TEXTURE_TILE_SIZE,
+  GROUND_TEXTURE_CANVAS_SIZE,
+  GROUND_TEXTURE_BASE_COLOR,
+  GROUND_TEXTURE_WASH_START,
+  GROUND_TEXTURE_WASH_MIDDLE,
+  GROUND_TEXTURE_WASH_END,
+  GROUND_TEXTURE_WASH_MIDDLE_AT,
+  GROUND_TEXTURE_GRAIN_AMP,
+  GROUND_TEXTURE_CLOUD_AMP,
+  GROUND_TEXTURE_WARM_AMP,
+  GROUND_TEXTURE_CLOUD_FREQ,
+  GROUND_TEXTURE_WARM_FREQ,
+  GROUND_TEXTURE_CLOUD_SEED_X,
+  GROUND_TEXTURE_CLOUD_SEED_Y,
+  GROUND_TEXTURE_WARM_SEED_X,
+  GROUND_TEXTURE_WARM_SEED_Y,
+  GROUND_TEXTURE_GREEN_GRAIN_WEIGHT,
+  GROUND_TEXTURE_GREEN_CLOUD_WEIGHT,
+  GROUND_TEXTURE_BLUE_GRAIN_WEIGHT,
+  GROUND_TEXTURE_SPECKLE_COUNT,
+  GROUND_TEXTURE_SPECKLE_RADIUS_BASE,
+  GROUND_TEXTURE_SPECKLE_RADIUS_RANGE,
+  GROUND_TEXTURE_SPECKLE_ALPHA_BASE,
+  GROUND_TEXTURE_SPECKLE_ALPHA_RANGE,
+  GROUND_TEXTURE_SPECKLE_SEED_X,
+  GROUND_TEXTURE_SPECKLE_SEED_Y,
+  GROUND_TEXTURE_SPECKLE_SEED_RADIUS,
+  GROUND_TEXTURE_SPECKLE_SEED_ALPHA,
+  GROUND_TEXTURE_STROKE_COUNT,
+  GROUND_TEXTURE_STROKE_LENGTH_BASE,
+  GROUND_TEXTURE_STROKE_LENGTH_RANGE,
+  GROUND_TEXTURE_STROKE_ALPHA_BASE,
+  GROUND_TEXTURE_STROKE_ALPHA_RANGE,
+  GROUND_TEXTURE_STROKE_WIDTH_BASE,
+  GROUND_TEXTURE_STROKE_WIDTH_RANGE,
+  GROUND_TEXTURE_STROKE_RGB,
+  GROUND_TEXTURE_STROKE_SEED_X,
+  GROUND_TEXTURE_STROKE_SEED_Y,
+  GROUND_TEXTURE_STROKE_SEED_LENGTH,
+  GROUND_TEXTURE_STROKE_SEED_ANGLE,
+  GROUND_TEXTURE_STROKE_SEED_ALPHA,
+  GROUND_TEXTURE_STROKE_SEED_WIDTH,
+} = BOARD3D_GROUND_TEXTURE_CONFIG
+
+const {
+  DUST_TEXTURE_SIZE,
+  DUST_TEXTURE_CENTER,
+  DUST_TEXTURE_INNER_RADIUS,
+  DUST_TEXTURE_OUTER_RADIUS,
+  DUST_TEXTURE_STOP_0,
+  DUST_TEXTURE_STOP_1,
+  DUST_TEXTURE_STOP_2,
+  DUST_TEXTURE_STOP_1_AT,
+} = BOARD3D_DUST_TEXTURE_CONFIG
+
+const {
+  SHADOW_TEXTURE_SIZE,
+  SHADOW_TEXTURE_CENTER,
+  SHADOW_TEXTURE_INNER_RADIUS,
+  SHADOW_TEXTURE_OUTER_RADIUS,
+  SHADOW_TEXTURE_STOP_0,
+  SHADOW_TEXTURE_STOP_1,
+  SHADOW_TEXTURE_STOP_2,
+  SHADOW_TEXTURE_STOP_1_AT,
+} = BOARD3D_SHADOW_TEXTURE_CONFIG
+
+const {
+  ATMOSPHERE_FOG_COLOR,
+  ATMOSPHERE_FOG_DENSITY,
+  DUST_PARTICLE_COUNT,
+  DUST_SPREAD_BASE,
+  DUST_SPREAD_MUL,
+  DUST_HEIGHT_BASE,
+  DUST_HEIGHT_MUL,
+  DUST_LAYER_DEPTH_SCALE,
+  DUST_PARTICLE_SIZE,
+  DUST_PARTICLE_OPACITY,
+  DUST_PARTICLE_ALPHA_TEST,
+  DUST_PARTICLE_COLOR,
+  DUST_LAYER_BASE_Y,
+  DUST_HEIGHT_EXPONENT,
+  DUST_SEED_ANGLE,
+  DUST_SEED_RADIUS,
+  DUST_SEED_HEIGHT,
+} = BOARD3D_ATMOSPHERE_CONFIG
+
 const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
-  up: '⬆️',
-  right: '➡️',
-  down: '⬇️',
-  left: '⬅️',
+  up: BELT_DIRECTION_GLYPH_UP,
+  right: BELT_DIRECTION_GLYPH_RIGHT,
+  down: BELT_DIRECTION_GLYPH_DOWN,
+  left: BELT_DIRECTION_GLYPH_LEFT,
 }
-const FACING_ARROW_PROPS = new Set<Property>(['you', 'move', 'shift'])
-const HAS_EMOJI = /\p{Extended_Pictographic}/u
 
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value))
 
@@ -266,7 +476,10 @@ const buildRoundedRectOutlinePoints = (
   z: number,
 ): Vector3[] => {
   const shape = buildRoundedRectShape(halfWidth, halfHeight)
-  const curveSamples = Math.max(24, Math.round((halfWidth + halfHeight) * 8))
+  const curveSamples = Math.max(
+    PLAY_AREA_OUTLINE_SAMPLES_MIN,
+    Math.round((halfWidth + halfHeight) * PLAY_AREA_OUTLINE_SAMPLES_DENSITY),
+  )
   const points = shape.getPoints(curveSamples).map((point) => new Vector3(point.x, point.y, z))
   const firstPoint = points.at(0)
   if (firstPoint) points.push(firstPoint.clone())
@@ -278,7 +491,11 @@ const buildRoundedRectShape = (halfWidth: number, halfHeight: number): Shape => 
   const right = halfWidth
   const bottom = -halfHeight
   const top = halfHeight
-  const radius = Math.min(PLAY_AREA_OUTLINE_RADIUS, halfWidth * 0.35, halfHeight * 0.35)
+  const radius = Math.min(
+    PLAY_AREA_OUTLINE_RADIUS,
+    halfWidth * PLAY_AREA_RADIUS_CLAMP_RATIO,
+    halfHeight * PLAY_AREA_RADIUS_CLAMP_RATIO,
+  )
   const shape = new Shape()
   if (radius <= 0) {
     shape.moveTo(left, bottom)
@@ -314,7 +531,7 @@ const objectPalette = (
 
 const rollForMoveStep = (itemId: number, step: number): number => {
   const seed = fnv1a(`${itemId}:${step}`)
-  return ((seed & 0xfff) / 0xfff - 0.5) * 0.18
+  return ((seed & 0xfff) / 0xfff - 0.5) * MOVE_ROLL_AMPLITUDE
 }
 
 const cardRotXForItem = (item: Item): number =>
@@ -362,10 +579,10 @@ const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec => {
         label,
         facingDirection: null,
         isEmojiLabel: false,
-        background: '#f2dca8',
-        border: '#c5a24c',
-        textColor: '#513c0c',
-        outlineColor: '#fff9eb',
+        background: TEXT_CARD_SYNTAX_BACKGROUND,
+        border: TEXT_CARD_SYNTAX_BORDER,
+        textColor: TEXT_CARD_SYNTAX_TEXT,
+        outlineColor: TEXT_CARD_SYNTAX_OUTLINE,
       }
     }
     return {
@@ -373,10 +590,10 @@ const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec => {
       label,
       facingDirection: null,
       isEmojiLabel: false,
-      background: '#bfd8f6',
-      border: '#6c94c8',
-      textColor: '#19324f',
-      outlineColor: '#f4f8ff',
+      background: TEXT_CARD_NORMAL_BACKGROUND,
+      border: TEXT_CARD_NORMAL_BORDER,
+      textColor: TEXT_CARD_NORMAL_TEXT,
+      outlineColor: TEXT_CARD_NORMAL_OUTLINE,
     }
   }
 
@@ -478,57 +695,77 @@ const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture =>
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Failed to create 2D drawing context.')
 
-  const pad = textureSize * 0.08
+  const pad = textureSize * CARD_TEXTURE_PAD_RATIO
   const size = textureSize - pad * 2
 
   ctx.clearRect(0, 0, textureSize, textureSize)
-  ctx.fillStyle = 'rgba(0,0,0,0)'
+  ctx.fillStyle = TRANSPARENT_COLOR
   ctx.fillRect(0, 0, textureSize, textureSize)
 
   if (!spec.isEmojiLabel) {
-    roundRectPath(ctx, pad + 5, pad + 8, size, size, textureSize * 0.14)
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'
+    roundRectPath(
+      ctx,
+      pad + CARD_TEXTURE_SHADOW_OFFSET_X,
+      pad + CARD_TEXTURE_SHADOW_OFFSET_Y,
+      size,
+      size,
+      textureSize * CARD_TEXTURE_CORNER_RADIUS_RATIO,
+    )
+    ctx.fillStyle = CARD_TEXTURE_SHADOW_COLOR
     ctx.fill()
 
-    roundRectPath(ctx, pad, pad, size, size, textureSize * 0.14)
+    roundRectPath(ctx, pad, pad, size, size, textureSize * CARD_TEXTURE_CORNER_RADIUS_RATIO)
     ctx.fillStyle = spec.background
     ctx.fill()
 
-    ctx.lineWidth = textureSize * 0.03
+    ctx.lineWidth = textureSize * CARD_TEXTURE_BORDER_WIDTH_RATIO
     ctx.strokeStyle = spec.border
-    roundRectPath(ctx, pad + 2, pad + 2, size - 4, size - 4, textureSize * 0.13)
+    const borderInset = CARD_TEXTURE_BORDER_INSET
+    roundRectPath(
+      ctx,
+      pad + borderInset,
+      pad + borderInset,
+      size - borderInset * 2,
+      size - borderInset * 2,
+      textureSize * CARD_TEXTURE_BORDER_RADIUS_RATIO,
+    )
     ctx.stroke()
   }
 
   const labelLength = [...spec.label].length
   const fontSize = spec.isEmojiLabel
-    ? Math.round(textureSize * 0.9)
-    : labelLength >= 5
-      ? 56
-      : labelLength >= 3
-        ? 72
-        : 96
-  const labelOffsetY = spec.isEmojiLabel ? 0 : 4
+    ? Math.round(textureSize * CARD_TEXTURE_EMOJI_FONT_RATIO)
+    : labelLength >= CARD_TEXTURE_TEXT_LONG_THRESHOLD
+      ? CARD_TEXTURE_TEXT_LONG_FONT_SIZE
+      : labelLength >= CARD_TEXTURE_TEXT_MEDIUM_THRESHOLD
+        ? CARD_TEXTURE_TEXT_MEDIUM_FONT_SIZE
+        : CARD_TEXTURE_TEXT_SHORT_FONT_SIZE
+  const labelOffsetY = spec.isEmojiLabel ? 0 : CARD_TEXTURE_LABEL_OFFSET_Y
   ctx.fillStyle = spec.textColor
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.font = spec.isEmojiLabel
-    ? `${fontSize}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`
-    : `700 ${fontSize}px "Trebuchet MS","Arial Rounded MT Bold","Segoe UI Emoji",sans-serif`
+    ? `${fontSize}px ${CARD_TEXTURE_EMOJI_FONT_FAMILY}`
+    : `700 ${fontSize}px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
   if (!spec.isEmojiLabel) {
-    ctx.lineWidth = textureSize * 0.05
+    ctx.lineWidth = textureSize * CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO
     ctx.lineJoin = 'round'
     ctx.strokeStyle = spec.outlineColor
     ctx.strokeText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
   }
-  ctx.shadowBlur = spec.isEmojiLabel ? 0 : 7
-  ctx.shadowColor = spec.isEmojiLabel ? 'rgba(0,0,0,0)' : 'rgba(0,0,0,0.25)'
+  ctx.shadowBlur = spec.isEmojiLabel ? 0 : CARD_TEXTURE_LABEL_SHADOW_BLUR
+  ctx.shadowColor = spec.isEmojiLabel
+    ? CARD_TEXTURE_NO_SHADOW_COLOR
+    : CARD_TEXTURE_LABEL_SHADOW_COLOR
   ctx.fillText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
 
   if (spec.facingDirection) {
     const marker = BELT_DIRECTION_GLYPHS[spec.facingDirection]
-    const markerFontSize = Math.round(textureSize * 0.36)
-    const edgeInset = pad + textureSize * 0.12
+    const markerFontSize = Math.round(
+      textureSize * CARD_TEXTURE_DIRECTION_FONT_RATIO,
+    )
+    const edgeInset =
+      pad + textureSize * CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO
     const cx = textureSize / 2
     const cy = textureSize / 2
     const markerX =
@@ -545,10 +782,10 @@ const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture =>
           : cy
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = `${markerFontSize}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`
-    ctx.shadowBlur = 6
-    ctx.shadowColor = 'rgba(255,255,255,0.8)'
-    ctx.fillText(marker, markerX, markerY + 1)
+    ctx.font = `${markerFontSize}px ${CARD_TEXTURE_EMOJI_FONT_FAMILY}`
+    ctx.shadowBlur = CARD_TEXTURE_DIRECTION_SHADOW_BLUR
+    ctx.shadowColor = CARD_TEXTURE_DIRECTION_SHADOW_COLOR
+    ctx.fillText(marker, markerX, markerY + CARD_TEXTURE_DIRECTION_OFFSET_Y)
   }
 
   const texture = new CanvasTexture(canvas)
@@ -561,18 +798,18 @@ const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture =>
 
 const createGroundTexture = (): CanvasTexture => {
   const canvas = document.createElement('canvas')
-  canvas.width = 192
-  canvas.height = 192
+  canvas.width = GROUND_TEXTURE_CANVAS_SIZE
+  canvas.height = GROUND_TEXTURE_CANVAS_SIZE
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Failed to create ground texture context.')
 
-  ctx.fillStyle = '#e9eef3'
+  ctx.fillStyle = GROUND_TEXTURE_BASE_COLOR
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   const wash = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
-  wash.addColorStop(0, 'rgba(255,255,255,0.1)')
-  wash.addColorStop(0.5, 'rgba(236,243,248,0.2)')
-  wash.addColorStop(1, 'rgba(211,221,230,0.14)')
+  wash.addColorStop(0, GROUND_TEXTURE_WASH_START)
+  wash.addColorStop(GROUND_TEXTURE_WASH_MIDDLE_AT, GROUND_TEXTURE_WASH_MIDDLE)
+  wash.addColorStop(1, GROUND_TEXTURE_WASH_END)
   ctx.fillStyle = wash
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -581,43 +818,84 @@ const createGroundTexture = (): CanvasTexture => {
   for (let y = 0; y < canvas.height; y += 1) {
     for (let x = 0; x < canvas.width; x += 1) {
       const index = (y * canvas.width + x) * 4
-      const grain = (hash2d01(x, y) - 0.5) * 16
-      const cloud = (hash2d01(x * 0.27 + 13, y * 0.27 + 23) - 0.5) * 11
-      const warm = (hash2d01(x * 0.16 + 41, y * 0.16 + 7) - 0.5) * 6
+      const grain = (hash2d01(x, y) - 0.5) * GROUND_TEXTURE_GRAIN_AMP
+      const cloud =
+        (hash2d01(
+          x * GROUND_TEXTURE_CLOUD_FREQ + GROUND_TEXTURE_CLOUD_SEED_X,
+          y * GROUND_TEXTURE_CLOUD_FREQ + GROUND_TEXTURE_CLOUD_SEED_Y,
+        ) -
+          0.5) *
+        GROUND_TEXTURE_CLOUD_AMP
+      const warm =
+        (hash2d01(
+          x * GROUND_TEXTURE_WARM_FREQ + GROUND_TEXTURE_WARM_SEED_X,
+          y * GROUND_TEXTURE_WARM_FREQ + GROUND_TEXTURE_WARM_SEED_Y,
+        ) -
+          0.5) *
+        GROUND_TEXTURE_WARM_AMP
       const r = pixels[index + 0] ?? 0
       const g = pixels[index + 1] ?? 0
       const b = pixels[index + 2] ?? 0
       pixels[index + 0] = Math.max(0, Math.min(255, Math.round(r + grain + cloud)))
       pixels[index + 1] = Math.max(
         0,
-        Math.min(255, Math.round(g + grain * 0.85 + cloud * 0.6 + warm)),
+        Math.min(
+          255,
+          Math.round(
+            g +
+              grain * GROUND_TEXTURE_GREEN_GRAIN_WEIGHT +
+              cloud * GROUND_TEXTURE_GREEN_CLOUD_WEIGHT +
+              warm,
+          ),
+        ),
       )
-      pixels[index + 2] = Math.max(0, Math.min(255, Math.round(b + grain * 0.65 - warm)))
+      pixels[index + 2] = Math.max(
+        0,
+        Math.min(
+          255,
+          Math.round(b + grain * GROUND_TEXTURE_BLUE_GRAIN_WEIGHT - warm),
+        ),
+      )
     }
   }
   ctx.putImageData(imageData, 0, 0)
 
-  for (let i = 0; i < 220; i += 1) {
+  for (let i = 0; i < GROUND_TEXTURE_SPECKLE_COUNT; i += 1) {
     const seed = i + 1
-    const x = hash01(seed * 17.1) * canvas.width
-    const y = hash01(seed * 31.7) * canvas.height
-    const radius = 0.45 + hash01(seed * 5.3) * 1.8
-    const alpha = 0.01 + hash01(seed * 9.2) * 0.025
+    const x = hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_X) * canvas.width
+    const y = hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_Y) * canvas.height
+    const radius =
+      GROUND_TEXTURE_SPECKLE_RADIUS_BASE +
+      hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_RADIUS) *
+        GROUND_TEXTURE_SPECKLE_RADIUS_RANGE
+    const alpha =
+      GROUND_TEXTURE_SPECKLE_ALPHA_BASE +
+      hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_ALPHA) *
+        GROUND_TEXTURE_SPECKLE_ALPHA_RANGE
     ctx.beginPath()
     ctx.fillStyle = `rgba(255,255,255,${alpha})`
     ctx.arc(x, y, radius, 0, Math.PI * 2)
     ctx.fill()
   }
 
-  for (let i = 0; i < 120; i += 1) {
+  for (let i = 0; i < GROUND_TEXTURE_STROKE_COUNT; i += 1) {
     const seed = i + 1
-    const x = hash01(seed * 63.2) * canvas.width
-    const y = hash01(seed * 27.4) * canvas.height
-    const length = 5 + hash01(seed * 11.8) * 11
-    const angle = hash01(seed * 3.6) * Math.PI * 2
-    const alpha = 0.018 + hash01(seed * 7.9) * 0.022
-    ctx.lineWidth = 0.5 + hash01(seed * 19.3) * 0.7
-    ctx.strokeStyle = `rgba(132,148,164,${alpha})`
+    const x = hash01(seed * GROUND_TEXTURE_STROKE_SEED_X) * canvas.width
+    const y = hash01(seed * GROUND_TEXTURE_STROKE_SEED_Y) * canvas.height
+    const length =
+      GROUND_TEXTURE_STROKE_LENGTH_BASE +
+      hash01(seed * GROUND_TEXTURE_STROKE_SEED_LENGTH) *
+        GROUND_TEXTURE_STROKE_LENGTH_RANGE
+    const angle = hash01(seed * GROUND_TEXTURE_STROKE_SEED_ANGLE) * Math.PI * 2
+    const alpha =
+      GROUND_TEXTURE_STROKE_ALPHA_BASE +
+      hash01(seed * GROUND_TEXTURE_STROKE_SEED_ALPHA) *
+        GROUND_TEXTURE_STROKE_ALPHA_RANGE
+    ctx.lineWidth =
+      GROUND_TEXTURE_STROKE_WIDTH_BASE +
+      hash01(seed * GROUND_TEXTURE_STROKE_SEED_WIDTH) *
+        GROUND_TEXTURE_STROKE_WIDTH_RANGE
+    ctx.strokeStyle = `rgba(${GROUND_TEXTURE_STROKE_RGB},${alpha})`
     ctx.beginPath()
     ctx.moveTo(x, y)
     ctx.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length)
@@ -635,15 +913,22 @@ const createGroundTexture = (): CanvasTexture => {
 
 const createDustTexture = (): CanvasTexture => {
   const canvas = document.createElement('canvas')
-  canvas.width = 64
-  canvas.height = 64
+  canvas.width = DUST_TEXTURE_SIZE
+  canvas.height = DUST_TEXTURE_SIZE
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Failed to create dust texture context.')
 
-  const gradient = ctx.createRadialGradient(32, 32, 4, 32, 32, 31)
-  gradient.addColorStop(0, 'rgba(255,255,255,0.92)')
-  gradient.addColorStop(0.4, 'rgba(248,245,236,0.5)')
-  gradient.addColorStop(1, 'rgba(248,245,236,0)')
+  const gradient = ctx.createRadialGradient(
+    DUST_TEXTURE_CENTER,
+    DUST_TEXTURE_CENTER,
+    DUST_TEXTURE_INNER_RADIUS,
+    DUST_TEXTURE_CENTER,
+    DUST_TEXTURE_CENTER,
+    DUST_TEXTURE_OUTER_RADIUS,
+  )
+  gradient.addColorStop(0, DUST_TEXTURE_STOP_0)
+  gradient.addColorStop(DUST_TEXTURE_STOP_1_AT, DUST_TEXTURE_STOP_1)
+  gradient.addColorStop(1, DUST_TEXTURE_STOP_2)
   ctx.fillStyle = gradient
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -663,9 +948,12 @@ const createDustLayer = (): {
   const positions = new Float32Array(DUST_PARTICLE_COUNT * 3)
   for (let index = 0; index < DUST_PARTICLE_COUNT; index += 1) {
     const seed = index + 1
-    const angle = hash01(seed * 11.3) * Math.PI * 2
-    const radius = Math.sqrt(hash01(seed * 37.7))
-    const height = Math.pow(hash01(seed * 71.9), 0.72)
+    const angle = hash01(seed * DUST_SEED_ANGLE) * Math.PI * 2
+    const radius = Math.sqrt(hash01(seed * DUST_SEED_RADIUS))
+    const height = Math.pow(
+      hash01(seed * DUST_SEED_HEIGHT),
+      DUST_HEIGHT_EXPONENT,
+    )
     positions[index * 3 + 0] = Math.cos(angle) * radius
     positions[index * 3 + 1] = height
     positions[index * 3 + 2] = Math.sin(angle) * radius
@@ -676,32 +964,42 @@ const createDustLayer = (): {
   const texture = createDustTexture()
   const material = new PointsMaterial({
     map: texture,
-    color: new Color('#f8f2e6'),
+    color: new Color(DUST_PARTICLE_COLOR),
     size: DUST_PARTICLE_SIZE,
     transparent: true,
     opacity: DUST_PARTICLE_OPACITY,
-    alphaTest: 0.01,
+    alphaTest: DUST_PARTICLE_ALPHA_TEST,
     depthWrite: false,
     sizeAttenuation: true,
   })
   const points = new Points(geometry, material)
-  points.position.set(0, 0.32, 0)
+  points.position.set(0, DUST_LAYER_BASE_Y, 0)
   return { points, geometry, material, texture }
 }
 
 const createShadowTexture = (): CanvasTexture => {
   const canvas = document.createElement('canvas')
-  canvas.width = 128
-  canvas.height = 128
+  canvas.width = SHADOW_TEXTURE_SIZE
+  canvas.height = SHADOW_TEXTURE_SIZE
   const ctx = canvas.getContext('2d')
   if (!ctx) throw new Error('Failed to create shadow texture context.')
 
-  const gradient = ctx.createRadialGradient(64, 64, 17, 64, 64, 50)
-  gradient.addColorStop(0, 'rgba(0, 0, 0, 0.25)')
-  gradient.addColorStop(0.48, 'rgba(0, 0, 0, 0.09)')
-  gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
+  const gradient = ctx.createRadialGradient(
+    SHADOW_TEXTURE_CENTER,
+    SHADOW_TEXTURE_CENTER,
+    SHADOW_TEXTURE_INNER_RADIUS,
+    SHADOW_TEXTURE_CENTER,
+    SHADOW_TEXTURE_CENTER,
+    SHADOW_TEXTURE_OUTER_RADIUS,
+  )
+  gradient.addColorStop(0, SHADOW_TEXTURE_STOP_0)
+  gradient.addColorStop(
+    SHADOW_TEXTURE_STOP_1_AT,
+    SHADOW_TEXTURE_STOP_1,
+  )
+  gradient.addColorStop(1, SHADOW_TEXTURE_STOP_2)
   ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, 128, 128)
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = SRGBColorSpace
@@ -723,7 +1021,12 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   const scene = new Scene()
   scene.background = new Color(preset.sceneBackground)
   scene.fog = new FogExp2(ATMOSPHERE_FOG_COLOR, ATMOSPHERE_FOG_DENSITY)
-  const camera = new PerspectiveCamera(initialCameraTier.fov, 1, 0.1, 180)
+  const camera = new PerspectiveCamera(
+    initialCameraTier.fov,
+    1,
+    CAMERA_NEAR,
+    CAMERA_FAR,
+  )
   const renderer = new WebGLRenderer({
     antialias: false,
     alpha: false,
@@ -738,13 +1041,16 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   const composer = new EffectComposer(renderer)
   const renderPass = new RenderPass(scene, camera)
   const bloomPass = new UnrealBloomPass(
-    new Vector2(1, 1),
+    new Vector2(
+      BLOOM_INITIAL_RESOLUTION_X,
+      BLOOM_INITIAL_RESOLUTION_Y,
+    ),
     preset.bloom.strength,
     preset.bloom.radius,
     preset.bloom.threshold,
   )
   const bokehPass = new BokehPass(scene, camera, {
-    focus: 10,
+    focus: BOKEH_INITIAL_FOCUS,
     aperture: preset.bokeh.aperture,
     maxblur: preset.bokeh.maxBlur,
   })
@@ -753,12 +1059,15 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   composer.addPass(bokehPass)
 
   const ambientLight = new AmbientLight(
-    '#f3f5ff',
-    preset.lighting.ambientIntensity * 1.135,
+    AMBIENT_LIGHT_COLOR,
+    preset.lighting.ambientIntensity * AMBIENT_LIGHT_INTENSITY_MUL,
   )
   scene.add(ambientLight)
 
-  const sideLightIntensity = Math.max(0.67, preset.lighting.topLightIntensity * 0.9125)
+  const sideLightIntensity = Math.max(
+    SIDE_LIGHT_INTENSITY_MIN,
+    preset.lighting.topLightIntensity * SIDE_LIGHT_INTENSITY_MUL,
+  )
   const shadowMapSize = Math.max(
     preset.lighting.topLightShadowMapSize,
     Math.round(preset.lighting.topLightShadowMapSize * SHADOW_MAP_SIZE_SCALE),
@@ -767,14 +1076,14 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     preset.lighting.topLightColor,
     sideLightIntensity,
   )
-  leftLight.position.set(0, 10, 6)
+  leftLight.position.set(0, SIDE_LIGHT_INITIAL_Y, SIDE_LIGHT_INITIAL_Z)
   leftLight.castShadow = true
   leftLight.shadow.mapSize.width = shadowMapSize
   leftLight.shadow.mapSize.height = shadowMapSize
-  leftLight.shadow.camera.near = 0.1
+  leftLight.shadow.camera.near = LIGHT_SHADOW_CAMERA_NEAR
   leftLight.shadow.camera.far = preset.lighting.topLightShadowFar
-  leftLight.shadow.bias = -0.00006
-  leftLight.shadow.normalBias = 0.04
+  leftLight.shadow.bias = LIGHT_SHADOW_BIAS
+  leftLight.shadow.normalBias = LIGHT_SHADOW_NORMAL_BIAS
   leftLight.shadow.radius = SHADOW_RADIUS
   scene.add(leftLight)
   scene.add(leftLight.target)
@@ -783,29 +1092,35 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   rightLight.castShadow = true
   rightLight.shadow.mapSize.width = shadowMapSize
   rightLight.shadow.mapSize.height = shadowMapSize
-  rightLight.shadow.camera.near = 0.1
+  rightLight.shadow.camera.near = LIGHT_SHADOW_CAMERA_NEAR
   rightLight.shadow.camera.far = preset.lighting.topLightShadowFar
-  rightLight.shadow.bias = -0.00006
-  rightLight.shadow.normalBias = 0.04
+  rightLight.shadow.bias = LIGHT_SHADOW_BIAS
+  rightLight.shadow.normalBias = LIGHT_SHADOW_NORMAL_BIAS
   rightLight.shadow.radius = SHADOW_RADIUS
   scene.add(rightLight)
   scene.add(rightLight.target)
 
   const world = new Group()
-  world.rotation.x = -Math.PI / 2
+  world.rotation.x = WORLD_ROTATION_X
   scene.add(world)
   const entityGroup = new Group()
   world.add(entityGroup)
 
   const cardGeometry = new PlaneGeometry(CARD_WORLD_SIZE, CARD_WORLD_SIZE)
-  const shadowGeometry = new PlaneGeometry(1, 1)
+  const shadowGeometry = new PlaneGeometry(
+    SHADOW_GEOMETRY_SIZE,
+    SHADOW_GEOMETRY_SIZE,
+  )
   const textureCache = new Map<string, CanvasTexture>()
   const materialCache = new Map<string, CardMaterial>()
   const nodes = new Map<number, EntityNode>()
   const shadowTexture = createShadowTexture()
   const dustLayer = createDustLayer()
   scene.add(dustLayer.points)
-  const textureAnisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy())
+  const textureAnisotropy = Math.min(
+    TEXTURE_ANISOTROPY_CAP,
+    renderer.capabilities.getMaxAnisotropy(),
+  )
 
   let container: HTMLElement | null = null
   let viewportWidth = 0
@@ -855,17 +1170,17 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       ? new MeshBasicMaterial({
           map: texture,
           transparent: true,
-          alphaTest: 0.08,
+          alphaTest: CARD_MATERIAL_ALPHA_TEST,
           fog: true,
           side: DoubleSide,
         })
       : new MeshStandardMaterial({
           map: texture,
           transparent: true,
-          alphaTest: 0.08,
-          roughness: 0.78,
-          metalness: 0.02,
-          emissive: new Color('#101019'),
+          alphaTest: CARD_MATERIAL_ALPHA_TEST,
+          roughness: CARD_MATERIAL_ROUGHNESS,
+          metalness: CARD_MATERIAL_METALNESS,
+          emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
           emissiveIntensity: item.isText
             ? preset.materials.textEmissiveIntensity
             : preset.materials.objectEmissiveIntensity,
@@ -879,7 +1194,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   const updateBokehFocus = (): void => {
     const uniforms = bokehPass.materialBokeh.uniforms as Record<string, BokehUniform>
     const focus = Math.max(
-      4,
+      BOKEH_FOCUS_MIN,
       camera.position.z - CARD_BASE_Z + preset.bokeh.focusOffset,
     )
     if (uniforms.focus) uniforms.focus.value = focus
@@ -907,11 +1222,17 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     const width = Math.max(1, boardWidth)
     const height = Math.max(1, boardHeight)
     const span = Math.max(width, height)
-    const topHeightY = Math.max(LIGHT_HEIGHT_Y_BASE, span * LIGHT_HEIGHT_Y_SPAN_MUL + 4.6)
+    const topHeightY = Math.max(
+      LIGHT_HEIGHT_Y_BASE,
+      span * LIGHT_HEIGHT_Y_SPAN_MUL + LIGHT_HEIGHT_Y_EXTRA,
+    )
     const sideOffsetX = width * SIDE_LIGHT_OFFSET_X_MUL + SIDE_LIGHT_OFFSET_X_BASE
     const sideOffsetZ = Math.max(SIDE_LIGHT_OFFSET_Z_BASE, height * SIDE_LIGHT_OFFSET_Z_MUL)
     const targetZ = height * CAMERA_LOOK_AT_DEPTH_BIAS
-    const lightDropY = Math.max(0.5, topHeightY - 0.08)
+    const lightDropY = Math.max(
+      LIGHT_DROP_Y_MIN,
+      topHeightY - LIGHT_DROP_Y_SUB,
+    )
     const lightDepthOffset = Math.tan(LIGHT_CAMERA_SIDE_TILT_RAD) * lightDropY
     const lightZ = Math.max(sideOffsetZ, targetZ + lightDepthOffset)
     const lightToTargetDistance = Math.hypot(sideOffsetX, lightDropY, lightZ - targetZ)
@@ -924,11 +1245,11 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     )
 
     leftLight.position.set(-sideOffsetX, topHeightY, lightZ)
-    leftLight.target.position.set(0, 0.08, targetZ)
+    leftLight.target.position.set(0, LIGHT_TARGET_Y, targetZ)
     leftLight.target.updateMatrixWorld()
 
     rightLight.position.set(sideOffsetX, topHeightY, lightZ)
-    rightLight.target.position.set(0, 0.08, targetZ)
+    rightLight.target.position.set(0, LIGHT_TARGET_Y, targetZ)
     rightLight.target.updateMatrixWorld()
 
     if (leftLight.castShadow) updateLightShadowCamera(leftLight, shadowSpan, shadowFar)
@@ -1015,8 +1336,14 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       groundTexture = null
     }
 
-    const expandedWidth = Math.max(boardWidth + 0.65, GROUND_EXPANDED_MIN_SIZE)
-    const expandedHeight = Math.max(boardHeight + 0.65, GROUND_EXPANDED_MIN_SIZE)
+    const expandedWidth = Math.max(
+      boardWidth + GROUND_EXPANDED_PADDING,
+      GROUND_EXPANDED_MIN_SIZE,
+    )
+    const expandedHeight = Math.max(
+      boardHeight + GROUND_EXPANDED_PADDING,
+      GROUND_EXPANDED_MIN_SIZE,
+    )
     const geometry = new PlaneGeometry(expandedWidth, expandedHeight)
     groundTexture = createGroundTexture()
     groundTexture.repeat.set(
@@ -1026,8 +1353,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     groundTexture.needsUpdate = true
     const material = new MeshStandardMaterial({
       map: groundTexture,
-      roughness: 0.66,
-      metalness: 0,
+      roughness: GROUND_MATERIAL_ROUGHNESS,
+      metalness: GROUND_MATERIAL_METALNESS,
     })
     groundMesh = new Mesh(geometry, material)
     groundMesh.position.z = GROUND_SURFACE_Z
@@ -1039,9 +1366,9 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     const playAreaShape = buildRoundedRectShape(halfWidth, halfHeight)
     const playAreaFillGeometry = new ShapeGeometry(playAreaShape)
     const playAreaFillMaterial = new MeshStandardMaterial({
-      color: new Color('#f8fbff'),
-      roughness: 0.68,
-      metalness: 0,
+      color: new Color(PLAY_AREA_FILL_COLOR),
+      roughness: PLAY_AREA_FILL_ROUGHNESS,
+      metalness: PLAY_AREA_FILL_METALNESS,
     })
     playAreaFillMesh = new Mesh(playAreaFillGeometry, playAreaFillMaterial)
     playAreaFillMesh.position.z = GROUND_ACTIVE_FILL_Z
@@ -1052,7 +1379,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       buildRoundedRectOutlinePoints(halfWidth, halfHeight, PLAY_AREA_OUTLINE_Z),
     )
     const outlineMaterial = new LineBasicMaterial({
-      color: new Color('#a6b3c1'),
+      color: new Color(PLAY_AREA_OUTLINE_COLOR),
       transparent: true,
       opacity: PLAY_AREA_OUTLINE_OPACITY,
     })
@@ -1072,11 +1399,11 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
 
     const shadowMaterial = new MeshBasicMaterial({
       map: shadowTexture,
-      color: new Color('#102038'),
+      color: new Color(ENTITY_SHADOW_COLOR),
       transparent: true,
-      opacity: 0.16,
+      opacity: ENTITY_SHADOW_OPACITY,
       depthWrite: false,
-      alphaTest: 0.01,
+      alphaTest: ENTITY_SHADOW_ALPHA_TEST,
       side: DoubleSide,
     })
     const shadow = new Mesh(shadowGeometry, shadowMaterial)
@@ -1132,8 +1459,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     if (node.moving && node.despawnStartMs === null) {
       const wave = Math.sin(Math.PI * rawProgress)
       jump = wave * JUMP_HEIGHT
-      const stretch = 1 + wave * 0.17
-      const squash = 1 - wave * 0.14
+      const stretch = 1 + wave * MOVE_STRETCH_FACTOR
+      const squash = 1 - wave * MOVE_SQUASH_FACTOR
       stretchX = dominantX ? stretch : squash
       stretchY = dominantX ? squash : stretch
       if (rawProgress >= 1) {
@@ -1145,7 +1472,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     let landing = 0
     if (node.landStartMs !== null && node.despawnStartMs === null) {
       const landT = clamp01((nowMs - node.landStartMs) / LAND_PULSE_MS)
-      landing = Math.sin((1 - landT) * Math.PI) * 0.04
+      landing = Math.sin((1 - landT) * Math.PI) * LANDING_PULSE_HEIGHT
       if (landT >= 1) node.landStartMs = null
     }
 
@@ -1154,7 +1481,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     if (node.spawnStartMs !== null) {
       const spawnT = clamp01((nowMs - node.spawnStartMs) / SPAWN_ANIM_MS)
       scaleFactor *= lerp(SPAWN_SCALE_FROM, 1, easeOutCubic(spawnT))
-      verticalOffset += (1 - spawnT) * 0.16
+      verticalOffset += (1 - spawnT) * SPAWN_VERTICAL_OFFSET
       if (spawnT >= 1) node.spawnStartMs = null
     }
 
@@ -1165,7 +1492,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       const fade = 1 - easeOutCubic(despawnT)
       scaleFactor *= lerp(1, DESPAWN_SCALE_TO, despawnT)
       shadowOpacityMul = Math.max(0, fade)
-      verticalOffset += despawnT * 0.12
+      verticalOffset += despawnT * DESPAWN_VERTICAL_OFFSET
       if (despawnT >= 1) finishedLeaving = true
     }
 
@@ -1184,8 +1511,16 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     node.mesh.rotation.set(node.rotX, 0, roll)
     node.mesh.scale.set(scaleX, scaleY, 1)
 
-    const shadowScale = 0.54 + jump * 1.25 + landing * 0.62
-    const shadowOpacity = Math.max(0.05, 0.16 - jump * 0.42 + landing * 0.2)
+    const shadowScale =
+      SHADOW_SCALE_BASE +
+      jump * SHADOW_SCALE_JUMP_MUL +
+      landing * SHADOW_SCALE_LANDING_MUL
+    const shadowOpacity = Math.max(
+      SHADOW_OPACITY_MIN,
+      SHADOW_OPACITY_BASE -
+        jump * SHADOW_OPACITY_JUMP_MUL +
+        landing * SHADOW_OPACITY_LANDING_MUL,
+    )
     node.shadow.position.set(x, y, SHADOW_BASE_Z)
     node.shadow.scale.set(shadowScale * scaleFactor, shadowScale * scaleFactor, 1)
     node.shadowMaterial.opacity = shadowOpacity * shadowOpacityMul
@@ -1273,7 +1608,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       node.mesh.receiveShadow = !emoji
       node.rotX = cardRotXForItem(item)
       const stableRoll = cardRollForItemStep(item, node.rollStep)
-      if (!node.moving && Math.abs(node.rotRoll - stableRoll) > 0.0001) {
+      if (!node.moving && Math.abs(node.rotRoll - stableRoll) > POSITION_EPSILON) {
         node.rotRoll = stableRoll
         node.fromRoll = stableRoll
         node.toRoll = stableRoll
@@ -1292,15 +1627,19 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
         node.mesh.rotation.set(node.rotX, 0, node.rotRoll)
         node.mesh.scale.set(1, 1, 1)
         node.shadow.position.set(target.x, target.y, SHADOW_BASE_Z)
-        node.shadow.scale.set(0.62, 0.62, 1)
-        node.shadowMaterial.opacity = 0.16
+        node.shadow.scale.set(
+          ENTITY_IDLE_SHADOW_SCALE,
+          ENTITY_IDLE_SHADOW_SCALE,
+          1,
+        )
+        node.shadowMaterial.opacity = ENTITY_SHADOW_OPACITY
         continue
       }
 
       const positionChanged =
-        Math.abs(node.toX - target.x) > 0.0001 ||
-        Math.abs(node.toY - target.y) > 0.0001 ||
-        Math.abs(node.toBaseZ - target.baseZ) > 0.0001
+        Math.abs(node.toX - target.x) > POSITION_EPSILON ||
+        Math.abs(node.toY - target.y) > POSITION_EPSILON ||
+        Math.abs(node.toBaseZ - target.baseZ) > POSITION_EPSILON
 
       if (positionChanged) {
         node.fromX = node.mesh.position.x
@@ -1326,8 +1665,12 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
           node.mesh.rotation.set(node.rotX, 0, node.toRoll)
           node.mesh.scale.set(1, 1, 1)
           node.shadow.position.set(node.toX, node.toY, SHADOW_BASE_Z)
-          node.shadow.scale.set(0.62, 0.62, 1)
-          node.shadowMaterial.opacity = 0.16
+          node.shadow.scale.set(
+            ENTITY_IDLE_SHADOW_SCALE,
+            ENTITY_IDLE_SHADOW_SCALE,
+            1,
+          )
+          node.shadowMaterial.opacity = ENTITY_SHADOW_OPACITY
         }
       }
     }
