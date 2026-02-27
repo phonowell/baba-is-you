@@ -17,24 +17,45 @@ let building = false
 let buildRequested = false
 let lastChangeAt = 0
 
+const isWindows = process.platform === 'win32'
+
+const finishBuild = (status) => {
+  building = false
+  console.log(`[watch] build ${status}`)
+  if (!buildRequested) return
+  buildRequested = false
+  const remainingDelay = Math.max(0, debounceMs - (Date.now() - lastChangeAt))
+  timer = setTimeout(runBuild, remainingDelay)
+}
+
 const runBuild = () => {
   if (building) {
     buildRequested = true
     return
   }
   building = true
-  const child = spawn('pnpm', ['build'], {
-    cwd: rootDirPath,
-    stdio: 'inherit',
+  const child = isWindows
+    ? spawn('cmd.exe', ['/d', '/s', '/c', 'pnpm build'], {
+        cwd: rootDirPath,
+        stdio: 'inherit',
+      })
+    : spawn('pnpm', ['build'], {
+        cwd: rootDirPath,
+        stdio: 'inherit',
+      })
+  let settled = false
+  const settle = (status) => {
+    if (settled) return
+    settled = true
+    finishBuild(status)
+  }
+  child.on('error', (error) => {
+    const reason = error.code ?? error.message
+    settle(`failed(start:${reason})`)
   })
   child.on('close', (code) => {
-    building = false
     const status = code === 0 ? 'ok' : `failed(${code ?? 'null'})`
-    console.log(`[watch] build ${status}`)
-    if (!buildRequested) return
-    buildRequested = false
-    const remainingDelay = Math.max(0, debounceMs - (Date.now() - lastChangeAt))
-    timer = setTimeout(runBuild, remainingDelay)
+    settle(status)
   })
 }
 
