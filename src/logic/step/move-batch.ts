@@ -36,12 +36,12 @@ export const moveItemsBatch = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { changed: false }
-  const emptyBlocked =
-    emptyHasProp(rules, 'push', next, width, height) ||
-    emptyHasProp(rules, 'stop', next, width, height)
+  const emptyPush = emptyHasProp(rules, 'push', next, width, height)
+  const emptyStop = emptyHasProp(rules, 'stop', next, width, height)
   const context = {
     byId,
-    emptyBlocked,
+    emptyPush,
+    emptyStop,
     grid: buildGrid(next, width),
     height,
     openIds,

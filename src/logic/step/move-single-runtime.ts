@@ -11,7 +11,8 @@ import type { MoveCoreContext } from './move-core.js'
 import type { Direction, Item } from '../types.js'
 
 export type SingleMoveContext = MoveCoreContext & {
-  emptyBlocked: boolean
+  emptyPush: boolean
+  emptyStop: boolean
   moved: Set<number>
   moverIds: Set<number>
   status: { anyMoved: boolean }
@@ -42,10 +43,27 @@ export const createSingleMoveRuntime = (
     const ny = item.y + dy
     if (!inBounds(context, nx, ny)) return false
 
-    const targets = getLiveCellItems(context, nx, ny)
-    if (!targets.length) return !context.emptyBlocked
+    let throughEmptyPush = false
+    let targets = getLiveCellItems(context, nx, ny)
+    if (!targets.length) {
+      if (!context.emptyPush) return !context.emptyStop
 
-    if (targets.some((target) => isOpenShutPair(context, item, target)))
+      throughEmptyPush = true
+      let lookX = nx
+      let lookY = ny
+      while (true) {
+        lookX += dx
+        lookY += dy
+        if (!inBounds(context, lookX, lookY)) return false
+        targets = getLiveCellItems(context, lookX, lookY)
+        if (targets.length) break
+      }
+    }
+
+    if (
+      !throughEmptyPush &&
+      targets.some((target) => isOpenShutPair(context, item, target))
+    )
       return true
 
     const pushTargets: Item[] = []
@@ -82,11 +100,27 @@ export const createSingleMoveRuntime = (
     const nx = item.x + dx
     const ny = item.y + dy
 
-    const targets = getLiveCellItems(context, nx, ny)
-    const pushTargets = targets.filter((target) =>
+    let throughEmptyPush = false
+    let frontTargets = getLiveCellItems(context, nx, ny)
+    if (!frontTargets.length && context.emptyPush) {
+      throughEmptyPush = true
+      let lookX = nx
+      let lookY = ny
+      while (true) {
+        lookX += dx
+        lookY += dy
+        if (!inBounds(context, lookX, lookY)) break
+        frontTargets = getLiveCellItems(context, lookX, lookY)
+        if (frontTargets.length) break
+      }
+    }
+
+    const pushTargets = frontTargets.filter((target) =>
       context.pushIds.has(target.id),
     )
-    const swapTargets = targets.filter(
+    const swapTargets = throughEmptyPush
+      ? []
+      : frontTargets.filter(
       (target) =>
         !context.pushIds.has(target.id) && context.swapIds.has(target.id),
     )
@@ -109,10 +143,11 @@ export const createSingleMoveRuntime = (
       doMove(target.id)
     }
 
-    const liveTargets = getLiveCellItems(context, nx, ny)
-    const openShutTargets = liveTargets.filter((target) =>
-      isOpenShutPair(context, item, target),
-    )
+    const openShutTargets = throughEmptyPush
+      ? []
+      : getLiveCellItems(context, nx, ny).filter((target) =>
+          isOpenShutPair(context, item, target),
+        )
 
     if (openShutTargets.length) {
       if (removeOne(context, item)) {

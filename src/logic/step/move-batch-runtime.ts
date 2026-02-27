@@ -19,7 +19,8 @@ export type Arrow = {
 }
 
 export type BatchMoveContext = MoveCoreContext & {
-  emptyBlocked: boolean
+  emptyPush: boolean
+  emptyStop: boolean
   status: { changed: boolean }
 }
 
@@ -57,30 +58,47 @@ export const resolveBatchArrows = (
     const nx = item.x + dx
     const ny = item.y + dy
 
-    if (inBounds(context, nx, ny)) {
-      const targets = getLiveCellItems(context, nx, ny)
-      let pushed = false
-      for (const target of targets) {
-        if (!context.pushIds.has(target.id)) continue
-        if (arrows.has(target.id)) continue
-        addArrow(target.id, arrow.dir, false)
-        pushed = true
-      }
-      if (pushed) {
-        queue.push(id)
-        continue
-      }
-    }
-
     let blocked = !inBounds(context, nx, ny)
     let defer = false
+    let throughEmptyPush = false
+    let targets = blocked ? [] : getLiveCellItems(context, nx, ny)
 
     if (!blocked) {
-      const targets = getLiveCellItems(context, nx, ny)
-      if (!targets.length && context.emptyBlocked) blocked = true
+      if (!targets.length) {
+        if (!context.emptyPush) blocked = context.emptyStop
+        else {
+          throughEmptyPush = true
+          let lookX = nx
+          let lookY = ny
+          while (true) {
+            lookX += dx
+            lookY += dy
+            if (!inBounds(context, lookX, lookY)) {
+              blocked = true
+              break
+            }
+            targets = getLiveCellItems(context, lookX, lookY)
+            if (targets.length) break
+          }
+        }
+      }
+
+      if (!blocked) {
+        let pushed = false
+        for (const target of targets) {
+          if (!context.pushIds.has(target.id)) continue
+          if (arrows.has(target.id)) continue
+          addArrow(target.id, arrow.dir, false)
+          pushed = true
+        }
+        if (pushed) {
+          queue.push(id)
+          continue
+        }
+      }
 
       for (const target of targets) {
-        if (isOpenShutPair(context, item, target)) {
+        if (!throughEmptyPush && isOpenShutPair(context, item, target)) {
           if (removeOne(context, item)) context.status.changed = true
           if (removeOne(context, target)) context.status.changed = true
           continue
