@@ -46,7 +46,7 @@ pnpm type-check
 
 - ターミナル: 固定 2 桁幅セル、テキストタイルは 2 文字コード、`IS` は専用色、ルールと凡例を常時表示
 - Web: 盤面セルは常に正方形、テキストタイルは全文字表示、ルールと凡例はゲーム内ダイアログで表示
-- Web 3D 描画は単一固定 HD2D preset を使用し、実行時切替はありません
+- Web 3D 描画は単一固定のクレイ質感 preset（Nintendo Switch 版『ゼルダの伝説 夢をみる島』に近い）を使用し、実行時切替はありません
 - Web 3D の立体スタック順は固定: `you > text > move/fall > push/pull > open/shut > else`
 - 地貼り要素（`tile`、`water`、`belt`）は上記の立体スタック優先度に参加しません
 

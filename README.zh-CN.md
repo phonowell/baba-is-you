@@ -46,7 +46,7 @@ pnpm type-check
 
 - 终端：固定 2 列宽单元；文字块使用 2 字母缩写；`IS` 单独着色；规则与字典常驻显示
 - Web：棋盘格子固定正方形；文本块显示完整单词；规则与字典在游戏内弹层查看
-- Web 3D 渲染使用单一固定 HD2D preset（不提供运行时切换）
+- Web 3D 渲染使用单一固定粘土质感 preset（更接近 NS 版《塞尔达传说：梦见岛》；不提供运行时切换）
 - Web 3D 立体元素堆叠顺序固定为：`you > text > move/fall > push/pull > open/shut > else`
 - 地贴元素（`tile`、`water`、`belt`）不参与上述立体堆叠优先级
 

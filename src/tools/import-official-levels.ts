@@ -36,6 +36,40 @@ type InitialCapability = {
   hasWin: boolean
 }
 
+type TextTileCounts = {
+  youTextCount: number
+  winTextCount: number
+  facingTextCount: number
+}
+
+type ConvertedLevelMeta = {
+  titleRaw: string
+  textTiles: TextTileCounts
+}
+
+type ConvertOneLevelResult = {
+  level: ConvertedLevel
+  unknownTileKeys: string[]
+  meta: ConvertedLevelMeta
+}
+
+type ImportFilterReason =
+  | 'missing-you'
+  | 'missing-you_text-win_text'
+  | 'many-facing_text'
+  | 'unknown-card'
+  | 'name-index'
+
+type FilteredOutLevel = {
+  fileName: string
+  reasons: ImportFilterReason[]
+  hasYou: boolean
+  hasWin: boolean
+  titleRaw: string
+  textTiles: TextTileCounts
+  unknownTileCount: number
+}
+
 type GlobalReference = {
   objectById: Map<
     string,
@@ -70,6 +104,8 @@ type VerifyResult = {
   unknownTileKeys: string[]
   samples: VerifySample[]
 }
+
+const FACING_TEXT_FILTER_THRESHOLD = 5
 
 const DEFAULT_OBJECT_ASSIGNMENTS: Record<number, string> = {
   0: 'baba',
@@ -650,7 +686,7 @@ const convertOneLevel = (
   ld: LdData,
   layers: ParsedLayer[],
   global: GlobalReference,
-): { level: ConvertedLevel; unknownTileKeys: string[] } => {
+): ConvertOneLevelResult => {
   const firstLayer = layers[0]
   if (!firstLayer) throw new Error(`No layer found in ${fileName}`)
   const rawWidth = firstLayer.width
@@ -666,6 +702,9 @@ const convertOneLevel = (
   const tileMap = buildLevelTileMap(ld, global)
   const grouped = new Map<string, Set<string>>()
   const unknownTiles = new Set<string>()
+  let youTextCount = 0
+  let winTextCount = 0
+  let facingTextCount = 0
 
   for (const layer of layers) {
     if (layer.width !== rawWidth || layer.height !== rawHeight) continue
@@ -690,6 +729,11 @@ const convertOneLevel = (
             name: `tile_${tileX}_${tileY}`,
             isText: false,
           } satisfies TileDescriptor
+        }
+        if (resolved.isText) {
+          if (resolved.name === 'you') youTextCount += 1
+          if (resolved.name === 'win') winTextCount += 1
+          if (resolved.name === 'facing') facingTextCount += 1
         }
 
         const dataValue = layer.data?.[index]
@@ -729,6 +773,14 @@ const convertOneLevel = (
     unknownTileKeys: Array.from(unknownTiles).sort((a, b) =>
       a.localeCompare(b),
     ),
+    meta: {
+      titleRaw,
+      textTiles: {
+        youTextCount,
+        winTextCount,
+        facingTextCount,
+      },
+    },
   }
 }
 
@@ -956,30 +1008,44 @@ const main = async (): Promise<void> => {
   }
 
   const converted: ConvertedLevel[] = []
-  const filteredOut: Array<{
-    fileName: string
-    hasYou: boolean
-    hasWin: boolean
-  }> = []
-  const unknownByFile = new Map<string, string[]>()
+  const filteredOut: FilteredOutLevel[] = []
+  const filteredReasonCounts = new Map<ImportFilterReason, number>()
+  const countFilteredReason = (reason: ImportFilterReason): void => {
+    filteredReasonCounts.set(reason, (filteredReasonCounts.get(reason) ?? 0) + 1)
+  }
   for (const current of parsed) {
-    const { level, unknownTileKeys } = convertOneLevel(
+    const { level, unknownTileKeys, meta } = convertOneLevel(
       current.fileName,
       current.ld,
       current.layers,
       global,
     )
     const { hasYou, hasWin } = checkInitialCapability(level)
-    if (!hasYou) {
+    const reasons: ImportFilterReason[] = []
+    if (!hasYou) reasons.push('missing-you')
+    if (
+      meta.textTiles.youTextCount === 0 &&
+      meta.textTiles.winTextCount === 0
+    )
+      reasons.push('missing-you_text-win_text')
+    if (meta.textTiles.facingTextCount >= FACING_TEXT_FILTER_THRESHOLD)
+      reasons.push('many-facing_text')
+    if (unknownTileKeys.length > 0) reasons.push('unknown-card')
+    if (meta.titleRaw.trim().toLowerCase() === 'index') reasons.push('name-index')
+    if (reasons.length) {
+      for (const reason of reasons) countFilteredReason(reason)
       filteredOut.push({
         fileName: current.fileName,
+        reasons,
         hasYou,
         hasWin,
+        titleRaw: meta.titleRaw,
+        textTiles: meta.textTiles,
+        unknownTileCount: unknownTileKeys.length,
       })
       continue
     }
     converted.push(level)
-    if (unknownTileKeys.length) unknownByFile.set(current.fileName, unknownTileKeys)
   }
 
   await fs.rm(outputDir, { recursive: true, force: true })
@@ -1002,32 +1068,32 @@ const main = async (): Promise<void> => {
 
   await fs.writeFile(outputFile, renderLevelsIndex(chunkSpecs), 'utf8')
 
-  const unresolvedTiles = new Set<string>()
-  for (const keys of unknownByFile.values()) {
-    for (const key of keys) unresolvedTiles.add(key)
-  }
   console.log(`Imported official levels: ${converted.length}`)
-  const filteredCount = filteredOut.length
-  const missingYouCount = filteredOut.filter((item) => !item.hasYou).length
-  console.log(`Filtered levels (missing you): ${filteredCount}`)
-  console.log(`Filtered missing you: ${missingYouCount}`)
+  console.log(`Filtered levels: ${filteredOut.length}`)
+  const reasonOrder: ImportFilterReason[] = [
+    'missing-you',
+    'missing-you_text-win_text',
+    'many-facing_text',
+    'unknown-card',
+    'name-index',
+  ]
+  for (const reason of reasonOrder) {
+    const count = filteredReasonCounts.get(reason) ?? 0
+    console.log(`Filtered ${reason}: ${count}`)
+  }
   const missingWinCount = converted
     .map((level) => checkInitialCapability(level))
     .filter((capability) => !capability.hasWin).length
   console.log(`Levels missing win (kept): ${missingWinCount}`)
   console.log(`Generated chunks: ${chunkSpecs.length}`)
-  console.log(`Unknown tile keys: ${unresolvedTiles.size}`)
+  console.log('Unknown tile keys in kept levels: 0')
   if (filteredOut.length) {
     const preview = filteredOut.slice(0, 10)
     for (const level of preview) {
-      const reason = !level.hasWin ? 'missing-you+win' : 'missing-you'
-      console.log(`filtered ${level.fileName}: ${reason}`)
+      console.log(
+        `filtered ${level.fileName}: ${level.reasons.join(',')} you=${level.hasYou ? '1' : '0'} win=${level.hasWin ? '1' : '0'} you_text=${level.textTiles.youTextCount} win_text=${level.textTiles.winTextCount} facing_text=${level.textTiles.facingTextCount} unknown=${level.unknownTileCount} name=${level.titleRaw}`,
+      )
     }
-  }
-  if (unknownByFile.size) {
-    const preview = Array.from(unknownByFile.entries()).slice(0, 10)
-    for (const [fileName, keys] of preview)
-      console.log(`unknown ${fileName}: ${keys.slice(0, 12).join(' ')}`)
   }
 }
 

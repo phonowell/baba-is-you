@@ -46,7 +46,7 @@ pnpm type-check
 
 - Terminal: fixed 2-column cells; text tiles use 2-letter codes; `IS` has dedicated color; rules and legend are always shown
 - Web: fixed square board; text tiles render full words; rules and legend are available in the in-game dialog
-- Web 3D path uses one fixed HD2D preset (no runtime preset switch)
+- Web 3D path uses one fixed clay-look preset (closer to Nintendo Switch Link's Awakening style; no runtime preset switch)
 - Web 3D upright stack order is fixed: `you > text > move/fall > push/pull > open/shut > else`
 - Ground-hug objects (`tile`, `water`, `belt`) are excluded from upright stack priority
 

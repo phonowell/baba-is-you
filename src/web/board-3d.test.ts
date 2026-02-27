@@ -1,7 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { buildEntityViews, computeEntityBaseTarget } from './board-3d.js'
+import {
+  buildEntityViews,
+  computeEntityBaseTarget,
+  emojiBottomAnchorOffset,
+  emojiMicroStretch,
+  emojiPhaseOffsetMsForItem,
+  emojiStretchEnabledForItem,
+} from './board-3d.js'
 
 import type { GameState } from '../logic/types.js'
 
@@ -74,4 +81,64 @@ test('board-3d places higher-priority stack item in front along depth axis', () 
   const pullTarget = computeEntityBaseTarget(state, pullView)
   const defeatTarget = computeEntityBaseTarget(state, defeatView)
   assert.equal(pullTarget.y < defeatTarget.y, true)
+})
+
+test('board-3d emoji micro stretch loops every 1s', () => {
+  const t0 = emojiMicroStretch(250)
+  const t1 = emojiMicroStretch(1250)
+  assert.ok(Math.abs(t0.scaleX - t1.scaleX) < 1e-9)
+  assert.ok(Math.abs(t0.scaleY - t1.scaleY) < 1e-9)
+})
+
+test('board-3d emoji anchor offset follows stretch direction from bottom', () => {
+  assert.equal(emojiBottomAnchorOffset(1, 1), 0)
+  assert.equal(emojiBottomAnchorOffset(1, 1.03) > 0, true)
+  assert.equal(emojiBottomAnchorOffset(1, 0.97) < 0, true)
+})
+
+test('board-3d emoji stretch excludes ground-hug items', () => {
+  const groundHugEmoji: GameState['items'][number] = {
+    id: 1,
+    name: 'tile',
+    x: 0,
+    y: 0,
+    isText: false,
+    props: ['push', 'you'],
+  }
+  const uprightEmoji: GameState['items'][number] = {
+    id: 2,
+    name: 'baba',
+    x: 0,
+    y: 0,
+    isText: false,
+    props: ['you'],
+  }
+  assert.equal(emojiStretchEnabledForItem(groundHugEmoji), false)
+  assert.equal(emojiStretchEnabledForItem(uprightEmoji), true)
+})
+
+test('board-3d emoji phase offset is stable and within one cycle', () => {
+  const itemA: GameState['items'][number] = {
+    id: 7,
+    name: 'baba',
+    x: 0,
+    y: 0,
+    isText: false,
+    props: [],
+  }
+  const itemB: GameState['items'][number] = {
+    id: 8,
+    name: 'keke',
+    x: 0,
+    y: 0,
+    isText: false,
+    props: [],
+  }
+  const a0 = emojiPhaseOffsetMsForItem(itemA)
+  const a1 = emojiPhaseOffsetMsForItem(itemA)
+  const b0 = emojiPhaseOffsetMsForItem(itemB)
+  assert.equal(a0 === a1, true)
+  assert.equal(a0 >= 0 && a0 < 1000, true)
+  assert.equal(b0 >= 0 && b0 < 1000, true)
+  assert.equal(a0 !== b0, true)
 })

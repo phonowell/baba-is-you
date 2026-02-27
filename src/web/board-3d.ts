@@ -1,10 +1,12 @@
 import {
   AmbientLight,
+  BufferAttribute,
   BufferGeometry,
   CanvasTexture,
   Color,
   DirectionalLight,
   DoubleSide,
+  FogExp2,
   Group,
   LinearFilter,
   Line,
@@ -15,6 +17,8 @@ import {
   PCFSoftShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
+  Points,
+  PointsMaterial,
   RepeatWrapping,
   Scene,
   Shape,
@@ -33,11 +37,11 @@ import { HorizontalTiltShiftShader } from 'three/examples/jsm/shaders/Horizontal
 import { VerticalTiltShiftShader } from 'three/examples/jsm/shaders/VerticalTiltShiftShader.js'
 
 import {
-  HD2D_PRESET,
-  createHd2dObjectPalette,
+  CLAY_PRESET,
+  createClayObjectPalette,
   readabilityMix,
-  selectHd2dCameraTier,
-} from './hd2d-config.js'
+  selectClayCameraTier,
+} from './clay-config.js'
 import { OBJECT_GLYPHS } from '../view/render-config.js'
 import {
   STACK_LAYER_PRIORITY,
@@ -84,6 +88,8 @@ type EntityNode = {
   mesh: Mesh<PlaneGeometry, CardMaterial>
   shadow: Mesh<PlaneGeometry, MeshBasicMaterial>
   shadowMaterial: MeshBasicMaterial
+  isEmoji: boolean
+  emojiPhaseOffsetMs: number
   rotX: number
   rotRoll: number
   rollStep: number
@@ -140,14 +146,27 @@ const SHADOW_FAR_PADDING = 8
 const SHADOW_FRUSTUM_DISTANCE_SCALE = 2
 const SHADOW_ANGLE_SPAN_BOOST = 0.35
 const GROUND_EXPANDED_MIN_SIZE = 220
+const GROUND_TEXTURE_TILE_SIZE = 16
 const PLAY_AREA_OUTLINE_Z = -0.065
 const PLAY_AREA_OUTLINE_RADIUS = 0.34
 const PLAY_AREA_OUTLINE_OPACITY = 0.88
+const ATMOSPHERE_FOG_COLOR = '#e8ecea'
+const ATMOSPHERE_FOG_DENSITY = 0.022
+const DUST_PARTICLE_COUNT = 260
+const DUST_SPREAD_BASE = 4.4
+const DUST_SPREAD_MUL = 0.62
+const DUST_HEIGHT_BASE = 1.9
+const DUST_HEIGHT_MUL = 0.24
+const DUST_LAYER_DEPTH_SCALE = 0.8
+const DUST_PARTICLE_SIZE = 0.18
+const DUST_PARTICLE_OPACITY = 0.2
 const TILT_SHIFT_FOCUS_LINE = 0.5
 const TILT_SHIFT_BLUR_STRENGTH = 0.78
 const MAX_DEVICE_PIXEL_RATIO = 1.4
 const POSTFX_PIXEL_RATIO_SCALE = 1
 const BLOOM_RESOLUTION_SCALE = 0.65
+const BLOOM_DENSE_TEXT_RESOLUTION_SCALE = 0.84
+const BOKEH_ENABLE_MARGIN = 1.12
 const WORLD_LAYER = 0
 const TEXT_OVERLAY_LAYER = 1
 const CAMERA_CARD_FACE_ANGLE_RAD = Math.PI / 4
@@ -167,6 +186,9 @@ const JUMP_HEIGHT = 0.17
 const CARD_UPRIGHT_ROT_X = Math.PI / 2
 const CARD_BACK_TILT_RAD = CAMERA_CARD_FACE_ANGLE_RAD
 const CARD_FLAT_ROT_X = 0
+const EMOJI_MICRO_STRETCH_CYCLE_MS = 1000
+const EMOJI_MICRO_STRETCH_Y_AMP = 0.035
+const EMOJI_MICRO_STRETCH_X_AMP = 0.014
 const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
   up: '⬆️',
   right: '➡️',
@@ -190,6 +212,38 @@ const fnv1a = (value: string): number => {
   }
   return hash >>> 0
 }
+
+const fract = (value: number): number => value - Math.floor(value)
+
+const hash01 = (seed: number): number => fract(Math.sin(seed) * 43758.5453123)
+
+const hash2d01 = (x: number, y: number): number =>
+  fract(Math.sin(x * 127.1 + y * 311.7) * 43758.5453123)
+
+export const emojiMicroStretch = (
+  nowMs: number,
+): { scaleX: number; scaleY: number } => {
+  const phase =
+    ((nowMs % EMOJI_MICRO_STRETCH_CYCLE_MS) / EMOJI_MICRO_STRETCH_CYCLE_MS) *
+    Math.PI *
+    2
+  const wave = Math.sin(phase)
+  return {
+    scaleX: 1 - wave * EMOJI_MICRO_STRETCH_X_AMP,
+    scaleY: 1 + wave * EMOJI_MICRO_STRETCH_Y_AMP,
+  }
+}
+
+export const emojiBottomAnchorOffset = (
+  baseScaleY: number,
+  finalScaleY: number,
+): number => (finalScaleY - baseScaleY) * CARD_WORLD_SIZE * 0.5
+
+export const emojiStretchEnabledForItem = (item: Item): boolean =>
+  isEmojiItem(item) && !isGroundHugItem(item)
+
+export const emojiPhaseOffsetMsForItem = (item: Item): number =>
+  hash01(fnv1a(`emoji-stretch:${item.id}:${item.name}`)) * EMOJI_MICRO_STRETCH_CYCLE_MS
 
 const roundRectPath = (
   ctx: CanvasRenderingContext2D,
@@ -261,7 +315,7 @@ const objectPalette = (
   minContrastRatio: number,
 ): { background: string; border: string; textColor: string; outlineColor: string } => {
   const hue = fnv1a(name) % 360
-  const palette = createHd2dObjectPalette(hue, minContrastRatio)
+  const palette = createClayObjectPalette(hue, minContrastRatio)
   return palette
 }
 
@@ -522,6 +576,61 @@ const createGroundTexture = (): CanvasTexture => {
   ctx.fillStyle = '#e9eef3'
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
+  const wash = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+  wash.addColorStop(0, 'rgba(255,255,255,0.1)')
+  wash.addColorStop(0.5, 'rgba(236,243,248,0.2)')
+  wash.addColorStop(1, 'rgba(211,221,230,0.14)')
+  ctx.fillStyle = wash
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const pixels = imageData.data
+  for (let y = 0; y < canvas.height; y += 1) {
+    for (let x = 0; x < canvas.width; x += 1) {
+      const index = (y * canvas.width + x) * 4
+      const grain = (hash2d01(x, y) - 0.5) * 16
+      const cloud = (hash2d01(x * 0.27 + 13, y * 0.27 + 23) - 0.5) * 11
+      const warm = (hash2d01(x * 0.16 + 41, y * 0.16 + 7) - 0.5) * 6
+      const r = pixels[index + 0] ?? 0
+      const g = pixels[index + 1] ?? 0
+      const b = pixels[index + 2] ?? 0
+      pixels[index + 0] = Math.max(0, Math.min(255, Math.round(r + grain + cloud)))
+      pixels[index + 1] = Math.max(
+        0,
+        Math.min(255, Math.round(g + grain * 0.85 + cloud * 0.6 + warm)),
+      )
+      pixels[index + 2] = Math.max(0, Math.min(255, Math.round(b + grain * 0.65 - warm)))
+    }
+  }
+  ctx.putImageData(imageData, 0, 0)
+
+  for (let i = 0; i < 220; i += 1) {
+    const seed = i + 1
+    const x = hash01(seed * 17.1) * canvas.width
+    const y = hash01(seed * 31.7) * canvas.height
+    const radius = 0.45 + hash01(seed * 5.3) * 1.8
+    const alpha = 0.01 + hash01(seed * 9.2) * 0.025
+    ctx.beginPath()
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`
+    ctx.arc(x, y, radius, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  for (let i = 0; i < 120; i += 1) {
+    const seed = i + 1
+    const x = hash01(seed * 63.2) * canvas.width
+    const y = hash01(seed * 27.4) * canvas.height
+    const length = 5 + hash01(seed * 11.8) * 11
+    const angle = hash01(seed * 3.6) * Math.PI * 2
+    const alpha = 0.018 + hash01(seed * 7.9) * 0.022
+    ctx.lineWidth = 0.5 + hash01(seed * 19.3) * 0.7
+    ctx.strokeStyle = `rgba(132,148,164,${alpha})`
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+    ctx.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length)
+    ctx.stroke()
+  }
+
   const texture = new CanvasTexture(canvas)
   texture.wrapS = RepeatWrapping
   texture.wrapT = RepeatWrapping
@@ -529,6 +638,63 @@ const createGroundTexture = (): CanvasTexture => {
   texture.minFilter = LinearFilter
   texture.magFilter = LinearFilter
   return texture
+}
+
+const createDustTexture = (): CanvasTexture => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 64
+  canvas.height = 64
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to create dust texture context.')
+
+  const gradient = ctx.createRadialGradient(32, 32, 4, 32, 32, 31)
+  gradient.addColorStop(0, 'rgba(255,255,255,0.92)')
+  gradient.addColorStop(0.4, 'rgba(248,245,236,0.5)')
+  gradient.addColorStop(1, 'rgba(248,245,236,0)')
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.minFilter = LinearFilter
+  texture.magFilter = LinearFilter
+  return texture
+}
+
+const createDustLayer = (): {
+  points: Points<BufferGeometry, PointsMaterial>
+  geometry: BufferGeometry
+  material: PointsMaterial
+  texture: CanvasTexture
+} => {
+  const positions = new Float32Array(DUST_PARTICLE_COUNT * 3)
+  for (let index = 0; index < DUST_PARTICLE_COUNT; index += 1) {
+    const seed = index + 1
+    const angle = hash01(seed * 11.3) * Math.PI * 2
+    const radius = Math.sqrt(hash01(seed * 37.7))
+    const height = Math.pow(hash01(seed * 71.9), 0.72)
+    positions[index * 3 + 0] = Math.cos(angle) * radius
+    positions[index * 3 + 1] = height
+    positions[index * 3 + 2] = Math.sin(angle) * radius
+  }
+
+  const geometry = new BufferGeometry()
+  geometry.setAttribute('position', new BufferAttribute(positions, 3))
+  const texture = createDustTexture()
+  const material = new PointsMaterial({
+    map: texture,
+    color: new Color('#f8f2e6'),
+    size: DUST_PARTICLE_SIZE,
+    transparent: true,
+    opacity: DUST_PARTICLE_OPACITY,
+    alphaTest: 0.01,
+    depthWrite: false,
+    sizeAttenuation: true,
+  })
+  const points = new Points(geometry, material)
+  points.layers.set(WORLD_LAYER)
+  points.position.set(0, 0.32, 0)
+  return { points, geometry, material, texture }
 }
 
 const createShadowTexture = (): CanvasTexture => {
@@ -560,10 +726,11 @@ const createNoopRenderer = (): Board3dRenderer => ({
 })
 
 const createBoard3dRendererUnsafe = (): Board3dRenderer => {
-  const preset = HD2D_PRESET
-  const initialCameraTier = selectHd2dCameraTier(1, 1)
+  const preset = CLAY_PRESET
+  const initialCameraTier = selectClayCameraTier(1, 1)
   const scene = new Scene()
   scene.background = new Color(preset.sceneBackground)
+  scene.fog = new FogExp2(ATMOSPHERE_FOG_COLOR, ATMOSPHERE_FOG_DENSITY)
   const camera = new PerspectiveCamera(initialCameraTier.fov, 1, 0.1, 180)
   const worldCamera = camera.clone()
   worldCamera.layers.set(WORLD_LAYER)
@@ -657,6 +824,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   const materialCache = new Map<string, CardMaterial>()
   const nodes = new Map<number, EntityNode>()
   const shadowTexture = createShadowTexture()
+  const dustLayer = createDustLayer()
+  scene.add(dustLayer.points)
   const textureAnisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy())
 
   let container: HTMLElement | null = null
@@ -674,6 +843,23 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   let needsRender = true
   let activeBokehAperture = preset.bokeh.aperture
   let activeBokehMaxBlur = preset.bokeh.maxBlur
+  let currentReadabilityMix = 0
+
+  const updateDustLayer = (): void => {
+    const span = Math.max(1, boardWidth, boardHeight)
+    const spread = DUST_SPREAD_BASE + span * DUST_SPREAD_MUL
+    const height = DUST_HEIGHT_BASE + span * DUST_HEIGHT_MUL
+    dustLayer.points.scale.set(spread, height, spread * DUST_LAYER_DEPTH_SCALE)
+  }
+
+  const updateBloomResolution = (): void => {
+    if (viewportWidth <= 0 || viewportHeight <= 0) return
+    const readabilityScale = lerp(1, BLOOM_DENSE_TEXT_RESOLUTION_SCALE, currentReadabilityMix)
+    bloomPass.resolution.set(
+      Math.max(1, Math.floor(viewportWidth * BLOOM_RESOLUTION_SCALE * readabilityScale)),
+      Math.max(1, Math.floor(viewportHeight * BLOOM_RESOLUTION_SCALE * readabilityScale)),
+    )
+  }
 
   const syncPassCamera = (target: PerspectiveCamera, layer: number): void => {
     target.position.copy(camera.position)
@@ -709,6 +895,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
           map: texture,
           transparent: true,
           alphaTest: 0.08,
+          fog: !item.isText,
           side: DoubleSide,
         })
       : new MeshStandardMaterial({
@@ -721,6 +908,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
           emissiveIntensity: item.isText
             ? preset.materials.textEmissiveIntensity
             : preset.materials.objectEmissiveIntensity,
+          fog: !item.isText,
           side: DoubleSide,
         })
     materialCache.set(spec.key, material)
@@ -791,7 +979,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
 
     const width = Math.max(1, boardWidth)
     const height = Math.max(1, boardHeight)
-    const cameraTier = selectHd2dCameraTier(width, height)
+    const cameraTier = selectClayCameraTier(width, height)
     const aspect = viewportWidth / viewportHeight
     const spanX = width + cameraTier.spanPadding
     const spanY = height + cameraTier.spanPadding
@@ -814,6 +1002,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     syncPassCamera(worldCamera, WORLD_LAYER)
     syncPassCamera(textOverlayCamera, TEXT_OVERLAY_LAYER)
     updateLightRig()
+    updateDustLayer()
     updateBokehFocus()
   }
 
@@ -838,10 +1027,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     renderer.setSize(viewportWidth, viewportHeight, false)
     composer.setPixelRatio(postFxPixelRatio)
     composer.setSize(viewportWidth, viewportHeight)
-    bloomPass.resolution.set(
-      Math.max(1, Math.floor(viewportWidth * BLOOM_RESOLUTION_SCALE)),
-      Math.max(1, Math.floor(viewportHeight * BLOOM_RESOLUTION_SCALE)),
-    )
+    updateBloomResolution()
     ;(horizontalTiltShiftPass.uniforms.h as BokehUniform).value =
       (TILT_SHIFT_BLUR_STRENGTH * postFxPixelRatio) / Math.max(1, viewportWidth)
     ;(verticalTiltShiftPass.uniforms.v as BokehUniform).value =
@@ -880,6 +1066,11 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     const expandedHeight = Math.max(boardHeight + 0.65, GROUND_EXPANDED_MIN_SIZE)
     const geometry = new PlaneGeometry(expandedWidth, expandedHeight)
     groundTexture = createGroundTexture()
+    groundTexture.repeat.set(
+      Math.max(1, expandedWidth / GROUND_TEXTURE_TILE_SIZE),
+      Math.max(1, expandedHeight / GROUND_TEXTURE_TILE_SIZE),
+    )
+    groundTexture.needsUpdate = true
     const material = new MeshStandardMaterial({
       map: groundTexture,
       roughness: 0.66,
@@ -921,6 +1112,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
 
     const mesh = new Mesh(cardGeometry, getMaterial(item))
     const emoji = isEmojiItem(item)
+    const stretchEnabled = emojiStretchEnabledForItem(item)
     mesh.castShadow = !item.isText
     mesh.receiveShadow = !item.isText && !emoji
     entityGroup.add(mesh)
@@ -944,6 +1136,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       mesh,
       shadow,
       shadowMaterial,
+      isEmoji: stretchEnabled,
+      emojiPhaseOffsetMs: emojiPhaseOffsetMsForItem(item),
       rotX: cardRotXForItem(item),
       rotRoll: rollNoise,
       rollStep: 0,
@@ -1024,9 +1218,20 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       if (despawnT >= 1) finishedLeaving = true
     }
 
+    const baseScaleX = stretchX * scaleFactor
+    const baseScaleY = stretchY * scaleFactor
+    let scaleX = baseScaleX
+    let scaleY = baseScaleY
+    if (node.isEmoji) {
+      const microStretch = emojiMicroStretch(nowMs + node.emojiPhaseOffsetMs)
+      scaleX *= microStretch.scaleX
+      scaleY *= microStretch.scaleY
+      verticalOffset += emojiBottomAnchorOffset(baseScaleY, scaleY)
+    }
+
     node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
     node.mesh.rotation.set(node.rotX, 0, roll)
-    node.mesh.scale.set(stretchX * scaleFactor, stretchY * scaleFactor, 1)
+    node.mesh.scale.set(scaleX, scaleY, 1)
 
     const shadowScale = 0.54 + jump * 1.25 + landing * 0.62
     const shadowOpacity = Math.max(0.05, 0.16 - jump * 0.42 + landing * 0.2)
@@ -1039,7 +1244,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
         node.moving ||
         node.landStartMs !== null ||
         node.spawnStartMs !== null ||
-        node.despawnStartMs !== null,
+        node.despawnStartMs !== null ||
+        node.isEmoji,
       finishedLeaving,
     }
   }
@@ -1119,6 +1325,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       if (node.mesh.material !== material) node.mesh.material = material
       applyNodeRenderLayers(node, item.isText)
       const emoji = isEmojiItem(item)
+      node.isEmoji = emojiStretchEnabledForItem(item)
+      node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)
       node.mesh.castShadow = !item.isText
       node.mesh.receiveShadow = !item.isText && !emoji
       node.rotX = cardRotXForItem(item)
@@ -1206,6 +1414,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       state.width * state.height,
       preset.readability.textDensitySoftCap,
     )
+    currentReadabilityMix = mix
     bloomPass.strength = lerp(
       preset.bloom.strength,
       preset.readability.bloomStrengthFloor,
@@ -1221,13 +1430,18 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       preset.readability.maxBlurFloor,
       mix,
     )
+    const shouldEnableBokeh =
+      activeBokehMaxBlur > preset.readability.maxBlurFloor * BOKEH_ENABLE_MARGIN ||
+      activeBokehAperture > preset.readability.apertureFloor * BOKEH_ENABLE_MARGIN
+    if (bokehPass.enabled !== shouldEnableBokeh) bokehPass.enabled = shouldEnableBokeh
+    updateBloomResolution()
     updateBokehFocus()
   }
 
   const mount = (nextContainer: HTMLElement): void => {
     container = nextContainer
     container.classList.add('board-3d')
-    container.dataset.hd2dPreset = 'single'
+    container.dataset.clayPreset = 'single'
     if (renderer.domElement.parentElement !== container) {
       container.textContent = ''
       container.appendChild(renderer.domElement)
@@ -1271,6 +1485,10 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     for (const texture of textureCache.values()) texture.dispose()
     textureCache.clear()
     shadowTexture.dispose()
+    scene.remove(dustLayer.points)
+    dustLayer.geometry.dispose()
+    dustLayer.material.dispose()
+    dustLayer.texture.dispose()
 
     if (groundMesh) {
       world.remove(groundMesh)

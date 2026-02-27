@@ -4,7 +4,7 @@ type Rgb = {
   b: number
 }
 
-export type Hd2dPreset = {
+export type ClayPreset = {
   sceneBackground: string
   bloom: {
     strength: number
@@ -37,7 +37,7 @@ export type Hd2dPreset = {
   }
 }
 
-export type Hd2dCameraTier = {
+export type ClayCameraTier = {
   name: 'tight' | 'standard' | 'wide'
   maxSpan: number
   fov: number
@@ -47,7 +47,7 @@ export type Hd2dCameraTier = {
   lookAtY: number
 }
 
-export type Hd2dObjectPalette = {
+export type ClayObjectPalette = {
   background: string
   border: string
   textColor: string
@@ -120,7 +120,7 @@ const LIGHT_TEXT: Rgb = { r: 245, g: 248, b: 255 }
 const DARK_OUTLINE = '#f2f6ff'
 const LIGHT_OUTLINE = '#0a1320'
 
-export const HD2D_PRESET: Hd2dPreset = {
+export const CLAY_PRESET: ClayPreset = {
   sceneBackground: '#edf1f4',
   bloom: {
     strength: 0.32,
@@ -153,7 +153,7 @@ export const HD2D_PRESET: Hd2dPreset = {
   },
 }
 
-const CAMERA_TIERS: readonly Hd2dCameraTier[] = [
+const CAMERA_TIERS: readonly ClayCameraTier[] = [
   {
     name: 'tight',
     maxSpan: 8,
@@ -183,15 +183,15 @@ const CAMERA_TIERS: readonly Hd2dCameraTier[] = [
   },
 ]
 
-export const selectHd2dCameraTier = (
+export const selectClayCameraTier = (
   boardWidth: number,
   boardHeight: number,
-): Hd2dCameraTier => {
+): ClayCameraTier => {
   const span = Math.max(1, boardWidth, boardHeight)
   const matched = CAMERA_TIERS.find((tier) => span <= tier.maxSpan)
   if (matched) return matched
   const fallback = CAMERA_TIERS[CAMERA_TIERS.length - 1]
-  if (!fallback) throw new Error('Missing HD2D camera tiers.')
+  if (!fallback) throw new Error('Missing clay camera tiers.')
   return fallback
 }
 
@@ -205,10 +205,10 @@ export const readabilityMix = (
   return clamp01(density / softCap)
 }
 
-export const createHd2dObjectPalette = (
+export const createClayObjectPalette = (
   hue: number,
   minContrastRatio: number,
-): Hd2dObjectPalette => {
+): ClayObjectPalette => {
   const background = hslToRgb(hue, 0.52, 0.78)
 
   const darkContrast = contrastRatio(background, DARK_TEXT)
