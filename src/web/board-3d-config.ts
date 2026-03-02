@@ -45,21 +45,23 @@ export const BOARD3D_LAYOUT_CONFIG = {
   CARD_MATERIAL_ROUGHNESS: 0.78,
   /** 布局与材质：卡片材质金属度。用于微调整体观感和稳定性。 */
   CARD_MATERIAL_METALNESS: 0.02,
-  /** 布局与材质：卡片材质自发光颜色。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
+  /** 布局与材质：卡片材质自发光颜色。使用 CSS 颜色字符串；用于微调整体观感和稳定性。 */
   CARD_MATERIAL_EMISSIVE_COLOR: '#101019',
   /** 布局与材质：地面扩展留白。会影响对象位置或作用范围。 */
   GROUND_EXPANDED_PADDING: 0.65,
+  /** 布局与材质：地面基础色。使用 CSS 颜色字符串；用于微调整体观感和稳定性。 */
+  GROUND_BASE_COLOR: '#e9eef3',
   /** 布局与材质：地面材质粗糙度。用于微调整体观感和稳定性。 */
   GROUND_MATERIAL_ROUGHNESS: 0.66,
   /** 布局与材质：地面材质金属度。用于微调整体观感和稳定性。 */
   GROUND_MATERIAL_METALNESS: 0,
-  /** 布局与材质：可玩区域填充颜色。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
+  /** 布局与材质：可玩区域填充颜色。使用 CSS 颜色字符串；用于微调整体观感和稳定性。 */
   PLAY_AREA_FILL_COLOR: '#f8fbff',
   /** 布局与材质：可玩区域填充粗糙度。用于微调整体观感和稳定性。 */
   PLAY_AREA_FILL_ROUGHNESS: 0.68,
   /** 布局与材质：可玩区域填充金属度。用于微调整体观感和稳定性。 */
   PLAY_AREA_FILL_METALNESS: 0,
-  /** 布局与材质：可玩区域描边颜色。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
+  /** 布局与材质：可玩区域描边颜色。使用 CSS 颜色字符串；用于微调整体观感和稳定性。 */
   PLAY_AREA_OUTLINE_COLOR: '#a6b3c1',
   /** 布局与材质：实体静止阴影缩放。会影响光照层次、阴影稳定性和性能。 */
   ENTITY_IDLE_SHADOW_SCALE: 0.62,
@@ -200,8 +202,6 @@ export const BOARD3D_POSTFX_CONFIG = {
 } as const
 
 export const BOARD3D_ANIMATION_CONFIG = {
-  /** 动画：Emoji卡片纹理尺寸。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
-  EMOJI_CARD_TEXTURE_SIZE: 512,
   /** 动画：移动动画时长。单位为毫秒；数值越大，动效越明显。 */
   MOVE_ANIM_MS: 170,
   /** 动画：生成动画时长。单位为毫秒；数值越大，动效越明显。 */
@@ -252,45 +252,29 @@ export const BOARD3D_RULE_VISUAL_CONFIG = {
 } as const
 
 export const BOARD3D_TEXT_CARD_STYLE_CONFIG = {
-  /** 文字卡片配色：文字卡片语法词背景色。会影响纹理清晰度和视觉可读性。 */
+  /** 文字卡片配色：文字卡片语法词背景色。用于微调整体观感和稳定性。 */
   TEXT_CARD_SYNTAX_BACKGROUND: '#f2dca8',
-  /** 文字卡片配色：文字卡片语法词边框。会影响纹理清晰度和视觉可读性。 */
-  TEXT_CARD_SYNTAX_BORDER: '#c5a24c',
-  /** 文字卡片配色：文字卡片语法词文字。会影响纹理清晰度和视觉可读性。 */
+  /** 文字卡片配色：文字卡片语法词文字色。用于微调整体观感和稳定性。 */
   TEXT_CARD_SYNTAX_TEXT: '#513c0c',
-  /** 文字卡片配色：文字卡片语法词描边。会影响纹理清晰度和视觉可读性。 */
+  /** 文字卡片配色：文字卡片语法词描边色。用于微调整体观感和稳定性。 */
   TEXT_CARD_SYNTAX_OUTLINE: '#fff9eb',
-  /** 文字卡片配色：文字卡片普通词背景色。会影响纹理清晰度和视觉可读性。 */
+  /** 文字卡片配色：文字卡片普通词背景色。用于微调整体观感和稳定性。 */
   TEXT_CARD_NORMAL_BACKGROUND: '#bfd8f6',
-  /** 文字卡片配色：文字卡片普通词边框。会影响纹理清晰度和视觉可读性。 */
-  TEXT_CARD_NORMAL_BORDER: '#6c94c8',
-  /** 文字卡片配色：文字卡片普通词文字。会影响纹理清晰度和视觉可读性。 */
+  /** 文字卡片配色：文字卡片普通词文字色。用于微调整体观感和稳定性。 */
   TEXT_CARD_NORMAL_TEXT: '#19324f',
-  /** 文字卡片配色：文字卡片普通词描边。会影响纹理清晰度和视觉可读性。 */
+  /** 文字卡片配色：文字卡片普通词描边色。用于微调整体观感和稳定性。 */
   TEXT_CARD_NORMAL_OUTLINE: '#f4f8ff',
 } as const
 
 export const BOARD3D_CARD_TEXTURE_CONFIG = {
   /** 卡片纹理：卡片纹理尺寸。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_SIZE: 256,
+  /** 卡片纹理：Emoji卡片纹理尺寸。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
+  EMOJI_CARD_TEXTURE_SIZE: 512,
   /** 卡片纹理：卡片纹理内边距比率。会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_PAD_RATIO: 0.08,
-  /** 卡片纹理：卡片纹理阴影偏移X。会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_SHADOW_OFFSET_X: 5,
-  /** 卡片纹理：卡片纹理阴影偏移Y。会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_SHADOW_OFFSET_Y: 8,
   /** 卡片纹理：卡片纹理圆角半径比率。会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_CORNER_RADIUS_RATIO: 0.14,
-  /** 卡片纹理：卡片纹理阴影颜色。使用 CSS 颜色字符串；会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_SHADOW_COLOR: 'rgba(0, 0, 0, 0.2)',
-  /** 卡片纹理：透明颜色。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
-  TRANSPARENT_COLOR: 'rgba(0,0,0,0)',
-  /** 卡片纹理：卡片纹理边框宽度比率。会影响纹理清晰度和视觉可读性。 */
-  CARD_TEXTURE_BORDER_WIDTH_RATIO: 0.03,
-  /** 卡片纹理：卡片纹理边框内缩。会影响纹理清晰度和视觉可读性。 */
-  CARD_TEXTURE_BORDER_INSET: 2,
-  /** 卡片纹理：卡片纹理边框半径比率。会影响纹理清晰度和视觉可读性。 */
-  CARD_TEXTURE_BORDER_RADIUS_RATIO: 0.13,
   /** 卡片纹理：卡片纹理Emoji字体比率。会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_EMOJI_FONT_RATIO: 0.9,
   /** 卡片纹理：卡片纹理文字长词阈值。会影响纹理清晰度和视觉可读性。 */
@@ -307,12 +291,6 @@ export const BOARD3D_CARD_TEXTURE_CONFIG = {
   CARD_TEXTURE_LABEL_OFFSET_Y: 4,
   /** 卡片纹理：卡片纹理文字笔触宽度比率。会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO: 0.05,
-  /** 卡片纹理：卡片纹理标签阴影模糊半径。会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_LABEL_SHADOW_BLUR: 7,
-  /** 卡片纹理：卡片纹理标签阴影颜色。使用 CSS 颜色字符串；会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_LABEL_SHADOW_COLOR: 'rgba(0,0,0,0.25)',
-  /** 卡片纹理：卡片纹理无阴影颜色。使用 CSS 颜色字符串；会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_NO_SHADOW_COLOR: 'rgba(0,0,0,0)',
   /** 卡片纹理：卡片纹理Emoji字体族。使用合法 CSS 字体族；会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_EMOJI_FONT_FAMILY: '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
   /** 卡片纹理：卡片纹理文字字体族。使用合法 CSS 字体族；会影响纹理清晰度和视觉可读性。 */
@@ -321,99 +299,8 @@ export const BOARD3D_CARD_TEXTURE_CONFIG = {
   CARD_TEXTURE_DIRECTION_FONT_RATIO: 0.36,
   /** 卡片纹理：卡片纹理方向边缘内缩比率。会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO: 0.12,
-  /** 卡片纹理：卡片纹理方向阴影模糊半径。会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_DIRECTION_SHADOW_BLUR: 6,
-  /** 卡片纹理：卡片纹理方向阴影颜色。使用 CSS 颜色字符串；会影响光照层次、阴影稳定性和性能。 */
-  CARD_TEXTURE_DIRECTION_SHADOW_COLOR: 'rgba(255,255,255,0.8)',
   /** 卡片纹理：卡片纹理方向偏移Y。会影响纹理清晰度和视觉可读性。 */
   CARD_TEXTURE_DIRECTION_OFFSET_Y: 1,
-} as const
-
-export const BOARD3D_GROUND_TEXTURE_CONFIG = {
-  /** 地面纹理：地面纹理平铺单元尺寸。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_TILE_SIZE: 16,
-  /** 地面纹理：地面纹理画布尺寸。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_CANVAS_SIZE: 192,
-  /** 地面纹理：地面纹理基准颜色。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_BASE_COLOR: '#e9eef3',
-  /** 地面纹理：地面纹理色洗起始。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_WASH_START: 'rgba(255,255,255,0.1)',
-  /** 地面纹理：地面纹理色洗中段。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_WASH_MIDDLE: 'rgba(236,243,248,0.2)',
-  /** 地面纹理：地面纹理色洗结束。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_WASH_END: 'rgba(211,221,230,0.14)',
-  /** 地面纹理：地面纹理色洗中段位置。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_WASH_MIDDLE_AT: 0.5,
-  /** 地面纹理：地面纹理颗粒幅度。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_GRAIN_AMP: 16,
-  /** 地面纹理：地面纹理云纹幅度。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_CLOUD_AMP: 11,
-  /** 地面纹理：地面纹理暖色纹幅度。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_WARM_AMP: 6,
-  /** 地面纹理：地面纹理云纹频率。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_CLOUD_FREQ: 0.27,
-  /** 地面纹理：地面纹理暖色纹频率。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_WARM_FREQ: 0.16,
-  /** 地面纹理：地面纹理云纹随机种子X。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_CLOUD_SEED_X: 13,
-  /** 地面纹理：地面纹理云纹随机种子Y。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_CLOUD_SEED_Y: 23,
-  /** 地面纹理：地面纹理暖色纹随机种子X。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_WARM_SEED_X: 41,
-  /** 地面纹理：地面纹理暖色纹随机种子Y。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_WARM_SEED_Y: 7,
-  /** 地面纹理：地面纹理绿色通道颗粒权重。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_GREEN_GRAIN_WEIGHT: 0.85,
-  /** 地面纹理：地面纹理绿色通道云纹权重。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_GREEN_CLOUD_WEIGHT: 0.6,
-  /** 地面纹理：地面纹理蓝色通道颗粒权重。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_BLUE_GRAIN_WEIGHT: 0.65,
-  /** 地面纹理：地面纹理斑点数量。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_SPECKLE_COUNT: 220,
-  /** 地面纹理：地面纹理斑点半径基准。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_SPECKLE_RADIUS_BASE: 0.45,
-  /** 地面纹理：地面纹理斑点半径范围。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_SPECKLE_RADIUS_RANGE: 1.8,
-  /** 地面纹理：地面纹理斑点Alpha基准。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_SPECKLE_ALPHA_BASE: 0.01,
-  /** 地面纹理：地面纹理斑点Alpha范围。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_SPECKLE_ALPHA_RANGE: 0.025,
-  /** 地面纹理：地面纹理斑点随机种子X。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_SPECKLE_SEED_X: 17.1,
-  /** 地面纹理：地面纹理斑点随机种子Y。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_SPECKLE_SEED_Y: 31.7,
-  /** 地面纹理：地面纹理斑点随机种子半径。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_SPECKLE_SEED_RADIUS: 5.3,
-  /** 地面纹理：地面纹理斑点随机种子Alpha。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_SPECKLE_SEED_ALPHA: 9.2,
-  /** 地面纹理：地面纹理笔触数量。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_COUNT: 120,
-  /** 地面纹理：地面纹理笔触长度基准。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_LENGTH_BASE: 5,
-  /** 地面纹理：地面纹理笔触长度范围。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_LENGTH_RANGE: 11,
-  /** 地面纹理：地面纹理笔触Alpha基准。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_ALPHA_BASE: 0.018,
-  /** 地面纹理：地面纹理笔触Alpha范围。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_ALPHA_RANGE: 0.022,
-  /** 地面纹理：地面纹理笔触宽度基准。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_WIDTH_BASE: 0.5,
-  /** 地面纹理：地面纹理笔触宽度范围。会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_WIDTH_RANGE: 0.7,
-  /** 地面纹理：地面纹理笔触RGB。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
-  GROUND_TEXTURE_STROKE_RGB: '132,148,164',
-  /** 地面纹理：地面纹理笔触随机种子X。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_STROKE_SEED_X: 63.2,
-  /** 地面纹理：地面纹理笔触随机种子Y。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_STROKE_SEED_Y: 27.4,
-  /** 地面纹理：地面纹理笔触随机种子长度。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_STROKE_SEED_LENGTH: 11.8,
-  /** 地面纹理：地面纹理笔触随机种子角度。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_STROKE_SEED_ANGLE: 3.6,
-  /** 地面纹理：地面纹理笔触随机种子Alpha。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_STROKE_SEED_ALPHA: 7.9,
-  /** 地面纹理：地面纹理笔触随机种子宽度。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  GROUND_TEXTURE_STROKE_SEED_WIDTH: 19.3,
 } as const
 
 export const BOARD3D_SHADOW_TEXTURE_CONFIG = {

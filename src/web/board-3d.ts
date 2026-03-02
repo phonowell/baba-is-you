@@ -15,7 +15,6 @@ import {
   PCFSoftShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
-  RepeatWrapping,
   Scene,
   Shape,
   ShapeGeometry,
@@ -45,7 +44,6 @@ import {
   BOARD3D_RULE_VISUAL_CONFIG,
   BOARD3D_TEXT_CARD_STYLE_CONFIG,
   BOARD3D_CARD_TEXTURE_CONFIG,
-  BOARD3D_GROUND_TEXTURE_CONFIG,
   BOARD3D_SHADOW_TEXTURE_CONFIG,
 } from './board-3d-config.js'
 import { OBJECT_GLYPHS } from '../view/render-config.js'
@@ -74,9 +72,9 @@ type CardSpec = {
   facingDirection: Direction | null
   isEmojiLabel: boolean
   background: string
-  border: string
   textColor: string
   outlineColor: string
+  isText: boolean
 }
 
 export type EntityView = {
@@ -88,7 +86,7 @@ export type EntityView = {
   layerPriority: number
 }
 
-type CardMaterial = MeshStandardMaterial | MeshBasicMaterial
+type CardMaterial = MeshStandardMaterial
 
 type EntityNode = {
   mesh: Mesh<PlaneGeometry, CardMaterial>
@@ -149,6 +147,7 @@ const {
   CARD_MATERIAL_METALNESS,
   CARD_MATERIAL_EMISSIVE_COLOR,
   GROUND_EXPANDED_PADDING,
+  GROUND_BASE_COLOR,
   GROUND_MATERIAL_ROUGHNESS,
   GROUND_MATERIAL_METALNESS,
   PLAY_AREA_FILL_COLOR,
@@ -231,7 +230,6 @@ const {
 } = BOARD3D_POSTFX_CONFIG
 
 const {
-  EMOJI_CARD_TEXTURE_SIZE,
   MOVE_ANIM_MS,
   SPAWN_ANIM_MS,
   DESPAWN_ANIM_MS,
@@ -261,11 +259,9 @@ const {
 
 const {
   TEXT_CARD_SYNTAX_BACKGROUND,
-  TEXT_CARD_SYNTAX_BORDER,
   TEXT_CARD_SYNTAX_TEXT,
   TEXT_CARD_SYNTAX_OUTLINE,
   TEXT_CARD_NORMAL_BACKGROUND,
-  TEXT_CARD_NORMAL_BORDER,
   TEXT_CARD_NORMAL_TEXT,
   TEXT_CARD_NORMAL_OUTLINE,
 } = BOARD3D_TEXT_CARD_STYLE_CONFIG
@@ -273,14 +269,7 @@ const {
 const {
   CARD_TEXTURE_SIZE,
   CARD_TEXTURE_PAD_RATIO,
-  CARD_TEXTURE_SHADOW_OFFSET_X,
-  CARD_TEXTURE_SHADOW_OFFSET_Y,
   CARD_TEXTURE_CORNER_RADIUS_RATIO,
-  CARD_TEXTURE_SHADOW_COLOR,
-  TRANSPARENT_COLOR,
-  CARD_TEXTURE_BORDER_WIDTH_RATIO,
-  CARD_TEXTURE_BORDER_INSET,
-  CARD_TEXTURE_BORDER_RADIUS_RATIO,
   CARD_TEXTURE_EMOJI_FONT_RATIO,
   CARD_TEXTURE_TEXT_LONG_THRESHOLD,
   CARD_TEXTURE_TEXT_MEDIUM_THRESHOLD,
@@ -289,62 +278,13 @@ const {
   CARD_TEXTURE_TEXT_SHORT_FONT_SIZE,
   CARD_TEXTURE_LABEL_OFFSET_Y,
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO,
-  CARD_TEXTURE_LABEL_SHADOW_BLUR,
-  CARD_TEXTURE_LABEL_SHADOW_COLOR,
-  CARD_TEXTURE_NO_SHADOW_COLOR,
   CARD_TEXTURE_EMOJI_FONT_FAMILY,
   CARD_TEXTURE_TEXT_FONT_FAMILY,
   CARD_TEXTURE_DIRECTION_FONT_RATIO,
   CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO,
-  CARD_TEXTURE_DIRECTION_SHADOW_BLUR,
-  CARD_TEXTURE_DIRECTION_SHADOW_COLOR,
   CARD_TEXTURE_DIRECTION_OFFSET_Y,
+  EMOJI_CARD_TEXTURE_SIZE,
 } = BOARD3D_CARD_TEXTURE_CONFIG
-
-const {
-  GROUND_TEXTURE_TILE_SIZE,
-  GROUND_TEXTURE_CANVAS_SIZE,
-  GROUND_TEXTURE_BASE_COLOR,
-  GROUND_TEXTURE_WASH_START,
-  GROUND_TEXTURE_WASH_MIDDLE,
-  GROUND_TEXTURE_WASH_END,
-  GROUND_TEXTURE_WASH_MIDDLE_AT,
-  GROUND_TEXTURE_GRAIN_AMP,
-  GROUND_TEXTURE_CLOUD_AMP,
-  GROUND_TEXTURE_WARM_AMP,
-  GROUND_TEXTURE_CLOUD_FREQ,
-  GROUND_TEXTURE_WARM_FREQ,
-  GROUND_TEXTURE_CLOUD_SEED_X,
-  GROUND_TEXTURE_CLOUD_SEED_Y,
-  GROUND_TEXTURE_WARM_SEED_X,
-  GROUND_TEXTURE_WARM_SEED_Y,
-  GROUND_TEXTURE_GREEN_GRAIN_WEIGHT,
-  GROUND_TEXTURE_GREEN_CLOUD_WEIGHT,
-  GROUND_TEXTURE_BLUE_GRAIN_WEIGHT,
-  GROUND_TEXTURE_SPECKLE_COUNT,
-  GROUND_TEXTURE_SPECKLE_RADIUS_BASE,
-  GROUND_TEXTURE_SPECKLE_RADIUS_RANGE,
-  GROUND_TEXTURE_SPECKLE_ALPHA_BASE,
-  GROUND_TEXTURE_SPECKLE_ALPHA_RANGE,
-  GROUND_TEXTURE_SPECKLE_SEED_X,
-  GROUND_TEXTURE_SPECKLE_SEED_Y,
-  GROUND_TEXTURE_SPECKLE_SEED_RADIUS,
-  GROUND_TEXTURE_SPECKLE_SEED_ALPHA,
-  GROUND_TEXTURE_STROKE_COUNT,
-  GROUND_TEXTURE_STROKE_LENGTH_BASE,
-  GROUND_TEXTURE_STROKE_LENGTH_RANGE,
-  GROUND_TEXTURE_STROKE_ALPHA_BASE,
-  GROUND_TEXTURE_STROKE_ALPHA_RANGE,
-  GROUND_TEXTURE_STROKE_WIDTH_BASE,
-  GROUND_TEXTURE_STROKE_WIDTH_RANGE,
-  GROUND_TEXTURE_STROKE_RGB,
-  GROUND_TEXTURE_STROKE_SEED_X,
-  GROUND_TEXTURE_STROKE_SEED_Y,
-  GROUND_TEXTURE_STROKE_SEED_LENGTH,
-  GROUND_TEXTURE_STROKE_SEED_ANGLE,
-  GROUND_TEXTURE_STROKE_SEED_ALPHA,
-  GROUND_TEXTURE_STROKE_SEED_WIDTH,
-} = BOARD3D_GROUND_TEXTURE_CONFIG
 
 const {
   SHADOW_TEXTURE_SIZE,
@@ -382,9 +322,6 @@ const fnv1a = (value: string): number => {
 const fract = (value: number): number => value - Math.floor(value)
 
 const hash01 = (seed: number): number => fract(Math.sin(seed) * 43758.5453123)
-
-const hash2d01 = (x: number, y: number): number =>
-  fract(Math.sin(x * 127.1 + y * 311.7) * 43758.5453123)
 
 export const emojiMicroStretch = (
   nowMs: number,
@@ -529,7 +466,10 @@ const labelForItem = (item: Item): string => {
   return OBJECT_GLYPHS[item.name] ?? item.name.slice(0, 2).toUpperCase()
 }
 
-const isEmojiItem = (item: Item): boolean => HAS_EMOJI.test(labelForItem(item))
+const isEmojiItem = (item: Item): boolean => {
+  if (item.isText) return false
+  return HAS_EMOJI.test(labelForItem(item))
+}
 
 const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec => {
   const label = labelForItem(item)
@@ -543,9 +483,9 @@ const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec => {
         facingDirection: null,
         isEmojiLabel: false,
         background: TEXT_CARD_SYNTAX_BACKGROUND,
-        border: TEXT_CARD_SYNTAX_BORDER,
         textColor: TEXT_CARD_SYNTAX_TEXT,
         outlineColor: TEXT_CARD_SYNTAX_OUTLINE,
+        isText: true,
       }
     }
     return {
@@ -554,9 +494,9 @@ const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec => {
       facingDirection: null,
       isEmojiLabel: false,
       background: TEXT_CARD_NORMAL_BACKGROUND,
-      border: TEXT_CARD_NORMAL_BORDER,
       textColor: TEXT_CARD_NORMAL_TEXT,
       outlineColor: TEXT_CARD_NORMAL_OUTLINE,
+      isText: true,
     }
   }
 
@@ -566,7 +506,10 @@ const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec => {
     label,
     facingDirection,
     isEmojiLabel,
-    ...palette,
+    background: palette.background,
+    textColor: palette.textColor,
+    outlineColor: palette.outlineColor,
+    isText: false,
   }
 }
 
@@ -656,44 +599,16 @@ const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture =>
   canvas.width = textureSize
   canvas.height = textureSize
   const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to create 2D drawing context.')
+  if (!ctx) throw new Error('Failed to create card texture context.')
 
   const pad = textureSize * CARD_TEXTURE_PAD_RATIO
   const size = textureSize - pad * 2
+  const radius = textureSize * CARD_TEXTURE_CORNER_RADIUS_RATIO
 
   ctx.clearRect(0, 0, textureSize, textureSize)
-  ctx.fillStyle = TRANSPARENT_COLOR
-  ctx.fillRect(0, 0, textureSize, textureSize)
-
-  if (!spec.isEmojiLabel) {
-    roundRectPath(
-      ctx,
-      pad + CARD_TEXTURE_SHADOW_OFFSET_X,
-      pad + CARD_TEXTURE_SHADOW_OFFSET_Y,
-      size,
-      size,
-      textureSize * CARD_TEXTURE_CORNER_RADIUS_RATIO,
-    )
-    ctx.fillStyle = CARD_TEXTURE_SHADOW_COLOR
-    ctx.fill()
-
-    roundRectPath(ctx, pad, pad, size, size, textureSize * CARD_TEXTURE_CORNER_RADIUS_RATIO)
-    ctx.fillStyle = spec.background
-    ctx.fill()
-
-    ctx.lineWidth = textureSize * CARD_TEXTURE_BORDER_WIDTH_RATIO
-    ctx.strokeStyle = spec.border
-    const borderInset = CARD_TEXTURE_BORDER_INSET
-    roundRectPath(
-      ctx,
-      pad + borderInset,
-      pad + borderInset,
-      size - borderInset * 2,
-      size - borderInset * 2,
-      textureSize * CARD_TEXTURE_BORDER_RADIUS_RATIO,
-    )
-    ctx.stroke()
-  }
+  roundRectPath(ctx, pad, pad, size, size, radius)
+  ctx.fillStyle = spec.background
+  ctx.fill()
 
   const labelLength = [...spec.label].length
   const fontSize = spec.isEmojiLabel
@@ -703,51 +618,41 @@ const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture =>
       : labelLength >= CARD_TEXTURE_TEXT_MEDIUM_THRESHOLD
         ? CARD_TEXTURE_TEXT_MEDIUM_FONT_SIZE
         : CARD_TEXTURE_TEXT_SHORT_FONT_SIZE
+
   const labelOffsetY = spec.isEmojiLabel ? 0 : CARD_TEXTURE_LABEL_OFFSET_Y
-  ctx.fillStyle = spec.textColor
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
+  ctx.fillStyle = spec.textColor
   ctx.font = spec.isEmojiLabel
     ? `${fontSize}px ${CARD_TEXTURE_EMOJI_FONT_FAMILY}`
     : `700 ${fontSize}px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
+
   if (!spec.isEmojiLabel) {
     ctx.lineWidth = textureSize * CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO
     ctx.lineJoin = 'round'
     ctx.strokeStyle = spec.outlineColor
     ctx.strokeText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
   }
-  ctx.shadowBlur = spec.isEmojiLabel ? 0 : CARD_TEXTURE_LABEL_SHADOW_BLUR
-  ctx.shadowColor = spec.isEmojiLabel
-    ? CARD_TEXTURE_NO_SHADOW_COLOR
-    : CARD_TEXTURE_LABEL_SHADOW_COLOR
   ctx.fillText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
 
   if (spec.facingDirection) {
     const marker = BELT_DIRECTION_GLYPHS[spec.facingDirection]
-    const markerFontSize = Math.round(
-      textureSize * CARD_TEXTURE_DIRECTION_FONT_RATIO,
-    )
-    const edgeInset =
-      pad + textureSize * CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO
-    const cx = textureSize / 2
-    const cy = textureSize / 2
+    const markerFontSize = Math.round(textureSize * CARD_TEXTURE_DIRECTION_FONT_RATIO)
+    const edgeInset = pad + textureSize * CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO
+    const center = textureSize / 2
     const markerX =
       spec.facingDirection === 'left'
         ? edgeInset
         : spec.facingDirection === 'right'
           ? textureSize - edgeInset
-          : cx
+          : center
     const markerY =
       spec.facingDirection === 'up'
         ? edgeInset
         : spec.facingDirection === 'down'
           ? textureSize - edgeInset
-          : cy
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
+          : center
     ctx.font = `${markerFontSize}px ${CARD_TEXTURE_EMOJI_FONT_FAMILY}`
-    ctx.shadowBlur = CARD_TEXTURE_DIRECTION_SHADOW_BLUR
-    ctx.shadowColor = CARD_TEXTURE_DIRECTION_SHADOW_COLOR
     ctx.fillText(marker, markerX, markerY + CARD_TEXTURE_DIRECTION_OFFSET_Y)
   }
 
@@ -756,121 +661,6 @@ const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture =>
   texture.minFilter = LinearFilter
   texture.magFilter = LinearFilter
   texture.anisotropy = anisotropy
-  return texture
-}
-
-const createGroundTexture = (): CanvasTexture => {
-  const canvas = document.createElement('canvas')
-  canvas.width = GROUND_TEXTURE_CANVAS_SIZE
-  canvas.height = GROUND_TEXTURE_CANVAS_SIZE
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to create ground texture context.')
-
-  ctx.fillStyle = GROUND_TEXTURE_BASE_COLOR
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  const wash = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
-  wash.addColorStop(0, GROUND_TEXTURE_WASH_START)
-  wash.addColorStop(GROUND_TEXTURE_WASH_MIDDLE_AT, GROUND_TEXTURE_WASH_MIDDLE)
-  wash.addColorStop(1, GROUND_TEXTURE_WASH_END)
-  ctx.fillStyle = wash
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const pixels = imageData.data
-  for (let y = 0; y < canvas.height; y += 1) {
-    for (let x = 0; x < canvas.width; x += 1) {
-      const index = (y * canvas.width + x) * 4
-      const grain = (hash2d01(x, y) - 0.5) * GROUND_TEXTURE_GRAIN_AMP
-      const cloud =
-        (hash2d01(
-          x * GROUND_TEXTURE_CLOUD_FREQ + GROUND_TEXTURE_CLOUD_SEED_X,
-          y * GROUND_TEXTURE_CLOUD_FREQ + GROUND_TEXTURE_CLOUD_SEED_Y,
-        ) -
-          0.5) *
-        GROUND_TEXTURE_CLOUD_AMP
-      const warm =
-        (hash2d01(
-          x * GROUND_TEXTURE_WARM_FREQ + GROUND_TEXTURE_WARM_SEED_X,
-          y * GROUND_TEXTURE_WARM_FREQ + GROUND_TEXTURE_WARM_SEED_Y,
-        ) -
-          0.5) *
-        GROUND_TEXTURE_WARM_AMP
-      const r = pixels[index + 0] ?? 0
-      const g = pixels[index + 1] ?? 0
-      const b = pixels[index + 2] ?? 0
-      pixels[index + 0] = Math.max(0, Math.min(255, Math.round(r + grain + cloud)))
-      pixels[index + 1] = Math.max(
-        0,
-        Math.min(
-          255,
-          Math.round(
-            g +
-              grain * GROUND_TEXTURE_GREEN_GRAIN_WEIGHT +
-              cloud * GROUND_TEXTURE_GREEN_CLOUD_WEIGHT +
-              warm,
-          ),
-        ),
-      )
-      pixels[index + 2] = Math.max(
-        0,
-        Math.min(
-          255,
-          Math.round(b + grain * GROUND_TEXTURE_BLUE_GRAIN_WEIGHT - warm),
-        ),
-      )
-    }
-  }
-  ctx.putImageData(imageData, 0, 0)
-
-  for (let i = 0; i < GROUND_TEXTURE_SPECKLE_COUNT; i += 1) {
-    const seed = i + 1
-    const x = hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_X) * canvas.width
-    const y = hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_Y) * canvas.height
-    const radius =
-      GROUND_TEXTURE_SPECKLE_RADIUS_BASE +
-      hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_RADIUS) *
-        GROUND_TEXTURE_SPECKLE_RADIUS_RANGE
-    const alpha =
-      GROUND_TEXTURE_SPECKLE_ALPHA_BASE +
-      hash01(seed * GROUND_TEXTURE_SPECKLE_SEED_ALPHA) *
-        GROUND_TEXTURE_SPECKLE_ALPHA_RANGE
-    ctx.beginPath()
-    ctx.fillStyle = `rgba(255,255,255,${alpha})`
-    ctx.arc(x, y, radius, 0, Math.PI * 2)
-    ctx.fill()
-  }
-
-  for (let i = 0; i < GROUND_TEXTURE_STROKE_COUNT; i += 1) {
-    const seed = i + 1
-    const x = hash01(seed * GROUND_TEXTURE_STROKE_SEED_X) * canvas.width
-    const y = hash01(seed * GROUND_TEXTURE_STROKE_SEED_Y) * canvas.height
-    const length =
-      GROUND_TEXTURE_STROKE_LENGTH_BASE +
-      hash01(seed * GROUND_TEXTURE_STROKE_SEED_LENGTH) *
-        GROUND_TEXTURE_STROKE_LENGTH_RANGE
-    const angle = hash01(seed * GROUND_TEXTURE_STROKE_SEED_ANGLE) * Math.PI * 2
-    const alpha =
-      GROUND_TEXTURE_STROKE_ALPHA_BASE +
-      hash01(seed * GROUND_TEXTURE_STROKE_SEED_ALPHA) *
-        GROUND_TEXTURE_STROKE_ALPHA_RANGE
-    ctx.lineWidth =
-      GROUND_TEXTURE_STROKE_WIDTH_BASE +
-      hash01(seed * GROUND_TEXTURE_STROKE_SEED_WIDTH) *
-        GROUND_TEXTURE_STROKE_WIDTH_RANGE
-    ctx.strokeStyle = `rgba(${GROUND_TEXTURE_STROKE_RGB},${alpha})`
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + Math.cos(angle) * length, y + Math.sin(angle) * length)
-    ctx.stroke()
-  }
-
-  const texture = new CanvasTexture(canvas)
-  texture.wrapS = RepeatWrapping
-  texture.wrapT = RepeatWrapping
-  texture.colorSpace = SRGBColorSpace
-  texture.minFilter = LinearFilter
-  texture.magFilter = LinearFilter
   return texture
 }
 
@@ -1025,7 +815,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   let groundMesh: Mesh<PlaneGeometry, MeshStandardMaterial> | null = null
   let playAreaFillMesh: Mesh<ShapeGeometry, MeshStandardMaterial> | null = null
   let playAreaOutline: Line<BufferGeometry, LineBasicMaterial> | null = null
-  let groundTexture: CanvasTexture | null = null
   let rafId = 0
   let frameActive = false
   let needsRender = true
@@ -1053,25 +842,18 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       textureCache.set(spec.key, texture)
     }
 
-    const material = spec.isEmojiLabel
-      ? new MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-          alphaTest: CARD_MATERIAL_ALPHA_TEST,
-          side: DoubleSide,
-        })
-      : new MeshStandardMaterial({
-          map: texture,
-          transparent: true,
-          alphaTest: CARD_MATERIAL_ALPHA_TEST,
-          roughness: CARD_MATERIAL_ROUGHNESS,
-          metalness: CARD_MATERIAL_METALNESS,
-          emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
-          emissiveIntensity: item.isText
-            ? preset.materials.textEmissiveIntensity
-            : preset.materials.objectEmissiveIntensity,
-          side: DoubleSide,
-        })
+    const material = new MeshStandardMaterial({
+      map: texture,
+      transparent: true,
+      alphaTest: CARD_MATERIAL_ALPHA_TEST,
+      roughness: CARD_MATERIAL_ROUGHNESS,
+      metalness: CARD_MATERIAL_METALNESS,
+      emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
+      emissiveIntensity: spec.isText
+        ? preset.materials.textEmissiveIntensity
+        : preset.materials.objectEmissiveIntensity,
+      side: DoubleSide,
+    })
     materialCache.set(spec.key, material)
     return material
   }
@@ -1215,10 +997,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       groundMesh.material.dispose()
       groundMesh = null
     }
-    if (groundTexture) {
-      groundTexture.dispose()
-      groundTexture = null
-    }
 
     const expandedWidth = Math.max(
       boardWidth + GROUND_EXPANDED_PADDING,
@@ -1229,14 +1007,8 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       GROUND_EXPANDED_MIN_SIZE,
     )
     const geometry = new PlaneGeometry(expandedWidth, expandedHeight)
-    groundTexture = createGroundTexture()
-    groundTexture.repeat.set(
-      Math.max(1, expandedWidth / GROUND_TEXTURE_TILE_SIZE),
-      Math.max(1, expandedHeight / GROUND_TEXTURE_TILE_SIZE),
-    )
-    groundTexture.needsUpdate = true
     const material = new MeshStandardMaterial({
-      map: groundTexture,
+      color: new Color(GROUND_BASE_COLOR),
       roughness: GROUND_MATERIAL_ROUGHNESS,
       metalness: GROUND_MATERIAL_METALNESS,
     })
@@ -1673,8 +1445,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       playAreaOutline.material.dispose()
     }
     playAreaOutline = null
-    if (groundTexture) groundTexture.dispose()
-    groundTexture = null
 
     composer.dispose()
     renderer.dispose()
