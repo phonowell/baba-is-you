@@ -162,3 +162,34 @@ test('applyTransforms supports LEVEL target as concrete object transform', () =>
   assert.equal(result.items[0]?.name, 'level')
   assert.equal(result.items[0].isText, false)
 })
+
+test('applyTransforms respects EMPTY condition for transform rules', () => {
+  const items = [createItem(1, 'rock', 1, 0, false)]
+  const rules: Rule[] = [
+    {
+      subject: 'empty',
+      object: 'baba',
+      kind: 'transform',
+      condition: { kind: 'on', object: 'rock' },
+    },
+    {
+      subject: 'empty',
+      object: 'keke',
+      kind: 'transform',
+      condition: { kind: 'near', object: 'rock' },
+    },
+  ]
+
+  const result = applyTransforms(items, runtimeFor(items, rules, 3, 1))
+  const spawnedKeke = result.items
+    .filter((item) => item.name === 'keke' && !item.isText)
+    .map((item) => item.x)
+    .sort((a, b) => a - b)
+  const spawnedBabaCount = result.items.filter(
+    (item) => item.name === 'baba' && !item.isText,
+  ).length
+
+  assert.equal(result.changed, true)
+  assert.equal(spawnedBabaCount, 0)
+  assert.deepEqual(spawnedKeke, [0, 2])
+})

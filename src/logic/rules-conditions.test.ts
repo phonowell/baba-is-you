@@ -74,6 +74,21 @@ test('collectRules supports LONELY and NOT LONELY conditions', () => {
   assert.deepEqual(keys, ['baba:property:you[lonely]', 'keke:property:win[!lonely]'])
 })
 
+test('collectRules supports NOT NOT LONELY as non-negated lonely', () => {
+  const items = [
+    createText(1, 'not', 0, 0),
+    createText(2, 'not', 1, 0),
+    createText(3, 'lonely', 2, 0),
+    createText(4, 'baba', 3, 0),
+    createText(5, 'is', 4, 0),
+    createText(6, 'you', 5, 0),
+  ]
+
+  const keys = toRuleKeys(items, 6, 1)
+
+  assert.deepEqual(keys, ['baba:property:you[lonely]'])
+})
+
 test('collectRules supports FACING condition before IS', () => {
   const items = [
     createText(1, 'baba', 0, 0),

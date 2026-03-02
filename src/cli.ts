@@ -35,6 +35,7 @@ let levelIndex = firstLevelIndex
 let history: GameState[] = []
 let state = createInitialState(levelData[levelIndex] ?? firstLevel, levelIndex)
 let didExit = false
+let terminalCleaned = false
 
 const resetLevel = (index: number): void => {
   const nextLevel = levelData[index]
@@ -60,15 +61,22 @@ const clearCanvas = (): void => {
   process.stdout.write('\x1b[2J\x1b[H')
 }
 
-const exitApp = (code = 0): never => {
-  if (didExit) process.exit(code)
-  didExit = true
+const cleanupTerminal = (): void => {
+  if (terminalCleaned) return
+  terminalCleaned = true
 
   if (process.stdin.isTTY) {
     process.stdin.setRawMode(false)
     process.stdin.pause()
   }
   clearCanvas()
+}
+
+const exitApp = (code = 0): never => {
+  if (didExit) process.exit(code)
+  didExit = true
+
+  cleanupTerminal()
   process.exit(code)
 }
 
@@ -180,6 +188,24 @@ process.stdin.on('keypress', (_str, key) => {
 
 process.on('SIGINT', () => {
   exitApp(0)
+})
+
+process.on('SIGTERM', () => {
+  exitApp(0)
+})
+
+process.on('exit', () => {
+  cleanupTerminal()
+})
+
+process.on('uncaughtException', (error) => {
+  console.error(error)
+  exitApp(1)
+})
+
+process.on('unhandledRejection', (reason) => {
+  console.error(reason)
+  exitApp(1)
 })
 
 draw()

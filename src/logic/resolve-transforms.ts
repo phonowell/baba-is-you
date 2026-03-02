@@ -1,8 +1,9 @@
+import { createEmptyMatchContext, resolveEmptyRuleTargetsAt } from './empty.js'
 import { resolveRuleTargets } from './helpers.js'
 import { matchesRuleSubject } from './rule-match.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
-import type { LevelItem, Rule } from './types.js'
+import type { LevelItem } from './types.js'
 
 const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
   if (target === 'empty') return null
@@ -62,19 +63,6 @@ const createFromEmpty = (
     y,
     isText: false,
   }
-}
-
-const resolveEmptyTargets = (rules: Rule[]): string[] => {
-  const yes = new Set<string>()
-  const no = new Set<string>()
-  for (const rule of rules) {
-    if (rule.kind !== 'transform') continue
-    if (rule.subject !== 'empty') continue
-    if (rule.subjectNegated) continue
-    if (rule.objectNegated) no.add(rule.object)
-    else yes.add(rule.object)
-  }
-  return Array.from(yes).filter((target) => !no.has(target))
 }
 
 export const applyTransforms = (
@@ -145,8 +133,14 @@ export const applyTransforms = (
       next.push({ ...rest, id: nextId++ })
   }
 
-  const emptyTargets = resolveEmptyTargets(transformRules)
-  if (emptyTargets.length) {
+  const hasEmptyTransformRules = transformRules.some(
+    (rule) =>
+      rule.kind === 'transform' &&
+      rule.subject === 'empty' &&
+      !rule.subjectNegated,
+  )
+  if (hasEmptyTransformRules) {
+    const emptyContext = createEmptyMatchContext(next, runtime.rules, width, height)
     const occupied = new Set<number>()
     for (const item of next) occupied.add(item.y * width + item.x)
 
@@ -154,6 +148,14 @@ export const applyTransforms = (
       for (let x = 0; x < width; x += 1) {
         const cellKey = y * width + x
         if (occupied.has(cellKey)) continue
+        const emptyTargets = resolveEmptyRuleTargetsAt(
+          transformRules,
+          emptyContext,
+          x,
+          y,
+          'transform',
+        )
+        if (!emptyTargets.length) continue
 
         for (const target of emptyTargets) {
           const spawned = createFromEmpty(nextId, x, y, target)

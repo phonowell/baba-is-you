@@ -13,7 +13,7 @@
   - 属性词：以 `src/logic/types.ts` 的 `CORE_PROPERTIES` 为准
 - 修改规则词表时同步：`src/logic/types.ts`、`src/logic/rules*.ts`、`src/view/syntax-words.ts`、`src/view/render-config.ts`、相关测试
 - CLI 渲染约束：双宽格子、文本两字母码、语法词高亮；避免破坏 `src/view/render*.ts` 的输出兼容
-- Web 渲染约束：`src/web/app.ts` + `src/web/board-3d.ts`；保持可降级与可释放（`dispose`）
+- Web 渲染约束：`src/web/app.ts` + `src/web/board-3d.ts`；3D 渲染是唯一场景，不实现 2D/无 WebGL 回退；必须保证可释放（`dispose`）
 
 ## 技术栈
 - Node.js + TypeScript + ESM

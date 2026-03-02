@@ -26,6 +26,8 @@ export type Keypress = {
 }
 
 export const mapGameKeypress = (key: Keypress): GameCommand => {
+  if (key.ctrl || key.meta) return { type: 'noop' }
+
   switch (key.name) {
     case 'up':
       return { type: 'move', direction: 'up' }
@@ -61,6 +63,8 @@ export const mapGameKeypress = (key: Keypress): GameCommand => {
 }
 
 export const mapMenuKeypress = (key: Keypress): MenuCommand => {
+  if (key.ctrl || key.meta) return { type: 'noop' }
+
   switch (key.name) {
     case 'up':
     case 'w':

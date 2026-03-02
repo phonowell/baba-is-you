@@ -3,16 +3,24 @@ import { parseLevel } from '../logic/parse-level.js'
 import { createInitialState, markCampaignComplete } from '../logic/state.js'
 import { step } from '../logic/step.js'
 import { mapGameKeyboardEvent, mapMenuKeyboardEvent } from '../view/input-web.js'
-import { renderHtml } from '../view/render-html.js'
 import { MENU_WINDOW_SIZE } from '../view/render-menu.js'
-import { renderMenuHtml } from '../view/render-menu-html.js'
-import { statusLine } from '../view/status-line.js'
+import { runGameCommand, runMenuCommand } from './app-commands.js'
+import { createDraw } from './app-draw.js'
+import { createRootClickHandler, createWindowKeydownHandler } from './app-events.js'
+import { registerAppLifecycle } from './app-lifecycle.js'
+import { applyWithTransition, computeCellSizeForState } from './app-view-helpers.js'
 import { createBoard3dRenderer } from './board-3d.js'
 
 import type { GameState } from '../logic/types.js'
+import type { DrawRefs } from './app-draw.js'
 
 type AppMode = 'menu' | 'game'
 const GAME_INPUT_COOLDOWN_MS = 100
+const APP_DISPOSE_KEY = '__baba_is_you_web_dispose__'
+
+type AppGlobal = typeof globalThis & {
+  __baba_is_you_web_dispose__?: () => void
+}
 
 const levelData = levels.map((level) => parseLevel(level))
 const firstLevel = levelData[0]
@@ -23,6 +31,9 @@ const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 const root = globalThis.document.getElementById('app')
 if (!root) throw new Error('Missing #app container.')
+
+const appGlobal = globalThis as AppGlobal
+appGlobal[APP_DISPOSE_KEY]?.()
 
 const firstLevelIndex = 0
 const latestLevelIndex = levelData.length - 1
@@ -35,12 +46,19 @@ let state = createInitialState(levelData[levelIndex] ?? firstLevel, levelIndex)
 let showReferenceDialog = false
 let lastGameActionMs = 0
 
-let prevMode: AppMode | null = null
-let prevShowDialog = false
-let prevBoardSignature: string | null = null
-let boardEl: HTMLElement | null = null
-let statusEl: HTMLElement | null = null
-const board3dRenderer = createBoard3dRenderer()
+const drawRefs: DrawRefs = {
+  prevMode: null,
+  prevShowDialog: false,
+  prevBoardSignature: null,
+  boardEl: null,
+  statusEl: null,
+}
+let board3dRenderer: ReturnType<typeof createBoard3dRenderer> | null = null
+
+const ensureBoard3dRenderer = (): ReturnType<typeof createBoard3dRenderer> => {
+  if (!board3dRenderer) board3dRenderer = createBoard3dRenderer()
+  return board3dRenderer
+}
 
 const closeReferenceDialog = (): void => {
   showReferenceDialog = false
@@ -65,72 +83,30 @@ const returnToMenu = (): void => {
   menuSelectedLevelIndex = levelIndex
   history = []
   closeReferenceDialog()
+  board3dRenderer?.unmount()
   mode = 'menu'
 }
 
-const computeCellSize = (): number => {
-  const gap = 1
-  const availW = window.innerWidth - 18
-  const availH = window.innerHeight - 104
-  const maxByW = Math.floor((availW - gap * (state.width - 1)) / state.width)
-  const maxByH = Math.floor((availH - gap * (state.height - 1)) / state.height)
-  return Math.min(44, Math.max(12, Math.min(maxByW, maxByH)))
-}
-
-const applyWithTransition = (fn: () => void): void => {
-  if (!reducedMotionQuery.matches && document.startViewTransition) {
-    document.startViewTransition(fn)
-  } else {
-    fn()
-  }
-}
-
-const draw = (): void => {
-  document.title =
-    mode === 'game' ? `${levelIndex + 1}. ${state.title} – Baba Is You` : 'Baba Is You'
-  document.body.classList.toggle('game-3d-fullscreen', mode === 'game')
-
-  if (mode === 'game') {
-    document.documentElement.style.setProperty('--cell-size', `${computeCellSize()}px`)
-  }
-
-  const modeChanged = mode !== prevMode
-  const dialogChanged = showReferenceDialog !== prevShowDialog
-  const nextBoardSignature =
-    mode === 'game' ? `${levelIndex}:${state.width}x${state.height}` : null
-  const boardChanged = nextBoardSignature !== prevBoardSignature
-  prevMode = mode
-  prevShowDialog = showReferenceDialog
-  prevBoardSignature = nextBoardSignature
-
-  if (modeChanged || dialogChanged || mode === 'menu' || boardChanged) {
-    const html =
-      mode === 'menu'
-        ? renderMenuHtml({ levels: menuLevels, selectedLevelIndex: menuSelectedLevelIndex })
-        : renderHtml(state, { showReferenceDialog })
-
-    applyWithTransition(() => {
-      root.innerHTML = html
-      boardEl = root.querySelector<HTMLElement>('.board')
-      statusEl = root.querySelector<HTMLElement>('.status')
-      if (mode === 'game') {
-        if (boardEl) {
-          board3dRenderer.mount(boardEl)
-          board3dRenderer.sync(state)
-        }
-      }
-    })
-    return
-  }
-
-  if (mode === 'game') {
-    if (boardEl) {
-      board3dRenderer.mount(boardEl)
-      board3dRenderer.sync(state)
-    }
-  }
-  if (statusEl) statusEl.textContent = statusLine(state.status)
-}
+const draw = createDraw({
+  root,
+  menuLevels,
+  refs: drawRefs,
+  getMode: () => mode,
+  getLevelIndex: () => levelIndex,
+  getState: () => state,
+  getShowReferenceDialog: () => showReferenceDialog,
+  getMenuSelectedLevelIndex: () => menuSelectedLevelIndex,
+  computeCellSize: (boardState) => computeCellSizeForState(boardState),
+  applyWithTransition: (fn) => applyWithTransition(reducedMotionQuery, fn),
+  unmountBoard3d: () => {
+    board3dRenderer?.unmount()
+  },
+  mountAndSyncBoard3d: (board, boardState) => {
+    const renderer = ensureBoard3dRenderer()
+    renderer.mount(board)
+    renderer.sync(boardState)
+  },
+})
 
 const handleMove = (direction: Parameters<typeof step>[1]): boolean => {
   if (state.status !== 'playing') return false
@@ -143,156 +119,76 @@ const handleMove = (direction: Parameters<typeof step>[1]): boolean => {
   return true
 }
 
-const handleGameCommand = (
-  cmd: ReturnType<typeof mapGameKeyboardEvent>,
-): boolean => {
-  switch (cmd.type) {
-    case 'move':
-      return handleMove(cmd.direction)
-    case 'wait':
-      handleMove(null)
-      return true
-    case 'undo':
-      if (!history.length) return false
+const handleGameCommand = (cmd: ReturnType<typeof mapGameKeyboardEvent>): boolean =>
+  runGameCommand(cmd, {
+    status: state.status,
+    levelIndex,
+    levelCount: levelData.length,
+    canUndo: history.length > 0,
+    move: handleMove,
+    undo: () => {
       state = history.pop() ?? state
-      return true
-    case 'restart':
-      if (state.status === 'complete') {
-        resetLevel(0)
-        return true
-      }
-      resetLevel(levelIndex)
-      return true
-    case 'next':
-      if (state.status === 'win') {
-        if (levelIndex === levelData.length - 1) {
-          state = markCampaignComplete(state)
-          return true
-        }
-        resetLevel(levelIndex + 1)
-        return true
-      }
+    },
+    resetLevel,
+    markCampaignComplete: () => {
+      state = markCampaignComplete(state)
+    },
+    returnToMenu,
+  })
 
-      if (state.status === 'complete') {
-        resetLevel(0)
-        return true
-      }
+const handleMenuCommand = (cmd: ReturnType<typeof mapMenuKeyboardEvent>): boolean =>
+  runMenuCommand(cmd, {
+    selectedLevelIndex: menuSelectedLevelIndex,
+    latestLevelIndex,
+    pageSize: MENU_WINDOW_SIZE,
+    setSelectedLevelIndex: (index) => {
+      menuSelectedLevelIndex = index
+    },
+    enterGame,
+  })
 
-      return false
-    case 'back-menu':
-      returnToMenu()
-      return true
-    case 'noop':
-      return false
-  }
-}
-
-const handleMenuCommand = (
-  cmd: ReturnType<typeof mapMenuKeyboardEvent>,
-): boolean => {
-  switch (cmd.type) {
-    case 'up':
-      if (menuSelectedLevelIndex > 0) menuSelectedLevelIndex -= 1
-      return true
-    case 'down':
-      if (menuSelectedLevelIndex < latestLevelIndex) menuSelectedLevelIndex += 1
-      return true
-    case 'page-left':
-      menuSelectedLevelIndex = Math.max(
-        0,
-        menuSelectedLevelIndex - MENU_WINDOW_SIZE,
-      )
-      return true
-    case 'page-right':
-      menuSelectedLevelIndex = Math.min(
-        latestLevelIndex,
-        menuSelectedLevelIndex + MENU_WINDOW_SIZE,
-      )
-      return true
-    case 'start':
-      enterGame(menuSelectedLevelIndex)
-      return true
-    case 'quit-app':
-      return true
-    case 'noop':
-      return false
-  }
-}
-
-root.addEventListener('click', (event) => {
-  const target = event.target
-  if (!(target instanceof HTMLElement)) return
-
-  const actionElement = target.closest<HTMLElement>('[data-action]')
-  if (actionElement) {
-    const action = actionElement.dataset.action
-    if (action === 'start-level' && mode === 'menu') {
-      const idx = parseInt(actionElement.dataset.levelIndex ?? '', 10)
-      if (!isNaN(idx) && idx >= 0 && idx < levelData.length) {
-        menuSelectedLevelIndex = idx
-        enterGame(idx)
-        draw()
-      }
-      return
-    }
-
-    if (action === 'toggle-reference' && mode === 'game') {
-      showReferenceDialog = !showReferenceDialog
-      draw()
-      return
-    }
-
-    if (action === 'close-reference' && mode === 'game') {
-      closeReferenceDialog()
-      draw()
-    }
-
-    return
-  }
-
-  if (!showReferenceDialog || mode !== 'game') return
-
-  const backdrop = target.closest<HTMLElement>('[data-role="reference-backdrop"]')
-  const dialog = target.closest<HTMLElement>('[data-role="reference-dialog"]')
-  if (backdrop && !dialog) {
-    closeReferenceDialog()
-    draw()
-  }
+const handleRootClick = createRootClickHandler({
+  levelCount: levelData.length,
+  getMode: () => mode,
+  getShowReferenceDialog: () => showReferenceDialog,
+  setMenuSelectedLevelIndex: (index) => {
+    menuSelectedLevelIndex = index
+  },
+  enterGame,
+  toggleReferenceDialog: () => {
+    showReferenceDialog = !showReferenceDialog
+  },
+  closeReferenceDialog,
+  draw,
 })
 
-globalThis.window.addEventListener('keydown', (event) => {
-  if (mode === 'game' && showReferenceDialog) {
-    if (event.key === 'Escape') {
-      closeReferenceDialog()
-      event.preventDefault()
-      draw()
-    }
-    return
-  }
-
-  if (mode === 'game' && Date.now() - lastGameActionMs < GAME_INPUT_COOLDOWN_MS)
-    return
-
-  const handled =
-    mode === 'menu'
-      ? handleMenuCommand(mapMenuKeyboardEvent(event))
-      : handleGameCommand(mapGameKeyboardEvent(event))
-
-  if (!handled) return
-
-  event.preventDefault()
-  if (mode === 'game') lastGameActionMs = Date.now()
-  draw()
+const handleWindowKeydown = createWindowKeydownHandler({
+  getMode: () => mode,
+  getShowReferenceDialog: () => showReferenceDialog,
+  closeReferenceDialog,
+  canHandleGameAction: () =>
+    Date.now() - lastGameActionMs >= GAME_INPUT_COOLDOWN_MS,
+  markGameActionHandled: () => {
+    lastGameActionMs = Date.now()
+  },
+  handleMenuEvent: (event) => handleMenuCommand(mapMenuKeyboardEvent(event)),
+  handleGameEvent: (event) => handleGameCommand(mapGameKeyboardEvent(event)),
+  draw,
 })
 
-let resizeTimer = 0
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer)
-  resizeTimer = window.setTimeout(draw, 60)
+const disposeApp = registerAppLifecycle({
+  root,
+  handleRootClick,
+  handleWindowKeydown,
+  draw,
+  disposeBoard3d: () => {
+    board3dRenderer?.dispose()
+    board3dRenderer = null
+  },
+  onDispose: () => {
+    delete appGlobal[APP_DISPOSE_KEY]
+  },
 })
-
-window.addEventListener('beforeunload', () => {
-  board3dRenderer.dispose()
-})
+appGlobal[APP_DISPOSE_KEY] = disposeApp
 
 draw()

@@ -7,7 +7,7 @@ export const statusLine = (status: GameState['status']): string => {
     case 'lose':
       return 'DEFEAT! Press R to restart, Q to menu.'
     case 'complete':
-      return 'ALL LEVELS CLEARED! Press N to restart.'
+      return 'ALL LEVELS CLEARED! Press N/Enter (or R) to restart.'
     default:
       return 'WASD/Arrows move, Space=Wait, U=Undo, R=Restart, Q=Menu'
   }

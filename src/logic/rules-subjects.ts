@@ -15,6 +15,15 @@ type SubjectPattern = {
 
 const CONDITION_OPERATOR_WORDS = ['on', 'near', 'facing'] as const
 
+const countConsecutiveNot = (
+  readWordsAt: (position: number) => string[],
+  position: number,
+): number => {
+  let count = 0
+  while (readWordsAt(position + count).includes('not')) count += 1
+  return count
+}
+
 export const stringifyCondition = (condition?: RuleCondition): string => {
   if (!condition) return ''
   if (condition.kind === 'lonely')
@@ -67,7 +76,8 @@ export const collectSubjectPatterns = (
     const nextWords = readWordsAt(chain.next)
 
     if (nextWords.includes('lonely')) {
-      const lonelyNegated = readWordsAt(chain.next + 1).includes('not')
+      const lonelyNegated =
+        countConsecutiveNot(readWordsAt, chain.next + 1) % 2 === 1
       addSubjectTerms(chain.terms, {
         kind: 'lonely',
         ...(lonelyNegated ? { negated: true } : {}),

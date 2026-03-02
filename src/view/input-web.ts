@@ -21,6 +21,7 @@ const toName = (key: string): Keypress['name'] => {
     case 'Enter':
       return 'enter'
     case ' ':
+    case 'Space':
     case 'Spacebar':
       return 'space'
     default: {

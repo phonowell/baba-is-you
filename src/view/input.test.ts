@@ -48,6 +48,11 @@ test('mapGameKeypress maps utility and fallback commands', () => {
   assert.deepEqual(mapGameKeypress({ name: 'x' }), { type: 'noop' })
 })
 
+test('mapGameKeypress ignores ctrl/meta combinations', () => {
+  assert.deepEqual(mapGameKeypress({ name: 'r', ctrl: true }), { type: 'noop' })
+  assert.deepEqual(mapGameKeypress({ name: 'q', meta: true }), { type: 'noop' })
+})
+
 test('mapMenuKeypress maps navigation, paging, start, quit, and fallback', () => {
   assert.deepEqual(mapMenuKeypress({ name: 'up' }), { type: 'up' })
   assert.deepEqual(mapMenuKeypress({ name: 'w' }), { type: 'up' })
@@ -61,4 +66,11 @@ test('mapMenuKeypress maps navigation, paging, start, quit, and fallback', () =>
   assert.deepEqual(mapMenuKeypress({ name: 'enter' }), { type: 'start' })
   assert.deepEqual(mapMenuKeypress({ name: 'q' }), { type: 'quit-app' })
   assert.deepEqual(mapMenuKeypress({ name: 'x' }), { type: 'noop' })
+})
+
+test('mapMenuKeypress ignores ctrl/meta combinations', () => {
+  assert.deepEqual(mapMenuKeypress({ name: 'space', ctrl: true }), {
+    type: 'noop',
+  })
+  assert.deepEqual(mapMenuKeypress({ name: 'q', meta: true }), { type: 'noop' })
 })

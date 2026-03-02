@@ -23,6 +23,7 @@ junit.xml
 *.tmp
 .DS_Store
 /temp
+/plans
 test-report.md
 
 # Trae IDE
