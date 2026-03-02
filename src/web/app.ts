@@ -91,6 +91,7 @@ const applyWithTransition = (fn: () => void): void => {
 const draw = (): void => {
   document.title =
     mode === 'game' ? `${levelIndex + 1}. ${state.title} – Baba Is You` : 'Baba Is You'
+  document.body.classList.toggle('game-3d-fullscreen', mode === 'game')
 
   if (mode === 'game') {
     document.documentElement.style.setProperty('--cell-size', `${computeCellSize()}px`)

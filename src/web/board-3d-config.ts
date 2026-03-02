@@ -81,7 +81,7 @@ export const BOARD3D_CAMERA_CONFIG = {
   /** 相机：相机俯仰弧度值。单位为弧度；会直接影响镜头构图和空间透视。 */
   CAMERA_PITCH_RAD: (75 * Math.PI) / 180,
   /** 相机：相机距离缩放。会直接影响镜头构图和空间透视。 */
-  CAMERA_DISTANCE_SCALE: 0.56,
+  CAMERA_DISTANCE_SCALE: 0.28,
   /** 相机：相机距离最小值。会直接影响镜头构图和空间透视。 */
   CAMERA_DISTANCE_MIN: 1.45,
   /** 相机：相机观察点 Y 偏移。会直接影响镜头构图和空间透视。 */

@@ -100,6 +100,10 @@ button,
   padding-bottom: 60px;
 }
 
+body.game-3d-fullscreen .game-screen {
+  padding-bottom: 0;
+}
+
 .title {
   margin: 0;
   color: var(--accent);
@@ -165,6 +169,20 @@ button,
   overflow: hidden;
 }
 
+body.game-3d-fullscreen .board-wrap {
+  position: fixed;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+
 .board {
   --gap: 1px;
   --slot: calc(var(--cell-size) + var(--gap));
@@ -181,6 +199,12 @@ button,
   --board-3d-height-scale: 0.72;
   background: #ffffff;
   height: calc((var(--board-height) * var(--slot) - var(--gap)) * var(--board-3d-height-scale));
+}
+
+body.game-3d-fullscreen .board.board-3d {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
 }
 
 .board.board-3d::before,
