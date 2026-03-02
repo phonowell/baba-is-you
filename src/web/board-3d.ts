@@ -606,9 +606,11 @@ const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture =>
   const radius = textureSize * CARD_TEXTURE_CORNER_RADIUS_RATIO
 
   ctx.clearRect(0, 0, textureSize, textureSize)
-  roundRectPath(ctx, pad, pad, size, size, radius)
-  ctx.fillStyle = spec.background
-  ctx.fill()
+  if (!spec.isEmojiLabel) {
+    roundRectPath(ctx, pad, pad, size, size, radius)
+    ctx.fillStyle = spec.background
+    ctx.fill()
+  }
 
   const labelLength = [...spec.label].length
   const fontSize = spec.isEmojiLabel

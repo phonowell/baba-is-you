@@ -1,5 +1,8 @@
 import type { Property } from '../logic/types.js'
 
+const CAMERA_PITCH_RAD_BASE = (75 * Math.PI) / 180
+const CAMERA_TILT_FROM_VERTICAL_RAD_BASE = Math.PI / 2 - CAMERA_PITCH_RAD_BASE
+
 export const BOARD3D_LAYOUT_CONFIG = {
   /** 布局与材质：卡片世界尺寸。建议使用非负值，计数场景优先整数；用于微调整体观感和稳定性。 */
   CARD_WORLD_SIZE: 0.88,
@@ -14,9 +17,9 @@ export const BOARD3D_LAYOUT_CONFIG = {
   /** 布局与材质：卡片层深度。会影响对象位置或作用范围。 */
   CARD_LAYER_DEPTH: 0.045,
   /** 布局与材质：地面表面Z。用于微调整体观感和稳定性。 */
-  GROUND_SURFACE_Z: -0.22,
+  GROUND_SURFACE_Z: -0.24,
   /** 布局与材质：地面激活填充Z。用于微调整体观感和稳定性。 */
-  GROUND_ACTIVE_FILL_Z: -0.2192,
+  GROUND_ACTIVE_FILL_Z: -0.224,
   /** 布局与材质：地面贴地基准Z。会影响对象位置或作用范围。 */
   GROUND_HUG_BASE_Z: -0.219,
   /** 布局与材质：地面贴地堆叠深度。会影响对象位置或作用范围。 */
@@ -34,7 +37,7 @@ export const BOARD3D_LAYOUT_CONFIG = {
   /** 布局与材质：卡片直立旋转X。用于微调整体观感和稳定性。 */
   CARD_UPRIGHT_ROT_X: Math.PI / 2,
   /** 布局与材质：卡片后仰倾斜弧度值。单位为弧度；会直接影响镜头构图和空间透视。 */
-  CARD_BACK_TILT_RAD: Math.PI / 4,
+  CARD_BACK_TILT_RAD: CAMERA_TILT_FROM_VERTICAL_RAD_BASE,
   /** 布局与材质：卡片平放旋转X。用于微调整体观感和稳定性。 */
   CARD_FLAT_ROT_X: 0,
   /** 布局与材质：纹理各向异性上限。会影响纹理清晰度和视觉可读性。 */
@@ -79,7 +82,7 @@ export const BOARD3D_CAMERA_CONFIG = {
   /** 相机：相机卡片朝向面角度弧度值。单位为弧度；会直接影响镜头构图和空间透视。 */
   CAMERA_CARD_FACE_ANGLE_RAD: Math.PI / 4,
   /** 相机：相机俯仰弧度值。单位为弧度；会直接影响镜头构图和空间透视。 */
-  CAMERA_PITCH_RAD: (75 * Math.PI) / 180,
+  CAMERA_PITCH_RAD: CAMERA_PITCH_RAD_BASE,
   /** 相机：相机距离缩放。会直接影响镜头构图和空间透视。 */
   CAMERA_DISTANCE_SCALE: 0.28,
   /** 相机：相机距离最小值。会直接影响镜头构图和空间透视。 */
@@ -110,7 +113,7 @@ export const BOARD3D_LIGHTING_CONFIG = {
   /** 灯光：侧向光源偏移Z倍率。会影响光照层次、阴影稳定性和性能。 */
   SIDE_LIGHT_OFFSET_Z_MUL: 0.28,
   /** 灯光：光源相机侧向倾斜弧度值。单位为弧度；会直接影响镜头构图和空间透视。 */
-  LIGHT_CAMERA_SIDE_TILT_RAD: Math.PI / 4,
+  LIGHT_CAMERA_SIDE_TILT_RAD: CAMERA_TILT_FROM_VERTICAL_RAD_BASE,
   /** 灯光：环境光光源颜色。使用 CSS 颜色字符串；会影响光照层次、阴影稳定性和性能。 */
   AMBIENT_LIGHT_COLOR: '#f3f5ff',
   /** 灯光：环境光光源强度倍率。会影响光照层次、阴影稳定性和性能。 */
