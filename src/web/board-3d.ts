@@ -60,7 +60,6 @@ import type { OrthographicCamera } from 'three'
 import type { Direction, GameState, Item } from '../logic/types.js'
 
 type Board3dRenderer = {
-  isSupported: boolean
   mount: (container: HTMLElement) => void
   sync: (state: GameState) => void
   dispose: () => void
@@ -120,6 +119,32 @@ type BokehUniform = {
 type PoseStepResult = {
   animating: boolean
   finishedLeaving: boolean
+}
+
+type GroundVisuals = {
+  groundMesh: Mesh<PlaneGeometry, MeshStandardMaterial> | null
+  playAreaFillMesh: Mesh<ShapeGeometry, MeshStandardMaterial> | null
+  playAreaOutline: Line<BufferGeometry, LineBasicMaterial> | null
+}
+
+type EntityBaseTarget = {
+  x: number
+  y: number
+  baseZ: number
+}
+
+type CreateEntityNodeDeps = {
+  entityGroup: Group
+  cardGeometry: PlaneGeometry
+  shadowGeometry: PlaneGeometry
+  shadowTexture: CanvasTexture
+  getMaterial: (item: Item) => CardMaterial
+}
+
+type SyncEntityNodesDeps = {
+  nodes: Map<number, EntityNode>
+  getMaterial: (item: Item) => CardMaterial
+  createNode: (item: Item, nowMs: number) => EntityNode
 }
 
 const {
@@ -697,12 +722,392 @@ const createShadowTexture = (): CanvasTexture => {
   return texture
 }
 
-const createNoopRenderer = (): Board3dRenderer => ({
-  isSupported: false,
-  mount: () => {},
-  sync: () => {},
-  dispose: () => {},
-})
+const configureTopLight = (
+  light: DirectionalLight,
+  shadowMapEdge: number,
+  shadowFar: number,
+): void => {
+  light.castShadow = true
+  light.shadow.mapSize.width = shadowMapEdge
+  light.shadow.mapSize.height = shadowMapEdge
+  light.shadow.camera.near = LIGHT_SHADOW_CAMERA_NEAR
+  light.shadow.camera.far = shadowFar
+  light.shadow.bias = LIGHT_SHADOW_BIAS
+  light.shadow.normalBias = LIGHT_SHADOW_NORMAL_BIAS
+  light.shadow.radius = SHADOW_RADIUS
+}
+
+const updateLightShadowCamera = (
+  light: DirectionalLight,
+  span: number,
+  far: number,
+): void => {
+  const shadowCamera = light.shadow.camera as OrthographicCamera
+  shadowCamera.left = -span
+  shadowCamera.right = span
+  shadowCamera.top = span
+  shadowCamera.bottom = -span
+  shadowCamera.far = far
+  shadowCamera.updateProjectionMatrix()
+  light.shadow.needsUpdate = true
+}
+
+const disposeGroundVisuals = (
+  world: Group,
+  visuals: GroundVisuals,
+): GroundVisuals => {
+  const { groundMesh, playAreaFillMesh, playAreaOutline } = visuals
+  if (playAreaFillMesh) {
+    world.remove(playAreaFillMesh)
+    playAreaFillMesh.geometry.dispose()
+    playAreaFillMesh.material.dispose()
+  }
+  if (playAreaOutline) {
+    world.remove(playAreaOutline)
+    playAreaOutline.geometry.dispose()
+    playAreaOutline.material.dispose()
+  }
+  if (groundMesh) {
+    world.remove(groundMesh)
+    groundMesh.geometry.dispose()
+    groundMesh.material.dispose()
+  }
+  return {
+    groundMesh: null,
+    playAreaFillMesh: null,
+    playAreaOutline: null,
+  }
+}
+
+const rebuildGroundVisuals = (
+  world: Group,
+  boardWidth: number,
+  boardHeight: number,
+  visuals: GroundVisuals,
+): GroundVisuals => {
+  disposeGroundVisuals(world, visuals)
+
+  const expandedWidth = Math.max(
+    boardWidth + GROUND_EXPANDED_PADDING,
+    GROUND_EXPANDED_MIN_SIZE,
+  )
+  const expandedHeight = Math.max(
+    boardHeight + GROUND_EXPANDED_PADDING,
+    GROUND_EXPANDED_MIN_SIZE,
+  )
+  const geometry = new PlaneGeometry(expandedWidth, expandedHeight)
+  const material = new MeshStandardMaterial({
+    color: new Color(GROUND_BASE_COLOR),
+    roughness: GROUND_MATERIAL_ROUGHNESS,
+    metalness: GROUND_MATERIAL_METALNESS,
+  })
+  const groundMesh = new Mesh(geometry, material)
+  groundMesh.position.z = GROUND_SURFACE_Z
+  groundMesh.receiveShadow = true
+  world.add(groundMesh)
+
+  const halfWidth = boardWidth / 2
+  const halfHeight = boardHeight / 2
+  const playAreaShape = buildRoundedRectShape(halfWidth, halfHeight)
+  const playAreaFillGeometry = new ShapeGeometry(playAreaShape)
+  const playAreaFillMaterial = new MeshStandardMaterial({
+    color: new Color(PLAY_AREA_FILL_COLOR),
+    roughness: PLAY_AREA_FILL_ROUGHNESS,
+    metalness: PLAY_AREA_FILL_METALNESS,
+  })
+  const playAreaFillMesh = new Mesh(playAreaFillGeometry, playAreaFillMaterial)
+  playAreaFillMesh.position.z = GROUND_ACTIVE_FILL_Z
+  playAreaFillMesh.receiveShadow = true
+  world.add(playAreaFillMesh)
+
+  const outlineGeometry = new BufferGeometry().setFromPoints(
+    buildRoundedRectOutlinePoints(halfWidth, halfHeight, PLAY_AREA_OUTLINE_Z),
+  )
+  const outlineMaterial = new LineBasicMaterial({
+    color: new Color(PLAY_AREA_OUTLINE_COLOR),
+    transparent: true,
+    opacity: PLAY_AREA_OUTLINE_OPACITY,
+  })
+  const playAreaOutline = new Line(outlineGeometry, outlineMaterial)
+  world.add(playAreaOutline)
+
+  return {
+    groundMesh,
+    playAreaFillMesh,
+    playAreaOutline,
+  }
+}
+
+const setNodeIdlePose = (node: EntityNode, target: EntityBaseTarget, roll: number): void => {
+  node.mesh.position.set(target.x, target.y, target.baseZ)
+  node.mesh.rotation.set(node.rotX, 0, roll)
+  node.mesh.scale.set(1, 1, 1)
+  node.shadow.position.set(target.x, target.y, SHADOW_BASE_Z)
+  node.shadow.scale.set(
+    ENTITY_IDLE_SHADOW_SCALE,
+    ENTITY_IDLE_SHADOW_SCALE,
+    1,
+  )
+  node.shadowMaterial.opacity = ENTITY_SHADOW_OPACITY
+}
+
+const setNodeTarget = (node: EntityNode, target: EntityBaseTarget): void => {
+  node.toX = target.x
+  node.toY = target.y
+  node.toBaseZ = target.baseZ
+}
+
+const initializeNodeAtTarget = (node: EntityNode, target: EntityBaseTarget): void => {
+  setNodeTarget(node, target)
+  node.fromX = node.toX
+  node.fromY = node.toY
+  node.fromBaseZ = node.toBaseZ
+  node.fromRoll = node.rotRoll
+  node.toRoll = node.rotRoll
+  setNodeIdlePose(node, target, node.rotRoll)
+}
+
+const createEntityNode = (
+  deps: CreateEntityNodeDeps,
+  item: Item,
+  nowMs: number,
+): EntityNode => {
+  const { entityGroup, cardGeometry, shadowGeometry, shadowTexture, getMaterial } = deps
+  const rollNoise = cardRollForItemStep(item, 0)
+  const mesh = new Mesh(cardGeometry, getMaterial(item))
+  const emoji = isEmojiItem(item)
+  const stretchEnabled = emojiStretchEnabledForItem(item)
+  mesh.castShadow = true
+  mesh.receiveShadow = !emoji
+  entityGroup.add(mesh)
+
+  const shadowMaterial = new MeshBasicMaterial({
+    map: shadowTexture,
+    color: new Color(ENTITY_SHADOW_COLOR),
+    transparent: true,
+    opacity: ENTITY_SHADOW_OPACITY,
+    depthWrite: false,
+    alphaTest: ENTITY_SHADOW_ALPHA_TEST,
+    side: DoubleSide,
+  })
+  const shadow = new Mesh(shadowGeometry, shadowMaterial)
+  shadow.position.z = SHADOW_BASE_Z
+  shadow.receiveShadow = false
+  shadow.castShadow = false
+  entityGroup.add(shadow)
+
+  return {
+    mesh,
+    shadow,
+    shadowMaterial,
+    isEmoji: stretchEnabled,
+    emojiPhaseOffsetMs: emojiPhaseOffsetMsForItem(item),
+    rotX: cardRotXForItem(item),
+    rotRoll: rollNoise,
+    rollStep: 0,
+    fromX: 0,
+    fromY: 0,
+    fromBaseZ: CARD_BASE_Z,
+    fromRoll: rollNoise,
+    toX: 0,
+    toY: 0,
+    toBaseZ: CARD_BASE_Z,
+    toRoll: rollNoise,
+    animStartMs: nowMs,
+    animDurationMs: MOVE_ANIM_MS,
+    moving: false,
+    spawnStartMs: nowMs,
+    despawnStartMs: null,
+    landStartMs: null,
+  }
+}
+
+const applyNodePose = (node: EntityNode, nowMs: number): PoseStepResult => {
+  const animDuration = Math.max(1, node.animDurationMs)
+  const rawProgress = clamp01((nowMs - node.animStartMs) / animDuration)
+  const eased = easeOutCubic(rawProgress)
+
+  const x = lerp(node.fromX, node.toX, eased)
+  const y = lerp(node.fromY, node.toY, eased)
+  const baseZ = lerp(node.fromBaseZ, node.toBaseZ, eased)
+  const roll = lerp(node.fromRoll, node.toRoll, eased)
+
+  const dx = node.toX - node.fromX
+  const dy = node.toY - node.fromY
+  const dominantX = Math.abs(dx) >= Math.abs(dy)
+
+  let jump = 0
+  let stretchX = 1
+  let stretchY = 1
+  if (node.moving && node.despawnStartMs === null) {
+    const wave = Math.sin(Math.PI * rawProgress)
+    jump = wave * JUMP_HEIGHT
+    const stretch = 1 + wave * MOVE_STRETCH_FACTOR
+    const squash = 1 - wave * MOVE_SQUASH_FACTOR
+    stretchX = dominantX ? stretch : squash
+    stretchY = dominantX ? squash : stretch
+    if (rawProgress >= 1) {
+      node.moving = false
+      node.landStartMs = nowMs
+    }
+  }
+
+  let landing = 0
+  if (node.landStartMs !== null && node.despawnStartMs === null) {
+    const landT = clamp01((nowMs - node.landStartMs) / LAND_PULSE_MS)
+    landing = Math.sin((1 - landT) * Math.PI) * LANDING_PULSE_HEIGHT
+    if (landT >= 1) node.landStartMs = null
+  }
+
+  let scaleFactor = 1
+  let verticalOffset = 0
+  if (node.spawnStartMs !== null) {
+    const spawnT = clamp01((nowMs - node.spawnStartMs) / SPAWN_ANIM_MS)
+    scaleFactor *= lerp(SPAWN_SCALE_FROM, 1, easeOutCubic(spawnT))
+    verticalOffset += (1 - spawnT) * SPAWN_VERTICAL_OFFSET
+    if (spawnT >= 1) node.spawnStartMs = null
+  }
+
+  let finishedLeaving = false
+  let shadowOpacityMul = 1
+  if (node.despawnStartMs !== null) {
+    const despawnT = clamp01((nowMs - node.despawnStartMs) / DESPAWN_ANIM_MS)
+    const fade = 1 - easeOutCubic(despawnT)
+    scaleFactor *= lerp(1, DESPAWN_SCALE_TO, despawnT)
+    shadowOpacityMul = Math.max(0, fade)
+    verticalOffset += despawnT * DESPAWN_VERTICAL_OFFSET
+    if (despawnT >= 1) finishedLeaving = true
+  }
+
+  const baseScaleX = stretchX * scaleFactor
+  const baseScaleY = stretchY * scaleFactor
+  let scaleX = baseScaleX
+  let scaleY = baseScaleY
+  if (node.isEmoji) {
+    const microStretch = emojiMicroStretch(nowMs + node.emojiPhaseOffsetMs)
+    scaleX *= microStretch.scaleX
+    scaleY *= microStretch.scaleY
+    verticalOffset += emojiBottomAnchorOffset(baseScaleY, scaleY)
+  }
+
+  node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
+  node.mesh.rotation.set(node.rotX, 0, roll)
+  node.mesh.scale.set(scaleX, scaleY, 1)
+
+  const shadowScale =
+    SHADOW_SCALE_BASE +
+    jump * SHADOW_SCALE_JUMP_MUL +
+    landing * SHADOW_SCALE_LANDING_MUL
+  const shadowOpacity = Math.max(
+    SHADOW_OPACITY_MIN,
+    SHADOW_OPACITY_BASE -
+      jump * SHADOW_OPACITY_JUMP_MUL +
+      landing * SHADOW_OPACITY_LANDING_MUL,
+  )
+  node.shadow.position.set(x, y, SHADOW_BASE_Z)
+  node.shadow.scale.set(shadowScale * scaleFactor, shadowScale * scaleFactor, 1)
+  node.shadowMaterial.opacity = shadowOpacity * shadowOpacityMul
+
+  return {
+    animating:
+      node.moving ||
+      node.landStartMs !== null ||
+      node.spawnStartMs !== null ||
+      node.despawnStartMs !== null ||
+      node.isEmoji,
+    finishedLeaving,
+  }
+}
+
+const removeEntityNode = (
+  nodes: Map<number, EntityNode>,
+  entityGroup: Group,
+  id: number,
+): void => {
+  const node = nodes.get(id)
+  if (!node) return
+  entityGroup.remove(node.mesh)
+  entityGroup.remove(node.shadow)
+  node.shadowMaterial.dispose()
+  nodes.delete(id)
+}
+
+const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): void => {
+  const { nodes, createNode, getMaterial } = deps
+  const nowMs = performance.now()
+  const seen = new Set<number>()
+  const views = buildEntityViews(state)
+
+  for (const view of views) {
+    const item = view.item
+    seen.add(item.id)
+
+    let node = nodes.get(item.id)
+    const nodeCreated = !node
+    if (!node) {
+      node = createNode(item, nowMs)
+      nodes.set(item.id, node)
+    } else if (node.despawnStartMs !== null) {
+      node.despawnStartMs = null
+      node.spawnStartMs = nowMs
+    }
+
+    const target = computeEntityBaseTarget(state, view)
+    const material = getMaterial(item)
+    if (node.mesh.material !== material) node.mesh.material = material
+    const emoji = isEmojiItem(item)
+    node.isEmoji = emojiStretchEnabledForItem(item)
+    node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)
+    node.mesh.castShadow = true
+    node.mesh.receiveShadow = !emoji
+    node.rotX = cardRotXForItem(item)
+    const stableRoll = cardRollForItemStep(item, node.rollStep)
+    if (!node.moving && Math.abs(node.rotRoll - stableRoll) > POSITION_EPSILON) {
+      node.rotRoll = stableRoll
+      node.fromRoll = stableRoll
+      node.toRoll = stableRoll
+    }
+
+    if (nodeCreated) {
+      initializeNodeAtTarget(node, target)
+      continue
+    }
+
+    const positionChanged =
+      Math.abs(node.toX - target.x) > POSITION_EPSILON ||
+      Math.abs(node.toY - target.y) > POSITION_EPSILON ||
+      Math.abs(node.toBaseZ - target.baseZ) > POSITION_EPSILON
+
+    if (positionChanged) {
+      node.fromX = node.mesh.position.x
+      node.fromY = node.mesh.position.y
+      node.fromBaseZ = node.mesh.position.z
+      node.fromRoll = node.mesh.rotation.z
+      node.rollStep += 1
+      node.rotRoll = cardRollForItemStep(item, node.rollStep)
+      setNodeTarget(node, target)
+      node.toRoll = node.rotRoll
+      node.animStartMs = nowMs
+      node.animDurationMs = MOVE_ANIM_MS
+      node.moving = true
+    } else {
+      setNodeTarget(node, target)
+      node.toRoll = node.rotRoll
+      if (!node.moving && node.landStartMs === null) {
+        setNodeIdlePose(node, target, node.toRoll)
+      }
+    }
+  }
+
+  for (const [id, node] of nodes) {
+    if (!seen.has(id) && node.despawnStartMs === null) {
+      node.despawnStartMs = nowMs
+      node.spawnStartMs = null
+      node.moving = false
+      node.landStartMs = null
+    }
+  }
+}
 
 const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   const preset = CLAY_PRESET
@@ -765,26 +1170,12 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     sideLightIntensity,
   )
   leftLight.position.set(0, SIDE_LIGHT_INITIAL_Y, SIDE_LIGHT_INITIAL_Z)
-  leftLight.castShadow = true
-  leftLight.shadow.mapSize.width = shadowMapSize
-  leftLight.shadow.mapSize.height = shadowMapSize
-  leftLight.shadow.camera.near = LIGHT_SHADOW_CAMERA_NEAR
-  leftLight.shadow.camera.far = preset.lighting.topLightShadowFar
-  leftLight.shadow.bias = LIGHT_SHADOW_BIAS
-  leftLight.shadow.normalBias = LIGHT_SHADOW_NORMAL_BIAS
-  leftLight.shadow.radius = SHADOW_RADIUS
+  configureTopLight(leftLight, shadowMapSize, preset.lighting.topLightShadowFar)
   scene.add(leftLight)
   scene.add(leftLight.target)
 
   const rightLight = new DirectionalLight(preset.lighting.topLightColor, sideLightIntensity)
-  rightLight.castShadow = true
-  rightLight.shadow.mapSize.width = shadowMapSize
-  rightLight.shadow.mapSize.height = shadowMapSize
-  rightLight.shadow.camera.near = LIGHT_SHADOW_CAMERA_NEAR
-  rightLight.shadow.camera.far = preset.lighting.topLightShadowFar
-  rightLight.shadow.bias = LIGHT_SHADOW_BIAS
-  rightLight.shadow.normalBias = LIGHT_SHADOW_NORMAL_BIAS
-  rightLight.shadow.radius = SHADOW_RADIUS
+  configureTopLight(rightLight, shadowMapSize, preset.lighting.topLightShadowFar)
   scene.add(rightLight)
   scene.add(rightLight.target)
 
@@ -814,9 +1205,11 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   let devicePixelRatio = 1
   let boardWidth = 0
   let boardHeight = 0
-  let groundMesh: Mesh<PlaneGeometry, MeshStandardMaterial> | null = null
-  let playAreaFillMesh: Mesh<ShapeGeometry, MeshStandardMaterial> | null = null
-  let playAreaOutline: Line<BufferGeometry, LineBasicMaterial> | null = null
+  let groundVisuals: GroundVisuals = {
+    groundMesh: null,
+    playAreaFillMesh: null,
+    playAreaOutline: null,
+  }
   let rafId = 0
   let frameActive = false
   let needsRender = true
@@ -860,6 +1253,16 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     return material
   }
 
+  const createNodeDeps: CreateEntityNodeDeps = {
+    entityGroup,
+    cardGeometry,
+    shadowGeometry,
+    shadowTexture,
+    getMaterial,
+  }
+  const createNode = (item: Item, nowMs: number): EntityNode =>
+    createEntityNode(createNodeDeps, item, nowMs)
+
   const updateBokehFocus = (): void => {
     const uniforms = bokehPass.materialBokeh.uniforms as Record<string, BokehUniform>
     const focus = Math.max(
@@ -870,21 +1273,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     if (uniforms.aperture) uniforms.aperture.value = activeBokehAperture
     if (uniforms.maxblur) uniforms.maxblur.value = activeBokehMaxBlur
     if (uniforms.aspect) uniforms.aspect.value = viewportWidth / Math.max(1, viewportHeight)
-  }
-
-  const updateLightShadowCamera = (
-    light: DirectionalLight,
-    span: number,
-    far: number,
-  ): void => {
-    const shadowCamera = light.shadow.camera as OrthographicCamera
-    shadowCamera.left = -span
-    shadowCamera.right = span
-    shadowCamera.top = span
-    shadowCamera.bottom = -span
-    shadowCamera.far = far
-    shadowCamera.updateProjectionMatrix()
-    light.shadow.needsUpdate = true
   }
 
   const updateLightRig = (): void => {
@@ -980,233 +1368,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     return true
   }
 
-  const rebuildGround = (): void => {
-    if (playAreaFillMesh) {
-      world.remove(playAreaFillMesh)
-      playAreaFillMesh.geometry.dispose()
-      playAreaFillMesh.material.dispose()
-      playAreaFillMesh = null
-    }
-    if (playAreaOutline) {
-      world.remove(playAreaOutline)
-      playAreaOutline.geometry.dispose()
-      playAreaOutline.material.dispose()
-      playAreaOutline = null
-    }
-    if (groundMesh) {
-      world.remove(groundMesh)
-      groundMesh.geometry.dispose()
-      groundMesh.material.dispose()
-      groundMesh = null
-    }
-
-    const expandedWidth = Math.max(
-      boardWidth + GROUND_EXPANDED_PADDING,
-      GROUND_EXPANDED_MIN_SIZE,
-    )
-    const expandedHeight = Math.max(
-      boardHeight + GROUND_EXPANDED_PADDING,
-      GROUND_EXPANDED_MIN_SIZE,
-    )
-    const geometry = new PlaneGeometry(expandedWidth, expandedHeight)
-    const material = new MeshStandardMaterial({
-      color: new Color(GROUND_BASE_COLOR),
-      roughness: GROUND_MATERIAL_ROUGHNESS,
-      metalness: GROUND_MATERIAL_METALNESS,
-    })
-    groundMesh = new Mesh(geometry, material)
-    groundMesh.position.z = GROUND_SURFACE_Z
-    groundMesh.receiveShadow = true
-    world.add(groundMesh)
-
-    const halfWidth = boardWidth / 2
-    const halfHeight = boardHeight / 2
-    const playAreaShape = buildRoundedRectShape(halfWidth, halfHeight)
-    const playAreaFillGeometry = new ShapeGeometry(playAreaShape)
-    const playAreaFillMaterial = new MeshStandardMaterial({
-      color: new Color(PLAY_AREA_FILL_COLOR),
-      roughness: PLAY_AREA_FILL_ROUGHNESS,
-      metalness: PLAY_AREA_FILL_METALNESS,
-    })
-    playAreaFillMesh = new Mesh(playAreaFillGeometry, playAreaFillMaterial)
-    playAreaFillMesh.position.z = GROUND_ACTIVE_FILL_Z
-    playAreaFillMesh.receiveShadow = true
-    world.add(playAreaFillMesh)
-
-    const outlineGeometry = new BufferGeometry().setFromPoints(
-      buildRoundedRectOutlinePoints(halfWidth, halfHeight, PLAY_AREA_OUTLINE_Z),
-    )
-    const outlineMaterial = new LineBasicMaterial({
-      color: new Color(PLAY_AREA_OUTLINE_COLOR),
-      transparent: true,
-      opacity: PLAY_AREA_OUTLINE_OPACITY,
-    })
-    playAreaOutline = new Line(outlineGeometry, outlineMaterial)
-    world.add(playAreaOutline)
-  }
-
-  const createNode = (item: Item, nowMs: number): EntityNode => {
-    const rollNoise = cardRollForItemStep(item, 0)
-
-    const mesh = new Mesh(cardGeometry, getMaterial(item))
-    const emoji = isEmojiItem(item)
-    const stretchEnabled = emojiStretchEnabledForItem(item)
-    mesh.castShadow = true
-    mesh.receiveShadow = !emoji
-    entityGroup.add(mesh)
-
-    const shadowMaterial = new MeshBasicMaterial({
-      map: shadowTexture,
-      color: new Color(ENTITY_SHADOW_COLOR),
-      transparent: true,
-      opacity: ENTITY_SHADOW_OPACITY,
-      depthWrite: false,
-      alphaTest: ENTITY_SHADOW_ALPHA_TEST,
-      side: DoubleSide,
-    })
-    const shadow = new Mesh(shadowGeometry, shadowMaterial)
-    shadow.position.z = SHADOW_BASE_Z
-    shadow.receiveShadow = false
-    shadow.castShadow = false
-    entityGroup.add(shadow)
-
-    const node: EntityNode = {
-      mesh,
-      shadow,
-      shadowMaterial,
-      isEmoji: stretchEnabled,
-      emojiPhaseOffsetMs: emojiPhaseOffsetMsForItem(item),
-      rotX: cardRotXForItem(item),
-      rotRoll: rollNoise,
-      rollStep: 0,
-      fromX: 0,
-      fromY: 0,
-      fromBaseZ: CARD_BASE_Z,
-      fromRoll: rollNoise,
-      toX: 0,
-      toY: 0,
-      toBaseZ: CARD_BASE_Z,
-      toRoll: rollNoise,
-      animStartMs: nowMs,
-      animDurationMs: MOVE_ANIM_MS,
-      moving: false,
-      spawnStartMs: nowMs,
-      despawnStartMs: null,
-      landStartMs: null,
-    }
-    return node
-  }
-
-  const applyNodePose = (node: EntityNode, nowMs: number): PoseStepResult => {
-    const animDuration = Math.max(1, node.animDurationMs)
-    const rawProgress = clamp01((nowMs - node.animStartMs) / animDuration)
-    const eased = easeOutCubic(rawProgress)
-
-    const x = lerp(node.fromX, node.toX, eased)
-    const y = lerp(node.fromY, node.toY, eased)
-    const baseZ = lerp(node.fromBaseZ, node.toBaseZ, eased)
-    const roll = lerp(node.fromRoll, node.toRoll, eased)
-
-    const dx = node.toX - node.fromX
-    const dy = node.toY - node.fromY
-    const dominantX = Math.abs(dx) >= Math.abs(dy)
-
-    let jump = 0
-    let stretchX = 1
-    let stretchY = 1
-    if (node.moving && node.despawnStartMs === null) {
-      const wave = Math.sin(Math.PI * rawProgress)
-      jump = wave * JUMP_HEIGHT
-      const stretch = 1 + wave * MOVE_STRETCH_FACTOR
-      const squash = 1 - wave * MOVE_SQUASH_FACTOR
-      stretchX = dominantX ? stretch : squash
-      stretchY = dominantX ? squash : stretch
-      if (rawProgress >= 1) {
-        node.moving = false
-        node.landStartMs = nowMs
-      }
-    }
-
-    let landing = 0
-    if (node.landStartMs !== null && node.despawnStartMs === null) {
-      const landT = clamp01((nowMs - node.landStartMs) / LAND_PULSE_MS)
-      landing = Math.sin((1 - landT) * Math.PI) * LANDING_PULSE_HEIGHT
-      if (landT >= 1) node.landStartMs = null
-    }
-
-    let scaleFactor = 1
-    let verticalOffset = 0
-    if (node.spawnStartMs !== null) {
-      const spawnT = clamp01((nowMs - node.spawnStartMs) / SPAWN_ANIM_MS)
-      scaleFactor *= lerp(SPAWN_SCALE_FROM, 1, easeOutCubic(spawnT))
-      verticalOffset += (1 - spawnT) * SPAWN_VERTICAL_OFFSET
-      if (spawnT >= 1) node.spawnStartMs = null
-    }
-
-    let finishedLeaving = false
-    let shadowOpacityMul = 1
-    if (node.despawnStartMs !== null) {
-      const despawnT = clamp01((nowMs - node.despawnStartMs) / DESPAWN_ANIM_MS)
-      const fade = 1 - easeOutCubic(despawnT)
-      scaleFactor *= lerp(1, DESPAWN_SCALE_TO, despawnT)
-      shadowOpacityMul = Math.max(0, fade)
-      verticalOffset += despawnT * DESPAWN_VERTICAL_OFFSET
-      if (despawnT >= 1) finishedLeaving = true
-    }
-
-    const baseScaleX = stretchX * scaleFactor
-    const baseScaleY = stretchY * scaleFactor
-    let scaleX = baseScaleX
-    let scaleY = baseScaleY
-    if (node.isEmoji) {
-      const microStretch = emojiMicroStretch(nowMs + node.emojiPhaseOffsetMs)
-      scaleX *= microStretch.scaleX
-      scaleY *= microStretch.scaleY
-      verticalOffset += emojiBottomAnchorOffset(baseScaleY, scaleY)
-    }
-
-    node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
-    node.mesh.rotation.set(node.rotX, 0, roll)
-    node.mesh.scale.set(scaleX, scaleY, 1)
-
-    const shadowScale =
-      SHADOW_SCALE_BASE +
-      jump * SHADOW_SCALE_JUMP_MUL +
-      landing * SHADOW_SCALE_LANDING_MUL
-    const shadowOpacity = Math.max(
-      SHADOW_OPACITY_MIN,
-      SHADOW_OPACITY_BASE -
-        jump * SHADOW_OPACITY_JUMP_MUL +
-        landing * SHADOW_OPACITY_LANDING_MUL,
-    )
-    node.shadow.position.set(x, y, SHADOW_BASE_Z)
-    node.shadow.scale.set(shadowScale * scaleFactor, shadowScale * scaleFactor, 1)
-    node.shadowMaterial.opacity = shadowOpacity * shadowOpacityMul
-
-    return {
-      animating:
-        node.moving ||
-        node.landStartMs !== null ||
-        node.spawnStartMs !== null ||
-        node.despawnStartMs !== null ||
-        node.isEmoji,
-      finishedLeaving,
-    }
-  }
-
-  const render = (): void => {
-    composer.render()
-  }
-
-  const removeNode = (id: number): void => {
-    const node = nodes.get(id)
-    if (!node) return
-    entityGroup.remove(node.mesh)
-    entityGroup.remove(node.shadow)
-    node.shadowMaterial.dispose()
-    nodes.delete(id)
-  }
-
   const tick = (nowMs: number): void => {
     frameActive = false
     const viewportChanged = updateViewport()
@@ -1218,10 +1379,10 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
       if (step.finishedLeaving) leavingDoneIds.push(id)
     }
     for (const id of leavingDoneIds) {
-      removeNode(id)
+      removeEntityNode(nodes, entityGroup, id)
     }
     if (needsRender || viewportChanged || hasAnimation) {
-      render()
+      composer.render()
       needsRender = false
     }
     if (hasAnimation && container) {
@@ -1234,115 +1395,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     if (frameActive) return
     frameActive = true
     rafId = window.requestAnimationFrame(tick)
-  }
-
-  const syncEntities = (state: GameState): void => {
-    const nowMs = performance.now()
-    const seen = new Set<number>()
-    const views = buildEntityViews(state)
-
-    for (const view of views) {
-      const item = view.item
-      seen.add(item.id)
-
-      let node = nodes.get(item.id)
-      let nodeCreated = false
-      if (!node) {
-        node = createNode(item, nowMs)
-        nodes.set(item.id, node)
-        nodeCreated = true
-      } else if (node.despawnStartMs !== null) {
-        node.despawnStartMs = null
-        node.spawnStartMs = nowMs
-      }
-
-      const target = computeEntityBaseTarget(state, view)
-      const material = getMaterial(item)
-      if (node.mesh.material !== material) node.mesh.material = material
-      const emoji = isEmojiItem(item)
-      node.isEmoji = emojiStretchEnabledForItem(item)
-      node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)
-      node.mesh.castShadow = true
-      node.mesh.receiveShadow = !emoji
-      node.rotX = cardRotXForItem(item)
-      const stableRoll = cardRollForItemStep(item, node.rollStep)
-      if (!node.moving && Math.abs(node.rotRoll - stableRoll) > POSITION_EPSILON) {
-        node.rotRoll = stableRoll
-        node.fromRoll = stableRoll
-        node.toRoll = stableRoll
-      }
-
-      if (nodeCreated) {
-        node.fromX = target.x
-        node.fromY = target.y
-        node.fromBaseZ = target.baseZ
-        node.fromRoll = node.rotRoll
-        node.toX = target.x
-        node.toY = target.y
-        node.toBaseZ = target.baseZ
-        node.toRoll = node.rotRoll
-        node.mesh.position.set(target.x, target.y, target.baseZ)
-        node.mesh.rotation.set(node.rotX, 0, node.rotRoll)
-        node.mesh.scale.set(1, 1, 1)
-        node.shadow.position.set(target.x, target.y, SHADOW_BASE_Z)
-        node.shadow.scale.set(
-          ENTITY_IDLE_SHADOW_SCALE,
-          ENTITY_IDLE_SHADOW_SCALE,
-          1,
-        )
-        node.shadowMaterial.opacity = ENTITY_SHADOW_OPACITY
-        continue
-      }
-
-      const positionChanged =
-        Math.abs(node.toX - target.x) > POSITION_EPSILON ||
-        Math.abs(node.toY - target.y) > POSITION_EPSILON ||
-        Math.abs(node.toBaseZ - target.baseZ) > POSITION_EPSILON
-
-      if (positionChanged) {
-        node.fromX = node.mesh.position.x
-        node.fromY = node.mesh.position.y
-        node.fromBaseZ = node.mesh.position.z
-        node.fromRoll = node.mesh.rotation.z
-        node.rollStep += 1
-        node.rotRoll = cardRollForItemStep(item, node.rollStep)
-        node.toX = target.x
-        node.toY = target.y
-        node.toBaseZ = target.baseZ
-        node.toRoll = node.rotRoll
-        node.animStartMs = nowMs
-        node.animDurationMs = MOVE_ANIM_MS
-        node.moving = true
-      } else {
-        node.toX = target.x
-        node.toY = target.y
-        node.toBaseZ = target.baseZ
-        node.toRoll = node.rotRoll
-        if (!node.moving && node.landStartMs === null) {
-          node.mesh.position.set(node.toX, node.toY, node.toBaseZ)
-          node.mesh.rotation.set(node.rotX, 0, node.toRoll)
-          node.mesh.scale.set(1, 1, 1)
-          node.shadow.position.set(node.toX, node.toY, SHADOW_BASE_Z)
-          node.shadow.scale.set(
-            ENTITY_IDLE_SHADOW_SCALE,
-            ENTITY_IDLE_SHADOW_SCALE,
-            1,
-          )
-          node.shadowMaterial.opacity = ENTITY_SHADOW_OPACITY
-        }
-      }
-    }
-
-    for (const [id, node] of nodes) {
-      if (!seen.has(id)) {
-        if (node.despawnStartMs === null) {
-          node.despawnStartMs = nowMs
-          node.spawnStartMs = null
-          node.moving = false
-          node.landStartMs = null
-        }
-      }
-    }
   }
 
   const applyReadabilityGuard = (state: GameState): void => {
@@ -1399,12 +1451,16 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     if (boardWidth !== state.width || boardHeight !== state.height) {
       boardWidth = state.width
       boardHeight = state.height
-      rebuildGround()
+      groundVisuals = rebuildGroundVisuals(world, boardWidth, boardHeight, groundVisuals)
       updateCamera()
     }
 
     applyReadabilityGuard(state)
-    syncEntities(state)
+    syncEntityNodes(state, {
+      nodes,
+      getMaterial,
+      createNode,
+    })
     needsRender = true
     ensureFrame()
   }
@@ -1429,24 +1485,7 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     textureCache.clear()
     shadowTexture.dispose()
 
-    if (groundMesh) {
-      world.remove(groundMesh)
-      groundMesh.geometry.dispose()
-      groundMesh.material.dispose()
-    }
-    groundMesh = null
-    if (playAreaFillMesh) {
-      world.remove(playAreaFillMesh)
-      playAreaFillMesh.geometry.dispose()
-      playAreaFillMesh.material.dispose()
-    }
-    playAreaFillMesh = null
-    if (playAreaOutline) {
-      world.remove(playAreaOutline)
-      playAreaOutline.geometry.dispose()
-      playAreaOutline.material.dispose()
-    }
-    playAreaOutline = null
+    groundVisuals = disposeGroundVisuals(world, groundVisuals)
 
     composer.dispose()
     renderer.dispose()
@@ -1455,18 +1494,11 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   }
 
   return {
-    isSupported: true,
     mount,
     sync,
     dispose,
   }
 }
 
-export const createBoard3dRenderer = (): Board3dRenderer => {
-  try {
-    return createBoard3dRendererUnsafe()
-  } catch (error) {
-    console.warn('3D renderer unavailable, falling back to DOM board renderer.', error)
-    return createNoopRenderer()
-  }
-}
+export const createBoard3dRenderer = (): Board3dRenderer =>
+  createBoard3dRendererUnsafe()

@@ -41,9 +41,6 @@ let prevBoardSignature: string | null = null
 let boardEl: HTMLElement | null = null
 let statusEl: HTMLElement | null = null
 const board3dRenderer = createBoard3dRenderer()
-if (!board3dRenderer.isSupported) {
-  throw new Error('3D renderer is unavailable.')
-}
 
 const closeReferenceDialog = (): void => {
   showReferenceDialog = false
