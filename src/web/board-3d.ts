@@ -1,12 +1,10 @@
 import {
   AmbientLight,
-  BufferAttribute,
   BufferGeometry,
   CanvasTexture,
   Color,
   DirectionalLight,
   DoubleSide,
-  FogExp2,
   Group,
   LinearFilter,
   Line,
@@ -17,8 +15,6 @@ import {
   PCFSoftShadowMap,
   PerspectiveCamera,
   PlaneGeometry,
-  Points,
-  PointsMaterial,
   RepeatWrapping,
   Scene,
   Shape,
@@ -50,9 +46,7 @@ import {
   BOARD3D_TEXT_CARD_STYLE_CONFIG,
   BOARD3D_CARD_TEXTURE_CONFIG,
   BOARD3D_GROUND_TEXTURE_CONFIG,
-  BOARD3D_DUST_TEXTURE_CONFIG,
   BOARD3D_SHADOW_TEXTURE_CONFIG,
-  BOARD3D_ATMOSPHERE_CONFIG,
 } from './board-3d-config.js'
 import { OBJECT_GLYPHS } from '../view/render-config.js'
 import {
@@ -353,17 +347,6 @@ const {
 } = BOARD3D_GROUND_TEXTURE_CONFIG
 
 const {
-  DUST_TEXTURE_SIZE,
-  DUST_TEXTURE_CENTER,
-  DUST_TEXTURE_INNER_RADIUS,
-  DUST_TEXTURE_OUTER_RADIUS,
-  DUST_TEXTURE_STOP_0,
-  DUST_TEXTURE_STOP_1,
-  DUST_TEXTURE_STOP_2,
-  DUST_TEXTURE_STOP_1_AT,
-} = BOARD3D_DUST_TEXTURE_CONFIG
-
-const {
   SHADOW_TEXTURE_SIZE,
   SHADOW_TEXTURE_CENTER,
   SHADOW_TEXTURE_INNER_RADIUS,
@@ -373,26 +356,6 @@ const {
   SHADOW_TEXTURE_STOP_2,
   SHADOW_TEXTURE_STOP_1_AT,
 } = BOARD3D_SHADOW_TEXTURE_CONFIG
-
-const {
-  ATMOSPHERE_FOG_COLOR,
-  ATMOSPHERE_FOG_DENSITY,
-  DUST_PARTICLE_COUNT,
-  DUST_SPREAD_BASE,
-  DUST_SPREAD_MUL,
-  DUST_HEIGHT_BASE,
-  DUST_HEIGHT_MUL,
-  DUST_LAYER_DEPTH_SCALE,
-  DUST_PARTICLE_SIZE,
-  DUST_PARTICLE_OPACITY,
-  DUST_PARTICLE_ALPHA_TEST,
-  DUST_PARTICLE_COLOR,
-  DUST_LAYER_BASE_Y,
-  DUST_HEIGHT_EXPONENT,
-  DUST_SEED_ANGLE,
-  DUST_SEED_RADIUS,
-  DUST_SEED_HEIGHT,
-} = BOARD3D_ATMOSPHERE_CONFIG
 
 const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
   up: BELT_DIRECTION_GLYPH_UP,
@@ -911,72 +874,6 @@ const createGroundTexture = (): CanvasTexture => {
   return texture
 }
 
-const createDustTexture = (): CanvasTexture => {
-  const canvas = document.createElement('canvas')
-  canvas.width = DUST_TEXTURE_SIZE
-  canvas.height = DUST_TEXTURE_SIZE
-  const ctx = canvas.getContext('2d')
-  if (!ctx) throw new Error('Failed to create dust texture context.')
-
-  const gradient = ctx.createRadialGradient(
-    DUST_TEXTURE_CENTER,
-    DUST_TEXTURE_CENTER,
-    DUST_TEXTURE_INNER_RADIUS,
-    DUST_TEXTURE_CENTER,
-    DUST_TEXTURE_CENTER,
-    DUST_TEXTURE_OUTER_RADIUS,
-  )
-  gradient.addColorStop(0, DUST_TEXTURE_STOP_0)
-  gradient.addColorStop(DUST_TEXTURE_STOP_1_AT, DUST_TEXTURE_STOP_1)
-  gradient.addColorStop(1, DUST_TEXTURE_STOP_2)
-  ctx.fillStyle = gradient
-  ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-  const texture = new CanvasTexture(canvas)
-  texture.colorSpace = SRGBColorSpace
-  texture.minFilter = LinearFilter
-  texture.magFilter = LinearFilter
-  return texture
-}
-
-const createDustLayer = (): {
-  points: Points<BufferGeometry, PointsMaterial>
-  geometry: BufferGeometry
-  material: PointsMaterial
-  texture: CanvasTexture
-} => {
-  const positions = new Float32Array(DUST_PARTICLE_COUNT * 3)
-  for (let index = 0; index < DUST_PARTICLE_COUNT; index += 1) {
-    const seed = index + 1
-    const angle = hash01(seed * DUST_SEED_ANGLE) * Math.PI * 2
-    const radius = Math.sqrt(hash01(seed * DUST_SEED_RADIUS))
-    const height = Math.pow(
-      hash01(seed * DUST_SEED_HEIGHT),
-      DUST_HEIGHT_EXPONENT,
-    )
-    positions[index * 3 + 0] = Math.cos(angle) * radius
-    positions[index * 3 + 1] = height
-    positions[index * 3 + 2] = Math.sin(angle) * radius
-  }
-
-  const geometry = new BufferGeometry()
-  geometry.setAttribute('position', new BufferAttribute(positions, 3))
-  const texture = createDustTexture()
-  const material = new PointsMaterial({
-    map: texture,
-    color: new Color(DUST_PARTICLE_COLOR),
-    size: DUST_PARTICLE_SIZE,
-    transparent: true,
-    opacity: DUST_PARTICLE_OPACITY,
-    alphaTest: DUST_PARTICLE_ALPHA_TEST,
-    depthWrite: false,
-    sizeAttenuation: true,
-  })
-  const points = new Points(geometry, material)
-  points.position.set(0, DUST_LAYER_BASE_Y, 0)
-  return { points, geometry, material, texture }
-}
-
 const createShadowTexture = (): CanvasTexture => {
   const canvas = document.createElement('canvas')
   canvas.width = SHADOW_TEXTURE_SIZE
@@ -1020,7 +917,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   const initialCameraTier = selectClayCameraTier(1, 1)
   const scene = new Scene()
   scene.background = new Color(preset.sceneBackground)
-  scene.fog = new FogExp2(ATMOSPHERE_FOG_COLOR, ATMOSPHERE_FOG_DENSITY)
   const camera = new PerspectiveCamera(
     initialCameraTier.fov,
     1,
@@ -1115,8 +1011,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   const materialCache = new Map<string, CardMaterial>()
   const nodes = new Map<number, EntityNode>()
   const shadowTexture = createShadowTexture()
-  const dustLayer = createDustLayer()
-  scene.add(dustLayer.points)
   const textureAnisotropy = Math.min(
     TEXTURE_ANISOTROPY_CAP,
     renderer.capabilities.getMaxAnisotropy(),
@@ -1138,13 +1032,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
   let activeBokehAperture = preset.bokeh.aperture
   let activeBokehMaxBlur = preset.bokeh.maxBlur
   let currentReadabilityMix = 0
-
-  const updateDustLayer = (): void => {
-    const span = Math.max(1, boardWidth, boardHeight)
-    const spread = DUST_SPREAD_BASE + span * DUST_SPREAD_MUL
-    const height = DUST_HEIGHT_BASE + span * DUST_HEIGHT_MUL
-    dustLayer.points.scale.set(spread, height, spread * DUST_LAYER_DEPTH_SCALE)
-  }
 
   const updateBloomResolution = (): void => {
     if (viewportWidth <= 0 || viewportHeight <= 0) return
@@ -1171,7 +1058,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
           map: texture,
           transparent: true,
           alphaTest: CARD_MATERIAL_ALPHA_TEST,
-          fog: true,
           side: DoubleSide,
         })
       : new MeshStandardMaterial({
@@ -1184,7 +1070,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
           emissiveIntensity: item.isText
             ? preset.materials.textEmissiveIntensity
             : preset.materials.objectEmissiveIntensity,
-          fog: true,
           side: DoubleSide,
         })
     materialCache.set(spec.key, material)
@@ -1282,7 +1167,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     camera.lookAt(0, lookAtY, lookAtZ)
     camera.updateProjectionMatrix()
     updateLightRig()
-    updateDustLayer()
     updateBokehFocus()
   }
 
@@ -1770,10 +1654,6 @@ const createBoard3dRendererUnsafe = (): Board3dRenderer => {
     for (const texture of textureCache.values()) texture.dispose()
     textureCache.clear()
     shadowTexture.dispose()
-    scene.remove(dustLayer.points)
-    dustLayer.geometry.dispose()
-    dustLayer.material.dispose()
-    dustLayer.texture.dispose()
 
     if (groundMesh) {
       world.remove(groundMesh)

@@ -416,25 +416,6 @@ export const BOARD3D_GROUND_TEXTURE_CONFIG = {
   GROUND_TEXTURE_STROKE_SEED_WIDTH: 19.3,
 } as const
 
-export const BOARD3D_DUST_TEXTURE_CONFIG = {
-  /** 尘埃纹理：尘埃纹理尺寸。建议使用非负值，计数场景优先整数；会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_SIZE: 64,
-  /** 尘埃纹理：尘埃纹理中心。会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_CENTER: 32,
-  /** 尘埃纹理：尘埃纹理内圈半径。会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_INNER_RADIUS: 4,
-  /** 尘埃纹理：尘埃纹理外圈半径。会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_OUTER_RADIUS: 31,
-  /** 尘埃纹理：尘埃纹理渐变点0。会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_STOP_0: 'rgba(255,255,255,0.92)',
-  /** 尘埃纹理：尘埃纹理渐变点1。会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_STOP_1: 'rgba(248,245,236,0.5)',
-  /** 尘埃纹理：尘埃纹理渐变点2。会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_STOP_2: 'rgba(248,245,236,0)',
-  /** 尘埃纹理：尘埃纹理渐变点1位置。会影响纹理清晰度和视觉可读性。 */
-  DUST_TEXTURE_STOP_1_AT: 0.4,
-} as const
-
 export const BOARD3D_SHADOW_TEXTURE_CONFIG = {
   /** 阴影纹理：阴影纹理尺寸。建议使用非负值，计数场景优先整数；会影响光照层次、阴影稳定性和性能。 */
   SHADOW_TEXTURE_SIZE: 128,
@@ -452,41 +433,4 @@ export const BOARD3D_SHADOW_TEXTURE_CONFIG = {
   SHADOW_TEXTURE_STOP_2: 'rgba(0, 0, 0, 0)',
   /** 阴影纹理：阴影纹理渐变点1位置。会影响光照层次、阴影稳定性和性能。 */
   SHADOW_TEXTURE_STOP_1_AT: 0.48,
-} as const
-
-export const BOARD3D_ATMOSPHERE_CONFIG = {
-  /** 氛围与尘埃：雾效颜色。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
-  ATMOSPHERE_FOG_COLOR: '#e8ecea',
-  /** 氛围与尘埃：雾效密度。用于微调整体观感和稳定性。 */
-  ATMOSPHERE_FOG_DENSITY: 0.022,
-  /** 氛围与尘埃：尘埃粒子数量。建议使用非负值，计数场景优先整数；用于微调整体观感和稳定性。 */
-  DUST_PARTICLE_COUNT: 260,
-  /** 氛围与尘埃：尘埃扩散基准。会影响对象位置或作用范围。 */
-  DUST_SPREAD_BASE: 4.4,
-  /** 氛围与尘埃：尘埃扩散倍率。用于微调整体观感和稳定性。 */
-  DUST_SPREAD_MUL: 0.62,
-  /** 氛围与尘埃：尘埃高度基准。会影响对象位置或作用范围。 */
-  DUST_HEIGHT_BASE: 1.9,
-  /** 氛围与尘埃：尘埃高度倍率。会影响对象位置或作用范围。 */
-  DUST_HEIGHT_MUL: 0.24,
-  /** 氛围与尘埃：尘埃层深度缩放。会影响对象位置或作用范围。 */
-  DUST_LAYER_DEPTH_SCALE: 0.8,
-  /** 氛围与尘埃：尘埃粒子尺寸。建议使用非负值，计数场景优先整数；用于微调整体观感和稳定性。 */
-  DUST_PARTICLE_SIZE: 0.18,
-  /** 氛围与尘埃：尘埃粒子透明度。通常取值 0~1；用于微调整体观感和稳定性。 */
-  DUST_PARTICLE_OPACITY: 0.2,
-  /** 氛围与尘埃：尘埃粒子Alpha裁剪阈值。通常取值 0~1；用于微调整体观感和稳定性。 */
-  DUST_PARTICLE_ALPHA_TEST: 0.01,
-  /** 氛围与尘埃：尘埃粒子颜色。使用 CSS 颜色字符串；会影响纹理清晰度和视觉可读性。 */
-  DUST_PARTICLE_COLOR: '#f8f2e6',
-  /** 氛围与尘埃：尘埃层基准Y。会影响对象位置或作用范围。 */
-  DUST_LAYER_BASE_Y: 0.32,
-  /** 氛围与尘埃：尘埃高度指数。会影响对象位置或作用范围。 */
-  DUST_HEIGHT_EXPONENT: 0.72,
-  /** 氛围与尘埃：尘埃随机种子角度。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  DUST_SEED_ANGLE: 11.3,
-  /** 氛围与尘埃：尘埃随机种子半径。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  DUST_SEED_RADIUS: 37.7,
-  /** 氛围与尘埃：尘埃随机种子高度。用于固定程序化随机分布；会改变噪声分布细节，但不改变整体风格。 */
-  DUST_SEED_HEIGHT: 71.9,
 } as const
