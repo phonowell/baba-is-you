@@ -77,7 +77,7 @@ export const BOARD3D_CAMERA_CONFIG = {
   /** 用途: 控制相机取景中的 CAMERA_CARD_FACE_ANGLE_RAD; 效果: 影响朝向关系透视感与空间构图; 可用值范围: 弧度值有限实数. */
   CAMERA_CARD_FACE_ANGLE_RAD: Math.PI / 4,
   /** 用途: 控制相机取景中的 CAMERA_PITCH_RAD; 效果: 影响朝向关系透视感与空间构图; 可用值范围: 弧度值有限实数. */
-  CAMERA_PITCH_RAD: Math.PI / 4,
+  CAMERA_PITCH_RAD: (75 * Math.PI) / 180,
   /** 用途: 控制相机取景中的 CAMERA_DISTANCE_SCALE; 效果: 影响细节密度画面清晰度与性能开销; 可用值范围: 有限实数. */
   CAMERA_DISTANCE_SCALE: 0.56,
   /** 用途: 控制相机取景中的 CAMERA_DISTANCE_MIN; 效果: 影响细节密度画面清晰度与性能开销; 可用值范围: 有限实数需与对应上下界语义保持一致. */
