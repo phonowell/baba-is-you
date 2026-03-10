@@ -8,7 +8,7 @@ import {
   uniqueTerms,
 } from './rules-parse.js'
 import { collectSubjectPatterns, stringifyCondition } from './rules-subjects.js'
-import { PROPERTY_WORDS } from './types.js'
+import { asObjectWord, PROPERTY_WORDS, RULE_OPERATOR_WORDS } from './types.js'
 
 import type { LevelItem, Rule } from './types.js'
 
@@ -20,7 +20,7 @@ const ruleKindFor = (
   if (operator === 'make') return 'make'
   if (operator === 'eat') return 'eat'
   if (operator === 'write') return 'write'
-  return PROPERTY_WORDS.has(objectWord) ? 'property' : 'transform'
+  return PROPERTY_WORDS.has(objectWord) ? 'is-property' : 'is-transform'
 }
 
 export const collectRules = (
@@ -28,6 +28,7 @@ export const collectRules = (
   width: number,
   height: number,
 ): Rule[] => {
+  const operatorWords = new Set<string>(RULE_OPERATOR_WORDS)
   const grid = new Map<number, string[]>()
   for (const item of items) {
     if (!item.isText) continue
@@ -45,15 +46,7 @@ export const collectRules = (
   const seen = new Set<string>()
 
   for (const item of items) {
-    if (
-      !item.isText ||
-      (item.name !== 'is' &&
-        item.name !== 'has' &&
-        item.name !== 'make' &&
-        item.name !== 'eat' &&
-        item.name !== 'write')
-    )
-      continue
+    if (!item.isText || !operatorWords.has(item.name)) continue
 
     const dirs: Array<[number, number]> = [
       [1, 0],
@@ -94,7 +87,7 @@ export const collectRules = (
           const rule: Rule = {
             subject: subject.subject,
             ...(subject.subjectNegated ? { subjectNegated: true } : {}),
-            object: object.word,
+            object: asObjectWord(object.word),
             ...(object.negated ? { objectNegated: true } : {}),
             kind: ruleKindFor(item.name, object.word),
             ...(subject.condition ? { condition: subject.condition } : {}),

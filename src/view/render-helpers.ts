@@ -9,6 +9,8 @@ import { sortRenderStack } from './stack-policy.js'
 import { SYNTAX_WORDS } from './syntax-words.js'
 import { formatCell, measureDisplayWidth, stripAnsi } from './render-width.js'
 
+import { ruleOperatorForKind } from '../logic/types.js'
+
 import type { Direction, Item, Rule } from '../logic/types.js'
 
 const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
@@ -69,19 +71,10 @@ export const renderRules = (rules: Rule[]): string[] => {
         ? ''
         : rule.condition.kind === 'lonely'
           ? ` ${rule.condition.negated ? 'NOT ' : ''}LONELY`
-          : ` ${rule.condition.kind.toUpperCase()} ${
-              rule.condition.objectNegated ? 'NOT ' : ''
-            }${rule.condition.object.toUpperCase()}`
-      const verb =
-        rule.kind === 'has'
-          ? 'HAS'
-          : rule.kind === 'make'
-            ? 'MAKE'
-          : rule.kind === 'eat'
-              ? 'EAT'
-              : rule.kind === 'write'
-                ? 'WRITE'
-              : 'IS'
+          : 'direction' in rule.condition
+            ? ` FACING ${rule.condition.negated ? 'NOT ' : ''}${rule.condition.direction.toUpperCase()}`
+            : ` ${rule.condition.kind.toUpperCase()} ${rule.condition.negated ? 'NOT ' : ''}${rule.condition.object.toUpperCase()}`
+      const verb = ruleOperatorForKind(rule.kind).toUpperCase()
       const object =
         `${rule.objectNegated ? 'NOT ' : ''}${rule.object}`.toUpperCase()
       return `${subject}${condition} ${verb} ${object}`

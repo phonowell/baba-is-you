@@ -5,12 +5,12 @@ import {
   MeshStandardMaterial,
 } from 'three'
 
-import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config.js'
-import { cardSpecForItem } from './board-3d-shared.js'
+import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
+import { cardSpecForItem } from './board-3d-shared-item.js'
 import { createCardTexture } from './board-3d-textures.js'
 
 import type { Item } from '../logic/types.js'
-import type { CardMaterial } from './board-3d-nodes.js'
+import type { CardMaterial } from './board-3d-node-types.js'
 
 type ClayPreset = typeof import('./clay-config.js').CLAY_PRESET
 

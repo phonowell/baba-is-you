@@ -1,6 +1,6 @@
 import { keyFor } from './helpers.js'
 import { createRuleMatchContext, matchesRuleObjectWord } from './rule-match.js'
-import { PROPERTY_WORDS } from './types.js'
+import { isPropertyRule } from './types.js'
 
 import type { Direction, Property, Rule, RuleCondition } from './types.js'
 
@@ -19,8 +19,6 @@ type EmptyMatchContext = {
   height: number
   width: number
 }
-
-const DIRECTION_WORDS = new Set<Direction>(['up', 'right', 'down', 'left'])
 
 const itemsAt = (
   context: EmptyMatchContext,
@@ -57,7 +55,7 @@ const matchesEmptyCondition = (
 
   if (condition.kind === 'on') {
     const matched = matchesObjectAtCell(context, x, y, condition.object)
-    return condition.objectNegated ? !matched : matched
+    return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'near') {
@@ -71,21 +69,21 @@ const matchesEmptyCondition = (
         if (matchesObjectAtCell(context, nx, ny, condition.object)) matched = true
       }
     }
-    return condition.objectNegated ? !matched : matched
+    return condition.negated ? !matched : matched
   }
 
-  if (DIRECTION_WORDS.has(condition.object as Direction)) {
-    const matched = condition.object === 'right'
-    return condition.objectNegated ? !matched : matched
+  if ('direction' in condition) {
+    const matched = condition.direction === 'right'
+    return condition.negated ? !matched : matched
   }
 
   const nx = x + 1
   const ny = y
   if (nx < 0 || ny < 0 || nx >= context.width || ny >= context.height)
-    return condition.objectNegated ?? false
+    return condition.negated ?? false
 
   const matched = matchesObjectAtCell(context, nx, ny, condition.object)
-  return condition.objectNegated ? !matched : matched
+  return condition.negated ? !matched : matched
 }
 
 export const createEmptyMatchContext = (
@@ -140,15 +138,13 @@ export const resolveEmptyProperties = (rules: Rule[]): Set<Property> => {
   const no = new Set<Property>()
 
   for (const rule of rules) {
-    if (rule.kind !== 'property') continue
+    if (!isPropertyRule(rule)) continue
     if (rule.subject !== 'empty') continue
     if (rule.subjectNegated) continue
     if (rule.condition) continue
-    if (!PROPERTY_WORDS.has(rule.object)) continue
 
-    const prop = rule.object as Property
-    if (rule.objectNegated) no.add(prop)
-    else yes.add(prop)
+    if (rule.objectNegated) no.add(rule.object)
+    else yes.add(rule.object)
   }
 
   const result = new Set<Property>()
@@ -168,7 +164,7 @@ export const emptyHasProp = (
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       if (itemsAt(context, x, y).length) continue
-      const targets = resolveEmptyRuleTargetsAt(rules, context, x, y, 'property')
+      const targets = resolveEmptyRuleTargetsAt(rules, context, x, y, 'is-property')
       if (targets.includes(prop)) return true
     }
   }

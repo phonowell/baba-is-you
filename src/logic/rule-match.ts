@@ -1,4 +1,5 @@
 import { keyFor } from './helpers.js'
+import { isPropertyRule } from './types.js'
 
 import type { Item, LevelItem, Rule } from './types.js'
 
@@ -11,8 +12,6 @@ export type RuleMatchContext = {
   items: MatchItem[]
   width: number
 }
-
-const DIRECTION_WORDS = new Set(['up', 'right', 'down', 'left'])
 
 export const matchesRuleObjectWord = (
   item: MatchItem,
@@ -35,7 +34,7 @@ const resolveGroupMembers = (
   const members = new Set<string>()
 
   for (const rule of rules) {
-    if (rule.kind !== 'property') continue
+    if (!isPropertyRule(rule)) continue
     if (rule.object !== 'group' || rule.objectNegated) continue
     if (rule.condition) continue
     if (rule.subjectNegated) continue
@@ -99,14 +98,16 @@ const matchesCondition = (
   }
 
   const termMatches = (candidate: MatchItem): boolean =>
-    matchesRuleObjectWord(candidate, condition.object, context.groupMembers)
+    'object' in condition
+      ? matchesRuleObjectWord(candidate, condition.object, context.groupMembers)
+      : false
 
   if (condition.kind === 'on') {
     const matched =
       condition.object === 'empty'
         ? otherCellItems.length === 0
         : otherCellItems.some((candidate) => termMatches(candidate))
-    return condition.objectNegated ? !matched : matched
+    return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'near') {
@@ -130,12 +131,12 @@ const matchesCondition = (
           matched = true
       }
     }
-    return condition.objectNegated ? !matched : matched
+    return condition.negated ? !matched : matched
   }
 
-  if (DIRECTION_WORDS.has(condition.object)) {
-    const matched = (item.dir ?? 'right') === condition.object
-    return condition.objectNegated ? !matched : matched
+  if ('direction' in condition) {
+    const matched = (item.dir ?? 'right') === condition.direction
+    return condition.negated ? !matched : matched
   }
 
   const direction = item.dir ?? 'right'
@@ -150,13 +151,13 @@ const matchesCondition = (
   const x = item.x + delta[0]
   const y = item.y + delta[1]
   if (x < 0 || y < 0 || x >= context.width || y >= context.height)
-    return condition.objectNegated ?? false
+    return condition.negated ?? false
   const inFront = context.byCell.get(keyFor(x, y, context.width)) ?? []
   const matched =
     condition.object === 'empty'
       ? inFront.length === 0
       : inFront.some((candidate) => termMatches(candidate))
-  return condition.objectNegated ? !matched : matched
+  return condition.negated ? !matched : matched
 }
 
 export const matchesRuleSubject = (

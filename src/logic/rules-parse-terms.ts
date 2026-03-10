@@ -18,13 +18,9 @@ type ParseChainWithNextResult = {
   cutByBoundary: boolean
 }
 
-const CHAIN_BOUNDARY_WORDS = new Set<string>([
-  'is',
-  'has',
-  'make',
-  'eat',
-  'write',
-])
+import { RULE_OPERATOR_WORDS } from './types.js'
+
+const CHAIN_BOUNDARY_WORDS = new Set<string>(RULE_OPERATOR_WORDS)
 
 const parseTermOptions = (
   readWordsAt: (position: number) => string[],

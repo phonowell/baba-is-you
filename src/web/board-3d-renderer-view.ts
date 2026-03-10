@@ -4,11 +4,9 @@ import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectCom
 import type { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 
 import { readabilityMix } from './clay-config.js'
-import {
-  BOARD3D_LAYOUT_CONFIG,
-  BOARD3D_POSTFX_CONFIG,
-} from './board-3d-config.js'
-import { lerp } from './board-3d-shared.js'
+import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
+import { BOARD3D_POSTFX_CONFIG } from './board-3d-config-postfx.js'
+import { lerp } from './board-3d-shared-math.js'
 import { updateRendererCamera } from './board-3d-renderer-camera.js'
 import { updateRendererLightRig } from './board-3d-renderer-lighting.js'
 

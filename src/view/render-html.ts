@@ -45,17 +45,23 @@ const collectTextNames = (state: GameState): Set<string> => {
   return textNames
 }
 
+export const renderReferenceRulesHtml = (state: GameState): string => {
+  const rules = renderRules(state.rules).map(
+    (line) => `<li>${escapeHtml(line)}</li>`,
+  )
+  return rules.length ? rules.join('') : '<li>(no rules)</li>'
+}
+
+export const renderReferenceLegendHtml = (state: GameState): string => {
+  const textNames = collectTextNames(state)
+  const legend = legendEntries(textNames)
+  return legend.length ? legend.join('') : '<li>(no text tiles)</li>'
+}
+
 export const renderHtml = (
   state: GameState,
   uiState: RenderHtmlUiState = { showReferenceDialog: false },
 ): string => {
-  const textNames = collectTextNames(state)
-
-  const rules = renderRules(state.rules).map(
-    (line) => `<li>${escapeHtml(line)}</li>`,
-  )
-  const legend = legendEntries(textNames)
-
   const showDialog = uiState.showReferenceDialog
   const dialogHiddenAttr = showDialog ? '' : ' hidden'
 
@@ -74,9 +80,9 @@ export const renderHtml = (
     '<button class="btn reference-close" data-action="close-reference" aria-label="Close rules and legend">Close</button>',
     '</header>',
     '<h3 class="reference-subtitle">Rules</h3>',
-    `<ul class="rules-list">${rules.length ? rules.join('') : '<li>(no rules)</li>'}</ul>`,
+    `<ul class="rules-list">${renderReferenceRulesHtml(state)}</ul>`,
     '<h3 class="reference-subtitle">Legend</h3>',
-    `<ul class="legend-list">${legend.length ? legend.join('') : '<li>(no text tiles)</li>'}</ul>`,
+    `<ul class="legend-list">${renderReferenceLegendHtml(state)}</ul>`,
     '</section>',
     '</div>',
     '</section>',

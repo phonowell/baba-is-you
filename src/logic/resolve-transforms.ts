@@ -73,7 +73,7 @@ export const applyTransforms = (
   changed: boolean
 } => {
   const { context, height, width } = runtime
-  const transformRules = runtime.buckets.transform
+  const transformRules = runtime.buckets.isTransform
   if (!transformRules.length) return { items, changed: false }
   const allTargets = Array.from(
     new Set(items.filter((item) => !item.isText).map((item) => item.name)),
@@ -135,7 +135,7 @@ export const applyTransforms = (
 
   const hasEmptyTransformRules = transformRules.some(
     (rule) =>
-      rule.kind === 'transform' &&
+      rule.kind === 'is-transform' &&
       rule.subject === 'empty' &&
       !rule.subjectNegated,
   )
@@ -153,7 +153,7 @@ export const applyTransforms = (
           emptyContext,
           x,
           y,
-          'transform',
+          'is-transform',
         )
         if (!emptyTargets.length) continue
 

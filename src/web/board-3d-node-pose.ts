@@ -1,14 +1,12 @@
-import {
-  BOARD3D_SHADOW_CONFIG,
-  BOARD3D_ANIMATION_CONFIG,
-} from './board-3d-config.js'
+import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import {
   clamp01,
   easeOutCubic,
   emojiBottomAnchorOffset,
   emojiMicroStretch,
   lerp,
-} from './board-3d-shared.js'
+} from './board-3d-shared-math.js'
 
 import type { EntityNode, PoseStepResult } from './board-3d-node-types.js'
 
@@ -128,8 +126,7 @@ export const applyNodePose = (node: EntityNode, nowMs: number): PoseStepResult =
       node.moving ||
       node.landStartMs !== null ||
       node.spawnStartMs !== null ||
-      node.despawnStartMs !== null ||
-      node.isEmoji,
+      node.despawnStartMs !== null,
     finishedLeaving,
   }
 }

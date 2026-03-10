@@ -1,103 +1,74 @@
-import type { GameStatus } from '../logic/types.js'
-import type { Direction } from '../logic/types.js'
+import { MENU_WINDOW_SIZE } from '../view/render-menu.js'
+
 import type { GameCommand, MenuCommand } from '../view/input.js'
+import type { WebAppAction, WebAppStateData } from './app-model.js'
 
-type GameCommandContext = {
-  status: GameStatus
-  levelIndex: number
-  levelCount: number
-  canUndo: boolean
-  move: (direction: Direction | null) => boolean
-  undo: () => void
-  resetLevel: (index: number) => void
-  markCampaignComplete: () => void
-  returnToMenu: () => void
-}
-
-export const runGameCommand = (
+export const mapGameCommandToAction = (
   cmd: GameCommand,
-  context: GameCommandContext,
-): boolean => {
+  state: WebAppStateData,
+): WebAppAction | null => {
   switch (cmd.type) {
     case 'move':
-      return context.move(cmd.direction)
+      return { type: 'move', direction: cmd.direction }
     case 'wait':
-      context.move(null)
-      return true
+      return { type: 'move', direction: null }
     case 'undo':
-      if (!context.canUndo) return false
-      context.undo()
-      return true
+      return state.history.length > 0 ? { type: 'undo' } : null
     case 'restart':
-      if (context.status === 'complete') {
-        context.resetLevel(0)
-        return true
+      return {
+        type: 'reset-level',
+        index: state.state.status === 'complete' ? 0 : state.levelIndex,
       }
-      context.resetLevel(context.levelIndex)
-      return true
     case 'next':
-      if (context.status === 'win') {
-        if (context.levelIndex === context.levelCount - 1) {
-          context.markCampaignComplete()
-          return true
+      if (state.state.status === 'win') {
+        if (state.levelIndex === state.levelCount - 1) {
+          return { type: 'mark-campaign-complete' }
         }
-        context.resetLevel(context.levelIndex + 1)
-        return true
+        return { type: 'reset-level', index: state.levelIndex + 1 }
       }
 
-      if (context.status === 'complete') {
-        context.resetLevel(0)
-        return true
+      if (state.state.status === 'complete') {
+        return { type: 'reset-level', index: 0 }
       }
 
-      return false
+      return null
     case 'back-menu':
-      context.returnToMenu()
-      return true
+      return { type: 'return-to-menu' }
     case 'noop':
-      return false
+      return null
   }
 }
 
-type MenuCommandContext = {
-  selectedLevelIndex: number
-  latestLevelIndex: number
-  pageSize: number
-  setSelectedLevelIndex: (index: number) => void
-  enterGame: (index: number) => void
-}
-
-export const runMenuCommand = (
+export const mapMenuCommandToAction = (
   cmd: MenuCommand,
-  context: MenuCommandContext,
-): boolean => {
+  state: WebAppStateData,
+): WebAppAction | null => {
   switch (cmd.type) {
     case 'up':
-      if (context.selectedLevelIndex > 0) {
-        context.setSelectedLevelIndex(context.selectedLevelIndex - 1)
+      return {
+        type: 'select-menu-level',
+        index: Math.max(0, state.menuSelectedLevelIndex - 1),
       }
-      return true
     case 'down':
-      if (context.selectedLevelIndex < context.latestLevelIndex) {
-        context.setSelectedLevelIndex(context.selectedLevelIndex + 1)
+      return {
+        type: 'select-menu-level',
+        index: Math.min(state.levelCount - 1, state.menuSelectedLevelIndex + 1),
       }
-      return true
     case 'page-left':
-      context.setSelectedLevelIndex(
-        Math.max(0, context.selectedLevelIndex - context.pageSize),
-      )
-      return true
+      return {
+        type: 'select-menu-level',
+        index: Math.max(0, state.menuSelectedLevelIndex - MENU_WINDOW_SIZE),
+      }
     case 'page-right':
-      context.setSelectedLevelIndex(
-        Math.min(context.latestLevelIndex, context.selectedLevelIndex + context.pageSize),
-      )
-      return true
+      return {
+        type: 'select-menu-level',
+        index: Math.min(state.levelCount - 1, state.menuSelectedLevelIndex + MENU_WINDOW_SIZE),
+      }
     case 'start':
-      context.enterGame(context.selectedLevelIndex)
-      return true
+      return { type: 'enter-game', index: state.menuSelectedLevelIndex }
     case 'quit-app':
-      return true
+      return null
     case 'noop':
-      return false
+      return null
   }
 }

@@ -1,4 +1,4 @@
-import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config.js'
+import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import {
   STACK_LAYER_PRIORITY,
   isGroundHugItem,

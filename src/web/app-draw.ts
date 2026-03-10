@@ -1,28 +1,21 @@
-import { renderHtml } from '../view/render-html.js'
 import { renderMenuHtml } from '../view/render-menu-html.js'
-import { statusLine } from '../view/status-line.js'
+import { createGameView } from './app-game-view.js'
 
 import type { GameState } from '../logic/types.js'
+import type { AppMode, WebAppSnapshot } from './app-model.js'
 
-export type AppMode = 'menu' | 'game'
-
-export type DrawRefs = {
+export type DrawState = {
   prevMode: AppMode | null
   prevShowDialog: boolean
   prevBoardSignature: string | null
-  boardEl: HTMLElement | null
-  statusEl: HTMLElement | null
+  gameView: ReturnType<typeof createGameView> | null
 }
 
 type CreateDrawOptions = {
   root: HTMLElement
   menuLevels: Array<{ title: string }>
-  refs: DrawRefs
-  getMode: () => AppMode
-  getLevelIndex: () => number
-  getState: () => GameState
-  getShowReferenceDialog: () => boolean
-  getMenuSelectedLevelIndex: () => number
+  drawState: DrawState
+  getSnapshot: () => WebAppSnapshot
   computeCellSize: (state: GameState) => number
   applyWithTransition: (fn: () => void) => void
   unmountBoard3d: () => void
@@ -33,12 +26,8 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
   const {
     root,
     menuLevels,
-    refs,
-    getMode,
-    getLevelIndex,
-    getState,
-    getShowReferenceDialog,
-    getMenuSelectedLevelIndex,
+    drawState,
+    getSnapshot,
     computeCellSize,
     applyWithTransition,
     unmountBoard3d,
@@ -46,10 +35,14 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
   } = options
 
   return (): void => {
-    const mode = getMode()
-    const levelIndex = getLevelIndex()
-    const state = getState()
-    const showReferenceDialog = getShowReferenceDialog()
+    const snapshot = getSnapshot()
+    const {
+      mode,
+      levelIndex,
+      state,
+      showReferenceDialog,
+      menuSelectedLevelIndex,
+    } = snapshot
 
     document.title =
       mode === 'game' ? `${levelIndex + 1}. ${state.title} – Baba Is You` : 'Baba Is You'
@@ -59,40 +52,41 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
       document.documentElement.style.setProperty('--cell-size', `${computeCellSize(state)}px`)
     }
 
-    const modeChanged = mode !== refs.prevMode
-    const dialogChanged = showReferenceDialog !== refs.prevShowDialog
+    const modeChanged = mode !== drawState.prevMode
     const nextBoardSignature =
       mode === 'game' ? `${levelIndex}:${state.width}x${state.height}` : null
-    const boardChanged = nextBoardSignature !== refs.prevBoardSignature
-    refs.prevMode = mode
-    refs.prevShowDialog = showReferenceDialog
-    refs.prevBoardSignature = nextBoardSignature
+    const boardChanged = nextBoardSignature !== drawState.prevBoardSignature
+    drawState.prevMode = mode
+    drawState.prevShowDialog = showReferenceDialog
+    drawState.prevBoardSignature = nextBoardSignature
 
-    if (modeChanged || dialogChanged || mode === 'menu' || boardChanged) {
+    if (modeChanged || mode === 'menu' || boardChanged) {
       if (mode !== 'game' || modeChanged || boardChanged) unmountBoard3d()
 
-      const html =
-        mode === 'menu'
-          ? renderMenuHtml({
-              levels: menuLevels,
-              selectedLevelIndex: getMenuSelectedLevelIndex(),
-            })
-          : renderHtml(state, { showReferenceDialog })
-
       applyWithTransition(() => {
-        root.innerHTML = html
-        refs.boardEl = root.querySelector<HTMLElement>('.board')
-        refs.statusEl = root.querySelector<HTMLElement>('.status')
-        if (mode === 'game' && refs.boardEl) {
-          mountAndSyncBoard3d(refs.boardEl, state)
+        root.replaceChildren()
+        if (mode === 'menu') {
+          root.innerHTML = renderMenuHtml({
+            levels: menuLevels,
+            selectedLevelIndex: menuSelectedLevelIndex,
+          })
+          drawState.gameView = null
+          return
         }
+
+        const gameView = createGameView({ document: root.ownerDocument })
+        gameView.update(state, showReferenceDialog)
+        root.append(gameView.root)
+        drawState.gameView = gameView
       })
+      if (mode === 'game' && drawState.gameView)
+        mountAndSyncBoard3d(drawState.gameView.boardEl, state)
       return
     }
 
-    if (mode === 'game' && refs.boardEl) {
-      mountAndSyncBoard3d(refs.boardEl, state)
+    if (mode === 'game' && drawState.gameView) {
+      drawState.gameView.update(state, showReferenceDialog)
+      mountAndSyncBoard3d(drawState.gameView.boardEl, state)
     }
-    if (refs.statusEl) refs.statusEl.textContent = statusLine(state.status)
   }
 }

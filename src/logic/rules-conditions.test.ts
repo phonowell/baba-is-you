@@ -26,15 +26,21 @@ const toRuleKeys = (
   collectRules(items, width, height)
     .map(
       (rule) => {
+        const kind =
+          rule.kind === 'is-property'
+            ? 'property'
+            : rule.kind === 'is-transform'
+              ? 'transform'
+              : rule.kind
         const condition = !rule.condition
           ? ''
           : rule.condition.kind === 'lonely'
             ? `[${rule.condition.negated ? '!' : ''}lonely]`
-            : `[${rule.condition.kind}:${
-                rule.condition.objectNegated ? '!' : ''
-              }${rule.condition.object}]`
+            : 'direction' in rule.condition
+              ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
+              : `[${rule.condition.kind}:${rule.condition.negated ? '!' : ''}${rule.condition.object}]`
         return (
-        `${rule.subjectNegated ? '!' : ''}${rule.subject}:${rule.kind}:${
+        `${rule.subjectNegated ? '!' : ''}${rule.subject}:${kind}:${
           rule.objectNegated ? '!' : ''
         }${rule.object}${condition}`
         )
@@ -54,6 +60,34 @@ test('collectRules supports ON condition before IS', () => {
   const keys = toRuleKeys(items, 5, 1)
 
   assert.deepEqual(keys, ['baba:property:you[on:rock]'])
+})
+
+test('collectRules keeps LEVEL as ON condition target noun', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'on', 1, 0),
+    createText(3, 'level', 2, 0),
+    createText(4, 'is', 3, 0),
+    createText(5, 'you', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, ['baba:property:you[on:level]'])
+})
+
+test('collectRules keeps ALL as FACING condition target noun', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'facing', 1, 0),
+    createText(3, 'all', 2, 0),
+    createText(4, 'is', 3, 0),
+    createText(5, 'you', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, ['baba:property:you[facing:all]'])
 })
 
 test('collectRules supports LONELY and NOT LONELY conditions', () => {

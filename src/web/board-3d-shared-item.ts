@@ -1,10 +1,10 @@
 import { createClayObjectPalette } from './clay-config.js'
+import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import {
-  BOARD3D_LAYOUT_CONFIG,
-  BOARD3D_ANIMATION_CONFIG,
   BOARD3D_RULE_VISUAL_CONFIG,
   BOARD3D_TEXT_CARD_STYLE_CONFIG,
-} from './board-3d-config.js'
+} from './board-3d-config-visuals.js'
 import { fnv1a, hashSeed01 } from './board-3d-shared-math.js'
 import { OBJECT_GLYPHS } from '../view/render-config.js'
 import { isGroundHugItem } from '../view/stack-policy.js'

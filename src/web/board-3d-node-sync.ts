@@ -1,17 +1,19 @@
 import {
   BOARD3D_LAYOUT_CONFIG,
-  BOARD3D_SHADOW_CONFIG,
-  BOARD3D_ANIMATION_CONFIG,
-} from './board-3d-config.js'
+} from './board-3d-config-layout.js'
+import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
+import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import {
-  buildEntityViews,
   cardRollForItemStep,
   cardRotXForItem,
-  computeEntityBaseTarget,
   emojiPhaseOffsetMsForItem,
   emojiStretchEnabledForItem,
   isEmojiItem,
-} from './board-3d-shared.js'
+} from './board-3d-shared-item.js'
+import {
+  buildEntityViews,
+  computeEntityBaseTarget,
+} from './board-3d-shared-layout.js'
 
 import type { Group } from 'three'
 import type { GameState } from '../logic/types.js'

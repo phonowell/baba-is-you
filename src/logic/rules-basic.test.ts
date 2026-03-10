@@ -26,15 +26,21 @@ const toRuleKeys = (
   collectRules(items, width, height)
     .map(
       (rule) => {
+        const kind =
+          rule.kind === 'is-property'
+            ? 'property'
+            : rule.kind === 'is-transform'
+              ? 'transform'
+              : rule.kind
         const condition = !rule.condition
           ? ''
           : rule.condition.kind === 'lonely'
             ? `[${rule.condition.negated ? '!' : ''}lonely]`
-            : `[${rule.condition.kind}:${
-                rule.condition.objectNegated ? '!' : ''
-              }${rule.condition.object}]`
+            : 'direction' in rule.condition
+              ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
+              : `[${rule.condition.kind}:${rule.condition.negated ? '!' : ''}${rule.condition.object}]`
         return (
-        `${rule.subjectNegated ? '!' : ''}${rule.subject}:${rule.kind}:${
+        `${rule.subjectNegated ? '!' : ''}${rule.subject}:${kind}:${
           rule.objectNegated ? '!' : ''
         }${rule.object}${condition}`
         )
@@ -114,6 +120,18 @@ test('collectRules supports HAS operator', () => {
   const keys = toRuleKeys(items, 3, 1)
 
   assert.deepEqual(keys, ['baba:has:key'])
+})
+
+test('collectRules keeps LEVEL as HAS target noun', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'has', 1, 0),
+    createText(3, 'level', 2, 0),
+  ]
+
+  const keys = toRuleKeys(items, 3, 1)
+
+  assert.deepEqual(keys, ['baba:has:level'])
 })
 
 test('collectRules supports MAKE operator', () => {

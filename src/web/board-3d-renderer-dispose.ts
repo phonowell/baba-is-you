@@ -9,7 +9,7 @@ import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectCom
 import { disposeGroundVisuals } from './board-3d-ground.js'
 
 import type { GroundVisuals } from './board-3d-ground.js'
-import type { EntityNode } from './board-3d-nodes.js'
+import type { EntityNode } from './board-3d-node-types.js'
 
 type DisposeBoard3dRendererResourcesArgs = {
   nodes: Map<number, EntityNode>

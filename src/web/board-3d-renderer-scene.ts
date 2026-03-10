@@ -18,10 +18,16 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { selectClayCameraTier } from './clay-config.js'
 import {
   BOARD3D_CAMERA_CONFIG,
+} from './board-3d-config-camera.js'
+import {
   BOARD3D_LIGHTING_CONFIG,
+} from './board-3d-config-lighting.js'
+import {
   BOARD3D_POSTFX_CONFIG,
+} from './board-3d-config-postfx.js'
+import {
   BOARD3D_SHADOW_CONFIG,
-} from './board-3d-config.js'
+} from './board-3d-config-shadow.js'
 import { configureTopLight } from './board-3d-ground.js'
 
 type ClayPreset = typeof import('./clay-config.js').CLAY_PRESET

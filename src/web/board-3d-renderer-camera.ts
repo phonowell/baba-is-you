@@ -1,7 +1,7 @@
 import type { PerspectiveCamera } from 'three'
 
 import { selectClayCameraTier } from './clay-config.js'
-import { BOARD3D_CAMERA_CONFIG } from './board-3d-config.js'
+import { BOARD3D_CAMERA_CONFIG } from './board-3d-config-camera.js'
 
 const {
   CAMERA_PITCH_RAD,

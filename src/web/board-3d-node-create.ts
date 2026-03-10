@@ -7,16 +7,16 @@ import {
 
 import {
   BOARD3D_LAYOUT_CONFIG,
-  BOARD3D_SHADOW_CONFIG,
-  BOARD3D_ANIMATION_CONFIG,
-} from './board-3d-config.js'
+} from './board-3d-config-layout.js'
+import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
+import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import {
   cardRollForItemStep,
   cardRotXForItem,
   emojiPhaseOffsetMsForItem,
   emojiStretchEnabledForItem,
   isEmojiItem,
-} from './board-3d-shared.js'
+} from './board-3d-shared-item.js'
 
 import type { Item } from '../logic/types.js'
 import type { CreateEntityNodeDeps, EntityNode } from './board-3d-node-types.js'

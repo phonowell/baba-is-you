@@ -3,9 +3,11 @@ import { CanvasTexture, LinearFilter, SRGBColorSpace } from 'three'
 import {
   BOARD3D_CARD_TEXTURE_CONFIG,
   BOARD3D_SHADOW_TEXTURE_CONFIG,
-  BOARD3D_RULE_VISUAL_CONFIG,
-} from './board-3d-config.js'
-import { BELT_DIRECTION_GLYPHS, type CardSpec } from './board-3d-shared.js'
+} from './board-3d-config-textures.js'
+import { BOARD3D_RULE_VISUAL_CONFIG } from './board-3d-config-visuals.js'
+import { BELT_DIRECTION_GLYPHS } from './board-3d-shared-item.js'
+
+import type { CardSpec } from './board-3d-shared-types.js'
 
 const {
   CARD_TEXTURE_SIZE,

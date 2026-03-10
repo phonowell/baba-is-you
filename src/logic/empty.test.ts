@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { emptyHasProp } from './empty.js'
+import { rule } from './rule-test-helpers.js'
 
 import type { LevelItem, Rule } from './types.js'
 
@@ -22,12 +23,12 @@ const createItem = (
 test('emptyHasProp applies conditional EMPTY property rules per empty cell', () => {
   const items = [createItem(1, 'rock', 1, 0, false)]
   const rules: Rule[] = [
-    {
+    rule({
       subject: 'empty',
       object: 'you',
-      kind: 'property',
+      kind: 'is-property',
       condition: { kind: 'near', object: 'rock' },
-    },
+    }),
   ]
 
   assert.equal(emptyHasProp(rules, 'you', items, 3, 1), true)
@@ -36,12 +37,12 @@ test('emptyHasProp applies conditional EMPTY property rules per empty cell', () 
 test('emptyHasProp does not treat unsatisfied EMPTY condition as global match', () => {
   const items = [createItem(1, 'rock', 1, 0, false)]
   const rules: Rule[] = [
-    {
+    rule({
       subject: 'empty',
       object: 'you',
-      kind: 'property',
+      kind: 'is-property',
       condition: { kind: 'on', object: 'rock' },
-    },
+    }),
   ]
 
   assert.equal(emptyHasProp(rules, 'you', items, 3, 1), false)

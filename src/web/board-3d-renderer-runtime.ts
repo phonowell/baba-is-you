@@ -2,17 +2,24 @@ import type { Group, WebGLRenderer } from 'three'
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 
 import { rebuildGroundVisuals } from './board-3d-ground.js'
+import { applyNodePose } from './board-3d-node-pose.js'
 import {
-  type CardMaterial,
-  type EntityNode,
-  applyNodePose,
   removeEntityNode,
   syncEntityNodes,
-} from './board-3d-nodes.js'
+} from './board-3d-node-sync.js'
 import type { Board3dRendererViewController } from './board-3d-renderer-view.js'
 
 import type { GameState, Item } from '../logic/types.js'
 import type { GroundVisuals } from './board-3d-ground.js'
+import type {
+  CardMaterial,
+  EntityNode,
+  PoseStepResult,
+  SyncEntityNodesDeps,
+} from './board-3d-node-types.js'
+
+type RequestFrame = (callback: FrameRequestCallback) => number
+type CancelFrame = (handle: number) => void
 
 type CreateBoard3dRendererRuntimeArgs = {
   renderer: WebGLRenderer
@@ -23,7 +30,17 @@ type CreateBoard3dRendererRuntimeArgs = {
   nodes: Map<number, EntityNode>
   getMaterial: (item: Item) => CardMaterial
   createNode: (item: Item, nowMs: number) => EntityNode
-  disposeResources: (groundVisuals: GroundVisuals) => void
+  disposeResources: (groundVisuals: GroundVisuals) => GroundVisuals
+  rebuildGround?: (
+    world: Group,
+    boardWidth: number,
+    boardHeight: number,
+    visuals: GroundVisuals,
+  ) => GroundVisuals
+  applyNodePoseStep?: (node: EntityNode, nowMs: number) => PoseStepResult
+  syncNodes?: (state: GameState, deps: SyncEntityNodesDeps) => void
+  requestFrame?: RequestFrame | null
+  cancelFrame?: CancelFrame | null
 }
 
 export type Board3dRendererRuntime = {
@@ -46,7 +63,17 @@ export const createBoard3dRendererRuntime = (
     getMaterial,
     createNode,
     disposeResources,
+    rebuildGround = rebuildGroundVisuals,
+    applyNodePoseStep = applyNodePose,
+    syncNodes = syncEntityNodes,
+    requestFrame = null,
+    cancelFrame = null,
   } = args
+
+  const scheduleFrame: RequestFrame =
+    requestFrame ?? globalThis.requestAnimationFrame.bind(globalThis)
+  const unscheduleFrame: CancelFrame =
+    cancelFrame ?? globalThis.cancelAnimationFrame.bind(globalThis)
 
   let container: HTMLElement | null = null
   let boardWidth = 0
@@ -59,9 +86,14 @@ export const createBoard3dRendererRuntime = (
   let rafId = 0
   let frameActive = false
   let needsRender = true
+  let disposed = false
 
   const tick = (nowMs: number): void => {
     frameActive = false
+    if (disposed) {
+      rafId = 0
+      return
+    }
     if (!container || !container.isConnected) {
       if (container && !container.isConnected) container = null
       rafId = 0
@@ -77,7 +109,7 @@ export const createBoard3dRendererRuntime = (
     const leavingDoneIds: number[] = []
 
     for (const [id, node] of nodes) {
-      const step = applyNodePose(node, nowMs)
+      const step = applyNodePoseStep(node, nowMs)
       if (step.animating) hasAnimation = true
       if (step.finishedLeaving) leavingDoneIds.push(id)
     }
@@ -86,24 +118,27 @@ export const createBoard3dRendererRuntime = (
       removeEntityNode(nodes, entityGroup, id)
     }
 
-    if (needsRender || viewportChanged || hasAnimation) {
+    const nodesRemoved = leavingDoneIds.length > 0
+
+    if (needsRender || viewportChanged || hasAnimation || nodesRemoved) {
       composer.render()
       needsRender = false
     }
 
     if (hasAnimation && container.isConnected) {
       frameActive = true
-      rafId = window.requestAnimationFrame(tick)
+      rafId = scheduleFrame(tick)
     }
   }
 
   const ensureFrame = (): void => {
-    if (frameActive || !container || !container.isConnected) return
+    if (disposed || frameActive || !container || !container.isConnected) return
     frameActive = true
-    rafId = window.requestAnimationFrame(tick)
+    rafId = scheduleFrame(tick)
   }
 
   const mount = (nextContainer: HTMLElement): void => {
+    if (disposed) return
     if (container && container !== nextContainer) {
       container.classList.remove('board-3d')
       if (container.dataset.clayPreset === 'single') {
@@ -127,7 +162,7 @@ export const createBoard3dRendererRuntime = (
   }
 
   const unmount = (): void => {
-    if (rafId) window.cancelAnimationFrame(rafId)
+    if (rafId) unscheduleFrame(rafId)
     frameActive = false
     rafId = 0
     needsRender = true
@@ -143,17 +178,18 @@ export const createBoard3dRendererRuntime = (
   }
 
   const sync = (state: GameState): void => {
+    if (disposed) return
     if (!container || !container.isConnected) return
 
     if (boardWidth !== state.width || boardHeight !== state.height) {
       boardWidth = state.width
       boardHeight = state.height
-      groundVisuals = rebuildGroundVisuals(world, boardWidth, boardHeight, groundVisuals)
+      groundVisuals = rebuildGround(world, boardWidth, boardHeight, groundVisuals)
       viewController.updateCamera(container, boardWidth, boardHeight)
     }
 
     viewController.applyReadabilityGuard(state)
-    syncEntityNodes(state, {
+    syncNodes(state, {
       nodes,
       getMaterial,
       createNode,
@@ -163,8 +199,10 @@ export const createBoard3dRendererRuntime = (
   }
 
   const dispose = (): void => {
+    if (disposed) return
+    disposed = true
     unmount()
-    disposeResources(groundVisuals)
+    groundVisuals = disposeResources(groundVisuals)
     container = null
   }
 

@@ -2,13 +2,11 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
-  buildEntityViews,
-  computeEntityBaseTarget,
-  emojiBottomAnchorOffset,
-  emojiMicroStretch,
   emojiPhaseOffsetMsForItem,
   emojiStretchEnabledForItem,
-} from './board-3d.js'
+} from './board-3d-shared-item.js'
+import { buildEntityViews, computeEntityBaseTarget } from './board-3d-shared-layout.js'
+import { emojiBottomAnchorOffset, emojiMicroStretch } from './board-3d-shared-math.js'
 
 import type { GameState } from '../logic/types.js'
 

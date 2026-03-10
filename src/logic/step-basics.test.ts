@@ -99,7 +99,7 @@ test('step preserves BABA IS YOU when trailing AND term is moved away', () => {
     result.state.rules.some(
       (rule) =>
         rule.subject === 'baba' &&
-        rule.kind === 'property' &&
+        rule.kind === 'is-property' &&
         rule.object === 'you' &&
         !rule.subjectNegated &&
         !rule.objectNegated,

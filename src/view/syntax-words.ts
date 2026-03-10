@@ -1,13 +1,3 @@
-export const SYNTAX_WORDS = new Set([
-  'is',
-  'and',
-  'not',
-  'has',
-  'make',
-  'eat',
-  'write',
-  'on',
-  'near',
-  'lonely',
-  'facing',
-])
+import { RULE_SYNTAX_WORDS } from '../logic/types.js'
+
+export const SYNTAX_WORDS = RULE_SYNTAX_WORDS

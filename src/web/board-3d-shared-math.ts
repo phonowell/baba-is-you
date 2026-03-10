@@ -1,7 +1,7 @@
 import {
   BOARD3D_LAYOUT_CONFIG,
-  BOARD3D_ANIMATION_CONFIG,
-} from './board-3d-config.js'
+} from './board-3d-config-layout.js'
+import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 
 const {
   CARD_WORLD_SIZE,

@@ -128,7 +128,7 @@ test('step applies newly formed MOVE rule starting next turn', () => {
     result.state.rules.some(
       (rule) =>
         rule.subject === 'rock' &&
-        rule.kind === 'property' &&
+        rule.kind === 'is-property' &&
         rule.object === 'move' &&
         !rule.subjectNegated &&
         !rule.objectNegated,

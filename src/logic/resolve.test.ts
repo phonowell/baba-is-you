@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import { applyTransforms } from './resolve.js'
 import { createRuleRuntime } from './rule-runtime.js'
+import { rule } from './rule-test-helpers.js'
 
 import type { LevelItem, Rule } from './types.js'
 
@@ -29,7 +30,7 @@ const runtimeFor = (
 
 test('applyTransforms returns changed=false for identity transform', () => {
   const items = [createItem(1, 'baba', 1, 1, false)]
-  const rules: Rule[] = [{ subject: 'baba', object: 'baba', kind: 'transform' }]
+  const rules: Rule[] = [rule({ subject: 'baba', object: 'baba', kind: 'transform' })]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 5, 5))
 
@@ -39,7 +40,7 @@ test('applyTransforms returns changed=false for identity transform', () => {
 
 test('applyTransforms returns changed=true when target changes', () => {
   const items = [createItem(1, 'baba', 1, 1, false)]
-  const rules: Rule[] = [{ subject: 'baba', object: 'rock', kind: 'transform' }]
+  const rules: Rule[] = [rule({ subject: 'baba', object: 'rock', kind: 'transform' })]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 5, 5))
 
@@ -50,8 +51,8 @@ test('applyTransforms returns changed=true when target changes', () => {
 test('applyTransforms keeps identity and appends non-identity target', () => {
   const items = [createItem(1, 'baba', 1, 1, false)]
   const rules: Rule[] = [
-    { subject: 'baba', object: 'baba', kind: 'transform' },
-    { subject: 'baba', object: 'rock', kind: 'transform' },
+    rule({ subject: 'baba', object: 'baba', kind: 'transform' }),
+    rule({ subject: 'baba', object: 'rock', kind: 'transform' }),
   ]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 5, 5))
@@ -66,7 +67,7 @@ test('applyTransforms keeps identity and appends non-identity target', () => {
 test('applyTransforms spawns objects for EMPTY IS noun', () => {
   const items = [createItem(1, 'wall', 0, 0, false)]
   const rules: Rule[] = [
-    { subject: 'empty', object: 'baba', kind: 'transform' },
+    rule({ subject: 'empty', object: 'baba', kind: 'transform' }),
   ]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 2, 1))
@@ -83,8 +84,8 @@ test('applyTransforms spawns objects for EMPTY IS noun', () => {
 test('applyTransforms does not drop HAS target when transform removes source', () => {
   const items = [createItem(1, 'baba', 1, 0, false)]
   const rules: Rule[] = [
-    { subject: 'baba', object: 'empty', kind: 'transform' },
-    { subject: 'baba', object: 'key', kind: 'has' },
+    rule({ subject: 'baba', object: 'empty', kind: 'transform' }),
+    rule({ subject: 'baba', object: 'key', kind: 'has' }),
   ]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 3, 1))
@@ -104,8 +105,13 @@ test('applyTransforms does not drop HAS target when transform removes source', (
 test('applyTransforms applies NOT transform constraints', () => {
   const items = [createItem(1, 'baba', 1, 0, false)]
   const rules: Rule[] = [
-    { subject: 'baba', object: 'rock', kind: 'transform' },
-    { subject: 'baba', object: 'rock', kind: 'transform', objectNegated: true },
+    rule({ subject: 'baba', object: 'rock', kind: 'transform' }),
+    rule({
+      subject: 'baba',
+      object: 'rock',
+      kind: 'transform',
+      objectNegated: true,
+    }),
   ]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 3, 1))
@@ -120,7 +126,12 @@ test('applyTransforms applies NOT TEXT subject to non-text only', () => {
     createItem(2, 'rock', 2, 0, true),
   ]
   const rules: Rule[] = [
-    { subject: 'text', subjectNegated: true, object: 'key', kind: 'transform' },
+    rule({
+      subject: 'text',
+      subjectNegated: true,
+      object: 'key',
+      kind: 'transform',
+    }),
   ]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 4, 1))
@@ -139,7 +150,7 @@ test('applyTransforms supports ALL target by expanding into present object set',
     createItem(1, 'baba', 1, 0, false),
     createItem(2, 'rock', 2, 0, false),
   ]
-  const rules: Rule[] = [{ subject: 'baba', object: 'all', kind: 'transform' }]
+  const rules: Rule[] = [rule({ subject: 'baba', object: 'all', kind: 'transform' })]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 4, 1))
   const rock = result.items.find(
@@ -153,7 +164,7 @@ test('applyTransforms supports ALL target by expanding into present object set',
 test('applyTransforms supports LEVEL target as concrete object transform', () => {
   const items = [createItem(1, 'baba', 1, 0, false)]
   const rules: Rule[] = [
-    { subject: 'baba', object: 'level', kind: 'transform' },
+    rule({ subject: 'baba', object: 'level', kind: 'transform' }),
   ]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 3, 1))
@@ -166,18 +177,18 @@ test('applyTransforms supports LEVEL target as concrete object transform', () =>
 test('applyTransforms respects EMPTY condition for transform rules', () => {
   const items = [createItem(1, 'rock', 1, 0, false)]
   const rules: Rule[] = [
-    {
+    rule({
       subject: 'empty',
       object: 'baba',
       kind: 'transform',
       condition: { kind: 'on', object: 'rock' },
-    },
-    {
+    }),
+    rule({
       subject: 'empty',
       object: 'keke',
       kind: 'transform',
       condition: { kind: 'near', object: 'rock' },
-    },
+    }),
   ]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 3, 1))

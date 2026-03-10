@@ -1,24 +1,27 @@
 import { applyProperties } from './resolve.js'
 import { collectRuleRuntime, createRuleRuntime } from './rule-runtime.js'
-import { buildStepPhases, type StepPhase } from './step/phase-list.js'
+import { buildStepStages, type StepStage } from './step/phase-list.js'
 import { checkWin, hasAnyYou } from './step/win.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
+import type { StepPhaseItems, StepStageSync } from './step/phase-list.js'
 import type {
   Direction,
   GameState,
   Item,
-  LevelItem,
   StepResult,
 } from './types.js'
 
-type PhaseItems = Item[] | LevelItem[]
+type StepFrame = {
+  items: Item[]
+  runtime: RuleRuntime
+}
 
 const resolveFrame = (
-  items: PhaseItems,
+  items: StepPhaseItems,
   width: number,
   height: number,
-): { items: Item[]; runtime: RuleRuntime } => {
+): StepFrame => {
   const runtime = collectRuleRuntime(items, width, height)
   return {
     items: applyProperties(items, runtime),
@@ -29,7 +32,7 @@ const resolveFrame = (
 const rebindFrameWithSameRules = (
   items: Item[],
   runtime: RuleRuntime,
-): { items: Item[]; runtime: RuleRuntime } => {
+): StepFrame => {
   const reboundRuntime = createRuleRuntime(
     items,
     runtime.rules,
@@ -42,10 +45,10 @@ const rebindFrameWithSameRules = (
   }
 }
 
-const refreshProps = (
-  items: PhaseItems,
+const refreshProperties = (
+  items: StepPhaseItems,
   runtime: RuleRuntime,
-): { items: Item[]; runtime: RuleRuntime } => {
+): StepFrame => {
   const reboundRuntime = createRuleRuntime(
     items,
     runtime.rules,
@@ -58,32 +61,38 @@ const refreshProps = (
   }
 }
 
-const runPhase = (
-  frame: { items: Item[]; runtime: RuleRuntime },
-  phase: StepPhase,
-): { frame: { items: Item[]; runtime: RuleRuntime }; changed: boolean } => {
-  const result = phase.run(frame.items, frame.runtime)
+const synchronizeStageFrame = (
+  items: StepPhaseItems,
+  runtime: RuleRuntime,
+  sync: Exclude<StepStageSync, { kind: 'reuse-rules' }>,
+): StepFrame => {
+  if (sync.kind === 'recollect-rules') {
+    return resolveFrame(items, runtime.width, runtime.height)
+  }
 
-  if (phase.refresh === 'resolve') {
+  return refreshProperties(items, runtime)
+}
+
+const isReuseRulesStage = (
+  stage: StepStage,
+): stage is Extract<StepStage, { sync: { kind: 'reuse-rules' } }> =>
+  stage.sync.kind === 'reuse-rules'
+
+const runStage = (
+  frame: StepFrame,
+  stage: StepStage,
+): { frame: StepFrame; changed: boolean } => {
+  if (isReuseRulesStage(stage)) {
+    const result = stage.run(frame.items, frame.runtime)
     return {
-      frame: resolveFrame(
-        result.items,
-        frame.runtime.width,
-        frame.runtime.height,
-      ),
+      frame: rebindFrameWithSameRules(result.items, frame.runtime),
       changed: result.changed,
     }
   }
 
-  if (phase.refresh === 'props') {
-    return {
-      frame: refreshProps(result.items, frame.runtime),
-      changed: result.changed,
-    }
-  }
-
+  const result = stage.run(frame.items, frame.runtime)
   return {
-    frame: rebindFrameWithSameRules(result.items as Item[], frame.runtime),
+    frame: synchronizeStageFrame(result.items, frame.runtime, stage.sync),
     changed: result.changed,
   }
 }
@@ -95,12 +104,12 @@ export const step = (
   let frame = resolveFrame(state.items, state.width, state.height)
   let changed = false
 
-  const phases: StepPhase[] = buildStepPhases(direction, state.turn)
+  const stages: StepStage[] = buildStepStages(direction, state.turn)
 
-  for (const phase of phases) {
-    const phaseResult = runPhase(frame, phase)
-    frame = phaseResult.frame
-    if (phaseResult.changed) changed = true
+  for (const stage of stages) {
+    const stageResult = runStage(frame, stage)
+    frame = stageResult.frame
+    if (stageResult.changed) changed = true
   }
 
   const didWin = checkWin(

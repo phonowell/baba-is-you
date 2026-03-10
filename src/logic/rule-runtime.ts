@@ -8,9 +8,9 @@ export type MatchItem = LevelItem | Item
 export type RuleBuckets = {
   eat: Rule[]
   has: Rule[]
+  isProperty: Rule[]
+  isTransform: Rule[]
   make: Rule[]
-  property: Rule[]
-  transform: Rule[]
   write: Rule[]
 }
 
@@ -26,15 +26,15 @@ export const createRuleBuckets = (rules: Rule[]): RuleBuckets => {
   const buckets: RuleBuckets = {
     eat: [],
     has: [],
+    isProperty: [],
+    isTransform: [],
     make: [],
-    property: [],
-    transform: [],
     write: [],
   }
 
   for (const rule of rules) {
-    if (rule.kind === 'property') buckets.property.push(rule)
-    else if (rule.kind === 'transform') buckets.transform.push(rule)
+    if (rule.kind === 'is-property') buckets.isProperty.push(rule)
+    else if (rule.kind === 'is-transform') buckets.isTransform.push(rule)
     else if (rule.kind === 'has') buckets.has.push(rule)
     else if (rule.kind === 'make') buckets.make.push(rule)
     else if (rule.kind === 'eat') buckets.eat.push(rule)

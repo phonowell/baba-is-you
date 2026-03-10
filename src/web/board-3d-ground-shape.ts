@@ -1,6 +1,6 @@
 import { Shape, Vector3 } from 'three'
 
-import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config.js'
+import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 
 const {
   PLAY_AREA_OUTLINE_RADIUS,
