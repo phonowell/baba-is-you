@@ -8,11 +8,11 @@
   },
   "devDependencies": {
     "@types/node": "^25.3.0",
-    "@types/three": "^0.183.1",
-    "esbuild": "^0.25.11",
-    "fire-keeper": "^0.0.237",
+    "@types/three": "^0.186.0",
+    "esbuild": "^0.28.2",
+    "fire-keeper": "^0.0.239",
     "oxlint": "1.82.0",
-    "tsx": "^4.21.0",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   },
   "license": "MIT",
@@ -31,9 +31,6 @@
     "watch": "node scripts/watch-build.mjs",
     "wt-rebase": "node scripts/worktree/rebase-worktree.js --base main",
     "wt-land": "node scripts/worktree/land-worktree.js --base main --plans-dir plans"
-  },
-  "pnpm": {
-    "ignoredBuiltDependencies": ["esbuild"]
   },
   "packageManager": "pnpm@11.8.0",
   "type": "module",

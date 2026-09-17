@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: false
+minimumReleaseAgeExclude:
+  - fire-keeper@0.0.239
+overrides:
+  picomatch: ">=2.3.2"
