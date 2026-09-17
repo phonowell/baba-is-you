@@ -20,12 +20,14 @@ pnpm type-check
 
 | Command | Description |
 |---------|-------------|
-| `pnpm start` | Run CLI game (`src/cli.ts`) |
+| `pnpm check` | Lint + type-check + test in one step |
+| `pnpm start` | Run CLI game (`src/cli.ts`, needs an interactive TTY) |
+| `pnpm simulate` | Headless level stepping, e.g. `pnpm simulate 0 rrdl --trace` |
 | `pnpm build` | Build single-file web output (`release/baba-is-you.html`) |
 | `pnpm verify-levels:official` | Verify imported official level text from `data/baba/*.(l|ld)` |
 | `pnpm import-levels:official` | Re-import official levels into `src/levels-data/*.ts` |
 | `pnpm test` | Run `src/**/*.test.ts` |
-| `pnpm lint` | Lint and auto-fix `src/**/*.ts` |
+| `pnpm lint` | Normalize UTF-8/LF, then oxlint `src/` |
 | `pnpm type-check` | Type check without emit |
 
 ## Controls
@@ -84,5 +86,5 @@ src/
 
 ## Development Notes
 
-See [CLAUDE.md](./CLAUDE.md)
+See [AGENTS.md](./AGENTS.md)
 - Logic architecture: [docs/logic-architecture.md](./docs/logic-architecture.md)

@@ -23,12 +23,17 @@ const ruleKindFor = (
   return PROPERTY_WORDS.has(objectWord) ? 'is-property' : 'is-transform'
 }
 
+const OPERATOR_WORDS = new Set<string>(RULE_OPERATOR_WORDS)
+const RULE_SCAN_DIRS: Array<[number, number]> = [
+  [1, 0],
+  [0, 1],
+]
+
 export const collectRules = (
   items: LevelItem[],
   width: number,
   height: number,
 ): Rule[] => {
-  const operatorWords = new Set<string>(RULE_OPERATOR_WORDS)
   const grid = new Map<number, string[]>()
   for (const item of items) {
     if (!item.isText) continue
@@ -46,14 +51,9 @@ export const collectRules = (
   const seen = new Set<string>()
 
   for (const item of items) {
-    if (!item.isText || !operatorWords.has(item.name)) continue
+    if (!item.isText || !OPERATOR_WORDS.has(item.name)) continue
 
-    const dirs: Array<[number, number]> = [
-      [1, 0],
-      [0, 1],
-    ]
-
-    for (const [dx, dy] of dirs) {
+    for (const [dx, dy] of RULE_SCAN_DIRS) {
       const readSubjectWordsAt = (position: number): string[] => {
         const x = item.x - dx * position
         const y = item.y - dy * position

@@ -7,6 +7,7 @@ import { render } from './render.js'
 import type { GameState } from '../logic/types.js'
 
 const stripAnsi = (value: string): string =>
+  // oxlint-disable-next-line no-control-regex -- ANSI escape codes are the point
   value.replace(/\x1b\[[0-9;]*m/g, '')
 
 const graphemes = (value: string): string[] =>

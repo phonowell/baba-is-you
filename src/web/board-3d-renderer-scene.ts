@@ -1,4 +1,5 @@
 import {
+  ACESFilmicToneMapping,
   AmbientLight,
   Color,
   DirectionalLight,
@@ -12,6 +13,7 @@ import {
 } from 'three'
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 
@@ -89,6 +91,8 @@ export const createBoard3dRendererScene = (
     powerPreference: 'high-performance',
   })
   renderer.outputColorSpace = SRGBColorSpace
+  renderer.toneMapping = ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.15
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = PCFSoftShadowMap
   renderer.domElement.className = 'board-3d-canvas'
@@ -114,6 +118,7 @@ export const createBoard3dRendererScene = (
     maxblur: preset.bokeh.maxBlur,
   })
   composer.addPass(bokehPass)
+  composer.addPass(new OutputPass())
 
   const ambientLight = new AmbientLight(
     AMBIENT_LIGHT_COLOR,

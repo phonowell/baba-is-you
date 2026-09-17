@@ -1,4 +1,5 @@
-import { emptyHasProp } from '../empty.js'
+import { emptyHasProp, resolveActiveEmptyProps } from '../empty.js'
+
 import { hasProp, keyFor, splitByFloatLayer } from './shared.js'
 
 import type { Item, Rule } from '../types.js'
@@ -30,8 +31,9 @@ export const checkWin = (
   }
 
   if (!height || !rules.length) return false
-  if (!emptyHasProp(rules, 'you', items, width, height)) return false
-  if (!emptyHasProp(rules, 'win', items, width, height)) return false
+  const emptyProps = resolveActiveEmptyProps(rules, items, width, height)
+  if (!emptyProps.has('you')) return false
+  if (!emptyProps.has('win')) return false
   return true
 }
 

@@ -44,8 +44,10 @@ export const resolveBatchArrows = (
 
   for (const mover of movers) addArrow(mover.id, mover.dir, mover.isMove)
 
-  while (queue.length) {
-    const id = queue.shift()
+  let queueHead = 0
+  while (queueHead < queue.length) {
+    const id = queue[queueHead]
+    queueHead += 1
     if (id === undefined || context.removed.has(id)) continue
 
     const arrow = arrows.get(id)

@@ -78,9 +78,8 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
         gameView.update(state, showReferenceDialog)
         root.append(gameView.root)
         drawState.gameView = gameView
+        mountAndSyncBoard3d(gameView.boardEl, state)
       })
-      if (mode === 'game' && drawState.gameView)
-        mountAndSyncBoard3d(drawState.gameView.boardEl, state)
       return
     }
 

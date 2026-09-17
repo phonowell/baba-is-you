@@ -1,8 +1,7 @@
 import { createInitialState, markCampaignComplete } from '../logic/state.js'
 import { step } from '../logic/step.js'
 
-import type { Direction, LevelData } from '../logic/types.js'
-import type { GameState } from '../logic/types.js'
+import type { Direction, GameState, LevelData } from '../logic/types.js'
 
 export type AppMode = 'menu' | 'game'
 

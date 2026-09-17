@@ -65,6 +65,9 @@ export const applyTeleport = (
   items: Item[]
   moved: boolean
 } => {
+  if (!items.some((item) => hasProp(item, 'tele')))
+    return { items, moved: false }
+
   const next = items.map((item) => ({ ...item }))
   const byCell = buildGrid(next, width)
   const cellKeys = Array.from(byCell.keys()).sort((a, b) => a - b)

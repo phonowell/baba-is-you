@@ -24,6 +24,7 @@ Core turn flow is in `src/logic/step.ts`.
   - `reuse-rules`: keep current rules, rebuild only the runtime match context for updated item poses.
   - `reapply-properties`: keep current rules, rebuild context, then recompute item properties from those same rules.
   - `recollect-rules`: recollect rules from text first, then recompute properties from the newly collected rules.
+- Synchronization is skipped for stages that report no change while collected rules still match the current items; a no-change `recollect-rules` stage still re-collects once when earlier stages made the rule snapshot stale. Stages must report `changed` honestly for any semantic item mutation (position, name, direction, removal, spawn).
 - Win/lose is evaluated from the final resolved frame.
 - `step()` still increments `turn` every processed command, including wait/no-op turns that pass command validation. Teleport RNG uses that turn as seed, so turn-count semantics are gameplay-visible, not bookkeeping-only.
 

@@ -1,5 +1,11 @@
-import type { Group, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry } from 'three'
-import type { CanvasTexture } from 'three'
+import type {
+  CanvasTexture,
+  Group,
+  Mesh,
+  MeshBasicMaterial,
+  MeshStandardMaterial,
+  PlaneGeometry,
+} from 'three'
 
 import type { Item } from '../logic/types.js'
 

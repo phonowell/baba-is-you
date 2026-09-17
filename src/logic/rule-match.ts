@@ -85,24 +85,23 @@ const matchesCondition = (
   const { condition } = rule
   if (!condition) return true
 
-  const cellItems =
-    context.byCell.get(keyFor(item.x, item.y, context.width)) ?? []
-  const otherCellItems = cellItems.filter(
-    (candidate) => candidate.id !== item.id,
-  )
-
-  if (condition.kind === 'lonely') {
-    const lonely = otherCellItems.length === 0
-    if (condition.negated) return !lonely
-    return lonely
-  }
-
   const termMatches = (candidate: MatchItem): boolean =>
     'object' in condition
       ? matchesRuleObjectWord(candidate, condition.object, context.groupMembers)
       : false
 
-  if (condition.kind === 'on') {
+  if (condition.kind === 'lonely' || condition.kind === 'on') {
+    const cellItems =
+      context.byCell.get(keyFor(item.x, item.y, context.width)) ?? []
+    const otherCellItems = cellItems.filter(
+      (candidate) => candidate.id !== item.id,
+    )
+
+    if (condition.kind === 'lonely') {
+      const lonely = otherCellItems.length === 0
+      return condition.negated ? !lonely : lonely
+    }
+
     const matched =
       condition.object === 'empty'
         ? otherCellItems.length === 0

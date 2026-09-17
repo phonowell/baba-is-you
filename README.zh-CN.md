@@ -20,12 +20,14 @@ pnpm type-check
 
 | 命令 | 说明 |
 |------|------|
-| `pnpm start` | 运行 CLI 游戏（`src/cli.ts`） |
+| `pnpm check` | lint + 类型检查 + 测试一步完成 |
+| `pnpm start` | 运行 CLI 游戏（`src/cli.ts`，需交互式 TTY） |
+| `pnpm simulate` | 无头推演关卡（例 `pnpm simulate 0 rrdl --trace`） |
 | `pnpm build` | 构建单文件网页产物（`release/baba-is-you.html`） |
 | `pnpm verify-levels:official` | 校验 `data/baba/*.(l|ld)` 官方关卡文本导入一致性 |
 | `pnpm import-levels:official` | 重新导入官方关卡到 `src/levels-data/*.ts` |
 | `pnpm test` | 运行 `src/**/*.test.ts` |
-| `pnpm lint` | 检查并自动修复 `src/**/*.ts` |
+| `pnpm lint` | UTF-8/LF 归一化 + oxlint 检查 `src/` |
 | `pnpm type-check` | 仅类型检查，不产出 |
 
 ## 操作
@@ -84,4 +86,4 @@ src/
 
 ## 开发说明
 
-详见 [CLAUDE.md](./CLAUDE.md)
+详见 [AGENTS.md](./AGENTS.md)

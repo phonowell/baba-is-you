@@ -121,11 +121,11 @@ const DARK_OUTLINE = '#f2f6ff'
 const LIGHT_OUTLINE = '#0a1320'
 
 export const CLAY_PRESET: ClayPreset = {
-  sceneBackground: '#edf1f4',
+  sceneBackground: '#dfe7ee',
   bloom: {
-    strength: 0.32,
-    radius: 0.45,
-    threshold: 0.82,
+    strength: 0.12,
+    radius: 0.32,
+    threshold: 0.94,
   },
   bokeh: {
     aperture: 0.000007,
@@ -133,21 +133,21 @@ export const CLAY_PRESET: ClayPreset = {
     focusOffset: 0.1,
   },
   lighting: {
-    ambientIntensity: 0.98,
-    topLightIntensity: 1.2,
+    ambientIntensity: 1.6,
+    topLightIntensity: 2.2,
     topLightColor: '#ffffff',
     topLightShadowFar: 46,
     topLightShadowMapSize: 1024,
-    groundEmissiveIntensity: 0.3,
+    groundEmissiveIntensity: 0.18,
   },
   materials: {
-    textEmissiveIntensity: 0.05,
-    objectEmissiveIntensity: 0.025,
+    textEmissiveIntensity: 0.3,
+    objectEmissiveIntensity: 0.15,
   },
   readability: {
     minContrastRatio: 4.8,
     textDensitySoftCap: 0.22,
-    bloomStrengthFloor: 0.2,
+    bloomStrengthFloor: 0.08,
     apertureFloor: 0.0000045,
     maxBlurFloor: 0.0009,
   },

@@ -3,20 +3,15 @@
     "baba-cli": "./src/cli.ts"
   },
   "description": "Terminal Baba Is You (simplified) CLI",
+  "engines": {
+    "node": ">=20"
+  },
   "devDependencies": {
     "@types/node": "^25.3.0",
     "@types/three": "^0.183.1",
-    "@typescript-eslint/eslint-plugin": "^8.56.1",
-    "@typescript-eslint/parser": "^8.56.1",
     "esbuild": "^0.25.11",
-    "eslint": "^9.39.3",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-prettier": "^5.5.5",
-    "eslint-plugin-unused-imports": "^4.4.1",
     "fire-keeper": "^0.0.237",
-    "globals": "^16.5.0",
-    "prettier": "^3.8.1",
-    "ts-morph": "^27.0.2",
+    "oxlint": "1.82.0",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3"
   },
@@ -25,9 +20,11 @@
   "name": "baba-is-you-cli",
   "scripts": {
     "build": "node scripts/build-single-html.mjs",
+    "check": "pnpm lint && pnpm type-check && pnpm test",
     "import-levels:official": "tsx src/tools/import-official-levels.ts",
     "verify-levels:official": "tsx src/tools/import-official-levels.ts --verify",
-    "lint": "tsx scripts/remove-bom.ts && tsx scripts/fix-crlf.ts && tsx scripts/format-jsdoc.ts && tsx scripts/fn-to-arrow.ts && eslint \"src/**/*.ts\" --fix",
+    "lint": "tsx scripts/remove-bom.ts && tsx scripts/fix-crlf.ts && oxlint",
+    "simulate": "tsx scripts/simulate.ts",
     "start": "tsx src/cli.ts",
     "test": "tsx --test src/**/*.test.ts",
     "type-check": "tsc -p tsconfig.json --noEmit",
@@ -35,6 +32,10 @@
     "wt-rebase": "node scripts/worktree/rebase-worktree.js --base main",
     "wt-land": "node scripts/worktree/land-worktree.js --base main --plans-dir plans"
   },
+  "pnpm": {
+    "ignoredBuiltDependencies": ["esbuild"]
+  },
+  "packageManager": "pnpm@11.8.0",
   "type": "module",
   "version": "0.1.0",
   "dependencies": {

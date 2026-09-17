@@ -20,12 +20,14 @@ pnpm type-check
 
 | コマンド | 説明 |
 |---------|------|
-| `pnpm start` | CLI ゲーム起動（`src/cli.ts`） |
+| `pnpm check` | lint + 型チェック + テストを一括実行 |
+| `pnpm start` | CLI ゲーム起動（`src/cli.ts`、対話 TTY 必須） |
+| `pnpm simulate` | ヘッドレスでレベルをステップ実行（例 `pnpm simulate 0 rrdl --trace`） |
 | `pnpm build` | 単一 HTML 生成（`release/baba-is-you.html`） |
 | `pnpm verify-levels:official` | `data/baba/*.(l|ld)` の公式レベルテキスト導入整合性を検証 |
 | `pnpm import-levels:official` | 公式レベルを `src/levels-data/*.ts` に再導入 |
 | `pnpm test` | `src/**/*.test.ts` を実行 |
-| `pnpm lint` | `src/**/*.ts` を lint + 自動修正 |
+| `pnpm lint` | UTF-8/LF 正規化 + oxlint で `src/` を lint |
 | `pnpm type-check` | 出力なしの型チェック |
 
 ## 操作
@@ -84,4 +86,4 @@ src/
 
 ## 開発メモ
 
-[CLAUDE.md](./CLAUDE.md) を参照
+[AGENTS.md](./AGENTS.md) を参照

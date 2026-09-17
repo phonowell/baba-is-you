@@ -85,6 +85,9 @@ export const applyShift = (
   runtime: RuleRuntime,
 ): { items: Item[]; moved: boolean } => {
   const { width } = runtime
+  if (!items.some((item) => hasProp(item, 'shift')))
+    return { items, moved: false }
+
   const shiftedItems = items.map((item) => ({ ...item }))
   const byCell = buildGrid(shiftedItems, width)
   const byId = new Map<number, Item>()

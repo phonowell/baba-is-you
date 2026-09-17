@@ -33,11 +33,27 @@ const applyOpenShut = (items: Item[], removed: Set<number>): boolean => {
   return changed
 }
 
+const INTERACTION_PROPS = new Set([
+  'defeat',
+  'hot',
+  'melt',
+  'open',
+  'shut',
+  'sink',
+  'weak',
+])
+
 export const applyInteractions = (
   items: Item[],
   runtime: RuleRuntime,
 ): { items: Item[]; changed: boolean } => {
   const { height, width } = runtime
+  const eatRules = runtime.buckets.eat
+  const hasInteractionProps = items.some((item) =>
+    item.props.some((prop) => INTERACTION_PROPS.has(prop)),
+  )
+  if (!hasInteractionProps && !eatRules.length) return { items, changed: false }
+
   const byCell = new Map<number, Item[]>()
   for (const item of items) {
     const key = keyFor(item.x, item.y, width)
@@ -48,7 +64,6 @@ export const applyInteractions = (
 
   const removed = new Set<number>()
   let changed = false
-  const eatRules = runtime.buckets.eat
   const ruleContext = runtime.context
 
   for (const list of byCell.values()) {

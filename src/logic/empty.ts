@@ -66,7 +66,8 @@ const matchesEmptyCondition = (
         const ny = y + dy
         if (nx < 0 || ny < 0 || nx >= context.width || ny >= context.height)
           continue
-        if (matchesObjectAtCell(context, nx, ny, condition.object)) matched = true
+        if (matchesObjectAtCell(context, nx, ny, condition.object))
+          matched = true
       }
     }
     return condition.negated ? !matched : matched
@@ -152,6 +153,41 @@ export const resolveEmptyProperties = (rules: Rule[]): Set<Property> => {
   return result
 }
 
+const hasEmptyPropertyRules = (rules: Rule[]): boolean =>
+  rules.some(
+    (rule) =>
+      rule.kind === 'is-property' &&
+      rule.subject === 'empty' &&
+      !rule.subjectNegated,
+  )
+
+export const resolveActiveEmptyProps = (
+  rules: Rule[],
+  items: EmptyMatchItem[],
+  width: number,
+  height: number,
+): Set<string> => {
+  const active = new Set<string>()
+  if (!hasEmptyPropertyRules(rules)) return active
+  if (!hasAnyEmptyCell(items, width, height)) return active
+
+  const context = createEmptyMatchContext(items, rules, width, height)
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      if (itemsAt(context, x, y).length) continue
+      const targets = resolveEmptyRuleTargetsAt(
+        rules,
+        context,
+        x,
+        y,
+        'is-property',
+      )
+      for (const target of targets) active.add(target)
+    }
+  }
+  return active
+}
+
 export const emptyHasProp = (
   rules: Rule[],
   prop: Property,
@@ -159,12 +195,19 @@ export const emptyHasProp = (
   width: number,
   height: number,
 ): boolean => {
+  if (!hasEmptyPropertyRules(rules)) return false
   if (!hasAnyEmptyCell(items, width, height)) return false
   const context = createEmptyMatchContext(items, rules, width, height)
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       if (itemsAt(context, x, y).length) continue
-      const targets = resolveEmptyRuleTargetsAt(rules, context, x, y, 'is-property')
+      const targets = resolveEmptyRuleTargetsAt(
+        rules,
+        context,
+        x,
+        y,
+        'is-property',
+      )
       if (targets.includes(prop)) return true
     }
   }

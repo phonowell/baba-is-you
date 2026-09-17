@@ -1,6 +1,7 @@
 import { CELL_WIDTH, GRAPHEME_SEGMENTER } from './render-config.js'
 
 export const stripAnsi = (value: string): string =>
+  // oxlint-disable-next-line no-control-regex -- ANSI escape codes are the point
   value.replace(/\x1b\[[0-9;]*m/g, '')
 
 const toGraphemes = (value: string): string[] =>

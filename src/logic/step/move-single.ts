@@ -1,4 +1,4 @@
-import { emptyHasProp } from '../empty.js'
+import { resolveActiveEmptyProps } from '../empty.js'
 
 import { createSingleMoveRuntime } from './move-single-runtime.js'
 import { appendHasSpawns, buildGrid, hasProp } from './shared.js'
@@ -14,6 +14,8 @@ export const moveItems = (
   isMovePhase: boolean,
 ): { items: Item[]; moved: boolean } => {
   const { height, rules, width } = runtime
+  if (!items.some(isMover)) return { items, moved: false }
+
   const next = items.map((item) => ({ ...item }))
   const byId = new Map<number, Item>()
   const movers: number[] = []
@@ -45,8 +47,9 @@ export const moveItems = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { anyMoved: false }
-  const emptyPush = emptyHasProp(rules, 'push', next, width, height)
-  const emptyStop = emptyHasProp(rules, 'stop', next, width, height)
+  const emptyProps = resolveActiveEmptyProps(rules, next, width, height)
+  const emptyPush = emptyProps.has('push')
+  const emptyStop = emptyProps.has('stop')
   const engine = createSingleMoveRuntime(
     {
       byId,

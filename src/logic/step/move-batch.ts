@@ -1,4 +1,4 @@
-import { emptyHasProp } from '../empty.js'
+import { resolveActiveEmptyProps } from '../empty.js'
 
 import { applyBatchMovement } from './move-batch-apply.js'
 import { resolveBatchArrows } from './move-batch-runtime.js'
@@ -36,8 +36,9 @@ export const moveItemsBatch = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { changed: false }
-  const emptyPush = emptyHasProp(rules, 'push', next, width, height)
-  const emptyStop = emptyHasProp(rules, 'stop', next, width, height)
+  const emptyProps = resolveActiveEmptyProps(rules, next, width, height)
+  const emptyPush = emptyProps.has('push')
+  const emptyStop = emptyProps.has('stop')
   const context = {
     byId,
     emptyPush,
