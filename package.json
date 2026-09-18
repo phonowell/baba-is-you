@@ -10,13 +10,15 @@
     "fire-keeper": "^0.0.239",
     "oxlint": "1.82.0",
     "tsx": "^4.23.13",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "wrangler": "4.101.0"
   },
   "license": "MIT",
   "name": "baba-is-you",
   "scripts": {
     "build": "node scripts/build-single-html.mjs",
     "check": "pnpm lint && pnpm type-check && pnpm test",
+    "deploy": "pnpm build && wrangler deploy",
     "import-levels:official": "tsx src/tools/import-official-levels.ts",
     "verify-levels:official": "tsx src/tools/import-official-levels.ts --verify",
     "lint": "tsx scripts/remove-bom.ts && tsx scripts/fix-crlf.ts && oxlint",

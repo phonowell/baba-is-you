@@ -1,0 +1,12 @@
+name = "baba"
+main = "src/tools/deploy-worker.ts"
+compatibility_date = "2026-05-13"
+routes = [
+  { pattern = "auvya.com/baba", zone_name = "auvya.com" },
+  { pattern = "auvya.com/baba/*", zone_name = "auvya.com" }
+]
+
+[assets]
+directory = "./release"
+binding = "ASSETS"
+run_worker_first = true

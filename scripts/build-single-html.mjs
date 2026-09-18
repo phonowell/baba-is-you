@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { gzipSync } from 'node:zlib'
 
 import { build, transform } from 'esbuild'
 
@@ -74,6 +75,40 @@ const minifyHtml = (value) => {
     .trim()
   return compactHtml.replace(/__HTML_RAW_BLOCK_(\d+)__/g, (_, index) => rawBlocks[Number(index)] ?? '')
 }
+const minifyJs = async (value) => {
+  const result = await transform(value, {
+    loader: 'js',
+    minify: true,
+    legalComments: 'none',
+  })
+  return result.code.trim()
+}
+const renderPackedBootstrap = (script) => {
+  const payload = gzipSync(script, { level: 9 }).toString('base64')
+  return minifyJs(`
+const fail = (message) => {
+  const host = document.getElementById('app')
+  if (host) host.textContent = message
+}
+if (typeof DecompressionStream !== 'function') {
+  fail('This build requires DecompressionStream (Chrome 80+, Firefox 113+, Safari 16.4+).')
+} else {
+  const run = async () => {
+    const bin = Uint8Array.from(atob(${JSON.stringify(payload)}), (char) => char.charCodeAt(0))
+    const code = await new Response(
+      new Blob([bin]).stream().pipeThrough(new DecompressionStream('gzip')),
+    ).text()
+    const element = document.createElement('script')
+    element.textContent = code
+    document.head.appendChild(element)
+  }
+  run().catch((error) => {
+    const message = error instanceof Error ? error.message : String(error)
+    fail('Failed to unpack bundle: ' + message)
+  })
+}
+`)
+}
 
 const bundleResult = await build({
   entryPoints: [entryPath],
@@ -94,6 +129,9 @@ const script = escapeInlineScript(
   minifyInlineShaderTemplates(minifyInlineLevelTemplates(scriptFile.text)),
 )
 
+const pack = !process.argv.includes('--raw')
+const inlineScript = pack ? await renderPackedBootstrap(script) : script
+
 const html = minifyHtml([
   '<!doctype html>',
   '<html lang="en">',
@@ -105,7 +143,7 @@ const html = minifyHtml([
   '</head>',
   '<body>',
   '<div id="app"></div>',
-  `<script>${script}</script>`,
+  `<script>${inlineScript}</script>`,
   '</body>',
   '</html>',
 ].join(''))
@@ -114,4 +152,5 @@ await mkdir(path.dirname(outputPath), { recursive: true })
 await writeFile(outputPath, html, 'utf8')
 
 const relativeOutputPath = path.relative(rootDirPath, outputPath)
-console.log(`Built ${relativeOutputPath}`)
+const detail = pack ? `, gzip-packed from ${(script.length / 1024).toFixed(0)} KiB` : ''
+console.log(`Built ${relativeOutputPath} (${(html.length / 1024).toFixed(0)} KiB${detail})`)
