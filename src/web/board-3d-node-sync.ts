@@ -3,6 +3,7 @@ import {
 } from './board-3d-config-layout.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { BOARD3D_EFFECTS_CONFIG } from './board-3d-config-effects.js'
 import {
   applyCardOrientation,
   applyVolumeOrientation,
@@ -11,9 +12,10 @@ import { nodeRollAtMs } from './board-3d-node-pose.js'
 import {
   cardFacesCamera,
   cardRollForItemStep,
-  emojiPhaseOffsetMsForItem,
-  emojiStretchEnabledForItem,
-  isEmojiItem,
+  idleFloatEnabledForItem,
+  idleFrameOffsetForItem,
+  idlePhaseOffsetMsForItem,
+  idleStretchEnabledForItem,
 } from './board-3d-shared-item.js'
 import {
   buildEntityViews,
@@ -43,6 +45,10 @@ const {
 const {
   MOVE_ANIM_MS,
 } = BOARD3D_ANIMATION_CONFIG
+
+const {
+  SPAWN_STAGGER_MS_PER_CELL,
+} = BOARD3D_EFFECTS_CONFIG
 
 const setNodeIdlePose = (
   node: EntityNode,
@@ -109,6 +115,9 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     state.width,
     state.height,
   )
+  // Board entry (nothing synced yet) staggers each spawn on a diagonal
+  // sweep; mid-game appearances pop immediately.
+  const boardEntry = nodes.size === 0
 
   for (const view of views) {
     const item = view.item
@@ -117,18 +126,25 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     let node = nodes.get(item.id)
     const nodeCreated = !node
     if (!node) {
-      node = createNode(item, nowMs)
+      node = createNode(
+        item,
+        nowMs,
+        boardEntry ? (item.x + item.y) * SPAWN_STAGGER_MS_PER_CELL : 0,
+      )
       nodes.set(item.id, node)
     } else if (node.despawnStartMs !== null) {
       node.despawnStartMs = null
       node.spawnStartMs = nowMs
+      node.spawnFxDone = false
+      node.despawnFxDone = true
     }
 
     const target = computeEntityBaseTarget(state, view)
-    const visual = getVisual(
-      item,
-      item.isText && overriddenTextIds.has(item.id),
-    )
+    const itemOverridden = item.isText && overriddenTextIds.has(item.id)
+    const visual = getVisual(item, itemOverridden)
+    if (deps.fxColorsForItem) {
+      node.fxColors = deps.fxColorsForItem(item, itemOverridden)
+    }
     const visualChanged = node.specKey !== visual.key
     if (visualChanged) {
       node.specKey = visual.key
@@ -136,15 +152,16 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       node.mesh.geometry = visual.geometry
       node.frameGeometries = visual.frameGeometries
     }
-    const emoji = isEmojiItem(item)
     const groundHug = isGroundHugItem(item)
-    node.isEmoji = emojiStretchEnabledForItem(item)
-    node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)
+    node.idleStretch = idleStretchEnabledForItem(item)
+    node.idleFloat = idleFloatEnabledForItem(item)
+    node.idlePhaseOffsetMs = idlePhaseOffsetMsForItem(item)
+    node.idleFrameOffset = idleFrameOffsetForItem(item)
     // Ground-hug tiles lie on the shadow receiver: their cast shadow lands
     // under themselves, and the blob shadow quad darkens the tile's own
     // surface — both invisible work, so both are skipped.
     node.mesh.castShadow = !groundHug
-    node.mesh.receiveShadow = !emoji
+    node.mesh.receiveShadow = true
     node.shadow.visible = !groundHug
     const facesCamera = cardFacesCamera(item)
     const facingYaw = visual.facingYaw
@@ -187,19 +204,22 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       setNodeTarget(node, target)
       node.toRoll = node.rotRoll
       // Idle re-pose only when something the pose reads has changed —
-      // position/roll/visual/facing/camera — or the node is emoji (its frozen
-      // micro-stretch scale needs the reset). Unchanged inputs would produce
-      // byte-identical writes, so skipping is lossless.
+      // position/roll/visual/facing/camera — or the node carries an idle
+      // motion (its frozen stretch scale / bob height needs the reset).
+      // Unchanged inputs would produce byte-identical writes, so skipping
+      // is lossless.
       const poseStale =
         deps.cameraChanged === true ||
         visualChanged ||
         facingChanged ||
         rollChanged ||
-        node.isEmoji
+        node.idleStretch ||
+        node.idleFloat
       if (
         !node.moving &&
         node.landStartMs === null &&
         node.spawnStartMs === null &&
+        node.pulseStartMs === null &&
         poseStale
       ) {
         setNodeIdlePose(node, target, node.toRoll, camera)
@@ -210,9 +230,12 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
   for (const [id, node] of nodes) {
     if (!seen.has(id) && node.despawnStartMs === null) {
       node.despawnStartMs = nowMs
+      node.despawnFxDone = false
       node.spawnStartMs = null
       node.moving = false
       node.landStartMs = null
+      node.pulseStartMs = null
+      node.pulseKind = null
     }
   }
 }

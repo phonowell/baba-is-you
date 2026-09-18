@@ -17,18 +17,34 @@ export type CardMaterial = MeshToonMaterial | MeshBasicMaterial
 export type EntityMaterial = Material | Material[]
 export type EntityMesh = Mesh<BufferGeometry, EntityMaterial>
 
+// Whole-board celebration pulses: the runtime staggers them per node
+// (rippling outward from the effect origin) and the pose pass folds them
+// into jump/stretch.
+export type NodePulseKind = 'hop' | 'slump'
+
 export type EntityNode = {
   mesh: EntityMesh
   shadow: Mesh<PlaneGeometry, MeshBasicMaterial>
   shadowMaterial: MeshBasicMaterial
   specKey: string
   frameGeometries: BufferGeometry[]
-  isEmoji: boolean
-  emojiPhaseOffsetMs: number
+  idleStretch: boolean
+  idleFloat: boolean
+  idlePhaseOffsetMs: number
+  idleFrameOffset: number
   facesCamera: boolean
   facingYaw: number | undefined
   rotRoll: number
   rollStep: number
+  // Card colours cached per sync for particle bursts — nodes outlive the
+  // item's presence on the board (despawn poofs fire after it is gone).
+  fxColors: readonly string[]
+  // One-shot flags so bursts fire exactly once per spawn/despawn window,
+  // at the moment the animation actually starts (spawn may be staggered).
+  spawnFxDone: boolean
+  despawnFxDone: boolean
+  pulseStartMs: number | null
+  pulseKind: NodePulseKind | null
   fromX: number
   fromY: number
   fromBaseZ: number
@@ -61,11 +77,14 @@ export type CreateEntityNodeDeps = {
 export type SyncEntityNodesDeps = {
   nodes: Map<number, EntityNode>
   getVisual: (item: Item, overridden?: boolean) => EntityVisual
-  createNode: (item: Item, nowMs: number) => EntityNode
+  createNode: (item: Item, nowMs: number, spawnDelayMs?: number) => EntityNode
   camera: Camera
   // Set when the camera moved since the last pose pass — idle nodes must be
   // re-posed even though their board targets did not change.
   cameraChanged?: boolean
+  // Colours used for spawn/despawn particle bursts; when omitted the node
+  // keeps its previous palette (created nodes fall back to white).
+  fxColorsForItem?: (item: Item, overridden: boolean) => readonly string[]
 }
 
 export type PoseStepResult = {

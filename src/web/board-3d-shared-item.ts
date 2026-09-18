@@ -5,7 +5,11 @@ import {
   BOARD3D_TEXT_CARD_STYLE_CONFIG,
 } from './board-3d-config-visuals.js'
 import { fnv1a, hashSeed01 } from './board-3d-shared-math.js'
-import { mirroredSprite, orientedSprite } from './pixel-sprites/derive.js'
+import {
+  mirroredSprite,
+  orientedSprite,
+  SPRITE_FRAME_COUNT,
+} from './pixel-sprites/derive.js'
 import { spriteForName } from './pixel-sprites/index.js'
 import { OBJECT_GLYPHS } from '../view/render-config.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
@@ -16,7 +20,7 @@ import type { CardSpec } from './board-3d-shared-types.js'
 
 const {
   MOVE_ROLL_AMPLITUDE,
-  EMOJI_MICRO_STRETCH_CYCLE_MS,
+  IDLE_STRETCH_CYCLE_MS,
 } = BOARD3D_ANIMATION_CONFIG
 
 const {
@@ -25,20 +29,26 @@ const {
   BELT_DIRECTION_GLYPH_DOWN,
   BELT_DIRECTION_GLYPH_LEFT,
   FACING_ARROW_PROPS,
-  HAS_EMOJI,
 } = BOARD3D_RULE_VISUAL_CONFIG
 
 const {
   TEXT_CARD_SYNTAX_BACKGROUND,
+  TEXT_CARD_SYNTAX_BACKGROUND_TOP,
   TEXT_CARD_SYNTAX_TEXT,
   TEXT_CARD_SYNTAX_OUTLINE,
+  TEXT_CARD_SYNTAX_KEYLINE,
+  TEXT_CARD_SYNTAX_DIAMOND,
   TEXT_CARD_NORMAL_BACKGROUND,
+  TEXT_CARD_NORMAL_BACKGROUND_TOP,
   TEXT_CARD_NORMAL_TEXT,
   TEXT_CARD_NORMAL_OUTLINE,
+  TEXT_CARD_NORMAL_KEYLINE,
   TEXT_CARD_OVERRIDDEN_BACKGROUND,
+  TEXT_CARD_OVERRIDDEN_BACKGROUND_TOP,
   TEXT_CARD_OVERRIDDEN_TEXT,
   TEXT_CARD_OVERRIDDEN_OUTLINE,
   TEXT_CARD_OVERRIDDEN_STRIKE,
+  TEXT_CARD_OVERRIDDEN_KEYLINE,
 } = BOARD3D_TEXT_CARD_STYLE_CONFIG
 
 export const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
@@ -88,12 +98,6 @@ const labelForItem = (item: Item): string => {
   return OBJECT_GLYPHS[item.name] ?? item.name.slice(0, 2).toUpperCase()
 }
 
-export const isEmojiItem = (item: Item): boolean => {
-  if (item.isText) return false
-  if (spriteForName(item.name)) return false
-  return HAS_EMOJI.test(labelForItem(item))
-}
-
 const objectPalette = (
   name: string,
   minContrastRatio: number,
@@ -110,16 +114,16 @@ export const cardSpecForItem = (
 ): CardSpec => {
   const label = labelForItem(item)
   const facingDirection = facingDirectionForItem(item)
-  const isEmojiLabel = HAS_EMOJI.test(label)
   if (item.isText) {
     if (overridden) {
       return {
         key: `text:overridden:${item.name}`,
         label,
         facingDirection: null,
-        isEmojiLabel: false,
         sprite: null,
         background: TEXT_CARD_OVERRIDDEN_BACKGROUND,
+        backgroundTop: TEXT_CARD_OVERRIDDEN_BACKGROUND_TOP,
+        keylineColor: TEXT_CARD_OVERRIDDEN_KEYLINE,
         textColor: TEXT_CARD_OVERRIDDEN_TEXT,
         outlineColor: TEXT_CARD_OVERRIDDEN_OUTLINE,
         isText: true,
@@ -132,9 +136,11 @@ export const cardSpecForItem = (
         key: `text:syntax:${item.name}`,
         label,
         facingDirection: null,
-        isEmojiLabel: false,
         sprite: null,
         background: TEXT_CARD_SYNTAX_BACKGROUND,
+        backgroundTop: TEXT_CARD_SYNTAX_BACKGROUND_TOP,
+        keylineColor: TEXT_CARD_SYNTAX_KEYLINE,
+        diamondColor: TEXT_CARD_SYNTAX_DIAMOND,
         textColor: TEXT_CARD_SYNTAX_TEXT,
         outlineColor: TEXT_CARD_SYNTAX_OUTLINE,
         isText: true,
@@ -144,9 +150,10 @@ export const cardSpecForItem = (
       key: `text:normal:${item.name}`,
       label,
       facingDirection: null,
-      isEmojiLabel: false,
       sprite: null,
       background: TEXT_CARD_NORMAL_BACKGROUND,
+      backgroundTop: TEXT_CARD_NORMAL_BACKGROUND_TOP,
+      keylineColor: TEXT_CARD_NORMAL_KEYLINE,
       textColor: TEXT_CARD_NORMAL_TEXT,
       outlineColor: TEXT_CARD_NORMAL_OUTLINE,
       isText: true,
@@ -158,7 +165,6 @@ export const cardSpecForItem = (
     key: `object:${item.name}:${item.dir ?? 'none'}:${facingDirection ?? 'none'}`,
     label,
     facingDirection,
-    isEmojiLabel,
     sprite: spriteForName(item.name),
     rotatesWithDirection: item.name === 'belt',
     background: palette.background,
@@ -180,8 +186,24 @@ export const orientedSpriteForSpec = (spec: CardSpec) => {
   return sprite
 }
 
-export const emojiStretchEnabledForItem = (item: Item): boolean =>
-  isEmojiItem(item) && !isGroundHugItem(item)
+// Text plates carry the idle stretch: sprite cards wobble through frame
+// geometry instead, so every upright card on the board keeps an idle motion,
+// matching the original game's all-tiles wiggle.
+export const idleStretchEnabledForItem = (item: Item): boolean => item.isText
 
-export const emojiPhaseOffsetMsForItem = (item: Item): number =>
-  hashSeed01(fnv1a(`emoji-stretch:${item.id}:${item.name}`)) * EMOJI_MICRO_STRETCH_CYCLE_MS
+// FLOAT-prop cards levitate: the layout lifts them and this flag keeps them
+// bobbing on the idle clock. Text floats too — TEXT IS FLOAT is a real rule.
+export const idleFloatEnabledForItem = (item: Item): boolean =>
+  item.props.includes('float')
+
+// One stable idle phase per item feeds every idle-motion domain: as a ms
+// offset for the stretch cycle, and quantized to frame steps for the sprite
+// wobble so voxel cards cycle out of sync instead of on one global index.
+const idlePhase01ForItem = (item: Item): number =>
+  hashSeed01(fnv1a(`idle:${item.id}:${item.name}`))
+
+export const idlePhaseOffsetMsForItem = (item: Item): number =>
+  idlePhase01ForItem(item) * IDLE_STRETCH_CYCLE_MS
+
+export const idleFrameOffsetForItem = (item: Item): number =>
+  Math.floor(idlePhase01ForItem(item) * SPRITE_FRAME_COUNT)

@@ -1,21 +1,31 @@
 export const BOARD3D_CARD_TEXTURE_CONFIG = {
   CARD_TEXTURE_SIZE: 256,
-  EMOJI_CARD_TEXTURE_SIZE: 512,
   CARD_TEXTURE_PAD_RATIO: 0.08,
-  CARD_TEXTURE_EMOJI_FONT_RATIO: 0.9,
   // Labels auto-fit the card: font size = fill ratio of the content box,
   // capped so short words stay punchy without long words bleeding off.
   CARD_TEXTURE_TEXT_MAX_FONT_SIZE: 108,
   CARD_TEXTURE_TEXT_FILL_RATIO: 0.88,
   CARD_TEXTURE_LABEL_OFFSET_Y: 4,
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO: 0.05,
-  CARD_TEXTURE_EMOJI_FONT_FAMILY:
-    '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
   CARD_TEXTURE_TEXT_FONT_FAMILY:
     '"Trebuchet MS","Arial Rounded MT Bold","Segoe UI Emoji",sans-serif',
   CARD_TEXTURE_DIRECTION_FONT_RATIO: 0.36,
   CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO: 0.12,
   CARD_TEXTURE_DIRECTION_OFFSET_Y: 1,
+  // Menu-pill keyline: a hairline stroke riding just inside the plate's
+  // rounded edge — the inset gap plus line width keep it visibly thin at
+  // card scale, like the 1px filigree inside menu rows.
+  CARD_TEXTURE_KEYLINE_INSET: 9,
+  CARD_TEXTURE_KEYLINE_WIDTH: 6,
+  // The ◆ flourish mounts on the top keyline segment (menu-flourish
+  // geometry: a gem flanked by hairlines). Half-height must exceed the
+  // keyline width so the line reads as running behind the gem.
+  CARD_TEXTURE_DIAMOND_HALF_HEIGHT: 11,
+  CARD_TEXTURE_DIAMOND_TAPER: 0.78,
+  // Overridden-rule cross: fraction of the card the pixel X spans, and the
+  // mark's opacity — translucent so the struck label stays readable.
+  CARD_TEXTURE_OVERRIDDEN_CROSS_RATIO: 0.62,
+  CARD_TEXTURE_OVERRIDDEN_CROSS_ALPHA: 0.55,
 } as const
 
 export const BOARD3D_SHADOW_TEXTURE_CONFIG = {

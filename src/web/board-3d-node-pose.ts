@@ -1,4 +1,5 @@
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { BOARD3D_EFFECTS_CONFIG } from './board-3d-config-effects.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import {
   applyCardOrientation,
@@ -6,9 +7,12 @@ import {
 } from './board-3d-card-facing.js'
 import {
   clamp01,
+  easeInCubic,
+  easeOutBack,
   easeOutCubic,
-  emojiBottomAnchorOffset,
-  emojiMicroStretch,
+  idleFloatBob,
+  idleMicroStretch,
+  idleStretchBottomAnchorOffset,
   lerp,
 } from './board-3d-shared-math.js'
 
@@ -30,7 +34,9 @@ const {
   SPAWN_ANIM_MS,
   DESPAWN_ANIM_MS,
   SPAWN_SCALE_FROM,
+  SPAWN_ROLL_IN,
   DESPAWN_SCALE_TO,
+  DESPAWN_SPIN,
   LAND_PULSE_MS,
   JUMP_HEIGHT,
   MOVE_STRETCH_FACTOR,
@@ -39,6 +45,14 @@ const {
   SPAWN_VERTICAL_OFFSET,
   DESPAWN_VERTICAL_OFFSET,
 } = BOARD3D_ANIMATION_CONFIG
+
+const {
+  PULSE_MS,
+  PULSE_HOP_HEIGHT,
+  PULSE_HOP_STRETCH,
+  PULSE_SLUMP_Y,
+  PULSE_SLUMP_X,
+} = BOARD3D_EFFECTS_CONFIG
 
 export const nodeRollAtMs = (node: EntityNode, nowMs: number): number => {
   const animDuration = Math.max(1, node.animDurationMs)
@@ -60,7 +74,7 @@ export const applyNodePose = (
   const x = lerp(node.fromX, node.toX, eased)
   const y = lerp(node.fromY, node.toY, eased)
   const baseZ = lerp(node.fromBaseZ, node.toBaseZ, eased)
-  const roll = nodeRollAtMs(node, nowMs)
+  let roll = nodeRollAtMs(node, nowMs)
 
   const dx = node.toX - node.fromX
   const dy = node.toY - node.fromY
@@ -91,11 +105,37 @@ export const applyNodePose = (
     if (landT >= 1) node.landStartMs = null
   }
 
+  // Celebration pulse (win hop / lose slump): a staggered whole-board wave.
+  // Negative t means the ripple hasn't reached this node yet — it stays
+  // animating so the RAF loop lives until the wave passes.
+  let pulseStretchX = 1
+  let pulseStretchY = 1
+  if (node.pulseStartMs !== null && node.despawnStartMs === null) {
+    const pulseT = (nowMs - node.pulseStartMs) / PULSE_MS
+    if (pulseT >= 1) {
+      node.pulseStartMs = null
+      node.pulseKind = null
+    } else if (pulseT > 0) {
+      const wave = Math.sin(Math.PI * pulseT)
+      if (node.pulseKind === 'hop') {
+        jump += wave * PULSE_HOP_HEIGHT
+        pulseStretchY = 1 + wave * PULSE_HOP_STRETCH
+        pulseStretchX = 1 - wave * PULSE_HOP_STRETCH * 0.5
+      } else {
+        pulseStretchY = 1 - wave * PULSE_SLUMP_Y
+        pulseStretchX = 1 + wave * PULSE_SLUMP_X
+      }
+    }
+  }
+
   let scaleFactor = 1
   let verticalOffset = 0
   if (node.spawnStartMs !== null) {
     const spawnT = clamp01((nowMs - node.spawnStartMs) / SPAWN_ANIM_MS)
-    scaleFactor *= lerp(SPAWN_SCALE_FROM, 1, easeOutCubic(spawnT))
+    // easeOutBack runs 0 → ~1.1 → 1: the card pops past its size on entry.
+    // A delayed spawn (board-entry stagger) sits at scale 0 until its turn.
+    scaleFactor *= lerp(SPAWN_SCALE_FROM, 1, easeOutBack(spawnT))
+    roll += (1 - easeOutCubic(spawnT)) * SPAWN_ROLL_IN
     verticalOffset += (1 - spawnT) * SPAWN_VERTICAL_OFFSET
     if (spawnT >= 1) node.spawnStartMs = null
   }
@@ -105,21 +145,29 @@ export const applyNodePose = (
   if (node.despawnStartMs !== null) {
     const despawnT = clamp01((nowMs - node.despawnStartMs) / DESPAWN_ANIM_MS)
     const fade = 1 - easeOutCubic(despawnT)
-    scaleFactor *= lerp(1, DESPAWN_SCALE_TO, despawnT)
+    // Ease-in shrink + spin-out: the card whirls away instead of fading.
+    scaleFactor *= lerp(1, DESPAWN_SCALE_TO, easeInCubic(despawnT))
+    roll += despawnT * DESPAWN_SPIN * (node.rollStep % 2 === 0 ? 1 : -1)
     shadowOpacityMul = Math.max(0, fade)
     verticalOffset += despawnT * DESPAWN_VERTICAL_OFFSET
     if (despawnT >= 1) finishedLeaving = true
   }
 
-  const baseScaleX = stretchX * scaleFactor
-  const baseScaleY = stretchY * scaleFactor
+  const baseScaleX = stretchX * pulseStretchX * scaleFactor
+  const baseScaleY = stretchY * pulseStretchY * scaleFactor
   let scaleX = baseScaleX
   let scaleY = baseScaleY
-  if (node.isEmoji) {
-    const microStretch = emojiMicroStretch(nowMs + node.emojiPhaseOffsetMs)
+  if (node.idleStretch) {
+    const microStretch = idleMicroStretch(nowMs + node.idlePhaseOffsetMs)
     scaleX *= microStretch.scaleX
     scaleY *= microStretch.scaleY
-    verticalOffset += emojiBottomAnchorOffset(baseScaleY, scaleY)
+    verticalOffset += idleStretchBottomAnchorOffset(baseScaleY, scaleY)
+  }
+
+  let floatBob = 0
+  if (node.idleFloat) {
+    floatBob = idleFloatBob(nowMs + node.idlePhaseOffsetMs)
+    verticalOffset += floatBob
   }
 
   node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
@@ -132,19 +180,19 @@ export const applyNodePose = (
     // model-local axis matching the dominant move direction (local X or Z),
     // not always on X like a camera-facing card.
     const lateralOnX = dominantX === (Math.abs(Math.cos(node.facingYaw)) >= 0.5)
-    scaleX = scaleFactor * (lateralOnX ? moveStretch : moveSquash)
-    scaleZ = scaleFactor * (lateralOnX ? moveSquash : moveStretch)
+    scaleX = scaleFactor * pulseStretchX * (lateralOnX ? moveStretch : moveSquash)
+    scaleZ = scaleFactor * pulseStretchX * (lateralOnX ? moveSquash : moveStretch)
   }
   node.mesh.scale.set(scaleX, scaleY, scaleZ)
 
   const shadowScale =
     SHADOW_SCALE_BASE +
-    jump * SHADOW_SCALE_JUMP_MUL +
+    (jump + floatBob) * SHADOW_SCALE_JUMP_MUL +
     landing * SHADOW_SCALE_LANDING_MUL
   const shadowOpacity = Math.max(
     SHADOW_OPACITY_MIN,
     SHADOW_OPACITY_BASE -
-      jump * SHADOW_OPACITY_JUMP_MUL +
+      (jump + floatBob) * SHADOW_OPACITY_JUMP_MUL +
       landing * SHADOW_OPACITY_LANDING_MUL,
   )
   node.shadow.position.set(x, y, SHADOW_BASE_Z)
@@ -156,7 +204,8 @@ export const applyNodePose = (
       node.moving ||
       node.landStartMs !== null ||
       node.spawnStartMs !== null ||
-      node.despawnStartMs !== null,
+      node.despawnStartMs !== null ||
+      node.pulseStartMs !== null,
     finishedLeaving,
   }
 }

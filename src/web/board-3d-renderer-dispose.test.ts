@@ -43,7 +43,6 @@ test('dispose releases the composer and the sky texture', () => {
     groundVisuals: {
       groundMesh: null,
       playAreaFillMesh: null,
-      playAreaOutline: null,
       cellGrid: null,
     },
     composer,

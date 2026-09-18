@@ -83,11 +83,24 @@ const expectedFacingNormal = (camera: PerspectiveCamera): Vector3 => {
 }
 
 test('board-3d card faces camera: ground-hug items stay flat, others face camera', () => {
-  const groundHug = { id: 1, name: 'water', x: 0, y: 0, isText: false, props: [] }
+  const water = { id: 1, name: 'water', x: 0, y: 0, isText: false, props: [] }
+  const lava = { id: 4, name: 'lava', x: 0, y: 0, isText: false, props: [] }
+  const tile = { id: 5, name: 'tile', x: 0, y: 0, isText: false, props: [] }
+  const importedTile = {
+    id: 6,
+    name: 'tile_5_10',
+    x: 0,
+    y: 0,
+    isText: false,
+    props: [],
+  }
   const object = { id: 2, name: 'baba', x: 0, y: 0, isText: false, props: [] }
   const text = { id: 3, name: 'win', x: 0, y: 0, isText: true, props: [] }
 
-  assert.equal(cardFacesCamera(groundHug), false)
+  assert.equal(cardFacesCamera(water), false)
+  assert.equal(cardFacesCamera(lava), false)
+  assert.equal(cardFacesCamera(tile), false)
+  assert.equal(cardFacesCamera(importedTile), false)
   assert.equal(cardFacesCamera(object), true)
   assert.equal(cardFacesCamera(text), true)
 })
@@ -280,6 +293,69 @@ test('board-3d volume roll rocks around the facing axis without tumbling', () =>
 
   assertVectorNear(meshWorldNormal(mesh), frontBefore)
   assert.ok(Math.abs(upBefore.dot(meshWorldUpAxis(mesh)) - Math.cos(roll)) < EPSILON)
+})
+
+test('board-3d spawn pops past full size before settling', () => {
+  const { entityGroup } = createFacingRig()
+  const camera = createCamera()
+  const node = createSyncNode(entityGroup)(
+    { id: 1, name: 'baba', x: 0, y: 0, isText: false, props: ['you'] },
+    0,
+  )
+  node.spawnStartMs = 0
+
+  // Mid-animation the back-out ease overshoots 1; the card pops.
+  applyNodePose(node, 140, camera)
+  assert.ok(node.mesh.scale.y > 1)
+
+  applyNodePose(node, 500, camera)
+  assert.equal(node.mesh.scale.y, 1)
+  assert.equal(node.spawnStartMs, null)
+})
+
+test('board-3d delayed spawn stays hidden until its stagger slot', () => {
+  const { entityGroup } = createFacingRig()
+  const camera = createCamera()
+  const node = createSyncNode(entityGroup)(
+    { id: 1, name: 'baba', x: 0, y: 0, isText: false, props: [] },
+    0,
+  )
+  node.spawnStartMs = 200
+
+  applyNodePose(node, 50, camera)
+  assert.ok(Math.abs(node.mesh.scale.y) < 1e-9)
+
+  applyNodePose(node, 300, camera)
+  assert.ok(node.mesh.scale.y > 0)
+})
+
+test('board-3d win hop lifts the card, lose slump squashes it', () => {
+  const { entityGroup } = createFacingRig()
+  const camera = createCamera()
+  const baseZ = 0.09
+
+  const hopNode = createSyncNode(entityGroup)(
+    { id: 1, name: 'baba', x: 0, y: 0, isText: false, props: ['you'] },
+    0,
+  )
+  hopNode.spawnStartMs = null
+  hopNode.pulseStartMs = 0
+  hopNode.pulseKind = 'hop'
+  applyNodePose(hopNode, 215, camera)
+  assert.ok(hopNode.mesh.position.z > baseZ)
+
+  const slumpNode = createSyncNode(entityGroup)(
+    { id: 2, name: 'baba', x: 0, y: 0, isText: false, props: [] },
+    0,
+  )
+  slumpNode.spawnStartMs = null
+  slumpNode.pulseStartMs = 0
+  slumpNode.pulseKind = 'slump'
+  applyNodePose(slumpNode, 215, camera)
+  assert.ok(slumpNode.mesh.scale.y < 1)
+
+  applyNodePose(slumpNode, 600, camera)
+  assert.equal(slumpNode.pulseStartMs, null)
 })
 
 test('board-3d node roll interpolates along the eased move progress', () => {

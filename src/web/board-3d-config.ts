@@ -1,4 +1,5 @@
 export { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+export { BOARD3D_EFFECTS_CONFIG } from './board-3d-config-effects.js'
 export {
   BOARD3D_CAMERA_CONFIG,
   CAMERA_TILT_FROM_VERTICAL_RAD_BASE,

@@ -3,9 +3,7 @@ import { Shape, Vector3 } from 'three'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 
 const {
-  PLAY_AREA_OUTLINE_RADIUS,
-  PLAY_AREA_OUTLINE_SAMPLES_MIN,
-  PLAY_AREA_OUTLINE_SAMPLES_DENSITY,
+  PLAY_AREA_CORNER_RADIUS,
   PLAY_AREA_RADIUS_CLAMP_RATIO,
 } = BOARD3D_LAYOUT_CONFIG
 
@@ -15,7 +13,7 @@ export const buildRoundedRectShape = (halfWidth: number, halfHeight: number): Sh
   const bottom = -halfHeight
   const top = halfHeight
   const radius = Math.min(
-    PLAY_AREA_OUTLINE_RADIUS,
+    PLAY_AREA_CORNER_RADIUS,
     halfWidth * PLAY_AREA_RADIUS_CLAMP_RATIO,
     halfHeight * PLAY_AREA_RADIUS_CLAMP_RATIO,
   )
@@ -62,18 +60,3 @@ export const buildCellGridPoints = (
   return points
 }
 
-export const buildRoundedRectOutlinePoints = (
-  halfWidth: number,
-  halfHeight: number,
-  z: number,
-): Vector3[] => {
-  const shape = buildRoundedRectShape(halfWidth, halfHeight)
-  const curveSamples = Math.max(
-    PLAY_AREA_OUTLINE_SAMPLES_MIN,
-    Math.round((halfWidth + halfHeight) * PLAY_AREA_OUTLINE_SAMPLES_DENSITY),
-  )
-  const points = shape.getPoints(curveSamples).map((point) => new Vector3(point.x, point.y, z))
-  const firstPoint = points.at(0)
-  if (firstPoint) points.push(firstPoint.clone())
-  return points
-}

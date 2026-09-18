@@ -13,9 +13,11 @@ import {
   BOARD3D_CARD_TEXTURE_CONFIG,
   BOARD3D_SHADOW_TEXTURE_CONFIG,
 } from './board-3d-config-textures.js'
-import { BOARD3D_RULE_VISUAL_CONFIG } from './board-3d-config-visuals.js'
+import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
+import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
 import { orientedSpriteForSpec } from './board-3d-shared-item.js'
 import {
+  dilateFrame,
   frameSize,
   spriteContentBounds,
   spriteFrames,
@@ -30,6 +32,7 @@ import {
   ARROW_SHADOW_PALETTE,
   DIRECTION_ARROW_FRAMES,
 } from './pixel-sprites/arrows.js'
+import { OVERRIDDEN_CROSS_FRAME } from './pixel-sprites/cross.js'
 
 import type { Direction } from '../logic/types.js'
 import type { CardSpec } from './board-3d-shared-types.js'
@@ -38,18 +41,24 @@ import type { PixelSprite } from './pixel-sprites/types.js'
 const {
   CARD_TEXTURE_SIZE,
   CARD_TEXTURE_PAD_RATIO,
-  CARD_TEXTURE_EMOJI_FONT_RATIO,
   CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
   CARD_TEXTURE_TEXT_FILL_RATIO,
   CARD_TEXTURE_LABEL_OFFSET_Y,
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO,
-  CARD_TEXTURE_EMOJI_FONT_FAMILY,
   CARD_TEXTURE_TEXT_FONT_FAMILY,
   CARD_TEXTURE_DIRECTION_FONT_RATIO,
   CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO,
   CARD_TEXTURE_DIRECTION_OFFSET_Y,
-  EMOJI_CARD_TEXTURE_SIZE,
+  CARD_TEXTURE_KEYLINE_INSET,
+  CARD_TEXTURE_KEYLINE_WIDTH,
+  CARD_TEXTURE_DIAMOND_HALF_HEIGHT,
+  CARD_TEXTURE_DIAMOND_TAPER,
+  CARD_TEXTURE_OVERRIDDEN_CROSS_RATIO,
+  CARD_TEXTURE_OVERRIDDEN_CROSS_ALPHA,
 } = BOARD3D_CARD_TEXTURE_CONFIG
+
+const { CARD_WORLD_SIZE } = BOARD3D_LAYOUT_CONFIG
+const { VOXEL_PLATE_CORNER_RADIUS } = BOARD3D_VOXEL_CONFIG
 
 const {
   SHADOW_TEXTURE_SIZE,
@@ -61,8 +70,6 @@ const {
   SHADOW_TEXTURE_STOP_2,
   SHADOW_TEXTURE_STOP_1_AT,
 } = BOARD3D_SHADOW_TEXTURE_CONFIG
-
-const { HAS_EMOJI } = BOARD3D_RULE_VISUAL_CONFIG
 
 const createCanvasTexture = (
   canvas: HTMLCanvasElement,
@@ -103,6 +110,43 @@ const drawDirectionArrow = (
   const shadow = Math.max(1, Math.round(texel / 3))
   drawPixelFrameUniform(ctx, frame, ARROW_SHADOW_PALETTE, dstX + shadow, dstY + shadow, texel)
   drawPixelFrameUniform(ctx, frame, ARROW_FILL_PALETTE, dstX, dstY, texel)
+}
+
+// Vetoed-rule mark: a chunky pixel X centered on the card, same language as
+// the facing arrow. The dilated dark pad underneath reads as a one-texel
+// outline — the voxel arrow overlay's dark slice, flattened — keeping the
+// red cross readable on the dimmed card. The whole mark is translucent so
+// the struck label still shows through.
+const drawOverriddenCross = (
+  ctx: CanvasRenderingContext2D,
+  textureSize: number,
+  fillColor: string,
+  padColor: string,
+): void => {
+  const { width, height } = frameSize(OVERRIDDEN_CROSS_FRAME)
+  const texel = (textureSize * CARD_TEXTURE_OVERRIDDEN_CROSS_RATIO) /
+    Math.max(width, height)
+  const center = textureSize / 2
+  const pad = dilateFrame(OVERRIDDEN_CROSS_FRAME)
+  const padSize = frameSize(pad)
+  ctx.globalAlpha = CARD_TEXTURE_OVERRIDDEN_CROSS_ALPHA
+  drawPixelFrameUniform(
+    ctx,
+    pad,
+    { x: padColor },
+    center - (padSize.width * texel) / 2,
+    center - (padSize.height * texel) / 2,
+    texel,
+  )
+  drawPixelFrameUniform(
+    ctx,
+    OVERRIDDEN_CROSS_FRAME,
+    { x: fillColor },
+    center - (width * texel) / 2,
+    center - (height * texel) / 2,
+    texel,
+  )
+  ctx.globalAlpha = 1
 }
 
 // Pixel sprites are drawn nearest-neighbor onto a transparent card; the
@@ -153,8 +197,52 @@ export const createCardTextures = (
   )
 }
 
+// The menu's hairline keyline: a thin stroke inset from the card edge,
+// following the plate silhouette so it stays parallel all the way around
+// the corners — the same inset-1px gold filigree the menu rows wear.
+const traceKeylinePath = (
+  ctx: CanvasRenderingContext2D,
+  inset: number,
+  radius: number,
+  textureSize: number,
+): void => {
+  const max = textureSize - inset
+  ctx.beginPath()
+  ctx.moveTo(inset + radius, inset)
+  ctx.lineTo(max - radius, inset)
+  ctx.arcTo(max, inset, max, inset + radius, radius)
+  ctx.lineTo(max, max - radius)
+  ctx.arcTo(max, max, max - radius, max, radius)
+  ctx.lineTo(inset + radius, max)
+  ctx.arcTo(inset, max, inset, max - radius, radius)
+  ctx.lineTo(inset, inset + radius)
+  ctx.arcTo(inset, inset, inset + radius, inset, radius)
+  ctx.closePath()
+}
+
+// ◆ mounted on the top keyline segment — the menu-flourish transplanted
+// onto the card: a small gem the keyline reads as running behind.
+const drawKeylineDiamond = (
+  ctx: CanvasRenderingContext2D,
+  textureSize: number,
+  color: string,
+): void => {
+  const cx = textureSize / 2
+  const cy = CARD_TEXTURE_KEYLINE_INSET
+  const halfH = CARD_TEXTURE_DIAMOND_HALF_HEIGHT
+  const halfW = halfH * CARD_TEXTURE_DIAMOND_TAPER
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.moveTo(cx, cy - halfH)
+  ctx.lineTo(cx + halfW, cy)
+  ctx.lineTo(cx, cy + halfH)
+  ctx.lineTo(cx - halfW, cy)
+  ctx.closePath()
+  ctx.fill()
+}
+
 export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture => {
-  const textureSize = spec.isEmojiLabel ? EMOJI_CARD_TEXTURE_SIZE : CARD_TEXTURE_SIZE
+  const textureSize = CARD_TEXTURE_SIZE
   const canvas = document.createElement('canvas')
   canvas.width = textureSize
   canvas.height = textureSize
@@ -164,52 +252,57 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
   const pad = textureSize * CARD_TEXTURE_PAD_RATIO
   const size = textureSize - pad * 2
 
-  ctx.clearRect(0, 0, textureSize, textureSize)
-  if (!spec.isEmojiLabel) {
-    // Text cards are silhouette cards: the face fills the whole card
-    // square, so the plate edge and the face edge are the same line.
+  // Cards are silhouette cards: the face fills the whole card square, so
+  // the plate edge and the face edge are the same line. Menu-pill specs
+  // carry a brighter top stop — the parchment gradient the menu rows use.
+  if (spec.backgroundTop) {
+    const gradient = ctx.createLinearGradient(0, 0, 0, textureSize)
+    gradient.addColorStop(0, spec.backgroundTop)
+    gradient.addColorStop(1, spec.background)
+    ctx.fillStyle = gradient
+  } else {
     ctx.fillStyle = spec.background
-    ctx.fillRect(0, 0, textureSize, textureSize)
+  }
+  ctx.fillRect(0, 0, textureSize, textureSize)
+
+  if (spec.keylineColor) {
+    const edgeRadius = (VOXEL_PLATE_CORNER_RADIUS / CARD_WORLD_SIZE) * textureSize
+    const radius = Math.max(0, edgeRadius - CARD_TEXTURE_KEYLINE_INSET)
+    traceKeylinePath(ctx, CARD_TEXTURE_KEYLINE_INSET, radius, textureSize)
+    ctx.strokeStyle = spec.keylineColor
+    ctx.lineWidth = CARD_TEXTURE_KEYLINE_WIDTH
+    ctx.stroke()
+    if (spec.diamondColor) drawKeylineDiamond(ctx, textureSize, spec.diamondColor)
   }
 
-  const isEmojiLabel = spec.isEmojiLabel || HAS_EMOJI.test(spec.label)
-  let fontSize = Math.round(textureSize * CARD_TEXTURE_EMOJI_FONT_RATIO)
-  if (!isEmojiLabel) {
-    // Measure at 100px then scale to fill the content box — short words
-    // cap out big, long words shrink to fit instead of bleeding off.
-    ctx.font = `700 100px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
-    const measured = ctx.measureText(spec.label).width
-    fontSize = Math.min(
-      CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
-      Math.floor((100 * size * CARD_TEXTURE_TEXT_FILL_RATIO) / Math.max(measured, 1)),
-    )
-  }
+  // Measure at 100px then scale to fill the content box — short words
+  // cap out big, long words shrink to fit instead of bleeding off.
+  ctx.font = `700 100px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
+  const measured = ctx.measureText(spec.label).width
+  const fontSize = Math.min(
+    CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
+    Math.floor((100 * size * CARD_TEXTURE_TEXT_FILL_RATIO) / Math.max(measured, 1)),
+  )
 
-  const labelOffsetY = isEmojiLabel ? 0 : CARD_TEXTURE_LABEL_OFFSET_Y
+  const labelOffsetY = CARD_TEXTURE_LABEL_OFFSET_Y
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = spec.textColor
-  ctx.font = isEmojiLabel
-    ? `${fontSize}px ${CARD_TEXTURE_EMOJI_FONT_FAMILY}`
-    : `700 ${fontSize}px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
+  ctx.font = `700 ${fontSize}px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
 
-  if (!isEmojiLabel) {
-    ctx.lineWidth = textureSize * CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO
-    ctx.lineJoin = 'round'
-    ctx.strokeStyle = spec.outlineColor
-    ctx.strokeText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
-  }
+  ctx.lineWidth = textureSize * CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO
+  ctx.lineJoin = 'round'
+  ctx.strokeStyle = spec.outlineColor
+  ctx.strokeText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
   ctx.fillText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
 
   if (spec.strikethrough) {
-    const strikeY = textureSize / 2 + labelOffsetY
-    const strikeHalf = Math.min(size / 2, fontSize * spec.label.length * 0.36)
-    ctx.strokeStyle = spec.strikeColor ?? spec.textColor
-    ctx.lineWidth = Math.max(2, textureSize * 0.02)
-    ctx.beginPath()
-    ctx.moveTo(textureSize / 2 - strikeHalf, strikeY)
-    ctx.lineTo(textureSize / 2 + strikeHalf, strikeY)
-    ctx.stroke()
+    drawOverriddenCross(
+      ctx,
+      textureSize,
+      spec.strikeColor ?? spec.textColor,
+      spec.outlineColor,
+    )
   }
 
   if (spec.facingDirection) {
@@ -310,6 +403,7 @@ const drawGroundMottleCanvas = (): HTMLCanvasElement => {
       1,
     )
   }
+
   ctx.globalAlpha = 1
   return canvas
 }

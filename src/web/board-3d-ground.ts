@@ -3,8 +3,7 @@ import {
   Color,
   DirectionalLight,
   Group,
-  Line,
-  LineBasicMaterial,
+  LineDashedMaterial,
   LineSegments,
   Mesh,
   MeshToonMaterial,
@@ -18,7 +17,6 @@ import { BOARD3D_LIGHTING_CONFIG } from './board-3d-config-lighting.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import {
   buildCellGridPoints,
-  buildRoundedRectOutlinePoints,
   buildRoundedRectShape,
 } from './board-3d-ground-shape.js'
 import {
@@ -30,15 +28,14 @@ const {
   GROUND_SURFACE_Z,
   GROUND_ACTIVE_FILL_Z,
   GROUND_EXPANDED_MIN_SIZE,
-  PLAY_AREA_OUTLINE_Z,
-  PLAY_AREA_OUTLINE_OPACITY,
   CELL_GRID_Z,
   CELL_GRID_COLOR,
   CELL_GRID_OPACITY,
+  CELL_GRID_DASH_SIZE,
+  CELL_GRID_GAP_SIZE,
   GROUND_EXPANDED_PADDING,
   GROUND_BASE_COLOR,
   PLAY_AREA_FILL_COLOR,
-  PLAY_AREA_OUTLINE_COLOR,
   GROUND_MOTTLE_TILE_WORLD,
 } = BOARD3D_LAYOUT_CONFIG
 
@@ -55,8 +52,7 @@ const {
 export type GroundVisuals = {
   groundMesh: Mesh<PlaneGeometry, MeshToonMaterial> | null
   playAreaFillMesh: Mesh<ShapeGeometry, MeshToonMaterial> | null
-  playAreaOutline: Line<BufferGeometry, LineBasicMaterial> | null
-  cellGrid: LineSegments<BufferGeometry, LineBasicMaterial> | null
+  cellGrid: LineSegments<BufferGeometry, LineDashedMaterial> | null
 }
 
 export const configureTopLight = (
@@ -93,7 +89,7 @@ export const disposeGroundVisuals = (
   world: Group,
   visuals: GroundVisuals,
 ): GroundVisuals => {
-  const { groundMesh, playAreaFillMesh, playAreaOutline, cellGrid } = visuals
+  const { groundMesh, playAreaFillMesh, cellGrid } = visuals
   if (cellGrid) {
     world.remove(cellGrid)
     cellGrid.geometry.dispose()
@@ -105,11 +101,6 @@ export const disposeGroundVisuals = (
     playAreaFillMesh.material.map?.dispose()
     playAreaFillMesh.material.dispose()
   }
-  if (playAreaOutline) {
-    world.remove(playAreaOutline)
-    playAreaOutline.geometry.dispose()
-    playAreaOutline.material.dispose()
-  }
   if (groundMesh) {
     world.remove(groundMesh)
     groundMesh.geometry.dispose()
@@ -119,7 +110,6 @@ export const disposeGroundVisuals = (
   return {
     groundMesh: null,
     playAreaFillMesh: null,
-    playAreaOutline: null,
     cellGrid: null,
   }
 }
@@ -179,32 +169,26 @@ export const rebuildGroundVisuals = (
   playAreaFillMesh.receiveShadow = true
   world.add(playAreaFillMesh)
 
-  const outlineGeometry = new BufferGeometry().setFromPoints(
-    buildRoundedRectOutlinePoints(halfWidth, halfHeight, PLAY_AREA_OUTLINE_Z),
-  )
-  const outlineMaterial = new LineBasicMaterial({
-    color: new Color(PLAY_AREA_OUTLINE_COLOR),
-    transparent: true,
-    opacity: PLAY_AREA_OUTLINE_OPACITY,
-  })
-  const playAreaOutline = new Line(outlineGeometry, outlineMaterial)
-  world.add(playAreaOutline)
-
   const cellGridGeometry = new BufferGeometry().setFromPoints(
     buildCellGridPoints(boardWidth, boardHeight, CELL_GRID_Z),
   )
-  const cellGridMaterial = new LineBasicMaterial({
+  const cellGridMaterial = new LineDashedMaterial({
     color: new Color(CELL_GRID_COLOR),
     transparent: true,
     opacity: CELL_GRID_OPACITY,
+    dashSize: CELL_GRID_DASH_SIZE,
+    gapSize: CELL_GRID_GAP_SIZE,
   })
   const cellGrid = new LineSegments(cellGridGeometry, cellGridMaterial)
+  // Dashed material only renders where a lineDistance attribute exists;
+  // LineSegments restarts the distance per segment, so every border line
+  // begins its dash pattern at the board edge.
+  cellGrid.computeLineDistances()
   world.add(cellGrid)
 
   return {
     groundMesh,
     playAreaFillMesh,
-    playAreaOutline,
     cellGrid,
   }
 }

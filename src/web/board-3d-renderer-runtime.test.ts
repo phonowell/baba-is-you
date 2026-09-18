@@ -81,8 +81,10 @@ const createNode = (): EntityNode =>
       scale: { set: () => undefined },
     },
     shadowMaterial: { opacity: 1, dispose: () => undefined },
-    isEmoji: false,
-    emojiPhaseOffsetMs: 0,
+    idleStretch: false,
+    idleFloat: false,
+    idlePhaseOffsetMs: 0,
+    idleFrameOffset: 0,
     facesCamera: false,
     rotRoll: 0,
     rollStep: 0,
@@ -100,6 +102,11 @@ const createNode = (): EntityNode =>
     spawnStartMs: null,
     despawnStartMs: null,
     landStartMs: null,
+    fxColors: [],
+    spawnFxDone: true,
+    despawnFxDone: true,
+    pulseStartMs: null,
+    pulseKind: null,
   }) as unknown as EntityNode
 
 const createRuntime = (overrides: {
@@ -111,6 +118,8 @@ const createRuntime = (overrides: {
   composerRender?: () => void
   viewUpdateViewport?: RuntimeArgs['viewController']['updateViewport']
   entityGroup?: RuntimeArgs['entityGroup']
+  effects?: RuntimeArgs['effects']
+  cameraParallax?: RuntimeArgs['cameraParallax']
   requestFrame?: RuntimeArgs['requestFrame']
   cancelFrame?: RuntimeArgs['cancelFrame']
   advanceSpriteFrames?: RuntimeArgs['advanceSpriteFrames']
@@ -139,6 +148,7 @@ const createRuntime = (overrides: {
     updateViewport: overrides.viewUpdateViewport ?? (() => false),
     updateCamera: () => undefined,
     applyReadabilityGuard: () => undefined,
+    setFxMood: () => undefined,
   }
 
   const args: RuntimeArgs = {
@@ -160,6 +170,8 @@ const createRuntime = (overrides: {
   if (overrides.applyNodePoseStep)
     args.applyNodePoseStep = overrides.applyNodePoseStep
   if (overrides.syncNodes) args.syncNodes = overrides.syncNodes
+  if (overrides.effects) args.effects = overrides.effects
+  if (overrides.cameraParallax) args.cameraParallax = overrides.cameraParallax
   args.requestFrame =
     overrides.requestFrame ??
     ((callback: FrameRequestCallback) => {
@@ -180,7 +192,7 @@ const createRuntime = (overrides: {
   return createBoard3dRendererRuntime(args)
 }
 
-test('board-3d runtime does not keep RAF alive for emoji idle micro-motion alone', () => {
+test('board-3d runtime does not keep RAF alive for idle micro-motion alone', () => {
   const callbacks: FrameRequestCallback[] = []
   const nodes = new Map<number, EntityNode>([[1, createNode()]])
   const runtime = createRuntime({
@@ -282,7 +294,6 @@ test('board-3d runtime dispose clears resources once and blocks further work', (
       return {
         groundMesh: null,
         playAreaFillMesh: null,
-        playAreaOutline: null,
         cellGrid: null,
       }
     },
@@ -307,7 +318,6 @@ test('board-3d runtime double dispose stays idempotent', () => {
       return {
         groundMesh: null,
         playAreaFillMesh: null,
-        playAreaOutline: null,
         cellGrid: null,
       }
     },
@@ -527,6 +537,112 @@ test('board-3d runtime drives sprite frames on the slow timer without holding RA
   assert.equal(callbacks.length, 0)
 })
 
+test('board-3d runtime poses idle-stretch nodes on the slow timer without sprite frames', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const timers: Array<() => void> = []
+  const node = createNode()
+  node.idleStretch = true
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const runtime = createRuntime({
+    nodes,
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+    advanceSpriteFrames: () => 0,
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: () => undefined,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  const mountTick = callbacks.shift()
+  assert.ok(mountTick)
+  mountTick(16)
+  assert.equal(callbacks.length, 0)
+
+  const realNow = performance.now
+  performance.now = () => 0
+  try {
+    timers[0]!()
+  } finally {
+    performance.now = realNow
+  }
+
+  assert.equal(callbacks.length, 1)
+})
+
+test('board-3d runtime re-poses float-bob nodes on the slow timer without sprite frames', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const timers: Array<() => void> = []
+  let poseCalls = 0
+  const node = createNode()
+  node.idleFloat = true
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const runtime = createRuntime({
+    nodes,
+    applyNodePoseStep: () => {
+      poseCalls += 1
+      return { animating: false, finishedLeaving: false }
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+    advanceSpriteFrames: () => 0,
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: () => undefined,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  const mountTick = callbacks.shift()
+  assert.ok(mountTick)
+  mountTick(16)
+  assert.equal(poseCalls, 1)
+  assert.equal(callbacks.length, 0)
+
+  const realNow = performance.now
+  try {
+    performance.now = () => 0
+    timers[0]!()
+  } finally {
+    performance.now = realNow
+  }
+
+  const firstWake = callbacks.shift()
+  assert.ok(firstWake)
+  firstWake(16)
+  assert.equal(poseCalls, 2)
+
+  try {
+    // Second fire in a later sprite slot: the first fire always wakes a
+    // frame (lastSpriteFrameIx < 0); only the float node keeps the second
+    // one alive since nothing else changed.
+    performance.now = () => 500
+    timers[0]!()
+  } finally {
+    performance.now = realNow
+  }
+
+  assert.equal(callbacks.length, 1)
+  const secondWake = callbacks.shift()
+  assert.ok(secondWake)
+  secondWake(16)
+  assert.equal(poseCalls, 3)
+  assert.equal(callbacks.length, 0)
+})
+
 test('board-3d runtime dedupes sprite timer fires inside the same frame slot', () => {
   const timers: Array<() => void> = []
   const advances: number[] = []
@@ -559,6 +675,58 @@ test('board-3d runtime dedupes sprite timer fires inside the same frame slot', (
   }
 
   assert.equal(advances.length, 1)
+})
+
+test('board-3d runtime re-poses idle nodes on every timer fire within a frame slot', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const timers: Array<() => void> = []
+  let poseCalls = 0
+  const node = createNode()
+  node.idleStretch = true
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const runtime = createRuntime({
+    nodes,
+    applyNodePoseStep: () => {
+      poseCalls += 1
+      return { animating: false, finishedLeaving: false }
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+    advanceSpriteFrames: () => 0,
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: () => undefined,
+  })
+  const container = createContainer()
+  runtime.mount(container)
+  const mountTick = callbacks.shift()
+  assert.ok(mountTick)
+  mountTick(16)
+  assert.equal(poseCalls, 1)
+
+  const realNow = performance.now
+  try {
+    // Both fires land in the same sprite-frame slot: the sprite dedupe must
+    // not swallow the idle re-pose — idle sines need every timer sample.
+    performance.now = () => 0
+    timers[0]!()
+    const firstWake = callbacks.shift()
+    assert.ok(firstWake)
+    firstWake(0)
+    performance.now = () => 100
+    timers[0]!()
+    const secondWake = callbacks.shift()
+    assert.ok(secondWake)
+    secondWake(100)
+  } finally {
+    performance.now = realNow
+  }
+
+  assert.equal(poseCalls, 3)
 })
 
 test('board-3d runtime cancels the sprite timer on unmount', () => {
@@ -620,4 +788,352 @@ test('board-3d runtime skips the sprite timer when no frame advancer is wired', 
   runtime.mount(container)
 
   assert.equal(timers.length, 0)
+})
+
+type FxCalls = {
+  spawnPuff: unknown[][]
+  despawnPoof: unknown[][]
+  playWin: number
+  playLose: number
+  neutralMood: number
+  clear: number
+  dispose: number
+}
+
+const createEffectsStub = (updateResult = false) => {
+  const calls: FxCalls = {
+    spawnPuff: [],
+    despawnPoof: [],
+    playWin: 0,
+    playLose: 0,
+    neutralMood: 0,
+    clear: 0,
+    dispose: 0,
+  }
+  const effects = {
+    spawnPuff: (...args: unknown[]) => {
+      calls.spawnPuff.push(args)
+    },
+    despawnPoof: (...args: unknown[]) => {
+      calls.despawnPoof.push(args)
+    },
+    playWin: () => {
+      calls.playWin += 1
+    },
+    playLose: () => {
+      calls.playLose += 1
+    },
+    neutralMood: () => {
+      calls.neutralMood += 1
+    },
+    update: () => updateResult,
+    clear: () => {
+      calls.clear += 1
+    },
+    dispose: () => {
+      calls.dispose += 1
+    },
+  }
+  return { effects, calls }
+}
+
+test('board-3d runtime keeps RAF alive while board effects animate', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const { effects } = createEffectsStub(true)
+  const runtime = createRuntime({
+    effects,
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  assert.equal(callbacks.length, 1)
+
+  const tick = callbacks.shift()
+  assert.ok(tick)
+  tick(16)
+
+  assert.equal(callbacks.length, 1)
+})
+
+test('board-3d runtime fires win/lose effects only on status transitions', () => {
+  const { effects, calls } = createEffectsStub()
+  const runtime = createRuntime({
+    effects,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    syncNodes: () => undefined,
+  })
+  const container = createContainer()
+  const playing = createState(3, 2)
+
+  runtime.mount(container)
+  runtime.sync(playing)
+  assert.equal(calls.playWin, 0)
+  assert.equal(calls.neutralMood, 0)
+
+  runtime.sync({ ...playing, status: 'win' })
+  assert.equal(calls.playWin, 1)
+  runtime.sync({ ...playing, status: 'win' })
+  assert.equal(calls.playWin, 1)
+
+  runtime.sync({ ...playing, status: 'complete' })
+  assert.equal(calls.playWin, 2)
+
+  runtime.sync({ ...playing, status: 'lose' })
+  assert.equal(calls.playLose, 1)
+
+  runtime.sync({ ...playing, status: 'playing' })
+  assert.equal(calls.neutralMood, 1)
+})
+
+test('board-3d runtime staggers hop pulses across nodes on win', () => {
+  const { effects } = createEffectsStub()
+  const near = createNode()
+  const far = createNode()
+  near.toX = 0
+  near.toY = 0
+  far.toX = 6
+  far.toY = 0
+  const nodes = new Map<number, EntityNode>([
+    [1, near],
+    [2, far],
+  ])
+  const playing = createState(7, 3, [
+    { id: 1, name: 'baba', x: 3, y: 1, isText: false, props: ['you'] },
+    { id: 2, name: 'rock', x: 5, y: 1, isText: false, props: ['push'] },
+  ])
+  const runtime = createRuntime({
+    effects,
+    nodes,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    syncNodes: () => undefined,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  runtime.sync(playing)
+  runtime.sync({ ...playing, status: 'win' })
+
+  assert.equal(near.pulseKind, 'hop')
+  assert.equal(far.pulseKind, 'hop')
+  assert.ok(near.pulseStartMs !== null && far.pulseStartMs !== null)
+  assert.ok((far.pulseStartMs ?? 0) > (near.pulseStartMs ?? 0))
+})
+
+test('board-3d runtime slump-pulses nodes on lose', () => {
+  const { effects } = createEffectsStub()
+  const node = createNode()
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const playing = createState(3, 2)
+  const runtime = createRuntime({
+    effects,
+    nodes,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    syncNodes: () => undefined,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  runtime.sync(playing)
+  runtime.sync({ ...playing, status: 'lose' })
+
+  assert.equal(node.pulseKind, 'slump')
+  assert.ok(node.pulseStartMs !== null)
+})
+
+test('board-3d runtime fires a spawn puff once when the spawn starts', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const { effects, calls } = createEffectsStub()
+  const node = createNode()
+  node.spawnStartMs = 100
+  node.spawnFxDone = false
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const runtime = createRuntime({
+    effects,
+    nodes,
+    applyNodePoseStep: () => ({
+      animating: true,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  const tick1 = callbacks.shift()
+  assert.ok(tick1)
+  tick1(50)
+  assert.equal(calls.spawnPuff.length, 0)
+
+  const tick2 = callbacks.shift()
+  assert.ok(tick2)
+  tick2(120)
+  assert.equal(calls.spawnPuff.length, 1)
+
+  const tick3 = callbacks.shift()
+  assert.ok(tick3)
+  tick3(160)
+  assert.equal(calls.spawnPuff.length, 1)
+})
+
+test('board-3d runtime fires a despawn poof once while leaving', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const { effects, calls } = createEffectsStub()
+  const node = createNode()
+  node.despawnStartMs = 5
+  node.despawnFxDone = false
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const runtime = createRuntime({
+    effects,
+    nodes,
+    applyNodePoseStep: () => ({
+      animating: true,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  const tick1 = callbacks.shift()
+  assert.ok(tick1)
+  tick1(16)
+  assert.equal(calls.despawnPoof.length, 1)
+
+  const tick2 = callbacks.shift()
+  assert.ok(tick2)
+  tick2(32)
+  assert.equal(calls.despawnPoof.length, 1)
+})
+
+test('board-3d runtime clears board effects on unmount and disposes with the renderer', () => {
+  const { effects, calls } = createEffectsStub()
+  const runtime = createRuntime({ effects })
+  const container = createContainer()
+
+  runtime.mount(container)
+  runtime.unmount()
+  assert.equal(calls.clear, 1)
+
+  runtime.mount(container)
+  runtime.dispose()
+  assert.equal(calls.dispose, 1)
+})
+
+test('board-3d runtime drives camera parallax through the on-demand frame loop', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const renders: number[] = []
+  let parallaxMoves = true
+  const runtime = createRuntime({
+    composerRender: () => {
+      renders.push(1)
+    },
+    cameraParallax: {
+      setTarget: () => undefined,
+      captureBase: () => undefined,
+      update: () => parallaxMoves,
+    },
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  const tick1 = callbacks.shift()
+  assert.ok(tick1)
+  tick1(16)
+  // Parallax in motion: one more frame is scheduled.
+  assert.equal(callbacks.length, 1)
+
+  parallaxMoves = false
+  const tick2 = callbacks.shift()
+  assert.ok(tick2)
+  tick2(32)
+  // Settled: no render, RAF hands back.
+  assert.equal(callbacks.length, 0)
+  assert.equal(renders.length, 1)
+})
+
+test('board-3d runtime rebases parallax when the viewport or board dims change', () => {
+  const captures: number[] = []
+  let viewportChanges = false
+  const runtime = createRuntime({
+    cameraParallax: {
+      setTarget: () => undefined,
+      captureBase: () => {
+        captures.push(1)
+      },
+      update: () => false,
+    },
+    viewUpdateViewport: () => {
+      const changed = viewportChanges
+      viewportChanges = false
+      return changed
+    },
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    syncNodes: () => undefined,
+  })
+  const container = createContainer()
+
+  viewportChanges = true
+  runtime.mount(container)
+  assert.equal(captures.length, 1)
+
+  runtime.sync(createState(3, 2))
+  runtime.sync(createState(3, 2))
+  runtime.sync(createState(4, 2))
+  assert.equal(captures.length, 3)
+})
+
+test('board-3d runtime forwards parallax targets and wakes the frame loop', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const targets: Array<[number, number]> = []
+  const runtime = createRuntime({
+    cameraParallax: {
+      setTarget: (nx, ny) => {
+        targets.push([nx, ny])
+      },
+      captureBase: () => undefined,
+      update: () => false,
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+  runtime.mount(container)
+  const mountTick = callbacks.shift()
+  assert.ok(mountTick)
+  mountTick(16)
+  assert.equal(callbacks.length, 0)
+
+  runtime.setParallaxTarget(0.5, -0.25)
+  assert.deepEqual(targets, [[0.5, -0.25]])
+  assert.equal(callbacks.length, 1)
+
+  runtime.unmount()
+  assert.deepEqual(targets, [
+    [0.5, -0.25],
+    [0, 0],
+  ])
 })

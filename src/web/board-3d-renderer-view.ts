@@ -1,13 +1,20 @@
 import type { DirectionalLight, PerspectiveCamera, WebGLRenderer } from 'three'
-import type { BloomEffect, EffectComposer } from 'postprocessing'
+import type {
+  BloomEffect,
+  EffectComposer,
+  HueSaturationEffect,
+  VignetteEffect,
+} from 'postprocessing'
 
 import { readabilityMix } from './clay-config.js'
 import { BOARD3D_POSTFX_CONFIG } from './board-3d-config-postfx.js'
 import { lerp } from './board-3d-shared-math.js'
 import { updateRendererCamera } from './board-3d-renderer-camera.js'
 import { updateRendererLightRig } from './board-3d-renderer-lighting.js'
+import { BOARD_FX_MOOD_NEUTRAL } from './board-3d-shared-types.js'
 
 import type { GameState } from '../logic/types.js'
+import type { BoardFxMood } from './board-3d-shared-types.js'
 
 const {
   MAX_DEVICE_PIXEL_RATIO,
@@ -21,6 +28,8 @@ type Board3dRendererViewDeps = {
   renderer: WebGLRenderer
   composer: EffectComposer
   bloomEffect: BloomEffect
+  hueSaturationEffect: HueSaturationEffect
+  vignetteEffect: VignetteEffect
   leftLight: DirectionalLight
   rightLight: DirectionalLight
   updateLightShadowCamera: (
@@ -34,6 +43,10 @@ export type Board3dRendererViewController = {
   updateViewport: (container: HTMLElement, boardWidth: number, boardHeight: number) => boolean
   updateCamera: (container: HTMLElement, boardWidth: number, boardHeight: number) => void
   applyReadabilityGuard: (state: GameState) => void
+  // Effects layer mood channel: additive offsets on top of the
+  // readability-computed baselines, driven per-frame while a win/lose
+  // pulse runs.
+  setFxMood: (mood: BoardFxMood) => void
 }
 
 export const createBoard3dRendererViewController = (
@@ -45,10 +58,28 @@ export const createBoard3dRendererViewController = (
     renderer,
     composer,
     bloomEffect,
+    hueSaturationEffect,
+    vignetteEffect,
     leftLight,
     rightLight,
     updateLightShadowCamera,
   } = deps
+
+  let mood = BOARD_FX_MOOD_NEUTRAL
+  let baseBloom = preset.bloom.strength
+
+  const applyMood = (): void => {
+    bloomEffect.intensity = baseBloom + mood.bloomBoost
+    hueSaturationEffect.saturation =
+      preset.grade.saturation - 1 + mood.saturationAdd
+    vignetteEffect.darkness =
+      preset.grade.vignetteStrength + mood.vignetteAdd
+  }
+
+  const setFxMood = (next: BoardFxMood): void => {
+    mood = next
+    applyMood()
+  }
 
   let viewportWidth = 0
   let viewportHeight = 0
@@ -122,16 +153,18 @@ export const createBoard3dRendererViewController = (
       state.width * state.height,
       preset.readability.textDensitySoftCap,
     )
-    bloomEffect.intensity = lerp(
+    baseBloom = lerp(
       preset.bloom.strength,
       preset.readability.bloomStrengthFloor,
       mix,
     )
+    applyMood()
   }
 
   return {
     updateViewport,
     updateCamera,
     applyReadabilityGuard,
+    setFxMood,
   }
 }

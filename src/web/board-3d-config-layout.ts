@@ -13,10 +13,12 @@ export const BOARD3D_LAYOUT_CONFIG = {
   GROUND_EXPANDED_MIN_SIZE: 220,
   CELL_GRID_Z: -0.221,
   CELL_GRID_COLOR: '#3f6e28',
-  CELL_GRID_OPACITY: 0.12,
-  PLAY_AREA_OUTLINE_Z: -0.065,
-  PLAY_AREA_OUTLINE_RADIUS: 0.34,
-  PLAY_AREA_OUTLINE_OPACITY: 0.88,
+  CELL_GRID_OPACITY: 0.24,
+  // Dash/gap in world units (one cell = 1); the lineDistance attribute is
+  // world-space, so these read directly off the board.
+  CELL_GRID_DASH_SIZE: 0.08,
+  CELL_GRID_GAP_SIZE: 0.05,
+  PLAY_AREA_CORNER_RADIUS: 0.34,
   CARD_FACE_CAMERA_BLEND: 0.55,
   TEXTURE_ANISOTROPY_CAP: 8,
   CARD_MATERIAL_ALPHA_TEST: 0.08,
@@ -27,14 +29,9 @@ export const BOARD3D_LAYOUT_CONFIG = {
   // Kept a touch brighter than the target since the mottle map multiplies.
   GROUND_BASE_COLOR: '#7ab858',
   PLAY_AREA_FILL_COLOR: '#98d463',
-  // Warm sandy edge: reads as a sunlit path border and brings the warm
-  // hue family the scene was missing (rock/dirt tones vs all-green).
-  PLAY_AREA_OUTLINE_COLOR: '#d8c98e',
   // World units per painterly-mottle tile — blotch scale ends up sub-cell.
   GROUND_MOTTLE_TILE_WORLD: 14,
   ENTITY_IDLE_SHADOW_SCALE: 0.62,
   POSITION_EPSILON: 0.0001,
-  PLAY_AREA_OUTLINE_SAMPLES_MIN: 24,
-  PLAY_AREA_OUTLINE_SAMPLES_DENSITY: 8,
   PLAY_AREA_RADIUS_CLAMP_RATIO: 0.35,
 } as const

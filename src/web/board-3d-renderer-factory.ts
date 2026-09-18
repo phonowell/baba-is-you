@@ -1,9 +1,12 @@
-import { PlaneGeometry } from 'three'
+import { Group, PlaneGeometry } from 'three'
 
 import { CLAY_PRESET } from './clay-config.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
+import { createBoard3dEffects } from './board-3d-effects.js'
+import { createCameraParallax } from './board-3d-parallax.js'
 import { updateLightShadowCamera } from './board-3d-ground.js'
+import { cardSpecForItem } from './board-3d-shared-item.js'
 import {
   advanceNodeGeometries,
   createBoard3dRendererMaterialStore,
@@ -37,6 +40,8 @@ export const createBoard3dRendererFactoryDeps = () => {
     renderer,
     composer,
     bloomEffect,
+    hueSaturationEffect,
+    vignetteEffect,
     leftLight,
     rightLight,
     world,
@@ -69,6 +74,43 @@ export const createBoard3dRendererFactoryDeps = () => {
     getVisual,
   }
 
+  const viewController = createBoard3dRendererViewController({
+    preset,
+    camera,
+    renderer,
+    composer,
+    bloomEffect,
+    hueSaturationEffect,
+    vignetteEffect,
+    leftLight,
+    rightLight,
+    updateLightShadowCamera,
+  })
+
+  // Pixel-particle effects layer lives in board space beside the cards.
+  const fxGroup = new Group()
+  world.add(fxGroup)
+  const effects = createBoard3dEffects({
+    parent: fxGroup,
+    camera,
+    setMood: viewController.setFxMood,
+  })
+
+  // Burst colours follow the card itself: sprites poof in their pixel
+  // palette, text/emoji cards in their plate colours.
+  const fxColorsForItem = (item: Item, overridden: boolean): readonly string[] => {
+    const spec = cardSpecForItem(
+      item,
+      preset.readability.minContrastRatio,
+      overridden,
+    )
+    if (spec.sprite) {
+      const spriteColors = [...new Set(Object.values(spec.sprite.palette))]
+      if (spriteColors.length > 0) return spriteColors.slice(0, 4)
+    }
+    return [spec.background, spec.textColor, spec.outlineColor]
+  }
+
   return {
     renderer,
     composer,
@@ -76,24 +118,18 @@ export const createBoard3dRendererFactoryDeps = () => {
     entityGroup,
     nodes,
     getVisual,
-    createNode: (item: Item, nowMs: number): EntityNode =>
-      createEntityNode(createNodeDeps, item, nowMs),
+    createNode: (item: Item, nowMs: number, spawnDelayMs?: number): EntityNode =>
+      createEntityNode(createNodeDeps, item, nowMs, spawnDelayMs),
+    effects,
+    fxColorsForItem,
     camera,
+    cameraParallax: createCameraParallax(),
     // Sprite animation advances along two paths: textured faces swap material
     // maps, voxel meshes swap geometries. The runtime only needs the count.
     advanceSpriteFrames: (frameIx: number): number =>
       materialStore.advanceSpriteFrames(frameIx) +
       advanceNodeGeometries(nodes, frameIx),
-    viewController: createBoard3dRendererViewController({
-      preset,
-      camera,
-      renderer,
-      composer,
-      bloomEffect,
-      leftLight,
-      rightLight,
-      updateLightShadowCamera,
-    }),
+    viewController,
     disposeResources: (groundVisuals: Parameters<
       typeof disposeBoard3dRendererResources
     >[0]['groundVisuals']) =>

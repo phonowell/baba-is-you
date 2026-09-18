@@ -13,9 +13,10 @@ import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import {
   cardFacesCamera,
   cardRollForItemStep,
-  emojiPhaseOffsetMsForItem,
-  emojiStretchEnabledForItem,
-  isEmojiItem,
+  idleFloatEnabledForItem,
+  idleFrameOffsetForItem,
+  idlePhaseOffsetMsForItem,
+  idleStretchEnabledForItem,
 } from './board-3d-shared-item.js'
 
 import type { Item } from '../logic/types.js'
@@ -40,15 +41,14 @@ export const createEntityNode = (
   deps: CreateEntityNodeDeps,
   item: Item,
   nowMs: number,
+  spawnDelayMs = 0,
 ): EntityNode => {
   const { entityGroup, shadowGeometry, shadowTexture, getVisual } = deps
   const rollNoise = cardRollForItemStep(item, 0)
   const visual = getVisual(item)
   const mesh = new Mesh(visual.geometry, visual.material)
-  const emoji = isEmojiItem(item)
-  const stretchEnabled = emojiStretchEnabledForItem(item)
   mesh.castShadow = true
-  mesh.receiveShadow = !emoji
+  mesh.receiveShadow = true
   entityGroup.add(mesh)
 
   const shadowMaterial = new MeshBasicMaterial({
@@ -72,12 +72,19 @@ export const createEntityNode = (
     shadowMaterial,
     specKey: visual.key,
     frameGeometries: visual.frameGeometries,
-    isEmoji: stretchEnabled,
-    emojiPhaseOffsetMs: emojiPhaseOffsetMsForItem(item),
+    idleStretch: idleStretchEnabledForItem(item),
+    idleFloat: idleFloatEnabledForItem(item),
+    idlePhaseOffsetMs: idlePhaseOffsetMsForItem(item),
+    idleFrameOffset: idleFrameOffsetForItem(item),
     facesCamera: cardFacesCamera(item),
     facingYaw: visual.facingYaw,
     rotRoll: rollNoise,
     rollStep: 0,
+    fxColors: [],
+    spawnFxDone: false,
+    despawnFxDone: true,
+    pulseStartMs: null,
+    pulseKind: null,
     fromX: 0,
     fromY: 0,
     fromBaseZ: CARD_BASE_Z,
@@ -89,7 +96,7 @@ export const createEntityNode = (
     animStartMs: nowMs,
     animDurationMs: MOVE_ANIM_MS,
     moving: false,
-    spawnStartMs: nowMs,
+    spawnStartMs: nowMs + spawnDelayMs,
     despawnStartMs: null,
     landStartMs: null,
   }

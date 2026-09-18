@@ -67,6 +67,8 @@ export type Board3dRendererScene = {
   renderer: WebGLRenderer
   composer: EffectComposer
   bloomEffect: BloomEffect
+  hueSaturationEffect: HueSaturationEffect
+  vignetteEffect: VignetteEffect
   leftLight: DirectionalLight
   rightLight: DirectionalLight
   world: Group
@@ -134,16 +136,20 @@ export const createBoard3dRendererScene = (
   })
   composer.addPass(new EffectPass(camera, bloomEffect))
 
+  const hueSaturationEffect = new HueSaturationEffect({
+    saturation: preset.grade.saturation - 1,
+  })
+  const vignetteEffect = new VignetteEffect({
+    offset: preset.grade.vignetteOffset,
+    darkness: preset.grade.vignetteStrength,
+  })
   composer.addPass(
     new EffectPass(
       camera,
       new BrightnessContrastEffect({ contrast: preset.grade.contrast - 1 }),
-      new HueSaturationEffect({ saturation: preset.grade.saturation - 1 }),
+      hueSaturationEffect,
       new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC }),
-      new VignetteEffect({
-        offset: preset.grade.vignetteOffset,
-        darkness: preset.grade.vignetteStrength,
-      }),
+      vignetteEffect,
     ),
   )
 
@@ -196,6 +202,8 @@ export const createBoard3dRendererScene = (
     renderer,
     composer,
     bloomEffect,
+    hueSaturationEffect,
+    vignetteEffect,
     leftLight,
     rightLight,
     world,
