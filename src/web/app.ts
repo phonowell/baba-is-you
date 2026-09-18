@@ -3,6 +3,8 @@ import { parseLevel } from '../logic/parse-level.js'
 import { createDraw } from './app-draw.js'
 import { createWebAppController } from './app-controller.js'
 import { createRootClickHandler, createWindowKeydownHandler } from './app-events.js'
+import { createGamepadRuntime } from './app-gamepad.js'
+import { createBoardPointerHandlers } from './app-pointer.js'
 import { registerAppLifecycle } from './app-lifecycle.js'
 import { createWebAppStore } from './app-store.js'
 import { applyWithTransition, computeCellSizeForState } from './app-view-helpers.js'
@@ -75,6 +77,40 @@ const handleRootClick = createRootClickHandler({
   enterGame: appController.enterGame,
   toggleReferenceDialog: appController.toggleReferenceDialog,
   closeReferenceDialog: appController.closeReferenceDialog,
+  canHandleGameAction: appController.canHandleGameAction,
+  markGameActionHandled: appController.markGameActionHandled,
+  handleGameCommand: appController.handleGameCommand,
+})
+
+const pointerHandlers = createBoardPointerHandlers({
+  viewState: appController,
+  canHandleGameAction: appController.canHandleGameAction,
+  markGameActionHandled: appController.markGameActionHandled,
+  handleGameCommand: appController.handleGameCommand,
+  // Camera parallax follows mouse hover; suppressed under reduced motion.
+  ...(reducedMotionQuery.matches
+    ? {}
+    : {
+        setParallaxTarget: (nx: number, ny: number) => {
+          board3dRenderer?.setParallaxTarget(nx, ny)
+        },
+      }),
+  onHandledAction: () => {
+    navigator.vibrate?.(10)
+  },
+})
+
+const gamepadRuntime = createGamepadRuntime({
+  viewState: {
+    getMode: appController.getMode,
+    isReferenceDialogOpen: appController.isReferenceDialogOpen,
+    getStatus: () => appController.getState().state.status,
+  },
+  closeReferenceDialog: appController.closeReferenceDialog,
+  canHandleGameAction: appController.canHandleGameAction,
+  markGameActionHandled: appController.markGameActionHandled,
+  handleGameCommand: appController.handleGameCommand,
+  handleMenuCommand: appController.handleMenuCommand,
 })
 
 const handleWindowKeydown = createWindowKeydownHandler({
@@ -88,10 +124,21 @@ const handleWindowKeydown = createWindowKeydownHandler({
 
 const unsubscribeDraw = appStore.subscribe(draw)
 
+// Haptics on outcome transitions; a no-op where vibration is unsupported.
+let prevBuzzStatus = appController.getViewState().state.status
+const unsubscribeStatusBuzz = appStore.subscribe(() => {
+  const status = appController.getViewState().state.status
+  if (status === prevBuzzStatus) return
+  prevBuzzStatus = status
+  if (status === 'win' || status === 'complete') navigator.vibrate?.([30, 40, 30])
+  else if (status === 'lose') navigator.vibrate?.(20)
+})
+
 const disposeApp = registerAppLifecycle({
   root,
   handleRootClick,
   handleWindowKeydown,
+  pointerHandlers,
   draw,
   disposeBoard3d: () => {
     board3dRenderer?.dispose()
@@ -99,6 +146,8 @@ const disposeApp = registerAppLifecycle({
   },
   onDispose: () => {
     unsubscribeDraw()
+    unsubscribeStatusBuzz()
+    gamepadRuntime.dispose()
     delete appGlobal[APP_DISPOSE_KEY]
   },
 })

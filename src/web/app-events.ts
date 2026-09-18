@@ -1,6 +1,18 @@
+import type { GameCommand } from '../view/input.js'
+
 type AppEventViewState = {
   getMode: () => 'menu' | 'game'
   isReferenceDialogOpen: () => boolean
+}
+
+// HUD buttons and the outcome overlay share the keyboard command pipeline:
+// a click produces the same GameCommand a keypress would.
+const GAME_ACTION_COMMANDS: Record<string, GameCommand> = {
+  'game-undo': { type: 'undo' },
+  'game-wait': { type: 'wait' },
+  'game-restart': { type: 'restart' },
+  'game-menu': { type: 'back-menu' },
+  'game-next': { type: 'next' },
 }
 
 type RootClickHandlerContext = {
@@ -9,6 +21,9 @@ type RootClickHandlerContext = {
   enterGame: (index: number) => void
   toggleReferenceDialog: () => void
   closeReferenceDialog: () => void
+  canHandleGameAction: () => boolean
+  markGameActionHandled: () => void
+  handleGameCommand: (cmd: GameCommand) => boolean
 }
 
 export const createRootClickHandler = (
@@ -20,6 +35,9 @@ export const createRootClickHandler = (
     enterGame,
     toggleReferenceDialog,
     closeReferenceDialog,
+    canHandleGameAction,
+    markGameActionHandled,
+    handleGameCommand,
   } = context
 
   return (event: MouseEvent): void => {
@@ -46,6 +64,14 @@ export const createRootClickHandler = (
 
       if (action === 'close-reference' && mode === 'game') {
         closeReferenceDialog()
+        return
+      }
+
+      if (mode === 'game' && !showReferenceDialog && action) {
+        const cmd = GAME_ACTION_COMMANDS[action]
+        if (cmd && canHandleGameAction() && handleGameCommand(cmd)) {
+          markGameActionHandled()
+        }
       }
 
       return

@@ -1,7 +1,10 @@
+import type { BoardPointerHandlers } from './app-pointer.js'
+
 type AppLifecycleDeps = {
   root: HTMLElement
   handleRootClick: (event: MouseEvent) => void
   handleWindowKeydown: (event: KeyboardEvent) => void
+  pointerHandlers?: BoardPointerHandlers | null
   draw: () => void
   disposeBoard3d: () => void
   onDispose?: () => void
@@ -12,6 +15,7 @@ export const registerAppLifecycle = (deps: AppLifecycleDeps): (() => void) => {
     root,
     handleRootClick,
     handleWindowKeydown,
+    pointerHandlers = null,
     draw,
     disposeBoard3d,
     onDispose,
@@ -23,8 +27,29 @@ export const registerAppLifecycle = (deps: AppLifecycleDeps): (() => void) => {
     resizeTimer = window.setTimeout(draw, 60)
   }
 
+  const onPointerDown = (event: Event): void => {
+    pointerHandlers?.onPointerDown(event as PointerEvent)
+  }
+  const onPointerMove = (event: Event): void => {
+    pointerHandlers?.onPointerMove(event as PointerEvent)
+  }
+  const onPointerUp = (event: Event): void => {
+    pointerHandlers?.onPointerUp(event as PointerEvent)
+  }
+  const onPointerCancel = (event: Event): void => {
+    pointerHandlers?.onPointerCancel(event as PointerEvent)
+  }
+  const onPointerOut = (event: Event): void => {
+    pointerHandlers?.onPointerOut(event as PointerEvent)
+  }
+
   const disposeApp = (): void => {
     root.removeEventListener('click', handleRootClick)
+    root.removeEventListener('pointerdown', onPointerDown)
+    root.removeEventListener('pointermove', onPointerMove)
+    root.removeEventListener('pointerup', onPointerUp)
+    root.removeEventListener('pointercancel', onPointerCancel)
+    root.removeEventListener('pointerout', onPointerOut)
     window.removeEventListener('keydown', handleWindowKeydown)
     window.removeEventListener('resize', handleWindowResize)
     window.removeEventListener('beforeunload', disposeApp)
@@ -39,6 +64,11 @@ export const registerAppLifecycle = (deps: AppLifecycleDeps): (() => void) => {
   }
 
   root.addEventListener('click', handleRootClick)
+  root.addEventListener('pointerdown', onPointerDown)
+  root.addEventListener('pointermove', onPointerMove)
+  root.addEventListener('pointerup', onPointerUp)
+  root.addEventListener('pointercancel', onPointerCancel)
+  root.addEventListener('pointerout', onPointerOut)
   window.addEventListener('keydown', handleWindowKeydown)
   window.addEventListener('resize', handleWindowResize)
   window.addEventListener('beforeunload', disposeApp)

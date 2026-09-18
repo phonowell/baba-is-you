@@ -59,6 +59,16 @@ const createEventTarget = (matches: {
   return element as unknown as HTMLElement
 }
 
+const noopGameDeps = {
+  canHandleGameAction: () => true,
+  markGameActionHandled: () => {
+    throw new Error('should not mark game action handled')
+  },
+  handleGameCommand: () => {
+    throw new Error('should not handle game command')
+  },
+}
+
 test('createRootClickHandler starts valid menu levels only', () => {
   const state: MutableViewState = { mode: 'menu', showReferenceDialog: false }
   const started: number[] = []
@@ -74,6 +84,7 @@ test('createRootClickHandler starts valid menu levels only', () => {
     closeReferenceDialog: () => {
       throw new Error('should not close in menu start test')
     },
+    ...noopGameDeps,
   })
 
   handler({
@@ -106,6 +117,7 @@ test('createRootClickHandler ignores reference actions outside game mode', () =>
     closeReferenceDialog: () => {
       closes += 1
     },
+    ...noopGameDeps,
   })
 
   handler({
@@ -140,6 +152,7 @@ test('createRootClickHandler closes dialog only on game backdrop clicks', () => 
     closeReferenceDialog: () => {
       closes += 1
     },
+    ...noopGameDeps,
   })
 
   handler({
@@ -150,6 +163,91 @@ test('createRootClickHandler closes dialog only on game backdrop clicks', () => 
   } as unknown as MouseEvent)
 
   assert.equal(closes, 1)
+})
+
+test('createRootClickHandler routes game action buttons through the command pipeline', () => {
+  const state: MutableViewState = { mode: 'game', showReferenceDialog: false }
+  const commands: string[] = []
+  let marks = 0
+  const handler = createRootClickHandler({
+    levelCount: 1,
+    viewState: createViewState(state),
+    enterGame: () => {
+      throw new Error('should not enter game')
+    },
+    toggleReferenceDialog: () => {
+      throw new Error('should not toggle dialog')
+    },
+    closeReferenceDialog: () => {
+      throw new Error('should not close dialog')
+    },
+    canHandleGameAction: () => true,
+    markGameActionHandled: () => {
+      marks += 1
+    },
+    handleGameCommand: (cmd) => {
+      commands.push(cmd.type)
+      // Undo with an empty history is a no-op: it must not count as handled.
+      return cmd.type !== 'undo'
+    },
+  })
+
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('game-restart'),
+    }),
+  } as unknown as MouseEvent)
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('game-undo'),
+    }),
+  } as unknown as MouseEvent)
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('game-menu'),
+    }),
+  } as unknown as MouseEvent)
+
+  assert.deepEqual(commands, ['restart', 'undo', 'back-menu'])
+  assert.equal(marks, 2)
+})
+
+test('createRootClickHandler ignores game actions while dialog open or in menu', () => {
+  const state: MutableViewState = { mode: 'game', showReferenceDialog: true }
+  const commands: string[] = []
+  const handler = createRootClickHandler({
+    levelCount: 1,
+    viewState: createViewState(state),
+    enterGame: () => {
+      throw new Error('should not enter game')
+    },
+    toggleReferenceDialog: () => {
+      throw new Error('should not toggle dialog')
+    },
+    closeReferenceDialog: () => {},
+    canHandleGameAction: () => true,
+    markGameActionHandled: () => {},
+    handleGameCommand: (cmd) => {
+      commands.push(cmd.type)
+      return true
+    },
+  })
+
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('game-restart'),
+    }),
+  } as unknown as MouseEvent)
+
+  state.mode = 'menu'
+  state.showReferenceDialog = false
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('game-restart'),
+    }),
+  } as unknown as MouseEvent)
+
+  assert.deepEqual(commands, [])
 })
 
 test('createWindowKeydownHandler closes open game dialog on Escape only', () => {

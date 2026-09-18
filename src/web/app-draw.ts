@@ -1,4 +1,8 @@
-import { renderMenuHtml } from '../view/render-menu-html.js'
+import {
+  menuPositionHtml,
+  menuWindowRange,
+  renderMenuHtml,
+} from '../view/render-menu-html.js'
 import { createGameView } from './app-game-view.js'
 
 import type { GameState } from '../logic/types.js'
@@ -35,6 +39,48 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
     mountAndSyncBoard3d,
   } = options
 
+  // Same-window selection moves flip row classes and the position readout
+  // in place instead of rebuilding the list — full innerHTML re-renders
+  // would restart the row entrance cascade and the marker's idle wiggle
+  // on every keypress.
+  const updateMenuInPlace = (
+    container: HTMLElement,
+    selected: number,
+  ): boolean => {
+    if (typeof container.querySelectorAll !== 'function') return false
+    const rows = container.querySelectorAll<HTMLElement>(
+      '.menu-row[data-level-index]',
+    )
+    const positionEl = container.querySelector<HTMLElement>('.menu-position')
+    if (rows.length === 0 || !positionEl) return false
+
+    // Same clamp renderMenuHtml applies, so both paths agree on the index.
+    const clamped = Math.min(
+      Math.max(selected, 0),
+      Math.max(0, menuLevels.length - 1),
+    )
+    const [start, end] = menuWindowRange(menuLevels.length, clamped)
+    const firstIndex = Number(rows[0]?.dataset.levelIndex)
+    const lastIndex = Number(rows[rows.length - 1]?.dataset.levelIndex)
+    if (
+      rows.length !== end - start ||
+      firstIndex !== start ||
+      lastIndex !== end - 1
+    ) {
+      return false
+    }
+
+    for (const row of Array.from(rows)) {
+      const isSelected = Number(row.dataset.levelIndex) === clamped
+      row.classList.toggle('selected', isSelected)
+      row.setAttribute('aria-selected', isSelected ? 'true' : 'false')
+      const marker = row.querySelector('.marker')
+      if (marker) marker.innerHTML = isSelected ? '&#9670;' : '&nbsp;'
+    }
+    positionEl.innerHTML = menuPositionHtml(menuLevels, clamped)
+    return true
+  }
+
   return (): void => {
     const snapshot = getSnapshot()
     const {
@@ -69,16 +115,21 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
       if (mode !== 'game' || modeChanged || boardChanged) unmountBoard3d()
 
       applyWithTransition(() => {
-        root.replaceChildren()
         if (mode === 'menu') {
+          if (!modeChanged && updateMenuInPlace(root, menuSelectedLevelIndex)) {
+            drawState.gameView = null
+            return
+          }
           root.innerHTML = renderMenuHtml({
             levels: menuLevels,
             selectedLevelIndex: menuSelectedLevelIndex,
+            animateEntrance: modeChanged,
           })
           drawState.gameView = null
           return
         }
 
+        root.replaceChildren()
         const gameView = createGameView({ document: root.ownerDocument })
         gameView.update(state, showReferenceDialog)
         root.append(gameView.root)

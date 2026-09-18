@@ -92,8 +92,7 @@ button,
   box-shadow: var(--focus-ring);
 }
 
-.game-screen,
-.menu-screen {
+.game-screen {
   margin: 0;
   background: transparent;
   border: 0;
@@ -129,42 +128,10 @@ body.game-3d-fullscreen .reference-backdrop::before {
   opacity: 0.25;
 }
 
-.title {
-  margin: 0;
-  color: #f8f2e2;
-  font-size: clamp(24px, 3vw, 32px);
-  letter-spacing: 0.16em;
-  text-shadow: 0 1px 3px rgb(30 45 65 / 45%);
-}
-
-/* Gold diamond markers — the Genshin menu bullet. Gold (not dark gold) so
-   it reads on the ink backdrop. */
-.section-title {
-  margin: 14px 0 8px;
-  font-size: 17px;
-  color: var(--accent);
-}
-
-.section-title::before {
-  content: '◆';
-  margin-right: 6px;
-  color: var(--accent);
-  font-size: 0.8em;
-}
-
-.status,
-.meta {
+.status {
   margin: 8px 0;
   color: var(--muted);
-}
-
-.status {
   font-weight: 700;
-}
-
-/* Muted gray is too dark on the ink menu backdrop — lift it. */
-.menu-screen .meta {
-  color: #a5aec0;
 }
 
 .game-toolbar {
@@ -181,6 +148,8 @@ body.game-3d-fullscreen .reference-backdrop::before {
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
   backdrop-filter: blur(14px) saturate(1.4);
   z-index: 100;
+  /* Slides up when the game view mounts (mode or board change). */
+  animation: toolbar-in 220ms ease-out;
 }
 
 .game-toolbar .status {
@@ -193,9 +162,104 @@ body.game-3d-fullscreen .reference-backdrop::before {
   color: #cfd4da;
 }
 
+/* Outcome states tint the HUD line; the win text keeps a soft gold pulse. */
+.game-toolbar .status[data-status='win'],
+.game-toolbar .status[data-status='complete'] {
+  color: #f0d68a;
+  animation: status-win-glow 1.4s ease-in-out infinite;
+}
+
+.game-toolbar .status[data-status='lose'] {
+  color: #e8a5a0;
+}
+
 .reference-btn {
   font-size: 0.92rem;
   flex-shrink: 0;
+}
+
+.game-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+.icon-btn svg {
+  width: 17px;
+  height: 17px;
+  display: block;
+}
+
+/* Result card for win/lose/complete. The backdrop lets clicks fall through
+   so the board keeps taking swipes; only the card itself is interactive. */
+.outcome-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  pointer-events: none;
+  z-index: 1100;
+}
+
+.outcome-backdrop[hidden] {
+  display: none;
+}
+
+.outcome-card {
+  pointer-events: auto;
+  min-width: min(340px, 90vw);
+  background: linear-gradient(180deg, rgb(38 50 68 / 92%), rgb(30 42 58 / 92%));
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  backdrop-filter: blur(12px) saturate(1.3);
+  border: 1px solid rgb(201 168 106 / 55%);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-dialog), inset 0 0 0 1px rgb(201 168 106 / 30%);
+  padding: 22px 26px 20px;
+  text-align: center;
+  animation: dialog-in var(--motion-duration) ease-out;
+}
+
+.outcome-title {
+  margin: 0 0 16px;
+  color: #f0d68a;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-indent: 0.14em;
+  text-shadow: 0 0 12px rgb(240 214 138 / 45%);
+}
+
+.outcome-card[data-status='lose'] .outcome-title {
+  color: #e8a5a0;
+  text-shadow: none;
+}
+
+.outcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.outcome-btn[hidden] {
+  display: none;
+}
+
+.outcome-btn.primary {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+  font-weight: 700;
 }
 
 .board-wrap {
@@ -234,6 +298,11 @@ body.game-3d-fullscreen .board-wrap {
   background-color: var(--panel-soft);
   border-radius: var(--radius-sm);
   overflow: hidden;
+  /* The board is the swipe/tap surface — keep the browser from claiming
+     the gesture for scroll or selection. */
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .board.board-3d {
@@ -331,6 +400,36 @@ body.game-3d-fullscreen .board.board-3d {
   to { opacity: 1; transform: none; }
 }
 
+/* Menu entrance: soft rise used by the header, each list item (staggered
+   via --row-i), and the footer. Scoped under .menu-enter so selection
+   re-renders never replay it. */
+@keyframes menu-item-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Baba-style idle wiggle: a two-frame squash-stretch flip, same rhythm as
+   the board's sprite wobble. steps(1) holds each pose for half a cycle. */
+@keyframes marker-wiggle {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.14, 0.86); }
+}
+
+@keyframes menu-more-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+@keyframes toolbar-in {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+
+@keyframes status-win-glow {
+  0%, 100% { text-shadow: 0 0 5px rgb(240 214 138 / 40%); }
+  50% { text-shadow: 0 0 14px rgb(240 214 138 / 85%); }
+}
+
 .reference-backdrop {
   position: fixed;
   inset: 0;
@@ -412,100 +511,286 @@ body.game-3d-fullscreen .reference-header .btn:hover {
   font-size: 0.8em;
 }
 
-.rules-list,
-.legend-list {
+.rules-list {
   margin: 0;
   padding-left: 18px;
+}
+
+/* Controls list reuses the menu's kbd-chip hint items, recolored for the
+   cream dialog: gold-tinted chips with dark gold text. */
+.controls-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.controls-list .hint-item kbd {
+  font: inherit;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgb(138 109 58 / 50%);
+  background: rgb(201 168 106 / 18%);
+  color: var(--accent-dark);
+  white-space: nowrap;
+}
+
+/* ── Menu screen ────────────────────────────────────────────────
+   A single centered column floats on the ink backdrop: hero title,
+   sliding window of parchment pill rows, kbd-chip hints. */
+.menu-screen {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 20px 32px;
+}
+
+/* Faint gold pinstripe + cool glow from the top edge — the same
+   diagonal weave the reference backdrop wears, kept whisper-quiet. */
+.menu-screen::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 45% at 50% 0%, rgb(150 180 220 / 9%), transparent 70%),
+    repeating-linear-gradient(
+      135deg,
+      rgb(211 188 142 / 4%) 0 1px,
+      transparent 1px 11px
+    );
+}
+
+/* margin:auto centers the column on both axes and collapses to 0 when
+   content overflows, so short viewports scroll instead of clipping.
+   position:relative keeps content painted above the fixed ::before. */
+.menu-inner {
+  position: relative;
+  margin: auto;
+  width: min(560px, 100%);
+  text-align: center;
+}
+
+.menu-header {
+  margin-bottom: 26px;
+}
+
+.title {
+  margin: 0;
+  color: #f8f2e2;
+  font-size: clamp(30px, 5.5vw, 46px);
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-shadow: 0 2px 10px rgb(15 25 40 / 60%);
+}
+
+.menu-flourish {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 230px;
+  margin: 16px auto 12px;
+  color: var(--accent);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.menu-flourish::before,
+.menu-flourish::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to right, transparent, rgb(201 168 106 / 75%));
+}
+
+.menu-flourish::after {
+  transform: scaleX(-1);
+}
+
+.menu-count {
+  margin: 0;
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
 }
 
 /* Genshin menus float pill rows on the dimmed scene — no containing
    panel, each row is its own parchment bar. */
 .menu-list {
+  list-style: none;
   margin: 0;
   padding: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-}
-
-.legend-row,
-.menu-row {
-  margin: 3px 0;
-}
-
-.legend-text {
-  display: inline-flex;
-  min-width: 6ch;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid var(--panel-strong);
-  padding: 2px 9px;
-  font-weight: 700;
-  margin-right: 8px;
-  box-shadow: var(--shadow-raised-soft);
-}
-
-.legend-text.normal {
-  color: var(--bubble-user-text);
-  background: var(--bubble-user-bg);
-  border-color: var(--bubble-user-border);
-}
-
-.legend-text.syntax {
-  color: #6b5626;
-  background: #e9dcb8;
-  border-color: #b8965a;
-}
-
-.legend-name {
-  margin-right: 6px;
-  color: var(--muted);
-}
-
-.legend-glyph {
-  font-size: 1.06rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .menu-row {
-  list-style: none;
   display: grid;
-  grid-template-columns: 18px 52px 1fr;
-  gap: 4px;
-  margin: 5px 0;
-  padding: 7px 16px;
+  grid-template-columns: 18px 40px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
   /* Parchment pill rows like the Genshin settings list, with a faint gold
      keyline inside the edge. */
   border-radius: 999px;
   background: linear-gradient(180deg, var(--cream), #e2d7bd);
   color: var(--text);
   box-shadow: inset 0 0 0 1px rgb(201 168 106 / 32%), var(--shadow-raised-soft);
-  cursor: default;
-}
-
-.menu-row:not(.muted) {
   cursor: pointer;
+  text-align: left;
+  transition:
+    transform var(--motion-duration) ease-out,
+    box-shadow var(--motion-duration) ease-out,
+    color var(--motion-duration) ease-out;
 }
 
-.menu-row:not(.muted):not(.selected):hover {
+.menu-row:not(.selected):hover {
   background: linear-gradient(180deg, var(--cream-hi), var(--cream));
   color: var(--accent-dark);
+  transform: translateY(-1px);
 }
 
 .menu-row.selected {
   color: var(--accent-dark);
   background: linear-gradient(180deg, #fbf4df, var(--cream-hi));
-  box-shadow: inset 0 0 0 1.5px var(--accent), var(--shadow-raised-soft);
+  box-shadow:
+    inset 0 0 0 1.5px var(--accent),
+    var(--shadow-raised-soft),
+    0 0 16px rgb(201 168 106 / 35%);
+}
+
+.menu-row .num {
+  text-align: right;
+  color: var(--muted);
+}
+
+.menu-row.selected .num {
+  color: var(--accent-dark);
 }
 
 .menu-row.selected .marker {
   color: var(--accent);
-  text-shadow: 0 0 4px rgb(201 168 106 / 60%);
+  text-shadow: 0 0 6px rgb(201 168 106 / 70%);
+  /* Selected tile keeps the board's two-frame idle wobble. */
+  animation: marker-wiggle 480ms steps(1) infinite;
 }
 
-.menu-row.muted {
-  color: #8a93a6;
-  background: rgb(236 229 213 / 55%);
-  box-shadow: none;
+/* Edge-of-window marker: the list is a sliding window over all levels. */
+.menu-more {
+  text-align: center;
+  color: #7d8698;
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: 0.2em;
+  animation: menu-more-pulse 1.6s ease-in-out infinite;
+}
+
+.menu-position {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: #a5aec0;
+  letter-spacing: 0.06em;
+}
+
+.menu-position strong {
+  color: var(--accent);
+  margin-right: 10px;
+}
+
+.menu-hints {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+}
+
+.menu-hint {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  font-size: 12px;
+  color: #98a2b5;
+}
+
+.hint-label {
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+}
+
+.hint-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hint-item kbd {
+  font: inherit;
+  font-size: 11px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid rgb(201 168 106 / 45%);
+  background: rgb(248 242 226 / 8%);
+  color: var(--cream);
+}
+
+/* Entrance cascade — only rendered while .menu-enter is on the section
+   (fresh entry), so per-selection re-renders stay still. */
+.menu-enter .title {
+  animation: menu-item-in 300ms ease-out backwards;
+}
+
+.menu-enter .menu-flourish {
+  animation: menu-item-in 300ms ease-out backwards;
+  animation-delay: 90ms;
+}
+
+.menu-enter .menu-count {
+  animation: menu-item-in 300ms ease-out backwards;
+  animation-delay: 150ms;
+}
+
+.menu-enter .menu-row {
+  animation: menu-item-in 260ms ease-out backwards;
+  animation-delay: calc(200ms + var(--row-i, 0) * 38ms);
+}
+
+/* The ⋮ indicator keeps its idle pulse while riding the same stagger —
+   listing both animations so the pulse isn't overridden for the whole
+   menu visit. */
+.menu-enter .menu-more {
+  animation:
+    menu-item-in 260ms ease-out backwards,
+    menu-more-pulse 1.6s ease-in-out infinite;
+  animation-delay:
+    calc(200ms + var(--row-i, 0) * 38ms),
+    0s;
+}
+
+.menu-enter .menu-position {
+  animation: menu-item-in 260ms ease-out backwards;
+  animation-delay: calc(280ms + var(--rows, 10) * 38ms);
+}
+
+.menu-enter .menu-hints {
+  animation: menu-item-in 260ms ease-out backwards;
+  animation-delay: calc(340ms + var(--rows, 10) * 38ms);
+}
+
+::selection {
+  background: rgb(201 168 106 / 35%);
 }
 
 @media (max-width: 640px) {

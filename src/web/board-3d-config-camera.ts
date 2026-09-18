@@ -13,3 +13,13 @@ export const BOARD3D_CAMERA_CONFIG = {
   CAMERA_FAR: 180,
   WORLD_ROTATION_X: -Math.PI / 2,
 } as const
+
+export const BOARD3D_PARALLAX_CONFIG = {
+  // Pointer parallax slides the camera a fraction of a cell — enough to
+  // feel the board's depth, small enough to keep the framing honest.
+  PARALLAX_MAX_OFFSET_X: 0.3,
+  PARALLAX_MAX_OFFSET_Y: 0.2,
+  // Exponential smoothing time constant; ~3 tau lands the offset.
+  PARALLAX_TAU_MS: 90,
+  PARALLAX_EPSILON: 0.002,
+} as const
