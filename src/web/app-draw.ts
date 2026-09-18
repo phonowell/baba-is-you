@@ -8,6 +8,7 @@ export type DrawState = {
   prevMode: AppMode | null
   prevShowDialog: boolean
   prevBoardSignature: string | null
+  prevCellSize: number | null
   gameView: ReturnType<typeof createGameView> | null
 }
 
@@ -49,7 +50,11 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
     document.body.classList.toggle('game-3d-fullscreen', mode === 'game')
 
     if (mode === 'game') {
-      document.documentElement.style.setProperty('--cell-size', `${computeCellSize(state)}px`)
+      const cellSize = computeCellSize(state)
+      if (cellSize !== drawState.prevCellSize) {
+        drawState.prevCellSize = cellSize
+        document.documentElement.style.setProperty('--cell-size', `${cellSize}px`)
+      }
     }
 
     const modeChanged = mode !== drawState.prevMode

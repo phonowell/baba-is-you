@@ -63,6 +63,9 @@ export type SyncEntityNodesDeps = {
   getVisual: (item: Item, overridden?: boolean) => EntityVisual
   createNode: (item: Item, nowMs: number) => EntityNode
   camera: Camera
+  // Set when the camera moved since the last pose pass — idle nodes must be
+  // re-posed even though their board targets did not change.
+  cameraChanged?: boolean
 }
 
 export type PoseStepResult = {

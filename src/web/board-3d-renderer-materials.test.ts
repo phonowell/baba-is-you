@@ -56,6 +56,24 @@ test('getVisual keys belt geometry per direction', () => {
   store.dispose()
 })
 
+test('getVisual reuses one entity visual per item signature', () => {
+  const store = createStore()
+  const first = store.getVisual(objectItem('baba', { id: 1, props: ['you'] }))
+  const sameSignature = store.getVisual(
+    objectItem('baba', { id: 2, x: 5, y: 7, props: ['you'] }),
+  )
+  assert.equal(sameSignature, first)
+
+  const otherFacing = store.getVisual(objectItem('baba', { id: 3, props: [] }))
+  assert.notEqual(otherFacing, first)
+
+  const otherDir = store.getVisual(
+    objectItem('baba', { id: 4, dir: 'left', props: ['you'] }),
+  )
+  assert.notEqual(otherDir, first)
+  store.dispose()
+})
+
 test('advanceFrameMaps swaps material maps through the frame cycle', () => {
   const frames = [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
   const material = { map: frames[0] as unknown }

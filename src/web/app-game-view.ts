@@ -79,6 +79,9 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   referenceBackdropEl.append(referenceDialogEl)
   root.append(toolbar, boardWrap, referenceBackdropEl)
 
+  let lastBoardWidth = -1
+  let lastBoardHeight = -1
+
   return {
     root,
     boardEl,
@@ -89,10 +92,18 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
         showReferenceDialog ? 'true' : 'false',
       )
       referenceBackdropEl.toggleAttribute('hidden', !showReferenceDialog)
-      boardEl.style.setProperty('--board-width', String(state.width))
-      boardEl.style.setProperty('--board-height', String(state.height))
-      rulesListEl.innerHTML = renderReferenceRulesHtml(state)
-      legendListEl.innerHTML = renderReferenceLegendHtml(state)
+      if (state.width !== lastBoardWidth || state.height !== lastBoardHeight) {
+        lastBoardWidth = state.width
+        lastBoardHeight = state.height
+        boardEl.style.setProperty('--board-width', String(state.width))
+        boardEl.style.setProperty('--board-height', String(state.height))
+      }
+      // The dialog is hidden in normal play — rebuilding its DOM every turn
+      // is wasted work; it is (re)filled on the same update that opens it.
+      if (showReferenceDialog) {
+        rulesListEl.innerHTML = renderReferenceRulesHtml(state)
+        legendListEl.innerHTML = renderReferenceLegendHtml(state)
+      }
     },
   }
 }

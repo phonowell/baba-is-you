@@ -38,6 +38,7 @@ const drawState: DrawState = {
   prevMode: null,
   prevShowDialog: false,
   prevBoardSignature: null,
+  prevCellSize: null,
   gameView: null,
 }
 let board3dRenderer: Board3dRendererRuntime | null = null

@@ -20,6 +20,7 @@ import {
   computeEntityBaseTarget,
 } from './board-3d-shared-layout.js'
 import { collectOverriddenTextIds } from '../logic/rules-override.js'
+import { isGroundHugItem } from '../view/stack-policy.js'
 
 import type { Camera, Group } from 'three'
 import type { GameState } from '../logic/types.js'
@@ -128,21 +129,33 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       item,
       item.isText && overriddenTextIds.has(item.id),
     )
-    if (node.specKey !== visual.key) {
+    const visualChanged = node.specKey !== visual.key
+    if (visualChanged) {
       node.specKey = visual.key
       node.mesh.material = visual.material
       node.mesh.geometry = visual.geometry
       node.frameGeometries = visual.frameGeometries
     }
     const emoji = isEmojiItem(item)
+    const groundHug = isGroundHugItem(item)
     node.isEmoji = emojiStretchEnabledForItem(item)
     node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)
-    node.mesh.castShadow = true
+    // Ground-hug tiles lie on the shadow receiver: their cast shadow lands
+    // under themselves, and the blob shadow quad darkens the tile's own
+    // surface — both invisible work, so both are skipped.
+    node.mesh.castShadow = !groundHug
     node.mesh.receiveShadow = !emoji
-    node.facesCamera = cardFacesCamera(item)
-    node.facingYaw = visual.facingYaw
+    node.shadow.visible = !groundHug
+    const facesCamera = cardFacesCamera(item)
+    const facingYaw = visual.facingYaw
+    const facingChanged =
+      node.facesCamera !== facesCamera || node.facingYaw !== facingYaw
+    node.facesCamera = facesCamera
+    node.facingYaw = facingYaw
     const stableRoll = cardRollForItemStep(item, node.rollStep)
-    if (!node.moving && Math.abs(node.rotRoll - stableRoll) > POSITION_EPSILON) {
+    const rollChanged =
+      !node.moving && Math.abs(node.rotRoll - stableRoll) > POSITION_EPSILON
+    if (rollChanged) {
       node.rotRoll = stableRoll
       node.fromRoll = stableRoll
       node.toRoll = stableRoll
@@ -173,7 +186,22 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     } else {
       setNodeTarget(node, target)
       node.toRoll = node.rotRoll
-      if (!node.moving && node.landStartMs === null) {
+      // Idle re-pose only when something the pose reads has changed —
+      // position/roll/visual/facing/camera — or the node is emoji (its frozen
+      // micro-stretch scale needs the reset). Unchanged inputs would produce
+      // byte-identical writes, so skipping is lossless.
+      const poseStale =
+        deps.cameraChanged === true ||
+        visualChanged ||
+        facingChanged ||
+        rollChanged ||
+        node.isEmoji
+      if (
+        !node.moving &&
+        node.landStartMs === null &&
+        node.spawnStartMs === null &&
+        poseStale
+      ) {
         setNodeIdlePose(node, target, node.toRoll, camera)
       }
     }

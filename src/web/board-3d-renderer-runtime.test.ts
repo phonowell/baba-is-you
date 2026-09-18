@@ -249,6 +249,25 @@ test('board-3d runtime rebuilds ground only when board size changes', () => {
   ])
 })
 
+test('board-3d runtime skips re-syncing an identical state object', () => {
+  let syncCalls = 0
+  const runtime = createRuntime({
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    syncNodes: () => {
+      syncCalls += 1
+    },
+  })
+  const container = createContainer()
+  const state = createState(3, 2)
+
+  runtime.mount(container)
+  runtime.sync(state)
+  runtime.sync(state)
+  runtime.sync(createState(3, 2))
+
+  assert.equal(syncCalls, 2)
+})
+
 test('board-3d runtime dispose clears resources once and blocks further work', () => {
   let disposeCalls = 0
   const rebuilds: Array<[number, number]> = []
@@ -412,6 +431,7 @@ test('board-3d runtime renders the leaving cleanup frame and removes finished no
   let shadowRemoved = 0
   let shadowDisposed = 0
   const node = createNode()
+  node.despawnStartMs = 5
   node.shadowMaterial.dispose = () => {
     shadowDisposed += 1
   }

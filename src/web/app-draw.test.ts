@@ -153,6 +153,7 @@ test('createDraw mounts 3d board after deferred transition callback builds game 
         prevMode: null,
         prevShowDialog: false,
         prevBoardSignature: null,
+        prevCellSize: null,
         gameView: null,
       },
       getSnapshot: () => ({

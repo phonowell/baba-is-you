@@ -112,6 +112,7 @@ export const createBoard3dRendererRuntime = (
   let disposed = false
   let spriteTimerId: number | null = null
   let lastSpriteFrameIx = -1
+  let lastSyncedState: GameState | null = null
 
   const tick = (nowMs: number): void => {
     frameActive = false
@@ -134,6 +135,15 @@ export const createBoard3dRendererRuntime = (
     const leavingDoneIds: number[] = []
 
     for (const [id, node] of nodes) {
+      // Settled nodes re-pose only when the camera moved (billboard cards
+      // track it); emoji nodes keep their micro-stretch ticking while the
+      // frame loop is alive anyway. Everything else is identical writes.
+      const settled =
+        !node.moving &&
+        node.landStartMs === null &&
+        node.spawnStartMs === null &&
+        node.despawnStartMs === null
+      if (settled && !node.isEmoji && !viewportChanged) continue
       const step = applyNodePoseStep(node, nowMs, camera)
       if (step.animating) hasAnimation = true
       if (step.finishedLeaving) leavingDoneIds.push(id)
@@ -233,8 +243,16 @@ export const createBoard3dRendererRuntime = (
   const sync = (state: GameState): void => {
     if (disposed) return
     if (!container || !container.isConnected) return
+    // Sync is idempotent for an unchanged state: re-running it would redo the
+    // whole pass byte-for-byte (and would even reset in-flight despawns into
+    // respawns). Nothing else mutates nodes, so identical input can be
+    // skipped outright. Nodes survive unmount/mount, so the flag does too.
+    if (state === lastSyncedState) return
+    lastSyncedState = state
 
-    if (boardWidth !== state.width || boardHeight !== state.height) {
+    const dimsChanged =
+      boardWidth !== state.width || boardHeight !== state.height
+    if (dimsChanged) {
       boardWidth = state.width
       boardHeight = state.height
       groundVisuals = rebuildGround(world, boardWidth, boardHeight, groundVisuals)
@@ -247,6 +265,7 @@ export const createBoard3dRendererRuntime = (
       getVisual,
       createNode,
       camera,
+      cameraChanged: dimsChanged,
     })
     needsRender = true
     ensureFrame()

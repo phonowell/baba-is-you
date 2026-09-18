@@ -137,6 +137,7 @@ export const createBoard3dRendererMaterialStore = (
   const geometryCache = new Map<string, BufferGeometry>()
   const edgeMaterialCache = new Map<string, MeshToonMaterial>()
   const plateMaterialCache = new Map<string, Material[]>()
+  const visualCache = new Map<string, EntityVisual>()
 
   // Cel-banded toon surface: the shared gradient map quantizes N·L into a
   // few steps, which is the anime look.
@@ -305,13 +306,25 @@ export const createBoard3dRendererMaterialStore = (
     }
   }
 
+  // Every input cardSpecForItem/voxelVisual reads (isText, name, dir,
+  // facing-affecting props, overridden) is in the key — minContrastRatio is a
+  // fixed preset constant. Same key → identical spec → identical visual, so
+  // the per-item sync cost collapses to a map lookup after first build.
+  const visualKeyForItem = (item: Item, overridden: boolean): string =>
+    `${item.isText ? 1 : 0}|${item.name}|${item.dir ?? ''}|${overridden ? 1 : 0}|${item.props.join(',')}`
+
   const getVisual = (item: Item, overridden = false): EntityVisual => {
+    const key = visualKeyForItem(item, overridden)
+    const cached = visualCache.get(key)
+    if (cached) return cached
     const spec = cardSpecForItem(
       item,
       preset.readability.minContrastRatio,
       overridden,
     )
-    return spec.sprite ? voxelVisual(item, spec) : plateVisual(spec)
+    const visual = spec.sprite ? voxelVisual(item, spec) : plateVisual(spec)
+    visualCache.set(key, visual)
+    return visual
   }
 
   const advanceSpriteFrames = (frameIx: number): number =>
@@ -330,6 +343,7 @@ export const createBoard3dRendererMaterialStore = (
     for (const material of edgeMaterialCache.values()) material.dispose()
     edgeMaterialCache.clear()
     plateMaterialCache.clear()
+    visualCache.clear()
     voxelMaterial.dispose()
     plateGeometry.dispose()
   }
