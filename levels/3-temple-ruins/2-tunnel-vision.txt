@@ -1,0 +1,26 @@
+w = wall
+r = rock
+g = grass
+c = brick
+h = water
+f = flag
+k = keke
+b = baba
+palette = ruins
+---
+W=⊘wR=↦       w   g  c
+wwwwg         w  ggg   g
+H=≉w     B~R  w   gg c    g
+wwww    g=    w      c    g
+F=✓w     →    w      c     g
+wwwwwww       w  hhhhhhhhh
+gg      w   w    hhhhhhhhh
+g     wwwwwwwww  hhhhhhhhh
+                 hhhccchhh
+ccbccccc ccccc c hhhcfchhhc
+                 hhhccchhh
+  g              hhhhhhhhh
+   g             hhhhhhhhh
+      k gg  gg   hhhhhhhhh
+wwww         g       c
+K=✥w       g         c

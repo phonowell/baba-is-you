@@ -1,0 +1,13 @@
+g = grass
+f = flag
+b = baba
+palette = ruins
+---
+gggg        ggg
+gg     F      g
+g     B=✥
+       ✓      g
+
+g
+gg    b f    gg
+F=↔g       gggg

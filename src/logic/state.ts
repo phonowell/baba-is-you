@@ -25,6 +25,7 @@ export const createInitialState = (
     rules: runtime.rules,
     status: 'playing',
     turn: 0,
+    ...(level.meta ? { meta: level.meta } : {}),
   }
 }
 

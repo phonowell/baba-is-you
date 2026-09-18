@@ -1,0 +1,16 @@
+b = baba
+w = water
+l = wall
+c = cog
+f = flag
+s = skull down
+palette = factory
+---
+B=✥    w lC=↦&⌢
+ Fsss  w      S
+=      w  c   =
+✓  W   w      ⩍
+l  = b w
+   ≉   w  f
+       w
+L=⊘    w    W=⌇

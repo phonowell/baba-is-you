@@ -1,0 +1,27 @@
+w = wall
+s = skull down
+g = grass
+b = baba
+r = rock
+f = flag
+palette = ruins
+right pad = 3
+---
+        w
+        w
+        wW=⊘
+        wwwwwwwwwwwww
+                 S=⩍w
+         g          w
+         g  B=✥     w
+      b  g  =     r w
+         g  _       w
+wwwwwwwwwww     wsssw
+          wwwwwwwsssw
+            wR=↦    w
+            w       w
+      F=✓   w       w
+          w r       w
+       f    w       w
+            wwwwwwwww
+            w

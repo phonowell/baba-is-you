@@ -1,0 +1,24 @@
+b = baba
+f = flag
+k = keke down
+u = keke up
+s = skull
+w = wall
+g = grass
+v = flower
+palette = ruins
+---
+Bwggggg g        S=S&→&↔
+=wgg                  w
+✥wwwwwwwwwwwwwwww     w
+www            ww v   wu
+www            ww    vww
+www  b        Kww
+www           =ww   F
+www           ↦ww f =
+www    k S     ww   ✓
+www            ww
+ww            ⇧ww     v
+ W wwwwwwwwwwwwww    v g
+== wwg            v   gg
+⊘⌇ wwgggg g  gg   B&@=⌢g

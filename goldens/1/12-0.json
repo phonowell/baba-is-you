@@ -1,0 +1,889 @@
+{
+ "level": "levels/1-the-lake/12-crab-storage.txt",
+ "levelData": {
+  "title": "CRAB STORAGE",
+  "width": 24,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "x": 0,
+    "y": 0,
+    "name": "hedge",
+    "isText": true
+   },
+   {
+    "id": 2,
+    "x": 1,
+    "y": 0,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 3,
+    "x": 2,
+    "y": 0,
+    "name": "stop",
+    "isText": true
+   },
+   {
+    "id": 4,
+    "x": 23,
+    "y": 0,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 5,
+    "x": 10,
+    "y": 2,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 6,
+    "x": 11,
+    "y": 2,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 7,
+    "x": 12,
+    "y": 2,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 8,
+    "x": 13,
+    "y": 2,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 9,
+    "x": 14,
+    "y": 2,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 10,
+    "x": 19,
+    "y": 2,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 11,
+    "x": 1,
+    "y": 3,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 12,
+    "x": 10,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 13,
+    "x": 12,
+    "y": 3,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 14,
+    "x": 13,
+    "y": 3,
+    "name": "win",
+    "isText": true
+   },
+   {
+    "id": 15,
+    "x": 14,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 16,
+    "x": 8,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 17,
+    "x": 9,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 18,
+    "x": 10,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 19,
+    "x": 12,
+    "y": 4,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 20,
+    "x": 13,
+    "y": 4,
+    "name": "defeat",
+    "isText": true
+   },
+   {
+    "id": 21,
+    "x": 14,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 22,
+    "x": 17,
+    "y": 4,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 23,
+    "x": 20,
+    "y": 4,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 24,
+    "x": 8,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 25,
+    "x": 9,
+    "y": 5,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 26,
+    "x": 10,
+    "y": 5,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 27,
+    "x": 12,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 28,
+    "x": 13,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 29,
+    "x": 14,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 30,
+    "x": 18,
+    "y": 5,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 31,
+    "x": 4,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 32,
+    "x": 5,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 33,
+    "x": 6,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 34,
+    "x": 7,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 35,
+    "x": 8,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 36,
+    "x": 10,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 37,
+    "x": 12,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 38,
+    "x": 13,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 39,
+    "x": 14,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 40,
+    "x": 15,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 41,
+    "x": 2,
+    "y": 7,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 42,
+    "x": 4,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 43,
+    "x": 15,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 44,
+    "x": 4,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 45,
+    "x": 15,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 46,
+    "x": 4,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 47,
+    "x": 5,
+    "y": 9,
+    "name": "flag",
+    "isText": true
+   },
+   {
+    "id": 48,
+    "x": 6,
+    "y": 9,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 49,
+    "x": 7,
+    "y": 9,
+    "name": "push",
+    "isText": true
+   },
+   {
+    "id": 50,
+    "x": 12,
+    "y": 9,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 51,
+    "x": 15,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 52,
+    "x": 16,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 53,
+    "x": 17,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 54,
+    "x": 18,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 55,
+    "x": 19,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 56,
+    "x": 4,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 57,
+    "x": 12,
+    "y": 10,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 58,
+    "x": 15,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 59,
+    "x": 19,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 60,
+    "x": 4,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 61,
+    "x": 12,
+    "y": 11,
+    "name": "open",
+    "isText": true
+   },
+   {
+    "id": 62,
+    "x": 15,
+    "y": 11,
+    "name": "door",
+    "isText": false
+   },
+   {
+    "id": 63,
+    "x": 17,
+    "y": 11,
+    "name": "crab",
+    "isText": true
+   },
+   {
+    "id": 64,
+    "x": 19,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 65,
+    "x": 4,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 66,
+    "x": 6,
+    "y": 12,
+    "name": "flag",
+    "isText": false
+   },
+   {
+    "id": 67,
+    "x": 8,
+    "y": 12,
+    "name": "baba",
+    "isText": false
+   },
+   {
+    "id": 68,
+    "x": 10,
+    "y": 12,
+    "name": "crab",
+    "isText": false
+   },
+   {
+    "id": 69,
+    "x": 15,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 70,
+    "x": 19,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 71,
+    "x": 4,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 72,
+    "x": 15,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 73,
+    "x": 16,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 74,
+    "x": 17,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 75,
+    "x": 18,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 76,
+    "x": 19,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 77,
+    "x": 2,
+    "y": 14,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 78,
+    "x": 4,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 79,
+    "x": 5,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 80,
+    "x": 6,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 81,
+    "x": 7,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 82,
+    "x": 8,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 83,
+    "x": 9,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 84,
+    "x": 10,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 85,
+    "x": 11,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 86,
+    "x": 12,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 87,
+    "x": 13,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 88,
+    "x": 14,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 89,
+    "x": 15,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 90,
+    "x": 11,
+    "y": 15,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 91,
+    "x": 23,
+    "y": 16,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 92,
+    "x": 0,
+    "y": 17,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 93,
+    "x": 1,
+    "y": 17,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 94,
+    "x": 2,
+    "y": 17,
+    "name": "you",
+    "isText": true
+   },
+   {
+    "id": 95,
+    "x": 10,
+    "y": 17,
+    "name": "door",
+    "isText": true
+   },
+   {
+    "id": 96,
+    "x": 11,
+    "y": 17,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 97,
+    "x": 12,
+    "y": 17,
+    "name": "shut",
+    "isText": true
+   },
+   {
+    "id": 98,
+    "x": 13,
+    "y": 17,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 99,
+    "x": 14,
+    "y": 17,
+    "name": "stop",
+    "isText": true
+   },
+   {
+    "id": 100,
+    "x": 22,
+    "y": 17,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 101,
+    "x": 23,
+    "y": 17,
+    "name": "algae",
+    "isText": false
+   }
+  ]
+ },
+ "inputs": "dddrrulldlluruuluuulurrrdrudddddrrrrullldluuuudddrrrrrrrzzulllllluddlurrrrrrrulllllrrrrrrrrrddrrurrdlllllldluuuuuuuuuuuzzzllluuldrdddlluuzrdruuulurddrrruuuuuddddddddl",
+ "initial": "playing|hedge!@0,0(push);is!@1,0(push);stop!@2,0(push);algae@23,0();hedge@10,2(stop);hedge@11,2(stop);hedge@12,2(stop);hedge@13,2(stop);hedge@14,2(stop);seastar@19,2();seastar@1,3();hedge@10,3(stop);is!@12,3(push);win!@13,3(push);hedge@14,3(stop);hedge@8,4(stop);hedge@9,4(stop);hedge@10,4(stop);is!@12,4(push);defeat!@13,4(push);hedge@14,4(stop);seastar@17,4();seastar@20,4();hedge@8,5(stop);baba!@9,5(push);is!@10,5(push);hedge@12,5(stop);hedge@13,5(stop);hedge@14,5(stop);seastar@18,5();hedge@4,6(stop);hedge@5,6(stop);hedge@6,6(stop);hedge@7,6(stop);hedge@8,6(stop);hedge@10,6(stop);hedge@12,6(stop);hedge@13,6(stop);hedge@14,6(stop);hedge@15,6(stop);seastar@2,7();hedge@4,7(stop);hedge@15,7(stop);hedge@4,8(stop);hedge@15,8(stop);hedge@4,9(stop);flag!@5,9(push);is!@6,9(push);push!@7,9(push);baba!@12,9(push);hedge@15,9(stop);hedge@16,9(stop);hedge@17,9(stop);hedge@18,9(stop);hedge@19,9(stop);hedge@4,10(stop);is!@12,10(push);hedge@15,10(stop);hedge@19,10(stop);hedge@4,11(stop);open!@12,11(push);door@15,11(shut+stop);crab!@17,11(push);hedge@19,11(stop);hedge@4,12(stop);flag@6,12(push);baba@8,12(open+you);crab@10,12();hedge@15,12(stop);hedge@19,12(stop);hedge@4,13(stop);hedge@15,13(stop);hedge@16,13(stop);hedge@17,13(stop);hedge@18,13(stop);hedge@19,13(stop);algae@2,14();hedge@4,14(stop);hedge@5,14(stop);hedge@6,14(stop);hedge@7,14(stop);hedge@8,14(stop);hedge@9,14(stop);hedge@10,14(stop);hedge@11,14(stop);hedge@12,14(stop);hedge@13,14(stop);hedge@14,14(stop);hedge@15,14(stop);seastar@11,15();algae@23,16();baba!@0,17(push);is!@1,17(push);you!@2,17(push);door!@10,17(push);is!@11,17(push);shut!@12,17(push);and!@13,17(push);stop!@14,17(push);algae@22,17();algae@23,17()",
+ "hashes": [
+  "b3b3de3f60ad991c",
+  "b3b3de3f60ad991c",
+  "b3b3de3f60ad991c",
+  "eaccfbfc046a5ff5",
+  "36831b39f962b8bf",
+  "31a62dd66100343e",
+  "6eebe218910cd0a4",
+  "cb099c23732ceb8c",
+  "b3b3de3f60ad991c",
+  "980fed82bcc0213a",
+  "db055a064f2dfe68",
+  "0fb4189d8c8f3913",
+  "c3d540fd7c86d20b",
+  "7ff242d7f402c78e",
+  "9014697ed0d994d1",
+  "264422023c01ee49",
+  "c2261574be6df19a",
+  "e992646e6c199763",
+  "e992646e6c199763",
+  "4ed8f830cad19c2e",
+  "3fd8654928864b93",
+  "bfb98e68eb2a6645",
+  "38634e4f886f98ba",
+  "283a134cea4b1473",
+  "34d22b6658616e6e",
+  "3ca9018ccbc44d86",
+  "4e9e514c9ba8b06c",
+  "74339e465b5faaca",
+  "a36fd7ddce02d025",
+  "0ec5aa5d8443e5fd",
+  "c0b3803866491554",
+  "4234f855b4fb6ac1",
+  "f48116fdc2176130",
+  "162db6de2a7f7175",
+  "3cf9228fc4d3b0a1",
+  "2f43fb5c059fadf8",
+  "20dc705b12d149a8",
+  "52fd30763daa24eb",
+  "d68bb1a8edf583c5",
+  "4a3429090f890a4a",
+  "67b9a47f5e706752",
+  "48973030747c1cfd",
+  "6b9ed3e565125a9e",
+  "1bf62291241ebd30",
+  "7b562946126e9704",
+  "627f749c0358a0a2",
+  "3c7188445a338498",
+  "20f373748944cadb",
+  "4de6304e4ab9d31e",
+  "fe47cba382bc9aac",
+  "390a4eb58de35b4e",
+  "fd86ea32a9c689d3",
+  "84f06e22ddf08d9a",
+  "e78526fb24f24e54",
+  "504294f07e2353ac",
+  "504294f07e2353ac",
+  "e78526fb24f24e54",
+  "84f06e22ddf08d9a",
+  "a834087a714a8c1b",
+  "8306b7e0cac24117",
+  "0f213b93fe4d6a75",
+  "f1f7e1bada2c8266",
+  "d61c5fc08010f08c",
+  "413a4f09a41cb64c",
+  "2102cb608c961a28",
+  "beb637fb96cd6b16",
+  "9bd83c5afe403550",
+  "b471125ea763ca6a",
+  "a562498fddc35c14",
+  "90318674a6428221",
+  "7caad80005b14021",
+  "0a504619a60683f5",
+  "b2e125fed3fed82f",
+  "ddab8ef677a46c4d",
+  "dc5621c67e00d2e9",
+  "3c179675eb7dc13c",
+  "4318812c1a5cd102",
+  "ad779460c77f1890",
+  "cd962845e4a11d79",
+  "cbd2027a4c2aa32d",
+  "9d6cc7fc69635f26",
+  "341fd87c01a4938e",
+  "6939788e9872bd9b",
+  "dc7ede465ac32ddd",
+  "bfe1fb5a32aff60d",
+  "99257c1dca6a7ff1",
+  "b133d7b1f8869dc2",
+  "573ffc690e4dcbbd",
+  "1d6caa150cb1feee",
+  "18906be4ce829a81",
+  "19262ef2b8512c9d",
+  "a8391015b3ed76f8",
+  "2c5951f1008eb525",
+  "87010ee3182afe64",
+  "6784c4360c601989",
+  "f420636429f0b4d0",
+  "a1f69aa4f50755a9",
+  "92097a1826c18d5e",
+  "738a084f36bfa35a",
+  "81eb88ccd09110c5",
+  "a45c4ce60fedb8a6",
+  "fa4a3eed3b72a668",
+  "d507f677a945652e",
+  "31a6f01534389ac5",
+  "c9cefaf222c6a136",
+  "c433431548dc4d65",
+  "1d31bc30e32db580",
+  "bc44c56921a0d6d5",
+  "59a970879433d369",
+  "15cce9a60dfba1ab",
+  "75910120c5b4730c",
+  "67bdef77cbb3e452",
+  "77c224faeab64152",
+  "6e9f59433151e52e",
+  "6e9f59433151e52e",
+  "6e9f59433151e52e",
+  "6e9f59433151e52e",
+  "6e9f59433151e52e",
+  "6e9f59433151e52e",
+  "77c224faeab64152",
+  "67bdef77cbb3e452",
+  "75910120c5b4730c",
+  "086777305145f8ba",
+  "5425f342a41c3c52",
+  "423f078033c0e651",
+  "87c80d6d06c88126",
+  "4dce239fd5e03858",
+  "674b6c7ba4f61e0c",
+  "3fc2161b8b4e1aef",
+  "0796c96d5119b9bd",
+  "301a7c5a1eeb0248",
+  "b31d9dc6ce9a48ac",
+  "83f6ada001c2f1d9",
+  "265c9713a5967fa4",
+  "b346971f74dfa790",
+  "61e2b87a9f4394d7",
+  "cd8f315a4fbe36c1",
+  "61e2b87a9f4394d7",
+  "59e8400230a5fd73",
+  "8786f8cc7640e0fc",
+  "e2d14941908d3e40",
+  "2318ca3ff664291d",
+  "ce651d64da9ec027",
+  "6aab354d86da8b60",
+  "f05546765e5313dc",
+  "4e81cbbe15114813",
+  "6b0ff677168fd2a7",
+  "6549310bad04db31",
+  "bc45c5b3810be41c",
+  "04bd3d30525f81b6",
+  "95a74edaefae737c",
+  "40d3c65736761d27",
+  "f09d8ac8397a143b",
+  "4b65f73541907209",
+  "caa28d38937d4165",
+  "ac589df01efb5c10",
+  "53f7cc327ce6d63c",
+  "503f134d505b2821",
+  "0069b4dd82956546",
+  "dadc1b4ec3e790ce",
+  "b1073439ec17dc1e",
+  "edabfc120399ae9e",
+  "375ebcde10ceedf8",
+  "c4813afa61091650",
+  "c2115a3e98cd7e3b",
+  "e8cf8596f1b9cad1"
+ ],
+ "final": "win|hedge!@0,0(push);is!@1,0(push);stop!@2,0(push);algae@23,0();hedge@10,2(stop);hedge@11,2(stop);hedge@12,2(stop);hedge@13,2(stop);hedge@14,2(stop);seastar@19,2();seastar@1,3();hedge@10,3(stop);is!@12,3(push);win!@13,3(push);hedge@14,3(stop);hedge@8,4(stop);hedge@9,4(stop);hedge@10,4(stop);is!@12,4(push);defeat!@13,4(push);hedge@14,4(stop);seastar@17,4();seastar@20,4();hedge@8,5(stop);baba!@9,5(push);is!@10,5(push);hedge@12,5(stop);hedge@13,5(stop);hedge@14,5(stop);seastar@18,5();hedge@4,6(stop);hedge@5,6(stop);hedge@6,6(stop);hedge@7,6(stop);hedge@8,6(stop);hedge@10,6(stop);hedge@12,6(stop);hedge@13,6(stop);hedge@14,6(stop);hedge@15,6(stop);seastar@2,7();hedge@4,7(stop);hedge@15,7(stop);hedge@4,8(stop);hedge@15,8(stop);hedge@4,9(stop);flag!@5,9(push);is@up!@9,6(push);push@down!@7,9(push);baba@right!@9,7(push);hedge@15,9(stop);hedge@16,9(stop);hedge@17,9(stop);hedge@18,9(stop);hedge@19,9(stop);hedge@4,10(stop);is@up!@6,9(push);hedge@15,10(stop);hedge@19,10(stop);hedge@4,11(stop);open@right!@10,7(push);crab@up!@11,3(push);hedge@19,11(stop);hedge@4,12(stop);baba@left@10,12(you);crab@10,12(win);hedge@15,12(stop);hedge@19,12(stop);hedge@4,13(stop);hedge@15,13(stop);hedge@16,13(stop);hedge@17,13(stop);hedge@18,13(stop);hedge@19,13(stop);algae@2,14();hedge@4,14(stop);hedge@5,14(stop);hedge@6,14(stop);hedge@7,14(stop);hedge@8,14(stop);hedge@9,14(stop);hedge@10,14(stop);hedge@11,14(stop);hedge@12,14(stop);hedge@13,14(stop);hedge@14,14(stop);hedge@15,14(stop);seastar@11,15();algae@23,16();baba!@0,17(push);is!@1,17(push);you!@2,17(push);door!@10,17(push);is!@11,17(push);shut!@12,17(push);and!@13,17(push);stop!@14,17(push);algae@22,17();algae@23,17()",
+ "status": "win"
+}

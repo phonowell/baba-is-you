@@ -65,7 +65,6 @@ export const moveItemsBatch = (
     survivors,
     removedItems,
     runtime.buckets.has,
-    true,
     width,
     height,
     next,

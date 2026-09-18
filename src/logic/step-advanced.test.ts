@@ -173,3 +173,61 @@ test('step updates pushed MOVE object facing to push direction before MOVE phase
   assert.equal(rock?.y, 1)
   assert.equal(rock?.dir, 'up')
 })
+
+test('step moves a solid row of YOU+STOP objects once the far end is free', () => {
+  const level: LevelData = {
+    title: 'you-stop-row',
+    width: 6,
+    height: 4,
+    items: [
+      createItem(1, 'wall', 1, 0, false),
+      createItem(2, 'wall', 2, 0, false),
+      createItem(3, 'wall', 3, 0, false),
+      createItem(10, 'wall', 0, 2, true),
+      createItem(11, 'is', 1, 2, true),
+      createItem(12, 'you', 2, 2, true),
+      createItem(13, 'and', 3, 2, true),
+      createItem(14, 'stop', 4, 2, true),
+    ],
+  }
+
+  const state = createInitialState(level, 0)
+  const result = step(state, 'right')
+  const xs = result.state.items
+    .filter((item) => !item.isText && item.name === 'wall')
+    .map((item) => item.x)
+    .sort((a, b) => a - b)
+
+  assert.deepEqual(xs, [2, 3, 4])
+})
+
+test('step blocks a solid row of YOU+STOP objects when the far end is held', () => {
+  const level: LevelData = {
+    title: 'you-stop-row-blocked',
+    width: 6,
+    height: 4,
+    items: [
+      createItem(1, 'wall', 1, 0, false),
+      createItem(2, 'wall', 2, 0, false),
+      createItem(3, 'wall', 3, 0, false),
+      createItem(4, 'hedge', 4, 0, false),
+      createItem(10, 'wall', 0, 2, true),
+      createItem(11, 'is', 1, 2, true),
+      createItem(12, 'you', 2, 2, true),
+      createItem(13, 'and', 3, 2, true),
+      createItem(14, 'stop', 4, 2, true),
+      createItem(15, 'hedge', 0, 3, true),
+      createItem(16, 'is', 1, 3, true),
+      createItem(17, 'stop', 2, 3, true),
+    ],
+  }
+
+  const state = createInitialState(level, 0)
+  const result = step(state, 'right')
+  const xs = result.state.items
+    .filter((item) => !item.isText && item.name === 'wall')
+    .map((item) => item.x)
+    .sort((a, b) => a - b)
+
+  assert.deepEqual(xs, [1, 2, 3])
+})

@@ -1,0 +1,25 @@
+b = baba
+w = wall
+a = algae
+d = door
+k = key
+s = seastar
+o = bubble
+palette = ocean
+---
+B=✥wwwwa           aa www aa
+wwwww                K=⩍wwww
+D=⊘w         = ✓      www aa
+wwww                 ww wwww
+ww                       ww
+w       wwwwwwdwwwww      w
+w       wS=↦    W=⊘w      w
+        w        w w      ww
+        w          w       w
+   o    w  k    s  w       w
+        w          w
+        w K=⧜  b=⨶ w   o
+       aw          w
+  o    aw          wa     o
+a   o  awwwwwwwwwwwwa      a
+aa    aaaa      aaaa a   aaa

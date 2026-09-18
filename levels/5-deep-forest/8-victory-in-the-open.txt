@@ -1,0 +1,31 @@
+b = baba
+o = bog
+h = husk
+v = flower
+w = wall
+k = keke
+t = tile
+u = "up" on tile
+palette = ruins
++ w = 6,0
++ t = 1,0
++ o = 5,2
++ h = 5,1
++ "w" = 6,1 6,2
+---
+oooh oo           h      h
+oo         V=⩍       h
+o h  wwwwwwwwwwwwwwwwwww   h
+o    w      vtw        w
+     w     Kvtw        w
+o    w K=→  vtw   ttt  w  h
+oo   w =    vuw   t✓t  w
+oo  Bw ⇨    vtw   ttt  w   o
+oo  =w      vtw        w  oo
+o   ✥w     wwww        w  oo
+o    w      v          w   o
+     w b k  v          w h
+     w      v          w   h
+ h   wwwwwwwwwwwwwwwwwww   o
+o          W=⊘            oo
+oo h o          h    oo hooo

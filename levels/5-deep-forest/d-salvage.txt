@@ -1,0 +1,24 @@
+b = baba
+s = skull down
+g = grass
+f = flag
+n = fungus
+m = fungi
+palette = ruins
+---
+B=✥gggggg    m   ggggg  @=¬✓
+S=⩍g   g           gg
+gg    m  ssssssssss
+ggg  n   s        s     n
+gg       s        s       n
+gg       s  @ F=✓ s
+g        s        s     m
+     ↔   s  & ↣   s
+         s        s
+         s        s
+  m      s   b    s       f
+         s        s
+   n     s        s    m
+g        ssssssssss  n     g
+gg   m                    gg
+ggg g m            m   ggggg

@@ -1,0 +1,31 @@
+a = algae
+b = baba on tile
+o = bubble
+w = wall
+d = door
+k = key on tile
+ḱ = key on brick
+f = flag
+p = pillar
+c = brick
+t = tile
+r = rock on brick
+palette = ocean
++ t = 1,0
+---
+                         a
+     wwwww   o   wwwww    a
+ o   wB=✥w       wD=⊘w
+     wwwww       wwwww     a
+     wW=⊘w       wD=⨶w
+     wwwwwww    wwwwwww
+   o wtttttw    w     w
+     wtktbtdcrḱcd  R  w   o
+     wtttttw  c w     w
+     wwwwwww  c wwwdwww
+              c w    w
+ p       K=⧜  c w  f w
+ccc      =    c ww   w
+ccc      ↦ cccc  wF=✓w  o
+  p a      c     wwwww
+   a       c

@@ -1,0 +1,23 @@
+f = foliage
+l = leaf
+g = ghost left
+b = baba
+o = love
+palette = autumn
+---
+F=⊘f         f         f f f
+fff      fffffff        f
+f   f   ff  L=⩍ f       f
+   f    f       ffff
+        f   G     f
+        f  B=✥    f       f
+ f      f   *      ff
+        l           f
+        f     ↦ g   f    f
+        ff          f   f
+    o    ff        ff
+          ff b  g  Of      f
+     f     f        f
+      f    f      f✓f  f  f
+            ffffffff     f
+    f           f       f f

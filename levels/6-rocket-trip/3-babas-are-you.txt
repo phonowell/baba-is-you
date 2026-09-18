@@ -1,0 +1,31 @@
+b = baba
+d = dust
+c = cloud
+i = ice
+w = wall
+s = star
+m = moon
+r = rock
+palette = space
++ c = 1,1
++ w = 1,3
++ "w" = 3,2 1,3
+---
+ddddcccdddccccdddW
+ddccccccccccccccd=
+dcccccccccicccccc⊘
+ccrccccccccccccccc
+cccccccccccccccccc
+cccccccccccccccccc
+ccccccccI=cccccccc
+R=⩍&¬Bwccccccccccc
+wwwwwwwwwwwwwwcccc
+cccccccccccccwcccc
+cccccccccccbcwcccc
+cscccccccccccwcccc
+cccccccccccccwccsc
+ccccccccR=↦ccwsccm
+cccccccccccccwcccc
+ccc?ccccccccswc✓cc
+dcc=cccccccscwcccc
+ddcB=✥&⊘cccccwccsc

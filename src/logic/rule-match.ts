@@ -176,7 +176,10 @@ export const matchesRuleSubject = (
     matched = !item.isText && item.name === 'level'
   else matched = !item.isText && item.name === rule.subject
 
-  if (subjectNegated) matched = !matched
+  // A negated subject never matches text entities — the predecessor's
+  // `subject_match` maps text to `TextOrNoun::Text`, which `No(_)` rejects,
+  // so `not baba is you` does not make text into `you`.
+  if (subjectNegated) matched = !matched && !item.isText
   if (!matched) return false
   return matchesCondition(item, rule, context)
 }

@@ -1,0 +1,32 @@
+g = grass
+w = wall
+c = brick
+s = stump
+t = tree
+h = water
+b = baba
+k = keke down
+d = door
+f = flag
+palette = ruins
++ w = 6,0
++ "w" = 6,1 6,2
+---
+ggg g w cccc ccc      s cccc t  t
+ggg   w  c                c    t
+gg    w     H=⩍                 t
+g   g wwwwwwwwwwwwwwwwwwww   s
+g   g       hh   w  h F=✓w ccc
+  g     B~K hh   w  h  f w  cc  c
+        =   hh   w  h    w     cc
+   gg   ✥   hh   d  h    w
+   ggg      hh   wwwwwwwww      s
+ g          hh   wD=⨶wwwww  s
+ggg     k   hh   wwwwwwwww   c
+ gg         hh   wW&D=⊘www   ccc
+g     → b = hh   wwwwwwwww cccccc
+            hh   wK=⧜wwwww  cc cc
+g  g        hh   wwwwwwwwwwwwwwww
+g           hh   w  ccc
+gg    wwwwwwwwwwww     s    c  s
+ggg g w          w         ccc

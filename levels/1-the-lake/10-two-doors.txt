@@ -1,0 +1,28 @@
+a = algae
+k = key
+y = keke
+d = door
+h = hedge
+t = tile
+s = seastar
+f = flag on tile
+palette = ocean
+right pad = 1
++ t = 1,0
+---
+
+ a                       a
+          Y  D
+    hhh   =  =  hhhhhhh   a
+    hK    ✥  ⨶  httttHh
+    h= h        htttt&h
+    h↦     y    dttftDh
+    h&h         htttt=h
+    h⧜  hk      htttt⊘h
+    hh  h hhh   hhhhhhh  a
+        h F h
+        hh =h
+        hh ✓h             a
+ a      hhhhh     s      a
+   a                 a
+

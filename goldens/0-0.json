@@ -1,0 +1,17 @@
+{
+ "level": "levels/0-baba-is-you.txt",
+ "inputs": "rrrrrrrr",
+ "initial": "playing|baba!@11,6(push);is!@12,6(push);you!@13,6(push);flag!@19,6(push);is!@20,6(push);win!@21,6(push);wall@11,8(stop);wall@12,8(stop);wall@13,8(stop);wall@14,8(stop);wall@15,8(stop);wall@16,8(stop);wall@17,8(stop);wall@18,8(stop);wall@19,8(stop);wall@20,8(stop);wall@21,8(stop);tile@11,9();tile@12,9();tile@13,9();tile@14,9();tile@15,9();rock@16,9(push);tile@17,9();tile@18,9();tile@19,9();tile@20,9();tile@21,9();tile@11,10();baba@12,10(you);tile@13,10();tile@14,10();tile@15,10();rock@16,10(push);tile@17,10();tile@18,10();tile@19,10();flag@20,10(win);tile@21,10();tile@11,11();tile@12,11();tile@13,11();tile@14,11();tile@15,11();rock@16,11(push);tile@17,11();tile@18,11();tile@19,11();tile@20,11();tile@21,11();wall@11,12(stop);wall@12,12(stop);wall@13,12(stop);wall@14,12(stop);wall@15,12(stop);wall@16,12(stop);wall@17,12(stop);wall@18,12(stop);wall@19,12(stop);wall@20,12(stop);wall@21,12(stop);wall!@11,14(push);is!@12,14(push);stop!@13,14(push);rock!@19,14(push);is!@20,14(push);push!@21,14(push)",
+ "hashes": [
+  "8a1c907ddd6ced15",
+  "10bd2b224093f926",
+  "544339a00102f72f",
+  "8e3a234eb51b5e01",
+  "cc0ed4372ab1466b",
+  "cb006665e93ff7b8",
+  "d5867566f74503ee",
+  "340cce3c7bd15504"
+ ],
+ "final": "win|baba!@11,6(push);is!@12,6(push);you!@13,6(push);flag!@19,6(push);is!@20,6(push);win!@21,6(push);wall@11,8(stop);wall@12,8(stop);wall@13,8(stop);wall@14,8(stop);wall@15,8(stop);wall@16,8(stop);wall@17,8(stop);wall@18,8(stop);wall@19,8(stop);wall@20,8(stop);wall@21,8(stop);tile@11,9();tile@12,9();tile@13,9();tile@14,9();tile@15,9();rock@16,9(push);tile@17,9();tile@18,9();tile@19,9();tile@20,9();tile@21,9();tile@11,10();baba@right@20,10(you);tile@13,10();tile@14,10();tile@15,10();rock@right@21,10(push);tile@17,10();tile@18,10();tile@19,10();flag@20,10(win);tile@21,10();tile@11,11();tile@12,11();tile@13,11();tile@14,11();tile@15,11();rock@16,11(push);tile@17,11();tile@18,11();tile@19,11();tile@20,11();tile@21,11();wall@11,12(stop);wall@12,12(stop);wall@13,12(stop);wall@14,12(stop);wall@15,12(stop);wall@16,12(stop);wall@17,12(stop);wall@18,12(stop);wall@19,12(stop);wall@20,12(stop);wall@21,12(stop);wall!@11,14(push);is!@12,14(push);stop!@13,14(push);rock!@19,14(push);is!@20,14(push);push!@21,14(push)",
+ "status": "win"
+}

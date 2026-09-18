@@ -1,0 +1,896 @@
+{
+ "level": "levels/1-the-lake/10-two-doors.txt",
+ "levelData": {
+  "title": "TWO DOORS",
+  "width": 28,
+  "height": 16,
+  "items": [
+   {
+    "id": 1,
+    "x": 1,
+    "y": 1,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 2,
+    "x": 25,
+    "y": 1,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 3,
+    "x": 10,
+    "y": 2,
+    "name": "keke",
+    "isText": true
+   },
+   {
+    "id": 4,
+    "x": 13,
+    "y": 2,
+    "name": "door",
+    "isText": true
+   },
+   {
+    "id": 5,
+    "x": 4,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 6,
+    "x": 5,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 7,
+    "x": 6,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 8,
+    "x": 10,
+    "y": 3,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 9,
+    "x": 13,
+    "y": 3,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 10,
+    "x": 16,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 11,
+    "x": 17,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 12,
+    "x": 18,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 13,
+    "x": 19,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 14,
+    "x": 20,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 15,
+    "x": 21,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 16,
+    "x": 22,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 17,
+    "x": 26,
+    "y": 3,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 18,
+    "x": 4,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 19,
+    "x": 5,
+    "y": 4,
+    "name": "key",
+    "isText": true
+   },
+   {
+    "id": 20,
+    "x": 10,
+    "y": 4,
+    "name": "you",
+    "isText": true
+   },
+   {
+    "id": 21,
+    "x": 13,
+    "y": 4,
+    "name": "shut",
+    "isText": true
+   },
+   {
+    "id": 22,
+    "x": 16,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 23,
+    "x": 17,
+    "y": 4,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 24,
+    "x": 18,
+    "y": 4,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 25,
+    "x": 19,
+    "y": 4,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 26,
+    "x": 20,
+    "y": 4,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 27,
+    "x": 21,
+    "y": 4,
+    "name": "hedge",
+    "isText": true
+   },
+   {
+    "id": 28,
+    "x": 22,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 29,
+    "x": 4,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 30,
+    "x": 5,
+    "y": 5,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 31,
+    "x": 7,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 32,
+    "x": 16,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 33,
+    "x": 17,
+    "y": 5,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 34,
+    "x": 18,
+    "y": 5,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 35,
+    "x": 19,
+    "y": 5,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 36,
+    "x": 20,
+    "y": 5,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 37,
+    "x": 21,
+    "y": 5,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 38,
+    "x": 22,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 39,
+    "x": 4,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 40,
+    "x": 5,
+    "y": 6,
+    "name": "push",
+    "isText": true
+   },
+   {
+    "id": 41,
+    "x": 11,
+    "y": 6,
+    "name": "keke",
+    "isText": false
+   },
+   {
+    "id": 42,
+    "x": 16,
+    "y": 6,
+    "name": "door",
+    "isText": false
+   },
+   {
+    "id": 43,
+    "x": 17,
+    "y": 6,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 44,
+    "x": 18,
+    "y": 6,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 45,
+    "x": 19,
+    "y": 6,
+    "name": "flag",
+    "isText": false
+   },
+   {
+    "id": 46,
+    "x": 20,
+    "y": 6,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 47,
+    "x": 21,
+    "y": 6,
+    "name": "door",
+    "isText": true
+   },
+   {
+    "id": 48,
+    "x": 22,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 49,
+    "x": 4,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 50,
+    "x": 5,
+    "y": 7,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 51,
+    "x": 6,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 52,
+    "x": 16,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 53,
+    "x": 17,
+    "y": 7,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 54,
+    "x": 18,
+    "y": 7,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 55,
+    "x": 19,
+    "y": 7,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 56,
+    "x": 20,
+    "y": 7,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 57,
+    "x": 21,
+    "y": 7,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 58,
+    "x": 22,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 59,
+    "x": 4,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 60,
+    "x": 5,
+    "y": 8,
+    "name": "open",
+    "isText": true
+   },
+   {
+    "id": 61,
+    "x": 8,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 62,
+    "x": 9,
+    "y": 8,
+    "name": "key",
+    "isText": false
+   },
+   {
+    "id": 63,
+    "x": 16,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 64,
+    "x": 17,
+    "y": 8,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 65,
+    "x": 18,
+    "y": 8,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 66,
+    "x": 19,
+    "y": 8,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 67,
+    "x": 20,
+    "y": 8,
+    "name": "tile",
+    "isText": false
+   },
+   {
+    "id": 68,
+    "x": 21,
+    "y": 8,
+    "name": "stop",
+    "isText": true
+   },
+   {
+    "id": 69,
+    "x": 22,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 70,
+    "x": 4,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 71,
+    "x": 5,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 72,
+    "x": 8,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 73,
+    "x": 10,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 74,
+    "x": 11,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 75,
+    "x": 12,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 76,
+    "x": 16,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 77,
+    "x": 17,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 78,
+    "x": 18,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 79,
+    "x": 19,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 80,
+    "x": 20,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 81,
+    "x": 21,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 82,
+    "x": 22,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 83,
+    "x": 25,
+    "y": 9,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 84,
+    "x": 8,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 85,
+    "x": 10,
+    "y": 10,
+    "name": "flag",
+    "isText": true
+   },
+   {
+    "id": 86,
+    "x": 12,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 87,
+    "x": 8,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 88,
+    "x": 9,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 89,
+    "x": 11,
+    "y": 11,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 90,
+    "x": 12,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 91,
+    "x": 8,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 92,
+    "x": 9,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 93,
+    "x": 11,
+    "y": 12,
+    "name": "win",
+    "isText": true
+   },
+   {
+    "id": 94,
+    "x": 12,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 95,
+    "x": 26,
+    "y": 12,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 96,
+    "x": 1,
+    "y": 13,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 97,
+    "x": 8,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 98,
+    "x": 9,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 99,
+    "x": 10,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 100,
+    "x": 11,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 101,
+    "x": 12,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 102,
+    "x": 18,
+    "y": 13,
+    "name": "seastar",
+    "isText": false
+   },
+   {
+    "id": 103,
+    "x": 25,
+    "y": 13,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 104,
+    "x": 3,
+    "y": 14,
+    "name": "algae",
+    "isText": false
+   },
+   {
+    "id": 105,
+    "x": 21,
+    "y": 14,
+    "name": "algae",
+    "isText": false
+   }
+  ]
+ },
+ "inputs": "dddlllrrrrruurrrrllllllddddddzzzzzrrrruuuullllllllruuuruulllluldddldddrruldluuuddruuulurrurdrrrdldddddduurrrrllllllddllrrrlllllddrluuuurrrrrrrrrr",
+ "initial": "playing|algae@1,1();algae@25,1();keke!@10,2(push);door!@13,2(push);hedge@4,3(stop);hedge@5,3(stop);hedge@6,3(stop);is!@10,3(push);is!@13,3(push);hedge@16,3(stop);hedge@17,3(stop);hedge@18,3(stop);hedge@19,3(stop);hedge@20,3(stop);hedge@21,3(stop);hedge@22,3(stop);algae@26,3();hedge@4,4(stop);key!@5,4(push);you!@10,4(push);shut!@13,4(push);hedge@16,4(stop);tile@17,4();tile@18,4();tile@19,4();tile@20,4();hedge!@21,4(push);hedge@22,4(stop);hedge@4,5(stop);is!@5,5(push);hedge@7,5(stop);hedge@16,5(stop);tile@17,5();tile@18,5();tile@19,5();tile@20,5();and!@21,5(push);hedge@22,5(stop);hedge@4,6(stop);push!@5,6(push);keke@11,6(you);door@16,6(shut+stop);tile@17,6();tile@18,6();flag@19,6();tile@20,6();door!@21,6(push);hedge@22,6(stop);hedge@4,7(stop);and!@5,7(push);hedge@6,7(stop);hedge@16,7(stop);tile@17,7();tile@18,7();tile@19,7();tile@20,7();is!@21,7(push);hedge@22,7(stop);hedge@4,8(stop);open!@5,8(push);hedge@8,8(stop);key@9,8(open+push);hedge@16,8(stop);tile@17,8();tile@18,8();tile@19,8();tile@20,8();stop!@21,8(push);hedge@22,8(stop);hedge@4,9(stop);hedge@5,9(stop);hedge@8,9(stop);hedge@10,9(stop);hedge@11,9(stop);hedge@12,9(stop);hedge@16,9(stop);hedge@17,9(stop);hedge@18,9(stop);hedge@19,9(stop);hedge@20,9(stop);hedge@21,9(stop);hedge@22,9(stop);algae@25,9();hedge@8,10(stop);flag!@10,10(push);hedge@12,10(stop);hedge@8,11(stop);hedge@9,11(stop);is!@11,11(push);hedge@12,11(stop);hedge@8,12(stop);hedge@9,12(stop);win!@11,12(push);hedge@12,12(stop);algae@26,12();algae@1,13();hedge@8,13(stop);hedge@9,13(stop);hedge@10,13(stop);hedge@11,13(stop);hedge@12,13(stop);seastar@18,13();algae@25,13();algae@3,14();algae@21,14()",
+ "hashes": [
+  "604061a26d3274b0",
+  "e399bdc881fbd690",
+  "e399bdc881fbd690",
+  "96b2fda53ac2b913",
+  "96b2fda53ac2b913",
+  "96b2fda53ac2b913",
+  "4db19e4626154666",
+  "d8467c4471304c44",
+  "b0326a16fde40f64",
+  "35d7a55f6dd4823e",
+  "c319f08108b52342",
+  "126925535dca6815",
+  "03ff8e709cc23329",
+  "03ff8e709cc23329",
+  "03ff8e709cc23329",
+  "03ff8e709cc23329",
+  "03ff8e709cc23329",
+  "d3c48a21fbf745b9",
+  "28d9f814b10d5705",
+  "2536322bafdc3f7d",
+  "b87927b26b4a1521",
+  "572a4c00e8ce1643",
+  "355b1582740a8417",
+  "8d930cf49be382a8",
+  "23763e8bb8f17590",
+  "cb78c5c3993a8859",
+  "cb78c5c3993a8859",
+  "cb78c5c3993a8859",
+  "cb78c5c3993a8859",
+  "23763e8bb8f17590",
+  "8d930cf49be382a8",
+  "355b1582740a8417",
+  "572a4c00e8ce1643",
+  "b87927b26b4a1521",
+  "ab9bc51a896ee736",
+  "94b3c173acec9910",
+  "e6619ce7249258e2",
+  "f55ae325eff818c7",
+  "8deaab1c67cdae3c",
+  "5fcd004f7c2ee022",
+  "53b810cc3f855033",
+  "ddad353799828230",
+  "8e5889467f5ead70",
+  "d73866781808c8bc",
+  "113ce74c2ea6226a",
+  "e87049a398e1b432",
+  "b37c73c837499f42",
+  "c0305766e60851a0",
+  "a34e0c4c3f717f12",
+  "87d229696536ad23",
+  "ec6f90c65ce29190",
+  "58a4fc7a1c6b8ae0",
+  "3b5aab44e2d2b6dc",
+  "c717ecace5b42500",
+  "dddb5c876f64d30d",
+  "f4e0ef154af8bf38",
+  "3d1e69862f1d764c",
+  "9679b7dd49d1c27c",
+  "f5da5c56649aaaf6",
+  "af38a5bd8b9a074d",
+  "34f168868bbf3bf7",
+  "13bb9c97a414816d",
+  "5d2e87448fbb80db",
+  "0f3e06ddbc5ef357",
+  "fa5ffb47d731c621",
+  "52a854515cc9a1f6",
+  "778ecb75cede7367",
+  "79010ab44fdddc50",
+  "f771df3644078c6a",
+  "78fe53a057b48b30",
+  "8ce41472684b47e0",
+  "ec7685a50bfb7c25",
+  "39555a9a5f7f5ec0",
+  "6cf81c391bcb72d5",
+  "a0da08faae6bdfef",
+  "63d75a08bc2be845",
+  "66a620200e827a9e",
+  "a1c2cb0a065c2054",
+  "5269f67f392589b4",
+  "d6ae70a150cbbdf6",
+  "f8ad191e2c83ab47",
+  "abf25e13ae8c3860",
+  "b0b45b16f526e44b",
+  "80d6f4bd6e685308",
+  "33b5f7ee3f61f098",
+  "b648b5fed31d5a1a",
+  "77dac5a5ad603629",
+  "72999af367d14893",
+  "16e9d8cfccba8380",
+  "25e9246e76694101",
+  "18d8c6e9017ef099",
+  "2a681705fe3ab81f",
+  "29137f378db1bf8a",
+  "cb127b32ff24c863",
+  "c5a3ae13e1678647",
+  "776738bf1982597d",
+  "8638e87f2a101446",
+  "bb75a62148af5e96",
+  "c9d64ba2610df67e",
+  "1eee92bef8e70808",
+  "5ae61e7840ebaa7b",
+  "3e4fa8fd7d4f40c0",
+  "a235fbaf8b3e1995",
+  "c08185c5f1e49f48",
+  "1ed49b275da2277a",
+  "09304ad1021607e5",
+  "f0a582d70186fcb4",
+  "36ba93e95cc9dc3f",
+  "ada12d24d74898e5",
+  "0b1c2ad206b9452e",
+  "05b8f058eb9dfda4",
+  "7a9ecfe11a9f626f",
+  "14fc4f667046f1b0",
+  "03e736134791fc0b",
+  "bfccdf02005d25d1",
+  "aeabe344beaf5b2b",
+  "d23fa461e027a922",
+  "344ee0a063354af0",
+  "421e608e1152f72a",
+  "0ccc91118ebe5151",
+  "fe4e75722f2af89f",
+  "3ae6213734ada278",
+  "aa46d95380c9e8c4",
+  "814e2255711ac574",
+  "421e608e1152f72a",
+  "084a756a98be95ba",
+  "f346ea7c18d2b95a",
+  "df49cdf1a1733caf",
+  "a9c77ab406bd2e97",
+  "7c32b7d39e0c1677",
+  "0e2e3bf968d6b441",
+  "a0dcb8b1635e46ba",
+  "d97c1dfaf73f7b93",
+  "b86cdd4031d7fbcc",
+  "90e25d2441cca03c",
+  "c81ffdf0eca14d44",
+  "dfe729435efe307d",
+  "628de55eda82ce9f",
+  "77239cb5eeb26d35",
+  "b1f21764773b3632",
+  "dde691d09166322d",
+  "286ba8e0681f0b6f",
+  "207a335f7f60676f",
+  "23f626b8942de8d1",
+  "6fed28a8485fce4b"
+ ],
+ "final": "win|algae@1,1();algae@25,1();keke@left!@7,2(push);door@left!@10,2(push);hedge@4,3(stop);hedge@5,3(stop);hedge@6,3(stop);is!@10,3(push);is@down!@11,2(push);hedge@16,3(stop);hedge@17,3(stop);hedge@18,3(stop);hedge@19,3(stop);hedge@20,3(stop);hedge@21,3(stop);hedge@22,3(stop);algae@26,3();hedge@4,4(stop);key!@5,4(push);you!@10,4(push);shut@left!@12,2(push);hedge@16,4(stop);tile@17,4();tile@18,4();tile@19,4();tile@20,4();hedge!@21,4(push);hedge@22,4(stop);hedge@4,5(stop);is!@5,5(push);hedge@7,5(stop);hedge@16,5(stop);tile@17,5();tile@18,5();tile@19,5();tile@20,5();and!@21,5(push);hedge@22,5(stop);hedge@4,6(stop);push!@5,6(push);door@right@19,6(shut+stop+you);tile@17,6();tile@18,6();flag@19,6(win);tile@20,6();door!@21,6(push);hedge@22,6(stop);hedge@4,7(stop);and!@5,7(push);hedge@6,7(stop);hedge@16,7(stop);tile@17,7();tile@18,7();tile@19,7();tile@20,7();is!@21,7(push);hedge@22,7(stop);hedge@4,8(stop);open!@5,8(push);hedge@8,8(stop);hedge@16,8(stop);tile@17,8();tile@18,8();tile@19,8();tile@20,8();stop!@21,8(push);hedge@22,8(stop);hedge@4,9(stop);hedge@5,9(stop);hedge@8,9(stop);hedge@10,9(stop);hedge@11,9(stop);hedge@12,9(stop);hedge@16,9(stop);hedge@17,9(stop);hedge@18,9(stop);hedge@19,9(stop);hedge@20,9(stop);hedge@21,9(stop);hedge@22,9(stop);algae@25,9();hedge@8,10(stop);flag@right!@11,10(push);hedge@12,10(stop);hedge@8,11(stop);hedge@9,11(stop);is!@11,11(push);hedge@12,11(stop);hedge@8,12(stop);hedge@9,12(stop);win!@11,12(push);hedge@12,12(stop);algae@26,12();algae@1,13();hedge@8,13(stop);hedge@9,13(stop);hedge@10,13(stop);hedge@11,13(stop);hedge@12,13(stop);seastar@18,13();algae@25,13();algae@3,14();algae@21,14()",
+ "status": "win"
+}

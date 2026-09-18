@@ -1,0 +1,25 @@
+f = flag
+a = algae
+p = pillar
+s = seastar
+w = wall
+b = baba
+c = brick
+t = tile
+palette = ocean
++ t = 1,0
+---
+F=✓
+ a              a p
+     P=↦  p      a    a
+            p       a
+   ccc c c
+   cwwwwwc     sssss
+W  cwtttwc    cscccs
+=  cwtbtpccccccscfcs
+⊘  cwtttwca    scccsa
+   cwwwwwc     sssss
+   cc  ccc
+ a         p
+     B=✥       a p a
+              a      S=⩍

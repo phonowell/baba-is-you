@@ -1,0 +1,25 @@
+g = grass
+w = wall
+t = tile
+f = flag
+b = baba
+right pad = 1
+---
+
+       t
+  t      ffffffff     t
+     t   f      ft
+     t   f =    f t
+         f      f
+     fffff    ✓ f
+     fgggg      f
+  t  fgBgg      f
+ t   fgggg      f   t
+     ffffffffffff
+         f      f
+      W  f F    f
+      =  f =  w f
+   t  ✥  f ⊘    f t
+         f   fffft
+    t    fffff   t
+

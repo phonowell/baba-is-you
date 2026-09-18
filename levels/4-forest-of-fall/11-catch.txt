@@ -1,0 +1,27 @@
+b = baba left
+h = hedge
+u = husk
+t = tree
+w = water
+r = rock
+f = flag
+palette = autumn
+---
+B=✥h
+hhhh                u
+@=⚲h  ¬R=
+hhhh     ↦  b  hhh    u
+                th
+           hhhhh h
+      hwwwwh     h
+     hhwwwwh r r hhh
+     hwww        hRh
+ u   hww    h hhhh=h
+     hhww B= ¬✥  hRh
+u     hwwwh hhhhhhhh
+      hhhhh hH=⊘&¬↦h
+      hW=≉hfh=hhhhhh   u
+      hhhhhhhHhF=✓h
+  u         hhhhhhh
+    u                 u
+

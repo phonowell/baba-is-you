@@ -1,0 +1,24 @@
+t = tree
+n = fungus
+w = wall
+k = key
+b = baba
+d = door
+c = brick
+palette = ruins
+right pad = 1
+---
+t           t         t
+  t             n  t
+  wwwwwwwwwwww      t
+  wW=Ww      wD
+  w=         w=       n
+  w⊘  k      w⨶
+  w          dccc  www
+  www   K=⧜  w  c  w✓w
+  wBw b      w  c  www
+  w=w   =    w  ccccc
+  w✥w   ↦    w       t
+t wwwwwwwwwwww    t   t
+ t             t
+                     n

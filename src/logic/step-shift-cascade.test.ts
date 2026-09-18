@@ -52,3 +52,36 @@ test('step SHIFT uses updated shifter dir within same cell chain', () => {
   assert.equal(beltB?.x, 1)
   assert.equal(beltB?.dir, 'right')
 })
+
+test('step SHIFT does not carry items on a different FLOAT layer', () => {
+  const level: LevelData = {
+    title: 'shift-float-layer',
+    width: 6,
+    height: 6,
+    items: [
+      { ...createItem(1, 'belt', 1, 0, false), dir: 'right' },
+      createItem(2, 'rock', 1, 0, false),
+      createItem(3, 'up', 1, 0, true),
+      createItem(4, 'baba', 0, 0, false),
+      createItem(10, 'baba', 0, 2, true),
+      createItem(11, 'is', 1, 2, true),
+      createItem(12, 'you', 2, 2, true),
+      createItem(13, 'belt', 0, 3, true),
+      createItem(14, 'is', 1, 3, true),
+      createItem(15, 'shift', 2, 3, true),
+      createItem(16, 'text', 0, 4, true),
+      createItem(17, 'is', 1, 4, true),
+      createItem(18, 'float', 2, 4, true),
+    ],
+  }
+
+  const state = createInitialState(level, 0)
+  const result = step(state, null)
+  const rock = result.state.items.find((item) => item.id === 2)
+  const floatingText = result.state.items.find((item) => item.id === 3)
+
+  assert.equal(rock?.x, 2)
+  assert.equal(rock?.dir, 'right')
+  assert.equal(floatingText?.x, 1)
+  assert.equal(floatingText?.dir, undefined)
+})

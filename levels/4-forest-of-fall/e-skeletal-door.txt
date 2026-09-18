@@ -1,0 +1,29 @@
+g = grass
+f = fence
+l = flag
+o = foliage
+t = tree
+e = leaf
+w = wall
+s = skull left
+b = baba
+palette = autumn
+---
+ggggf         o              fggg
+ggggf  t         o         e ffff
+fffff     wwwwwwwwwwwww  e
+     o    wW=⊘wS=⩍wL=✓w
+  t       wwwwwwwwwwwww
+   t      w           w       o
+          w   B=✥     w   o
+ t        w          s      o
+    o t   w          s
+   o      w    b     s     l
+          w          s        o
+          w          s   o   o
+ff  t  o  w   @ ↦     w    o   ff
+gf t      w           w        fg
+gf        wwwwwwwwwwwww  e     fg
+fffff                          fg
+ggggf  t         o        fffffff
+ggggf   t          o      fgggggg

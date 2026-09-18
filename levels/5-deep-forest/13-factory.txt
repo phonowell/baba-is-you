@@ -1,0 +1,29 @@
+t = tile
+w = wall
+x = box
+k = key
+g = bug left
+d = door
+f = flag
+palette = ruins
++ t = 1,0
++ g = 6,1
+---
+tttwtttw   wX=_w        Gwttttttt
+wwwwwwww   wwwww        =wttttttt
+tw             w        ⩍wttttttt
+tw             w   xxx   wttttttt
+tw             ww  xxx   wttttttt
+tw              g  xxx   wwwwwwww
+ww              g
+           k    g
+                g
+                g
+                w
+www      X      w     w
+ttw      ~      w   D&W=⊘w     ww
+ttw      K=✥&_  w   wwwwwww    wt
+wwwwwww         w   w     w    wt
+ttttttw         wwwww  f  w   www
+ttttttww        ddddd     w   wtt
+ttttttwK=⧜   D=⨶wwwww F=✓ w   wtt

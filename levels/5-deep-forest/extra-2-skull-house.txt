@@ -1,0 +1,29 @@
+u = skull up
+s = skull
+d = skull down
+l = skull left
+c = brick
+o = door
+b = baba down
+r = rock
+w = water
+f = flag
+k = key
+palette = ruins
+---
+ccccc  c             cc cccc
+ccc      @=⚲ W=≉          cc
+c      uuuuuuuuuuuu        c
+c      l          s        c
+     c l      B   swwwwww
+  c cc l  b   =   s     w
+  ccSc l      ✥   s     w
+ ccc&  l          o     w
+  c O  l          s     w
+    =  l   R      s     w
+    ⊘  l   =   r  swwwwww
+   c   l K=↦      s        c
+c      l          s        c
+cc     dddddddddddd  f    cF
+ccc                       c=
+ccccc    K=⧜ O=⨶       c cc✓

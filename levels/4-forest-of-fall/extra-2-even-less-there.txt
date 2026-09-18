@@ -1,0 +1,29 @@
+f = fence
+g = grass
+h = husk
+o = ghost down
+l = ghost left
+b = baba down
+c = brick
+r = husk on grass
+palette = autumn
++ g = 1,0
+---
+F=¬✥         ggggg    gggrggg  gg
+F=⊘    gg  h        h   ggg     g
+      ggg              ggg
+  h    g  ffffffffffff  gg   h
+          f c        f  g
+        h fccc⊘ F ¬ccf        gg
+       h  f c      ccf        gg
+  g       f       cccf       gg
+ grgg     f  b B=✥  cf h
+  ggg   h f c        f  h
+   gg     fccc       f
+          f cc    cc f       h
+  h     o f      ccc f  g
+   h   g  ffffffffffff  gg    g
+       g               ggg   ggg
+ g    grg l        h   ggg    g
+      ggrg  h   ✓    gggg   h
+g      gggg           gg

@@ -1,0 +1,27 @@
+b = baba down
+g = bug left
+n = fungus
+v = flower
+l = love
+t = tree
+u = belt up
+h = hedge
+palette = ruins
++ u = 1,1
+---
+              hh v  h   hG=G
+h             h v l ht  hhhh
+h             h h   h   hU=U
+h          b   nh v h  thhhh
+hh           Ghhh  vh   h@=⚲
+ h           =hhhhhhh   hhhh
+ h           ↦hhhhhhh t
+th      U=^     g hh       t
+ hh           hh hhhhh    t
+  hhh          h h  hhhhh
+t  hhhB         u   hH=⊘h
+     h=             hhhhht
+   t h✥              NL h
+     hh              h==h  t
+ t  hh               h⩍✓h
+   hhh               hhhhh

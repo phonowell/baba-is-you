@@ -1,0 +1,30 @@
+h = hedge
+b = baba left
+k = keke left
+t = belt
+d = belt down
+l = bug left
+u = bug up
+f = flag
+palette = ruins
+right pad = 2
++ t = 1,1
+---
+
+      hhhhhhhhhh   T=^
+      h        hh
+    hhh      h  h  K=✥
+    h     =  hh hh
+    h       lttt h H=⊘
+    h k f f  h  hh
+    h        h hh  U=⩍
+    h F=↦   ltt h
+    h     u  h hhhhh
+    h hhhhdhhh h  Bh
+    h     d  h h b=h
+    hhhhhh h ✓ h   h
+         hhhhh     h
+            h      h
+            h    hhh
+            hhhhhh
+

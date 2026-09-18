@@ -1,0 +1,25 @@
+r = rock
+s = skull down
+f = flag
+g = grass
+p = flower
+b = baba
+c = brick
+w = wall
+t = tile
++ t = 1,0
+---
+R=⊘ rggggg  s        ggg
+    r ggp wwswwwwwww  gg
+S=⩍ r    cw s  wtttw   g
+    r   ccw s   tftw
+F=✓ r wwwww s  wtttw
+    r wtttw s  wwwww  p
+rrrrr wtbt  swwwcc
+   p  wtttw ssssssssssss
+      wwwww    wcc
+  g       w W=⊘wc    p
+ ggg    B w    w   p
+  gg    = wwwwww
+        ✥        p   gg
+                   ggggg

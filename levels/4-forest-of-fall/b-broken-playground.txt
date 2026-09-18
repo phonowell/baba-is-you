@@ -1,0 +1,26 @@
+w = wall
+a = water
+t = tree
+b = box
+f = flag
+k = keke
+palette = autumn
+---
+                         w
+                         w
+                         w  = a
+      www                w
+      wtw                w    ✓
+      www                w
+               B @ F     wwwwwwww
+      www  a         www
+      wtw        b f wtw
+      www  k         www
+
+      www      K=✥
+      wtw
+      www
+
+wwww
+A=*w                       wwwwww
+@=⚲w                       wW&B=⊘

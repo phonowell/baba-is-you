@@ -1,0 +1,30 @@
+g = grass
+t = tree
+k = husk
+b = baba
+r = rock
+f = flag
+w = wall
+c = brick
+l = love
+h = water
+palette = autumn
+---
+  gg       ggg t      k
+ggg          g         k
+ gg B=✥   R=⩍    F=✓
+ wwwwwwwwwwwwwwwwwwwwww
+ wcc      rrrr      ccw
+ wc  L=*  rrrr       cw
+ w   =    rrrr        w
+ w   ↦ l  rrrr   l    w
+ wc       rrrr        w
+ wcc   b  rrrr        w
+ wccc c   rrrr  hhh  cw
+ wwwwwwwwwwwwwwwwcwwwww
+      g   W=⊘  HwcwL
+   t   ggg     =wfw=  gg
+ k      ggggg  ⌢wcw⌇ ggg
+     k   ggggg &www ggg
+t  k       ggg ⩍    gg
+ t     k

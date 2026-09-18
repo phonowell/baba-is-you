@@ -1,0 +1,26 @@
+h = hedge
+r = rock
+w = water
+f = flag
+b = baba
+palette = ocean
+right pad = 5
+---
+
+      R
+      =   hhhhhhhhh
+      ⚲  hh  ww   h
+         h   ww F h
+         h   ww = h
+      hhhh   ww ✓ h
+      h   r  ww   h
+      h b    ww f h
+     hh   r  ww   h
+     hh      ww   h
+     hh R=↦  hhhhhh
+     hh      hhhhhh
+     hB=✥    hhW=≉h
+     hh     hhhH=⊘h
+      hhhhhhhhhhhhh
+
+

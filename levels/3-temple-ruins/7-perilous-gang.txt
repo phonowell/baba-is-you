@@ -1,0 +1,29 @@
+w = wall
+t = tree
+b = baba
+f = flag
+s = skull down
+l = skull left
+g = ghost
+c = brick
+palette = ruins
++ w = 6,0
+---
+W=⊘w
+B=✥w  t           t
+wwww
+       t       t     t
+     t     F=✓  t
+
+  t      t         t
+
+sssssssssssssssssssswwww
+wwwwwwwwwwwwwcc   ccw
+          sswc     cw
+          ssw      cw
+ g   G=↦  ss        w
+          ss     S=⩍wwww
+       =  ss          cc
+ g  b     ss           c
+       →  llc         cc
+          ssccc  cc cccc

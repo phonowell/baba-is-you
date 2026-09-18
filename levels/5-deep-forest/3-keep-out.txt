@@ -1,0 +1,28 @@
+g = grass
+h = hedge
+n = fungus
+f = flag
+u = bug down
+b = belt
+r = reed
+t = tree
+k = keke
+palette = ruins
++ b = 1,1
+---
+gghghN~FhU=⩍hhh N      hghgg
+gghghhhhhhhhhhh =      hghhh
+hhhgh  B=^h hhh ⌢ n   Hhgggg
+gggghuuuuuh h         =hhhhg
+ggggh       h h       ⊘h  hg
+ghhhh       h hhhhh hhhh  hg
+gh      k   b       h     hg
+gh          hhhhhhhhh r   hg
+hh  r                     hh
+                         r
+ r            T=↣       r
+      r
+hh             t        hhhh
+gh                      hThF
+hhhh r                  h=h=
+K=✥h                    h⌇h✓

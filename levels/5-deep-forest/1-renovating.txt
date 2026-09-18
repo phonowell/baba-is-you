@@ -1,0 +1,29 @@
+h = hedge
+g = grass
+w = water
+l = wall
+f = flag
+v = flower
+k = keke down
+b = belt down
+palette = ruins
++ b = 1,1
+---
+hh              g      www   gggh
+h       wwwww  ggg       ww    gg
+g    g  w   w    g       www
+g   g   w k w g  g   v    wwww
+g       w   w g       v    www
+g       w   w           g   www
+    v   wwbwwwwwwww     gg    www
+        wwbwwwwL=⩍wK=✥         ww
+ v      wwbwwwwwwwwW=⊘         ww
+     g  w        wwwwwwww       w
+   ggg  w      ↦ ww  F=✓w
+        w        ll     w
+        w        ll     w     v
+g   g   w  B=^   ll   f w   g   g
+g       w        ll     w  gg   g
+h       w        wwwwwwww       h
+hg      wwwwwwwwww        v     h
+hhgg                           hh

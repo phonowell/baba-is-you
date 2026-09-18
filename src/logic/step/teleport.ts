@@ -2,58 +2,45 @@ import { buildGrid, hasProp } from './shared.js'
 
 import type { Item } from '../types.js'
 
-const OORANDOM_MULTIPLIER = 747796405 >>> 0
-const OORANDOM_INCREMENT = 2891336453 >>> 0
-const OORANDOM_ROTATE_MULTIPLIER = 277803737 >>> 0
-
-const toU32 = (value: number): number => value >>> 0
-
-const defaultSeed = (randSeed: number): number => {
-  const value = Math.imul(
-    toU32(randSeed ^ OORANDOM_INCREMENT),
-    OORANDOM_MULTIPLIER,
-  )
-  const shift = toU32((value >>> 28) + 4)
-  const word = Math.imul(
-    toU32((value >>> shift) ^ value),
-    OORANDOM_ROTATE_MULTIPLIER,
-  )
-  return toU32((word >>> 22) ^ word)
-}
+// Bit-exact port of the predecessor's `oorandom::Rand32` (oorandom 11.1.3,
+// PCG-XSH-RR with u64 state) so teleported replays match recorded goldens.
+const PCG_MULTIPLIER = 6364136223846793005n
+const PCG_INC = (1442695040888963407n << 1n) | 1n // new_inc: wrapping_shl(1)|1
+const U64 = (1n << 64n) - 1n
+const U32 = (1n << 32n) - 1n
 
 const createRng = (seed: number): ((start: number, end: number) => number) => {
-  let state = defaultSeed(seed)
+  let state = 0n
 
   const randU32 = (): number => {
-    state = toU32(Math.imul(state, OORANDOM_MULTIPLIER) + OORANDOM_INCREMENT)
-    const shift = toU32((state >>> 28) + 4)
-    const word = Math.imul(
-      toU32((state >>> shift) ^ state),
-      OORANDOM_ROTATE_MULTIPLIER,
-    )
-    return toU32((word >>> 22) ^ word)
+    const oldstate = state
+    state = (oldstate * PCG_MULTIPLIER + PCG_INC) & U64
+    const xorshifted = Number(((oldstate >> 18n) ^ oldstate) >> 27n & U32)
+    const rot = Number(oldstate >> 59n)
+    return ((xorshifted >>> rot) | (xorshifted << (32 - rot))) >>> 0
   }
 
+  // new(seed): state=0, inc=PCG_INC; rand_u32(); state += seed; rand_u32()
+  randU32()
+  state = (state + BigInt(seed >>> 0)) & U64
+  randU32()
+
+  // rand_range via Lemire's algorithm 5, as in oorandom.
   return (start: number, end: number): number => {
-    if (start >= end) return start
+    const s = BigInt((end - start) >>> 0)
+    if (s <= 1n) return start
 
-    const range = toU32(end - start)
-    if (range <= 1) return start
+    let m = BigInt(randU32()) * s
+    let leftover = m & U32
 
-    let entropy = randU32()
-    let scale = BigInt(entropy) * BigInt(range)
-    let bias = Number(scale & 0xffffffffn) >>> 0
-
-    if (bias < range) {
-      const threshold = toU32(0 - range) % range
-      while (bias < threshold) {
-        entropy = randU32()
-        scale = BigInt(entropy) * BigInt(range)
-        bias = Number(scale & 0xffffffffn) >>> 0
+    if (leftover < s) {
+      const threshold = (-s & U32) % s
+      while (leftover < threshold) {
+        m = BigInt(randU32()) * s
+        leftover = m & U32
       }
     }
-
-    return start + (Number((scale >> 32n) & 0xffffffffn) >>> 0)
+    return start + Number(m >> 32n)
   }
 }
 

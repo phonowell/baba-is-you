@@ -10,6 +10,7 @@ test('buildStepStages exposes gameplay-first stage names and sync semantics', ()
     stages.map((stage) => stage.name),
     [
       'player-move',
+      'cursor-move',
       'auto-move',
       'gravity',
       'shift',
@@ -27,6 +28,7 @@ test('buildStepStages exposes gameplay-first stage names and sync semantics', ()
     stages.map((stage) => stage.sync.kind),
     [
       'reapply-properties',
+      'reuse-rules',
       'reuse-rules',
       'reapply-properties',
       'recollect-rules',

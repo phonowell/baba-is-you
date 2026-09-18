@@ -1,0 +1,27 @@
+g = grass
+p = pipe
+r = robot down
+f = flag
+w = water
+b = baba
+palette = factory
++ g = 1,0
+---
+ ggggg    p   p   gggggg
+  ggg     p ppp      ggg
+pp     R=✥ppp          g
+pppppp R=⊘  p  F=✓
+ p  pppppppppppppppp  pp
+pp  p    w   p     p  p
+ppppp r  w   p  f  pppp
+  p p    w   p     p p
+ gppp  B w   p     p p
+ggg p    w = p     p   g
+ g  p    w ✥ p     p   g
+g   p r  w   p  b  ppp
+g ppp    w   p     p   g
+ggp pppppppppppppppp
+g p     W=≉    p
+g p     P=⊘    pp    p
+  p gg         ppp  pppg
+pppgggg          p    gg

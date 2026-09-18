@@ -1,0 +1,23 @@
+p = pipe
+s = skull down
+t = tile
+b = baba
+g = grass
+r = robot
+palette = factory
++ g,t = 1,0
+---
+                 p pS=⩍p
+  ttt       ttt  ppppppP
+  tpt    ttttpt   p   p=
+ppttt    tbtttt   p   p⊘
+ pp ssss ttt      pppppp
+ pp✓ssss
+ppggggss        ttt
+gggpggss        tpt
+ggggggss      B ttt
+ggggggss      =      ttt
+gggrggssttt   ✥      tpt
+ggggggsstpt      R=→ ttt
+ggggggssttt
+ggggggss

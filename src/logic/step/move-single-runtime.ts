@@ -76,7 +76,16 @@ export const createSingleMoveRuntime = (
         context.stopIds.has(target.id) && !pushable && !swappable
       const blockingPull =
         context.pullIds.has(target.id) && !pushable && !swappable
-      if (blockingStop || blockingPull) return false
+      if (blockingStop || blockingPull) {
+        // A blocker that is itself a mover this phase (e.g. WALL IS YOU
+        // plus WALL IS STOP) only blocks if it cannot vacate its cell —
+        // the predecessor defers to the blocker's own pending arrow.
+        if (context.moverIds.has(target.id)) {
+          if (!canMove(target.id, visiting)) return false
+          continue
+        }
+        return false
+      }
       if (pushable) pushTargets.push(target)
     }
 

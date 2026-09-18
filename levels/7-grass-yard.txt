@@ -1,0 +1,19 @@
+w = wall
+g = grass
+b = baba
+f = flag
+---
+
+
+     wwwwwwwwwwwwww
+     w    g       w
+     w B=✥      f w
+     wg      g    w
+     w        g g w    G
+     w   b  g  g gw    =
+     wg     g F ✓ w    ⊘
+     w g    g  g  w
+     w    g  g    w
+     wwwwwwwwwwwwww
+
+

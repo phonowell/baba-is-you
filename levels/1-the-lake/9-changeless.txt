@@ -1,0 +1,15 @@
+w = wall
+a = algae
+r = rock
+b = baba
+f = flag
+palette = ocean
+---
+     wwwww   a
+      R=R     a
+ a
+   b   f      W
+              =
+      F=R     ⊘
+wwww       wwww
+B=✥w       wF=✓

@@ -1,0 +1,27 @@
+t = tree
+w = wall
+b = baba
+d = door
+f = flag
+i = ice
+k = key
+palette = autumn
+---
+T=⊘wt                           t
+wwww       tttttwwwwwwwwwwwww
+@=⚲w      t             w   w
+wwww      t b   B=✥     d f w
+tt        t             w   w
+t         t     I =*    wwwww
+          w             t
+          wwwwtttttttttt
+
+
+    wwwwwwwwww         k
+    wF      Ww
+    w= b  i =w         i
+    w✓      ⊘w
+    wwwwwwwwww        K=↦
+
+K=⧜                             t
+D=⨶&⊘                          tt

@@ -1,0 +1,15 @@
+w = water
+s = skull left
+d = skull down
+f = flag
+b = baba
+palette = factory
+---
+        w  sF=✓
+    B   w  s f
+W   =   w  s
+=   ✥ b w   ddd
+W   &   w
+&   ⚲   w
+⌇       w
+B=⌢     w S=⩍&⚲

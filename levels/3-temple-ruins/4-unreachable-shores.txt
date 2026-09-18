@@ -1,0 +1,29 @@
+w = wall
+o = water
+h = husk
+s = stump
+c = brick
+l = love
+k = keke down
+b = box
+f = flag
+palette = ruins
++ w = 6,0
++ h = 5,1
+---
+              ooooo
+   wwwwwwwww  ooooo h     h
+   wc cccccw  ooooo    h
+   wcB~LcLLw  ooooo
+   wc c c==w  ooooo  s   h
+   wccccc⩍Lw  ooooo
+   wwwowwwww  ooooo    F=✓
+              ooooo h
+  B=↦         ooooo     f
+         k    ooooo        h
+   b          ooooo  s
+              ooooo
+        ww    ooooo     s
+      K=✥w    ooooo s
+wwww          ooooo      W=⊘
+@=⚲w          ooooo      O=≉

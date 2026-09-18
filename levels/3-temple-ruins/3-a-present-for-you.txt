@@ -1,0 +1,26 @@
+f = flag
+w = wall
+g = grass
+o = flower
+b = box
+c = brick
+h = water
+l = love
+palette = ruins
+---
+F=✓wggggw              wgggg
+wwwwwwwww     wwwww    wwwww
+gw         o  wB~Fw
+gw       o   wwwwwww     o
+ww           wcccccw  H
+    o wwwwwwwwccc cw  =
+      w ccc cccccccw  ⌇
+ o    wccL c ccccBch      o
+  o   wcc=cccclbc=ch     o
+      wcc✥cc cccc↦ch
+ww    w cccccccccccw
+gw    wwwwwwwwc cccw  L
+gw  o        wcccc w  =
+gw           wwwwwww  ⌢
+gwwwwwwwwww o wW=⊘w     wwww
+ggggggggggw   wwwww     wggg

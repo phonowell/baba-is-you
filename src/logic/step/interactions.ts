@@ -147,7 +147,6 @@ export const applyInteractions = (
     survivors,
     removedItems,
     runtime.buckets.has,
-    false,
     width,
     height,
     items,

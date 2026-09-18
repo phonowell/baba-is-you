@@ -56,7 +56,6 @@ export const appendHasSpawns = (
   survivors: Item[],
   removedItems: Item[],
   hasRules: Rule[],
-  preserveDirection: boolean,
   width: number,
   height: number,
   sourceItems: Item[],
@@ -81,6 +80,8 @@ export const appendHasSpawns = (
     for (const target of targets) {
       if (target === 'empty') continue
       if (target === 'text') {
+        // spawns inherit the removed entity's direction, matching the
+        // predecessor's `dir: e.dir` on has-spawned entities
         spawned.push({
           id: nextId++,
           name: item.isText ? 'text' : item.name,
@@ -88,7 +89,7 @@ export const appendHasSpawns = (
           y: item.y,
           isText: true,
           props: [],
-          ...(preserveDirection && item.dir ? { dir: item.dir } : {}),
+          ...(item.dir ? { dir: item.dir } : {}),
         })
         continue
       }
@@ -100,7 +101,7 @@ export const appendHasSpawns = (
         y: item.y,
         isText: false,
         props: [],
-        ...(preserveDirection && item.dir ? { dir: item.dir } : {}),
+        ...(item.dir ? { dir: item.dir } : {}),
       })
     }
   }

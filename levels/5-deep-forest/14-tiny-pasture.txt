@@ -1,0 +1,31 @@
+t = tree
+g = grass
+f = flag
+e = fence
+n = fungus
+w = wall
+a = water
+b = baba
+k = keke
+i = tile
++ i = 1,0
+palette = ruins
+---
+               t   t  t
+      gg   E
+  eeeeeee  =     n   n
+  e g ggeW=⊘        n  t
+  e    gwwwwwww       t
+  e  ✓  iiiii wwK=K    n
+ geg    wwwww wwwwwwww
+ gegg   iiw   w K F  w
+  eeeeeew       = =  w
+   ggB=✥ww      ↦ *  w t
+ n  g  www   b       w
+       wKw k   f     w
+eee    w=w          ww
+ te n  w ^         www
+  e    www     f  www
+  eee   wwwwwwwwwwww   a
+  t en               aaa
+    e    n         aaaaa

@@ -3,9 +3,10 @@ import type { Item } from '../logic/types.js'
 const STACK_MOVE_FALL_PROPS = new Set<Item['props'][number]>(['move', 'fall'])
 const STACK_PUSH_PULL_PROPS = new Set<Item['props'][number]>(['push', 'pull'])
 const STACK_OPEN_SHUT_PROPS = new Set<Item['props'][number]>(['open', 'shut'])
-const GROUND_HUG_NAMES = new Set(['tile', 'water', 'belt'])
+const GROUND_HUG_NAMES = new Set(['tile', 'water', 'belt', 'line'])
 
 export const STACK_LAYER_PRIORITY = {
+  cursor: 6,
   you: 5,
   text: 4,
   moveFall: 3,
@@ -18,6 +19,7 @@ export const isGroundHugItem = (item: Item): boolean =>
   !item.isText && GROUND_HUG_NAMES.has(item.name)
 
 export const stackLayerPriorityForItem = (item: Item): number => {
+  if (item.name === 'cursor') return STACK_LAYER_PRIORITY.cursor
   if (item.props.includes('you')) return STACK_LAYER_PRIORITY.you
   if (item.isText) return STACK_LAYER_PRIORITY.text
   if (item.props.some((prop) => STACK_MOVE_FALL_PROPS.has(prop)))

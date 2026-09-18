@@ -1,0 +1,24 @@
+w = wall
+l = lava
+b = baba
+r = rock
+f = flag
+---
+W=⊘ll w     w   w   lllllll
+llll  w       b w  lllllll
+ll    w     w   w  llllll
+l     w B=✥ wwwww lllllll
+      ww   ww     llllll
+      w     r     llllll
+      wwwwwww    lllllll
+      wRw        llllll
+       =         llllll
+       ↦        lllllll
+            L   llllll
+               llllll
+       wB=⌢w   llllll     f
+       wwwww  llllll
+       wL=⌇w  lllll      F=✓
+       wwwww llllll             l
+            llllll             ll
+           lllllll            lll

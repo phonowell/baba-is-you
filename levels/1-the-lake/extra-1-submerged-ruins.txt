@@ -1,0 +1,15 @@
+w = wall
+b = baba
+r = rock
+c = crab left
+f = flag
+palette = ocean
+---
+        wwwwwww
+   b    r  CF w
+  B=✥   w  w==w
+        w  w⩍✓w
+    wwwww  wwww
+    w   w     w
+    ccf w R=↦ w
+W=⊘ww   w     w

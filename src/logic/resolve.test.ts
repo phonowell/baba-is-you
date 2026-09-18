@@ -48,7 +48,7 @@ test('applyTransforms returns changed=true when target changes', () => {
   assert.equal(result.items[0]?.name, 'rock')
 })
 
-test('applyTransforms keeps identity and appends non-identity target', () => {
+test('applyTransforms identity rule vetoes non-identity targets', () => {
   const items = [createItem(1, 'baba', 1, 1, false)]
   const rules: Rule[] = [
     rule({ subject: 'baba', object: 'baba', kind: 'transform' }),
@@ -60,8 +60,8 @@ test('applyTransforms keeps identity and appends non-identity target', () => {
     .map((item) => `${item.isText ? '1' : '0'}:${item.name}`)
     .sort()
 
-  assert.equal(result.changed, true)
-  assert.deepEqual(signatures, ['0:baba', '0:rock'])
+  assert.equal(result.changed, false)
+  assert.deepEqual(signatures, ['0:baba'])
 })
 
 test('applyTransforms spawns objects for EMPTY IS noun', () => {
@@ -145,7 +145,7 @@ test('applyTransforms applies NOT TEXT subject to non-text only', () => {
   assert.equal(textRock.isText, true)
 })
 
-test('applyTransforms supports ALL target by expanding into present object set', () => {
+test('applyTransforms ALL target is vetoed when the subject is present', () => {
   const items = [
     createItem(1, 'baba', 1, 0, false),
     createItem(2, 'rock', 2, 0, false),
@@ -157,8 +157,8 @@ test('applyTransforms supports ALL target by expanding into present object set',
     (item) => item.id !== 2 && item.name === 'rock',
   )
 
-  assert.equal(result.changed, true)
-  assert.equal(rock !== undefined, true)
+  assert.equal(result.changed, false)
+  assert.equal(rock !== undefined, false)
 })
 
 test('applyTransforms supports LEVEL target as concrete object transform', () => {

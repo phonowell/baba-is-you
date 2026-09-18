@@ -1,0 +1,27 @@
+t = tree
+h = hedge
+g = ghost
+f = flag
+r = rock
+l = leaf
+i = foliage
+b = baba
+k = key
+palette = autumn
+---
+  t h      h t  G~F       t
+t   hR=↦   h   G=⨶&↦    t  t
+    h      h   hhhhhh
+    h  l = hhhhh    hhhhh
+    h      hF=✓h        h t
+    hL=*   hhhhh g  h h h
+ t  h      hI=≉h    h   h
+    hhhhhhhhhhhhhhhhhihhh
+          @h     h     h
+t         =h   k    l  h
+          ⚲h b   h     h   t
+           h   r h     h
+          Bh     hhhhhhh   t
+          =h     hK=⧜
+t         ✥hhhhhhh        t
+tt            H=⊘        t

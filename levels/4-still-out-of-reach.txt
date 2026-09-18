@@ -1,0 +1,20 @@
+f = flag
+b = baba
+s = skull down
+r = rock
+right pad = 2
+---
+F=✓
+B=✥
+
+             sssssssss
+             s       s
+  R=↦        s S     s
+             s =     s
+     s s     s ⩍     s
+     srs     s       s
+   sssrsss   s    f  s
+   s  r  s   s       s
+   s     s   sssssssss
+   s  b  s
+   s     s

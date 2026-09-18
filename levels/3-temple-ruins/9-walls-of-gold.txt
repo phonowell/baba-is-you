@@ -1,0 +1,28 @@
+i = ice
+b = baba
+r = rock
+w = wall
+c = brick
+palette = ruins
+right pad = 9
++ w = 2,3
++ "w" = 2,1 2,3
+---
+
+
+                  iB=✥i
+                  iiiii
+                  iR=↦i
+
+
+
+         wwwwwwwwwwwwwww
+         w ccccccc ccccw
+         wccccccccccWccw
+         wccbcrccccc=c w
+         wccccccccR=✓ccw
+         w  cc cccccc cw
+         wwwwwwwwwwwwwww
+
+
+W&I=⊘

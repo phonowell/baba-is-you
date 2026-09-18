@@ -1,0 +1,1229 @@
+{
+ "level": "levels/4-forest-of-fall/9-leaf-chamber.txt",
+ "levelData": {
+  "title": "LEAF CHAMBER",
+  "width": 28,
+  "height": 16,
+  "items": [
+   {
+    "id": 1,
+    "x": 0,
+    "y": 0,
+    "name": "key",
+    "isText": true
+   },
+   {
+    "id": 2,
+    "x": 1,
+    "y": 0,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 3,
+    "x": 2,
+    "y": 0,
+    "name": "open",
+    "isText": true
+   },
+   {
+    "id": 4,
+    "x": 13,
+    "y": 0,
+    "name": "hedge",
+    "isText": true
+   },
+   {
+    "id": 5,
+    "x": 14,
+    "y": 0,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 6,
+    "x": 15,
+    "y": 0,
+    "name": "stop",
+    "isText": true
+   },
+   {
+    "id": 7,
+    "x": 16,
+    "y": 0,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 8,
+    "x": 17,
+    "y": 0,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 9,
+    "x": 18,
+    "y": 0,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 10,
+    "x": 22,
+    "y": 0,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 11,
+    "x": 6,
+    "y": 1,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 12,
+    "x": 11,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 13,
+    "x": 12,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 14,
+    "x": 13,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 15,
+    "x": 14,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 16,
+    "x": 15,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 17,
+    "x": 16,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 18,
+    "x": 17,
+    "y": 1,
+    "name": "fungus",
+    "isText": false
+   },
+   {
+    "id": 19,
+    "x": 18,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 20,
+    "x": 19,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 21,
+    "x": 20,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 22,
+    "x": 21,
+    "y": 1,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 23,
+    "x": 0,
+    "y": 2,
+    "name": "fungus",
+    "isText": true
+   },
+   {
+    "id": 24,
+    "x": 1,
+    "y": 2,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 25,
+    "x": 2,
+    "y": 2,
+    "name": "shut",
+    "isText": true
+   },
+   {
+    "id": 26,
+    "x": 3,
+    "y": 2,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 27,
+    "x": 4,
+    "y": 2,
+    "name": "pull",
+    "isText": true
+   },
+   {
+    "id": 28,
+    "x": 11,
+    "y": 2,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 29,
+    "x": 16,
+    "y": 2,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 30,
+    "x": 17,
+    "y": 2,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 31,
+    "x": 18,
+    "y": 2,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 32,
+    "x": 21,
+    "y": 2,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 33,
+    "x": 0,
+    "y": 3,
+    "name": "has",
+    "isText": true
+   },
+   {
+    "id": 34,
+    "x": 10,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 35,
+    "x": 11,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 36,
+    "x": 16,
+    "y": 3,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 37,
+    "x": 17,
+    "y": 3,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 38,
+    "x": 18,
+    "y": 3,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 39,
+    "x": 21,
+    "y": 3,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 40,
+    "x": 0,
+    "y": 4,
+    "name": "flag",
+    "isText": true
+   },
+   {
+    "id": 41,
+    "x": 1,
+    "y": 4,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 42,
+    "x": 2,
+    "y": 4,
+    "name": "win",
+    "isText": true
+   },
+   {
+    "id": 43,
+    "x": 9,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 44,
+    "x": 10,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 45,
+    "x": 16,
+    "y": 4,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 46,
+    "x": 17,
+    "y": 4,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 47,
+    "x": 18,
+    "y": 4,
+    "name": "foliage",
+    "isText": false
+   },
+   {
+    "id": 48,
+    "x": 21,
+    "y": 4,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 49,
+    "x": 7,
+    "y": 5,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 50,
+    "x": 9,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 51,
+    "x": 16,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 52,
+    "x": 18,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 53,
+    "x": 21,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 54,
+    "x": 22,
+    "y": 5,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 55,
+    "x": 25,
+    "y": 5,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 56,
+    "x": 9,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 57,
+    "x": 22,
+    "y": 6,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 58,
+    "x": 5,
+    "y": 7,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 59,
+    "x": 7,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 60,
+    "x": 8,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 61,
+    "x": 9,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 62,
+    "x": 17,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 63,
+    "x": 22,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 64,
+    "x": 23,
+    "y": 7,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 65,
+    "x": 24,
+    "y": 7,
+    "name": "leaf",
+    "isText": true
+   },
+   {
+    "id": 66,
+    "x": 25,
+    "y": 7,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 67,
+    "x": 26,
+    "y": 7,
+    "name": "leaf",
+    "isText": true
+   },
+   {
+    "id": 68,
+    "x": 7,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 69,
+    "x": 8,
+    "y": 8,
+    "name": "key",
+    "isText": false
+   },
+   {
+    "id": 70,
+    "x": 23,
+    "y": 8,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 71,
+    "x": 24,
+    "y": 8,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 72,
+    "x": 7,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 73,
+    "x": 9,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 74,
+    "x": 16,
+    "y": 9,
+    "name": "leaf",
+    "isText": true
+   },
+   {
+    "id": 75,
+    "x": 17,
+    "y": 9,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 76,
+    "x": 18,
+    "y": 9,
+    "name": "move",
+    "isText": true
+   },
+   {
+    "id": 77,
+    "x": 23,
+    "y": 9,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 78,
+    "x": 24,
+    "y": 9,
+    "name": "foliage",
+    "isText": true
+   },
+   {
+    "id": 79,
+    "x": 7,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 80,
+    "x": 9,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 81,
+    "x": 23,
+    "y": 10,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 82,
+    "x": 24,
+    "y": 10,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 83,
+    "x": 1,
+    "y": 11,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 84,
+    "x": 6,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 85,
+    "x": 7,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 86,
+    "x": 9,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 87,
+    "x": 10,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 88,
+    "x": 11,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 89,
+    "x": 12,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 90,
+    "x": 16,
+    "y": 11,
+    "name": "key",
+    "isText": true
+   },
+   {
+    "id": 91,
+    "x": 17,
+    "y": 11,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 92,
+    "x": 18,
+    "y": 11,
+    "name": "push",
+    "isText": true
+   },
+   {
+    "id": 93,
+    "x": 21,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 94,
+    "x": 22,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 95,
+    "x": 23,
+    "y": 11,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 96,
+    "x": 24,
+    "y": 11,
+    "name": "defeat",
+    "isText": true
+   },
+   {
+    "id": 97,
+    "x": 2,
+    "y": 12,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 98,
+    "x": 6,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 99,
+    "x": 10,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 100,
+    "x": 11,
+    "y": 12,
+    "name": "leaf",
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 101,
+    "x": 21,
+    "y": 12,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 102,
+    "x": 5,
+    "y": 13,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 103,
+    "x": 6,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 104,
+    "x": 10,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 105,
+    "x": 17,
+    "y": 13,
+    "name": "pull",
+    "isText": true
+   },
+   {
+    "id": 106,
+    "x": 20,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 107,
+    "x": 21,
+    "y": 13,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 108,
+    "x": 26,
+    "y": 13,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 109,
+    "x": 5,
+    "y": 14,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 110,
+    "x": 6,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 111,
+    "x": 8,
+    "y": 14,
+    "name": "baba",
+    "isText": false
+   },
+   {
+    "id": 112,
+    "x": 12,
+    "y": 14,
+    "name": "leaf",
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 113,
+    "x": 19,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 114,
+    "x": 20,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 115,
+    "x": 21,
+    "y": 14,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 116,
+    "x": 25,
+    "y": 14,
+    "name": "husk",
+    "isText": false
+   },
+   {
+    "id": 117,
+    "x": 5,
+    "y": 15,
+    "name": "you",
+    "isText": true
+   },
+   {
+    "id": 118,
+    "x": 6,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 119,
+    "x": 10,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 120,
+    "x": 11,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 121,
+    "x": 12,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 122,
+    "x": 13,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 123,
+    "x": 14,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 124,
+    "x": 15,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 125,
+    "x": 16,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 126,
+    "x": 17,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 127,
+    "x": 18,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   },
+   {
+    "id": 128,
+    "x": 19,
+    "y": 15,
+    "name": "hedge",
+    "isText": false
+   }
+  ]
+ },
+ "inputs": "uuuuuudddddrrrzwrzrwrrrururuwurrruulduldduuullrddluuuuulururzzdrdddddddddrrruullrrdldlulluuuluuurddddldruluuuuuuuuldldrrrrddddddlddrrrudluuluuurrdlduuldduuuurrudllldddddddrrluulurdrluurduuuurudllrddddlddruwwwwwwwwwwzzzzzzzzzzzllluuuuurrddrrlrldlruurrrddlulllllddrulururddrlddruwwwwwwwwwwlllddrrdruuuwluuurdwwduuuuru",
+ "initial": "playing|key!@0,0(push);is!@1,0(push);open!@2,0(push);hedge!@13,0(push);is!@14,0(push);stop!@15,0(push);hedge@16,0(stop);hedge@17,0(stop);hedge@18,0(stop);husk@22,0();husk@6,1();hedge@11,1(stop);hedge@12,1(stop);hedge@13,1(stop);hedge@14,1(stop);hedge@15,1(stop);hedge@16,1(stop);fungus@17,1(pull+shut);hedge@18,1(stop);hedge@19,1(stop);hedge@20,1(stop);hedge@21,1(stop);fungus!@0,2(push);is!@1,2(push);shut!@2,2(push);and!@3,2(push);pull!@4,2(push);hedge@11,2(stop);foliage@16,2(defeat);foliage@17,2(defeat);foliage@18,2(defeat);hedge@21,2(stop);has!@0,3(push);hedge@10,3(stop);hedge@11,3(stop);foliage@16,3(defeat);foliage@17,3(defeat);foliage@18,3(defeat);hedge@21,3(stop);flag!@0,4(push);is!@1,4(push);win!@2,4(push);hedge@9,4(stop);hedge@10,4(stop);foliage@16,4(defeat);foliage@17,4(defeat);foliage@18,4(defeat);hedge@21,4(stop);husk@7,5();hedge@9,5(stop);hedge@16,5(stop);hedge@18,5(stop);hedge@21,5(stop);hedge@22,5(stop);husk@25,5();hedge@9,6(stop);hedge@22,6(stop);husk@5,7();hedge@7,7(stop);hedge@8,7(stop);hedge@9,7(stop);hedge@17,7(stop);hedge@22,7(stop);hedge@23,7(stop);leaf!@24,7(push);is!@25,7(push);leaf!@26,7(push);hedge@7,8(stop);key@8,8(open+push);hedge@23,8(stop);and!@24,8(push);hedge@7,9(stop);hedge@9,9(stop);leaf!@16,9(push);is!@17,9(push);move!@18,9(push);hedge@23,9(stop);foliage!@24,9(push);hedge@7,10(stop);hedge@9,10(stop);hedge@23,10(stop);is!@24,10(push);husk@1,11();hedge@6,11(stop);hedge@7,11(stop);hedge@9,11(stop);hedge@10,11(stop);hedge@11,11(stop);hedge@12,11(stop);key!@16,11(push);is!@17,11(push);push!@18,11(push);hedge@21,11(stop);hedge@22,11(stop);hedge@23,11(stop);defeat!@24,11(push);husk@2,12();hedge@6,12(stop);hedge@10,12(stop);leaf@up@11,12(defeat+move);hedge@21,12(stop);baba!@5,13(push);hedge@6,13(stop);hedge@10,13(stop);pull!@17,13(push);hedge@20,13(stop);hedge@21,13(stop);husk@26,13();is!@5,14(push);hedge@6,14(stop);baba@8,14(you);leaf@up@12,14(defeat+move);hedge@19,14(stop);hedge@20,14(stop);hedge@21,14(stop);husk@25,14();you!@5,15(push);hedge@6,15(stop);hedge@10,15(stop);hedge@11,15(stop);hedge@12,15(stop);hedge@13,15(stop);hedge@14,15(stop);hedge@15,15(stop);hedge@16,15(stop);hedge@17,15(stop);hedge@18,15(stop);hedge@19,15(stop)",
+ "hashes": [
+  "fd25ab62c22455de",
+  "e5d6295ebd4d9604",
+  "0e4216204f933af9",
+  "c7f50fb436be24b9",
+  "d31e516c1b41153a",
+  "cb4afedbe45e3773",
+  "2e910e84da552c5d",
+  "01c2733ff6f36baa",
+  "db660be45818be75",
+  "23b2c2215da25f6a",
+  "7d316ae6d04cbce2",
+  "e4145ca8458dbbb5",
+  "3abdfbeb6ffa2ac5",
+  "971649f94f949a0a",
+  "3abdfbeb6ffa2ac5",
+  "311fb9d2369fb236",
+  "f0ffb962140b7799",
+  "311fb9d2369fb236",
+  "f0ffb962140b7799",
+  "f16b51694eb7b1eb",
+  "039fa8c21744eaad",
+  "0cee15584cbfe8bb",
+  "ec51b86fa7f90046",
+  "133129c82194613e",
+  "a48e913163f8e178",
+  "3a930c3b595a420e",
+  "c9cf6c22acef686b",
+  "5e2bc6a546680d3c",
+  "c4ec3f321b7e8fe5",
+  "92046d84574406c3",
+  "bb84db5e09f17640",
+  "dc7a904743edb16f",
+  "2163610053ccf128",
+  "da8d09b204275520",
+  "4ade81fc7f79d480",
+  "0f8d9e638d1cb800",
+  "86eca99676f8069b",
+  "24b0b04045e01195",
+  "7d1a019a5b3f9888",
+  "cf90018896abd796",
+  "cb747b69b9379b50",
+  "fcce658cabaf953a",
+  "b5fb4eaf4774c2d4",
+  "b5fb4eaf4774c2d4",
+  "6999397238685fe2",
+  "659f31a833183901",
+  "f77846420f9cba0d",
+  "7a0e31ba24464dc6",
+  "e2df2488da6222c7",
+  "7e4f3d6738dc634d",
+  "8e460f99c8701aa9",
+  "9b30b8f402fbe686",
+  "fed2e036cb9bb6d3",
+  "173c3dd2b5e210ee",
+  "ef20bd3e0254525d",
+  "163534930666c837",
+  "037900c3bdec4221",
+  "d37e7dc6ce004438",
+  "9fe995ee2d209164",
+  "9aa94b6f6e5250a0",
+  "9fe995ee2d209164",
+  "d37e7dc6ce004438",
+  "8e355d2e2032cb5a",
+  "8e355d2e2032cb5a",
+  "a43f1424754dc11e",
+  "e853491b33242440",
+  "a816bd1d84fff577",
+  "d4641de7cf09f1ec",
+  "4e0356167d8d7abe",
+  "c7522f05fc76877c",
+  "fd921b67604bfd9b",
+  "58a611cdec7dddfc",
+  "0f06cf8bb830b59e",
+  "5177600a8e86a3b3",
+  "9414d115c9b697fe",
+  "9d40c39a76593e78",
+  "4bac0663abaf772a",
+  "3de6a2c270d4442d",
+  "1eaa117ddb25829e",
+  "ed97f7e6d93cc5c6",
+  "80031d159965e58b",
+  "a9e47212e227fd79",
+  "f9014cd61831c0ea",
+  "4eca2a1a6c614def",
+  "53519bd4b3578412",
+  "a9b395995f74699b",
+  "a3947ce619c2bcb3",
+  "f8351882350ed5ba",
+  "2cd0ea26d2f7ce54",
+  "7baec1ca59ed0d17",
+  "be025655b62c468f",
+  "ae1b6919c431e584",
+  "69a408820b48ee3f",
+  "1418370565269595",
+  "b9ab856f45689da6",
+  "65ba425a9f793c42",
+  "c6a5ff9d9fcfdfe7",
+  "932e53afc9eb8e4a",
+  "1ee3d4fef5bb7842",
+  "dcc89094e29d743a",
+  "c4c1ec7eb1f68ee0",
+  "bded3e46dbe13ba9",
+  "b7e9704d21b68698",
+  "513f552226016e09",
+  "baba544b389dab17",
+  "927734d52bb5272c",
+  "287c4a85a134ccb2",
+  "807a5799d814ffc2",
+  "d5e652cf4190e4e1",
+  "3096f0e43465ec2d",
+  "6696b755677c4fb8",
+  "d682cc315bb4babb",
+  "114c90d8666e02f5",
+  "7b3e0967477c3049",
+  "4539d242f3b6f9db",
+  "b44a8f1bae0d1134",
+  "3891183751674a0e",
+  "a7a4af88215561c0",
+  "c52b43add97fae46",
+  "91ba18356090d6e4",
+  "44ea94a825f31299",
+  "d0fa2bdd9760d703",
+  "b1fe20e06cc05f84",
+  "889d7383730bcb30",
+  "1de511e5bc521dc5",
+  "41ceff4272a9b858",
+  "2af34a66377451d9",
+  "bbeab18b2ae2381c",
+  "45a1509fe39cc655",
+  "c806c8ac25dc442a",
+  "03e04fa55a5d8756",
+  "a91b4ed7ed300712",
+  "3342205993da6cad",
+  "ac6c4b4d7a7b5407",
+  "aaa437faab282bf4",
+  "80e3f74e35e468d0",
+  "0af55c1cd0f0a260",
+  "4d78af4eb1b627d3",
+  "d039ba30c856dc04",
+  "04b9d81175db84fa",
+  "3d49ae7dfa73098f",
+  "860a5c1e01e0b41b",
+  "e615c8e27a5a43ba",
+  "e43ab873ee73c937",
+  "21792b7817c9cf08",
+  "ae0bbed1cb677108",
+  "a411820904aea51c",
+  "b35f8efa20abd53d",
+  "4178d07040caf178",
+  "a8cd247bb8e75b83",
+  "f4319784d8af1ad1",
+  "5e14dc38cfc66bf5",
+  "3645dea07042c019",
+  "0da411eedccebbfe",
+  "78995f7ac0d3a58d",
+  "61f23cf348a637bb",
+  "e978f145c9cde2fd",
+  "dd9e2d1f652c2e50",
+  "dec0b7b3f0ad7bb2",
+  "61c450df6dcebd77",
+  "530d73cf1ec7be6f",
+  "a9bd330b630cbeff",
+  "7fc5fcbd3877a33b",
+  "5811ae1ba2023612",
+  "16fb84f889247f46",
+  "d657c9abbd8fdfa8",
+  "ad1bdcc2fd7b510e",
+  "9fdc45b4e18c8a3c",
+  "2154d0994596000e",
+  "b8a9e202fb8bfc4a",
+  "c3ffb353c2cc8556",
+  "e7c28008497b2f74",
+  "4529132ff401f6ef",
+  "913a9467d262b44a",
+  "9509990ad2f860e2",
+  "7eece1852903bd77",
+  "2e5207cfa69e5b0c",
+  "30192d38b72d6c33",
+  "07f25b05327c76cc",
+  "1c3219d386ea7d0a",
+  "40a74c36f6cf310e",
+  "7234c43b49284bd8",
+  "3a19b0c4f467c6ab",
+  "783fa731d60772d7",
+  "e372a5ea0d985f35",
+  "b660b70aa4dbfe4a",
+  "7795ccd17f08b818",
+  "6024e7ed390396a0",
+  "11f4b57723ba5cf1",
+  "728ae25f9011e667",
+  "446da0188ea76913",
+  "9fe7c15de8bcb492",
+  "f898b441e5dcde9e",
+  "84776676f2f6bedf",
+  "7824b64bc8d5e67d",
+  "179269245913708c",
+  "ec2b0e3588b02327",
+  "91b3e3fd0c0e812a",
+  "bdcbb3b8c78634ba",
+  "87be5b491879838c",
+  "5813a0ae8749ae28",
+  "359cfc7cd062f694",
+  "cd7419b773c09c6a",
+  "edb4a8182da5ad6e",
+  "8de82ed379fa1e7a",
+  "7e72fb3fc18045c0",
+  "c8fd62ac605fdda9",
+  "80be14ac99a04172",
+  "d9f7a59a6fc8aa87",
+  "73199206b1e9bc9f",
+  "96be483866b2f476",
+  "8f58b5b61fca044a",
+  "17319511bb9c2463",
+  "f073726e42b1ac76",
+  "968bb92d938f7800",
+  "f073726e42b1ac76",
+  "17319511bb9c2463",
+  "8f58b5b61fca044a",
+  "96be483866b2f476",
+  "73199206b1e9bc9f",
+  "d9f7a59a6fc8aa87",
+  "80be14ac99a04172",
+  "c8fd62ac605fdda9",
+  "7e72fb3fc18045c0",
+  "8de82ed379fa1e7a",
+  "edb4a8182da5ad6e",
+  "8d11f83e1be3a1ec",
+  "cba894d61cc1fef3",
+  "84e1743dcb237ace",
+  "202d9ce41459d335",
+  "2df1a7ccca99e5f5",
+  "0fec7a3345cfdc74",
+  "01cd4f46b5f191db",
+  "66ba2774dcb3db62",
+  "d40f1e8efa8fd286",
+  "1402216ddbcf64b0",
+  "75167c4b988f8a02",
+  "54d6d97730f1fb4e",
+  "172ce03c136658f3",
+  "4244b791368d0e29",
+  "01c381f429f23014",
+  "4244b791368d0e29",
+  "01c381f429f23014",
+  "45a870196c6c3350",
+  "b839f34e0ec2c5d9",
+  "9eee78297bd4a616",
+  "52eeb39f626b25b1",
+  "0e8c4265f5e74950",
+  "8c39da00a66e83c0",
+  "6fe5d0e888b14b2e",
+  "41c7dfddb8271787",
+  "aac7dee2bf94a91f",
+  "b54a1700a8f30d25",
+  "01c7287fbf9334d9",
+  "db9522fc4942cc2f",
+  "9658a8a033ff2e37",
+  "0527eb50e3352a3e",
+  "0968bce9773c5f32",
+  "dbcc91cfd793e985",
+  "5ae7eb7e2889901a",
+  "cd38a46c68b63706",
+  "e933550530c9315e",
+  "a673690ecf33413e",
+  "c65b67817d3e3fd5",
+  "c1f5db96903af6c5",
+  "d5e226f98cb0620c",
+  "a17047d962dedb6a",
+  "7f9526f99ffc5c90",
+  "4b7a825646eeb148",
+  "f91210ef8437a00f",
+  "3b4e9920855850c2",
+  "f2e9e20f7ae31473",
+  "f348b6463d9fcf1c",
+  "65eebee967945c7a",
+  "ae4888d44c4c4bb5",
+  "92f952c0f49c5eef",
+  "a8ab112c224f8929",
+  "744765498eb1974b",
+  "a4083b188d02c8f6",
+  "16e732c3bb43948e",
+  "ce3d717be1a1c56e",
+  "af10472144aad7bf",
+  "3f7351700b0eb61b",
+  "9b87e09ba60da4c4",
+  "689f86c145effc34",
+  "6215df0a6404765a",
+  "a2dd9120d092df7a",
+  "70a5402b4eb8d3ae",
+  "a352ad2a9b8f19cd",
+  "6edd5b66bd1efa90",
+  "81100115a6e67e6a",
+  "1d2eeae2a0900c7b",
+  "dad8ecf5b5383042",
+  "e2a9ab50eedd82b8",
+  "4d0460f70191a79e",
+  "ae948574dc9fc7ca",
+  "1e8ee340b3e01444",
+  "107216568e9164bd",
+  "3b6bd0c0e707dd63",
+  "042f4a6217f16bc7",
+  "11ca9df5179c0b17",
+  "4e74a9dc4f82d212",
+  "30f3a5fc9832f6bd",
+  "b5b79a18cbc47869",
+  "d00449429213df84",
+  "1250450f15be1a4a",
+  "3c5b235df64720fe",
+  "435b65719d88ed94",
+  "6f5d6ecf8385e229",
+  "7c703573ccfb8433",
+  "bfe33d8f2eda3988",
+  "f2f67548782fa06b",
+  "fe8696961a157ed3",
+  "8374bea54d216ce6",
+  "cbb0a266f0525db3"
+ ],
+ "final": "win|key!@0,0(push);is!@1,0(push);open!@2,0(push);hedge!@13,0(push);is!@14,0(push);stop!@15,0(push);hedge@16,0(stop);hedge@17,0(stop);hedge@18,0(stop);husk@22,0();husk@6,1();hedge@11,1(stop);hedge@12,1(stop);hedge@13,1(stop);hedge@14,1(stop);hedge@15,1(stop);hedge@16,1(stop);hedge@18,1(stop);hedge@19,1(stop);hedge@20,1(stop);hedge@21,1(stop);fungus!@0,2(push);is!@1,2(push);shut!@2,2(push);and!@3,2(push);pull!@4,2(push);hedge@11,2(stop);foliage@16,2(defeat);foliage@17,2(defeat);foliage@18,2(defeat);hedge@21,2(stop);has!@0,3(push);hedge@10,3(stop);hedge@11,3(stop);foliage@16,3(defeat);foliage@17,3(defeat);foliage@18,3(defeat);hedge@21,3(stop);flag!@0,4(push);is!@1,4(push);win!@2,4(push);hedge@9,4(stop);hedge@10,4(stop);foliage@16,4(defeat);foliage@17,4(defeat);foliage@18,4(defeat);hedge@21,4(stop);husk@7,5();hedge@9,5(stop);hedge@16,5(stop);hedge@18,5(stop);hedge@21,5(stop);hedge@22,5(stop);husk@25,5();hedge@9,6(stop);hedge@22,6(stop);husk@5,7();hedge@7,7(stop);hedge@8,7(stop);hedge@9,7(stop);hedge@17,7(stop);hedge@22,7(stop);hedge@23,7(stop);leaf!@24,7(push);is!@25,7(push);leaf!@26,7(push);hedge@7,8(stop);hedge@23,8(stop);and!@24,8(push);hedge@7,9(stop);hedge@9,9(stop);leaf@down!@16,11(push);is@right!@17,10(push);move@right!@18,10(push);hedge@23,9(stop);foliage!@24,9(push);hedge@7,10(stop);hedge@9,10(stop);hedge@23,10(stop);is!@24,10(push);husk@1,11();hedge@6,11(stop);hedge@7,11(stop);hedge@9,11(stop);hedge@10,11(stop);hedge@11,11(stop);hedge@12,11(stop);key@down!@16,12(push);is@right!@17,11(push);push@right!@19,11(push);hedge@21,11(stop);hedge@22,11(stop);hedge@23,11(stop);defeat!@24,11(push);husk@2,12();hedge@6,12(stop);hedge@10,12(stop);leaf@down@11,14(defeat+pull);hedge@21,12(stop);baba!@5,13(push);hedge@6,13(stop);hedge@10,13(stop);pull@right!@18,11(push);hedge@20,13(stop);hedge@21,13(stop);husk@26,13();is!@5,14(push);hedge@6,14(stop);baba@up@17,5(you);leaf@up@17,3(defeat+pull);hedge@19,14(stop);hedge@20,14(stop);hedge@21,14(stop);husk@25,14();you!@5,15(push);hedge@6,15(stop);hedge@10,15(stop);hedge@11,15(stop);hedge@12,15(stop);hedge@13,15(stop);hedge@14,15(stop);hedge@15,15(stop);hedge@16,15(stop);hedge@17,15(stop);hedge@18,15(stop);hedge@19,15(stop);flag@down@17,5(win)",
+ "status": "win"
+}

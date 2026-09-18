@@ -1,0 +1,25 @@
+v = flower
+h = hedge
+b = baba left
+l = belt
+g = ghost down
+f = flag
+palette = ruins
++ l = 1,1
+---
+  v                       v
+     hhhhhhhhh    hhhhhh   v
+ v  hh  B=✥  h hhhh    hh
+v   h        hHh        h
+    h        h=h        h
+    h        h⊘h   L=^  h
+ v  h b   ⇧  hhh        h
+    h         l         h
+    h        hhh        h
+    h        h h    hhhhh
+    h        h h    h
+    hhhhhhh hhhhh h h  V   v
+v    G=↦&⌇h   g   hvh  =
+          hhhhhhhhhvhF ⩍
+  v          @=⚲  hfh= &
+                  hvh✓ ⌢ v

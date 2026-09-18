@@ -1,0 +1,41 @@
+g = grass
+f = flower
+w = wall
+b = baba
+k = keke left
+t = tile
+palette = factory
++ t = 1,0
++ g = 6,3
+---
+                    g          gg
+  g       gg      g             g
+      gg  wwwwwwwwwww    g
+  f    g  wtttttttttw
+          wtttttttttw      f  gg
+          wtttttttttw ✓        g
+    g     wtttttttttw
+ g        wtttttttttwwwwg
+          wttttttttttttwgg
+     f    wttttttttttttw g    f
+    f     wttttttttttttw
+        g wttttttttttttw
+       g  wttttttttttttw    g
+  g       wwwwwwwwwwwwww
+          g
+          ggg          gg      g
+ f  gg     g    g      g    f g
+
+---
+
+
+
+
+
+              B=✥
+
+              b k
+
+              K=      W
+                      =
+                      ⊘

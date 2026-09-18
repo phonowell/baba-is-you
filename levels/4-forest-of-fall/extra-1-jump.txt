@@ -1,0 +1,21 @@
+w = water
+b = baba
+f = fence
+l = love
+a = flag
+palette = autumn
+---
+W=⩍f        w     f
+ffff        w     f
+            w     ff
+            w      fffff
+            w
+     b ↦    w
+          l w l
+   www      w
+   waw      w   L=*
+fffffff     w
+  fA=✓f     w         ff
+  fffff     w         fF
+    f       w     fffff=
+    f       w     fB=✥f⊘

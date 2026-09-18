@@ -1,0 +1,16 @@
+b = baba
+s = star
+f = flag
+l = belt down
+c = cloud
+palette = space
++ l = 1,1
+---
+B=✥         F=✓
+    s    ccccc
+      ?= c   c
+cccc     c f c
+L=^c     c   c
+      b  clllc
+  s       lll
+     C=⊘      s

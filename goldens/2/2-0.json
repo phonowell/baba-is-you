@@ -1,0 +1,307 @@
+{
+ "level": "levels/2-solitary-island/2-warm-river.txt",
+ "levelData": {
+  "title": "WARM RIVER",
+  "width": 15,
+  "height": 8,
+  "items": [
+   {
+    "id": 1,
+    "x": 0,
+    "y": 0,
+    "name": "water",
+    "isText": true
+   },
+   {
+    "id": 2,
+    "x": 1,
+    "y": 0,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 3,
+    "x": 2,
+    "y": 0,
+    "name": "hot",
+    "isText": true
+   },
+   {
+    "id": 4,
+    "x": 8,
+    "y": 0,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 5,
+    "x": 11,
+    "y": 0,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 6,
+    "x": 12,
+    "y": 0,
+    "name": "flag",
+    "isText": true
+   },
+   {
+    "id": 7,
+    "x": 13,
+    "y": 0,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 8,
+    "x": 14,
+    "y": 0,
+    "name": "win",
+    "isText": true
+   },
+   {
+    "id": 9,
+    "x": 8,
+    "y": 1,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 10,
+    "x": 11,
+    "y": 1,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 11,
+    "x": 13,
+    "y": 1,
+    "name": "flag",
+    "isText": false
+   },
+   {
+    "id": 12,
+    "x": 4,
+    "y": 2,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 13,
+    "x": 8,
+    "y": 2,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 14,
+    "x": 11,
+    "y": 2,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 15,
+    "x": 4,
+    "y": 3,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 16,
+    "x": 8,
+    "y": 3,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 17,
+    "x": 12,
+    "y": 3,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 18,
+    "x": 13,
+    "y": 3,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 19,
+    "x": 14,
+    "y": 3,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 20,
+    "x": 4,
+    "y": 4,
+    "name": "you",
+    "isText": true
+   },
+   {
+    "id": 21,
+    "x": 6,
+    "y": 4,
+    "name": "baba",
+    "isText": false
+   },
+   {
+    "id": 22,
+    "x": 8,
+    "y": 4,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 23,
+    "x": 4,
+    "y": 5,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 24,
+    "x": 8,
+    "y": 5,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 25,
+    "x": 4,
+    "y": 6,
+    "name": "float",
+    "isText": true
+   },
+   {
+    "id": 26,
+    "x": 8,
+    "y": 6,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 27,
+    "x": 0,
+    "y": 7,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 28,
+    "x": 1,
+    "y": 7,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 29,
+    "x": 2,
+    "y": 7,
+    "name": "melt",
+    "isText": true
+   },
+   {
+    "id": 30,
+    "x": 8,
+    "y": 7,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 31,
+    "x": 10,
+    "y": 7,
+    "name": "skull",
+    "isText": true
+   },
+   {
+    "id": 32,
+    "x": 11,
+    "y": 7,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 33,
+    "x": 12,
+    "y": 7,
+    "name": "defeat",
+    "isText": true
+   },
+   {
+    "id": 34,
+    "x": 13,
+    "y": 7,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 35,
+    "x": 14,
+    "y": 7,
+    "name": "float",
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrrrrruzzzzzzzldlrrrrzzzzuuzddluuuuudddrurrrrr",
+ "initial": "playing|water!@0,0(push);is!@1,0(push);hot!@2,0(push);water@8,0(hot);skull@11,0(defeat+float);flag!@12,0(push);is!@13,0(push);win!@14,0(push);water@8,1(hot);skull@11,1(defeat+float);flag@13,1(win);baba!@4,2(push);water@8,2(hot);skull@11,2(defeat+float);is!@4,3(push);water@8,3(hot);skull@12,3(defeat+float);skull@13,3(defeat+float);skull@14,3(defeat+float);you!@4,4(push);baba@6,4(float+melt+you);water@8,4(hot);and!@4,5(push);water@8,5(hot);float!@4,6(push);water@8,6(hot);baba!@0,7(push);is!@1,7(push);melt!@2,7(push);water@8,7(hot);skull!@10,7(push);is!@11,7(push);defeat!@12,7(push);and!@13,7(push);float!@14,7(push)",
+ "hashes": [
+  "85d42f1c3a04ce3c",
+  "ee184c1b7381d0c7",
+  "507e29d77a457eaa",
+  "1f817087a12908a7",
+  "8b0b88e8ce57f772",
+  "7a72c1d37b5f9331",
+  "03657df93b27ac08",
+  "7a72c1d37b5f9331",
+  "8b0b88e8ce57f772",
+  "1f817087a12908a7",
+  "507e29d77a457eaa",
+  "ee184c1b7381d0c7",
+  "85d42f1c3a04ce3c",
+  "6b61de9b0397b2a9",
+  "8aa8b106023032c2",
+  "c7ae695f36111176",
+  "8cbb77b6141b6726",
+  "62a05687ec29e5a2",
+  "eb43ca95a75aab5f",
+  "abef2c6f2f11cc2f",
+  "93aa4ab83261b998",
+  "abef2c6f2f11cc2f",
+  "eb43ca95a75aab5f",
+  "62a05687ec29e5a2",
+  "8cbb77b6141b6726",
+  "cc34226225b7a356",
+  "dcaae8a584e19a94",
+  "cc34226225b7a356",
+  "7f878ae4e64578c8",
+  "cc11c962aceedd80",
+  "5d085cc6eda3cfab",
+  "9fce620b6a78e124",
+  "0ea0ed095fb8919f",
+  "c8ff2e7289fc6e61",
+  "6c1a27f4759690d1",
+  "6b5476a34ce1e289",
+  "ec2339dc8a41b7d3",
+  "2126394f130ef00b",
+  "6db28a53ebb0f4c5",
+  "d33d42b08f80ca57",
+  "2cf5851c0614c5af",
+  "a330618cf1d1d233",
+  "8eecbfadc22ca178",
+  "4d4e8a86dd73945a",
+  "d35859b1e947e52e",
+  "a2be9b64e6668bf5"
+ ],
+ "final": "win|water!@0,0(push);is!@1,0(push);hot!@2,0(push);baba@right@11,0(melt+you);skull@11,0(defeat+float);flag!@12,0(push);is!@13,0(push);win!@14,0(push);baba@right@13,1(melt+you);skull@11,1(defeat+float);flag@13,1(win);baba@up!@4,0(push);baba@right@13,2(melt+you);skull@11,2(defeat+float);is@up!@4,1(push);baba@right@13,3(melt+you);skull@12,3(defeat+float);skull@13,3(defeat+float);skull@14,3(defeat+float);you@up!@4,2(push);baba@right@9,3(melt+you);baba@right@13,4(melt+you);and@up!@3,0(push);baba@right@13,5(melt+you);float@down!@4,7(push);baba@right@13,6(melt+you);baba!@0,7(push);is!@1,7(push);melt!@2,7(push);baba@right@9,7(melt+you);skull!@10,7(push);is!@11,7(push);defeat!@12,7(push);and!@13,7(push);float!@14,7(push)",
+ "status": "win"
+}

@@ -1,0 +1,17 @@
+b = baba
+h = hedge
+f = flag on water
+w = water
+c = brick
+x = box
+palette = autumn
+right pad = 1
+---
+B=✥hH=⊘
+hhhhhhh  b
+FhhWCFh
+=hh===h xx ccc
+⌢hh ⌇⩍✓ xx cfc
+hhhh &     ccc
+hhhhh↣h
+X=↣hhhh

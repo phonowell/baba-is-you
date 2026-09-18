@@ -1,0 +1,35 @@
+w = wall
+t = tile
+b = baba on tile
+o = bubble
+a = algae
+s = seastar
+d = door
+k = key
+f = flag
+right pad = 1
+palette = ocean
+---
+      wtttttw           o
+    a wtttttw   o  a
+      wtttttw
+      wwwwwwwwwwwwwwww
+ a    wtttttwttttttttw   a
+      wtKt⧜twttttttttw
+   o  wtttttwttttttttw  s
+      wtKt↦twttttttttw
+      wtttttdttttttttw
+   a  wtkt=twttttttttw   a
+  a   wttbttwwwwwdwwww
+      wtttttw
+ o    wwwwwww    f      a o
+
+     a          F=✓
+---
+        B=✥
+        D=⊘
+        W=⊘
+
+
+
+                D=⨶

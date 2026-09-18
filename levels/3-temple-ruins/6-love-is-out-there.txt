@@ -1,0 +1,28 @@
+g = grass
+w = wall
+d = door
+b = baba down
+x = box
+k = key
+l = love
+palette = ruins
+right pad = 3
+---
+      ggg      gg      g
+    gggggg            ggg  g
+     gggggwwwwwwwwwwwwggg
+      ggggw    ~     wggg
+        g w         ww     ggg
+          w         w  gggggg
+          w      b  w  ggggg
+    g     w        Xw   ggg
+        ggw   K &  =w
+       gg w        _www
+       gggw x X=↦   d dg
+       gggw         www   g
+  g    gg w         w
+        g wwwwwwwwwww L=✓
+            K=⧜ D=⨶          g
+     gg                l  gg
+    gg                   gg
+        W&D=⊘ B=✥       gg

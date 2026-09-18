@@ -1,0 +1,26 @@
+b = baba
+d = door
+u = dust
+w = wall
+c = cloud
+f = flag
+l = love
+a = anni down
+s = "best"
+palette = space
++ c = 1,2
+---
+www l wwwwF=✓   cccccccc
+www a wcc      wwwwwcccc
+wwwA=swc     u w c w ccc
+wwwwwww  u     wcfcw  cc
+ccccc       u  w c w   c
+ccc            wwwww   W
+ccc                    =
+cc     ddddddd         ⊘
+cc     d     dddd   u  w
+cc u   d = ? D=⊘d
+cc     d  b     d      c
+ccc  B d        d     cc
+cccc = dddddddddd   cccc
+ccccc✥            cccccc

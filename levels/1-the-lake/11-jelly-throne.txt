@@ -1,0 +1,26 @@
+g = grass
+f = flag
+w = wall
+b = baba
+j = jelly
+c = brick
+palette = ocean
+---
+             ggg    ggggggg    g
+   gg       ggg       ggg
+  ggg                  g     g
+                            gg
+               F=F             gg
+g                      g       gg
+gg                    ggg     ggg
+wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+                  w     w
+              F=↦ w     w
+                  f w   w
+              b J w     w
+           w      w     w
+        wB=✥      w     w
+       gwwwwwwwwwww F=⊘ w
+      ggw Jccc          w
+      ggw =cjc          w
+    ggggw ✓ccc          w     W=⊘

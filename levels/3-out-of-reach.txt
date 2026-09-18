@@ -1,0 +1,25 @@
+b = baba
+w = wall
+g = grass
+t = tile
+a = water
+f = flag
+r = rock
++ t = 1,0
+---
+BWw             g
+==w g  wwwwwwww g
+✥⊘w    wttttttw
+www  g wtbttrtw
+      Awttttttw
+   gg =wttttrtw
+      ≉wttttttw
+g   wwwwaaawwwwwww g
+ g  w      w     w
+    w      w R=↦ w  g
+    w      w     w
+    waaa w       w
+ gg waaa   w F=✓ wg
+ gg wfaa   w     w  gg
+    wwwwwwwwwwwwww  g
+

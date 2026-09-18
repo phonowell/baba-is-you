@@ -75,19 +75,12 @@ export const moveItems = (
     isMovePhase,
   )
 
+  // Row-major (y,x) mover order, matching the predecessor's cell iteration.
   const sortedMovers = [...movers].sort((a, b) => {
     const itemA = byId.get(a)
     const itemB = byId.get(b)
     if (!itemA || !itemB) return a - b
-
-    if (direction === 'up')
-      return itemA.y - itemB.y || itemA.x - itemB.x || itemA.id - itemB.id
-    if (direction === 'down')
-      return itemB.y - itemA.y || itemA.x - itemB.x || itemA.id - itemB.id
-    if (direction === 'left')
-      return itemA.x - itemB.x || itemA.y - itemB.y || itemA.id - itemB.id
-
-    return itemB.x - itemA.x || itemA.y - itemB.y || itemA.id - itemB.id
+    return itemA.y - itemB.y || itemA.x - itemB.x || itemA.id - itemB.id
   })
 
   for (const id of sortedMovers) {
@@ -111,7 +104,6 @@ export const moveItems = (
     survivors,
     removedItems,
     runtime.buckets.has,
-    true,
     width,
     height,
     next,

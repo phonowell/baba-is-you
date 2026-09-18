@@ -1,0 +1,24 @@
+w = wall
+l = leaf
+o = foliage
+f = flag
+r = rock
+m = me down
+palette = autumn
+---
+ www              l o   oo o
+ wFw                      o
+ w=w    f     wwwwwwww
+ w✓w          w      w  l  o
+ www          w @    w   l o
+       wwwwwwww      w
+       wW=Ww  wwww w w
+ l     wwwww   r     w
+       w       wwwwwww
+       w   m   w
+o      w       w
+       w  M=✥  w
+       w       w
+o  l   wwwwwwwww
+oo                R=↦
+  o  o    l              W=⩍

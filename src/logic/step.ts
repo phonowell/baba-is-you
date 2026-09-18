@@ -16,6 +16,23 @@ type StepFrame = {
   runtime: RuleRuntime
 }
 
+const itemSignature = (item: Item): string =>
+  `${item.name}@${item.x},${item.y}${item.isText ? '!' : ''}${item.dir ?? ''}(${[...item.props].sort().join('+')})`
+
+const sameItems = (before: Item[], after: Item[]): boolean => {
+  if (before.length !== after.length) return false
+  const counts = new Map<string, number>()
+  for (const item of before)
+    counts.set(itemSignature(item), (counts.get(itemSignature(item)) ?? 0) + 1)
+  for (const item of after) {
+    const key = itemSignature(item)
+    const left = (counts.get(key) ?? 0) - 1
+    if (left < 0) return false
+    counts.set(key, left)
+  }
+  return true
+}
+
 const resolveFrame = (
   items: StepPhaseItems,
   width: number,
@@ -126,15 +143,15 @@ export const step = (
 ): StepResult => {
   let frame = resolveFrame(state.items, state.width, state.height)
   let rulesStale = false
-  let changed = false
 
-  const stages: StepStage[] = buildStepStages(direction, state.turn)
+  // The produced frame's index is `state.turn + 1`; the predecessor seeds
+  // tele RNG with its history length, which is the same value.
+  const stages: StepStage[] = buildStepStages(direction, state.turn + 1)
 
   for (const stage of stages) {
     const stageResult = runStage(frame, stage, rulesStale)
     frame = stageResult.frame
     rulesStale = stageResult.rulesStale
-    if (stageResult.changed) changed = true
   }
 
   const didWin = checkWin(
@@ -143,8 +160,13 @@ export const step = (
     frame.runtime.rules,
     state.height,
   )
+  // Maps never lose: the overworld cursor is not a `you` entity, and the
+  // predecessor has no lose state at all — without this, decorative rule
+  // text like `BABA IS YOU` on a map would soft-lock navigation.
+  const hasCursor = frame.items.some((item) => item.name === 'cursor')
   const didLose =
     !didWin &&
+    !hasCursor &&
     !hasAnyYou(frame.items, frame.runtime.rules, state.width, state.height)
 
   const nextState: GameState = {
@@ -158,5 +180,9 @@ export const step = (
   const statusChanged =
     (state.status === 'win') !== didWin || (state.status === 'lose') !== didLose
 
-  return { state: nextState, changed: changed || statusChanged }
+  // changed follows net state, matching the predecessor engine: a step whose
+  // stages mutated then restored the board (e.g. stepping onto a shift belt
+  // that pushes straight back) must not count as a processed change — undo
+  // depth, tele RNG seeding via turn, and render refresh all key off it.
+  return { state: nextState, changed: !sameItems(state.items, frame.items) || statusChanged }
 }

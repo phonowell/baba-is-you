@@ -1,0 +1,27 @@
+h = hedge
+a = algae
+s = seastar
+b = baba
+c = crab down
+f = flag
+d = door
+palette = ocean
+---
+H=⊘                    a
+
+          hhhhh    s
+ s        h =✓h
+        hhh =⩍h  s  s
+        hB= hhh   s
+    hhhhh h hhhh
+  s h          h
+    h          h
+    hF=↦    B  hhhhh
+    h       =  h   h
+    h       ⧜  d C h
+    h f b c    h   h
+    h          hhhhh
+  a hhhhhhhhhhhh
+           s
+                       a
+B=✥       D=⨶&⊘       aa

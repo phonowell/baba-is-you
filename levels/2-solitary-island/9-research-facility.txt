@@ -1,0 +1,29 @@
+p = pipe
+c = cog
+k = keke
+w = wall
+b = baba
+z = bolt
+s = skull down
+t = tile
+palette = factory
++ t = 1,0
+---
+   p                  p
+pppp     c            pp
+ p    c
+pp         wwwwwwwwww
+        K=⩍w        w c
+  wwwwwwwwww        w
+  w S s    k        w
+wwBw=wwwwwww   Z=↦  wZ
+  = ⌇ s    ⩍    →   w=
+ww✥wwswwwwww        w⌢
+    wtw    w        w
+  c wtw W=⊘w   b z  w
+pp  wtw  wwww       w
+ p  wtwwwwt✓ttw     w
+ p  wttttttwttwwwwwww pp
+ppp wwwwwwwwwww       p
+  p             c  ppppp
+  p                p

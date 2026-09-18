@@ -1,0 +1,425 @@
+{
+ "level": "levels/2-solitary-island/extra-6-evaporating-river.txt",
+ "levelData": {
+  "title": "EVAPORATING RIVER",
+  "width": 15,
+  "height": 8,
+  "items": [
+   {
+    "id": 1,
+    "x": 0,
+    "y": 0,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 2,
+    "x": 1,
+    "y": 0,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 3,
+    "x": 2,
+    "y": 0,
+    "name": "you",
+    "isText": true
+   },
+   {
+    "id": 4,
+    "x": 7,
+    "y": 0,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 5,
+    "x": 9,
+    "y": 0,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 6,
+    "x": 10,
+    "y": 0,
+    "name": "cog",
+    "isText": true
+   },
+   {
+    "id": 7,
+    "x": 11,
+    "y": 0,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 8,
+    "x": 12,
+    "y": 0,
+    "name": "push",
+    "isText": true
+   },
+   {
+    "id": 9,
+    "x": 13,
+    "y": 0,
+    "name": "and",
+    "isText": true
+   },
+   {
+    "id": 10,
+    "x": 14,
+    "y": 0,
+    "name": "melt",
+    "isText": true
+   },
+   {
+    "id": 11,
+    "x": 1,
+    "y": 1,
+    "name": "flag",
+    "isText": true
+   },
+   {
+    "id": 12,
+    "x": 2,
+    "y": 1,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 13,
+    "x": 3,
+    "y": 1,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 14,
+    "x": 4,
+    "y": 1,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 15,
+    "x": 7,
+    "y": 1,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 16,
+    "x": 14,
+    "y": 1,
+    "name": "skull",
+    "isText": true
+   },
+   {
+    "id": 17,
+    "x": 0,
+    "y": 2,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 18,
+    "x": 7,
+    "y": 2,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 19,
+    "x": 10,
+    "y": 2,
+    "name": "cog",
+    "isText": false
+   },
+   {
+    "id": 20,
+    "x": 14,
+    "y": 2,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 21,
+    "x": 0,
+    "y": 3,
+    "name": "win",
+    "isText": true
+   },
+   {
+    "id": 22,
+    "x": 3,
+    "y": 3,
+    "name": "water",
+    "isText": true
+   },
+   {
+    "id": 23,
+    "x": 7,
+    "y": 3,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 24,
+    "x": 14,
+    "y": 3,
+    "name": "defeat",
+    "isText": true
+   },
+   {
+    "id": 25,
+    "x": 0,
+    "y": 4,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 26,
+    "x": 3,
+    "y": 4,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 27,
+    "x": 5,
+    "y": 4,
+    "name": "baba",
+    "isText": false
+   },
+   {
+    "id": 28,
+    "x": 7,
+    "y": 4,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 29,
+    "x": 3,
+    "y": 5,
+    "name": "sink",
+    "isText": true
+   },
+   {
+    "id": 30,
+    "x": 7,
+    "y": 5,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 31,
+    "x": 10,
+    "y": 5,
+    "name": "flag",
+    "isText": false
+   },
+   {
+    "id": 32,
+    "x": 7,
+    "y": 6,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 33,
+    "x": 0,
+    "y": 7,
+    "name": "wall",
+    "isText": true
+   },
+   {
+    "id": 34,
+    "x": 1,
+    "y": 7,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 35,
+    "x": 2,
+    "y": 7,
+    "name": "stop",
+    "isText": true
+   },
+   {
+    "id": 36,
+    "x": 7,
+    "y": 7,
+    "name": "water",
+    "isText": false
+   },
+   {
+    "id": 37,
+    "x": 12,
+    "y": 7,
+    "name": "water",
+    "isText": true
+   },
+   {
+    "id": 38,
+    "x": 13,
+    "y": 7,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 39,
+    "x": 14,
+    "y": 7,
+    "name": "hot",
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrzzddlllurdrullurrrrrurrrrulllzzdlllllluldldrrrrrrrurululddrdlllldlulurrrzzzddrruulldluuddrrrrrrrdrudrruldluudlllllllluuuldddrrrrrrrrrd",
+ "initial": "playing|baba!@0,0(push);is!@1,0(push);you!@2,0(push);water@7,0(hot+sink);wall@9,0(stop);cog!@10,0(push);is!@11,0(push);push!@12,0(push);and!@13,0(push);melt!@14,0(push);flag!@1,1(push);skull@2,1(defeat);skull@3,1(defeat);skull@4,1(defeat);water@7,1(hot+sink);skull!@14,1(push);is!@0,2(push);water@7,2(hot+sink);cog@10,2(melt+push);is!@14,2(push);win!@0,3(push);water!@3,3(push);water@7,3(hot+sink);defeat!@14,3(push);wall@0,4(stop);is!@3,4(push);baba@5,4(you);water@7,4(hot+sink);sink!@3,5(push);water@7,5(hot+sink);flag@10,5();water@7,6(hot+sink);wall!@0,7(push);is!@1,7(push);stop!@2,7(push);water@7,7(hot+sink);water!@12,7(push);is!@13,7(push);hot!@14,7(push)",
+ "hashes": [
+  "155f56069b162170",
+  "f2bb00854328ce7b",
+  "155f56069b162170",
+  "790c81e50327335a",
+  "f68de116f327a6ae",
+  "6109406ab40f9f58",
+  "e3b1078e0a4077fb",
+  "e7c4784f373a246b",
+  "c1a2d29ca0df71d6",
+  "d92dd62b1a07e92f",
+  "7035345942aec807",
+  "28a22249246e30d8",
+  "b2d33f2cbfc16ecb",
+  "1d35f957ce709c01",
+  "8c81a90e25691849",
+  "8e150bc2a82225e2",
+  "8f61fec6b7ccb951",
+  "38c251e4202e135c",
+  "31e83cfa5b03f371",
+  "12c58b8f83563439",
+  "efc9e0d470aeac17",
+  "8ee37812928de56d",
+  "4901011d2dc64ce8",
+  "ecb91dae3bc0c7c2",
+  "ef8bc43bd33369d9",
+  "65defaa6501755d7",
+  "8f01c7e8f3f5086e",
+  "079e6c73b654a614",
+  "73a83c939c2617e4",
+  "c701955a2b2812fb",
+  "d485ad5bfa5f3f1f",
+  "c701955a2b2812fb",
+  "73a83c939c2617e4",
+  "00c0db6f6908b0dd",
+  "338ee6ffb7c40ec4",
+  "5b4ea482f968ff40",
+  "d3e02005079b7f41",
+  "3aede0394569f48a",
+  "7b51d37fb27a7942",
+  "d1a955467182fa5c",
+  "d8426e6e11c9b7c1",
+  "4519279cbc87e313",
+  "6d21b925765418ad",
+  "1c45ef7b81413df3",
+  "defe97d23af3cfd5",
+  "43b5995d4fdcef28",
+  "6bbd9c059b3afc44",
+  "f4fcffd8470b4f95",
+  "dcfe4d0d354e987f",
+  "bf6f8ce5e061bd1e",
+  "356b1a5baae892ba",
+  "9929bbee73041559",
+  "07ce2fb65131d2f1",
+  "f000308e8827ae4f",
+  "9e0076bee5c5dedc",
+  "ce377b49c84f5796",
+  "b94191eefde188cd",
+  "b76b6002c044fd9c",
+  "69104f86f9d3c38f",
+  "01500d29384d5361",
+  "b4867a582988115b",
+  "c8abb33c9e0d57ae",
+  "40d2202c945343f5",
+  "57d240c0a5812204",
+  "4adc74aa3fd58b04",
+  "3cdaab2f28262a56",
+  "b61367838a65c1d9",
+  "aa92d1c32f3d6dee",
+  "2c464c19e5d83b4f",
+  "a130ed756f798bf3",
+  "6e50c0f59f8a73b5",
+  "8cc33c2819b02612",
+  "6b6317fcf88b18a1",
+  "13c1e146409425cc",
+  "6b6317fcf88b18a1",
+  "8cc33c2819b02612",
+  "6e50c0f59f8a73b5",
+  "d622913d54a970b6",
+  "873a299100f1e8cf",
+  "6fa178d4f7fff2a5",
+  "3a0d3010cdad1fb2",
+  "59c6bcf706eefcfe",
+  "d8d190eb81b978dd",
+  "61d617bb7a08274f",
+  "7add103063248810",
+  "6bacd4db34b6f5c1",
+  "ab5fde3a6d44bd8e",
+  "5dcd872d2ddb8973",
+  "4b37f6d48869fb2c",
+  "ffeba2a9458f0a21",
+  "ed9a014d38850b2e",
+  "a13e5e72128c00c1",
+  "d2edf4e15d85ad1d",
+  "d9e62d486cf341cc",
+  "7487c57b6cf32820",
+  "a35ea9e8f1698df5",
+  "57401896b1d43831",
+  "00eaaa3c4b826818",
+  "36228735c98b8e08",
+  "231f25ae3446ea7d",
+  "96bccc7571bbcd02",
+  "378825cd706c1b9c",
+  "00f342b8ba2a9f89",
+  "403b6bd9e931b272",
+  "bba3708950e6ed5f",
+  "1aa37a4c3110854d",
+  "568ebf59ae794dd1",
+  "28533cc64431e688",
+  "d0529ab253f0a8c5",
+  "027d46297783b6e8",
+  "70ea07f192f22b06",
+  "a0aa7d1d48489d25",
+  "df01f40697496060",
+  "f6763254b804967e",
+  "ba08254a32445b77",
+  "998db738ba79bd2f",
+  "e339524413379cee",
+  "121e349f3dca9781",
+  "d6e555551f5e2074",
+  "f69d7e8a893901ae",
+  "e42f3a20d716bd25",
+  "a9e1a302a91d2eea",
+  "eb5ff59d5042dd04",
+  "8ea9a7919db31401",
+  "1aa3f60d510b4f3e",
+  "4d62489daa124814",
+  "69479f7be63eba36",
+  "7800d0f8ccadb853",
+  "0225c8fce157b3b0",
+  "345088239a551751",
+  "fa43bf92ce8bec82",
+  "3e242ea75cb2845e",
+  "1523bcb1cf9ac80a",
+  "e356fa8746665420",
+  "df9d6fb12a68f981",
+  "0c481b2e14c7718e"
+ ],
+ "final": "win|baba!@0,0(push);is!@1,0(push);you!@2,0(push);water@7,0(hot);wall@9,0(stop);cog!@10,0(push);is!@11,0(push);push!@12,0(push);and!@13,0(push);melt!@14,0(push);flag@left!@0,1(push);skull@3,1(defeat);skull@4,1(defeat);water@7,1(hot);skull!@14,1(push);is!@0,2(push);water@7,2(hot);is!@14,2(push);win!@0,3(push);water@7,3(hot);defeat!@14,3(push);wall@0,4(stop);is@up!@10,1(push);baba@down@10,5(you);sink@up!@10,2(push);water@7,5(hot);flag@10,5(win);water@7,6(hot);wall!@0,7(push);is!@1,7(push);stop!@2,7(push);water@7,7(hot);water!@12,7(push);is!@13,7(push);hot!@14,7(push)",
+ "status": "win"
+}

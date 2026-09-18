@@ -1,0 +1,30 @@
+g = grass
+t = tree
+f = flag
+w = wall
+b = baba down
+l = belt
+o = foliage
+palette = ruins
++ l = 1,1
++ t = 5,1
++ o = 5,0
+---
+          ggggg          gggggggg
+ o         ggggg            ggggg
+  o          ggg      o        gg
+   ttttt      g        o        g
+   tF=✓t         o
+                   wwwww
+g                  w   www
+gg      L=↦  wwwwwww W   w
+ggg     =    lllllll = f w     o
+ggg     ^ b  wwwwwww ⊘   w
+gg                 w   www
+ g                 wwwww
+
+ttt o      gg     o         ttttt
+  t       ggggg    o    g   t
+B t   o    gggg         gg  t T F
+= t          ggg            t = =
+✥ t                         t ⊘ ⊘

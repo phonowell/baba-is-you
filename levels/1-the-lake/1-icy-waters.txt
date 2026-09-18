@@ -1,0 +1,23 @@
+f = flag
+i = ice
+j = jelly
+w = wall
+b = baba
+palette = ocean
+---
+F=✓iii     iii  ii       J=≉
+iiii        iiiii i
+ii           iiii  i   jjj
+i    wwwww   iiiiiiii jj jj
+     w   w    iiiiiii j f j
+     w b w    iii   iijj jj
+     w   w    ii     i jjj
+     ww ww     i  W  ii
+               i     iii
+               ii   iiii
+        wwww    iiiiiii i
+     w  B=✥&≉w   iiiiii ii
+     wwwwwww      iiiiii
+i                  iiiiiii
+ii                  iiiiiii
+iiiii i    i         iiiiW=⊘

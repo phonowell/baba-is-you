@@ -1,0 +1,27 @@
+l = love
+c = brick
+d = door
+b = baba down
+r = rock
+w = water
+f = flag
+k = key
+palette = ruins
++ l = 4,0
+---
+ccccc  c             cc cccc
+ccc      @=⚲ W=≉          cc
+c      llllllllllll        c
+c      l          l        c
+     c l      B   lwwwwww
+  c cc l  b   =   l     w
+  ccLc l      ✥   l     w
+ ccc&  l   K      d     w
+  c D  l   &      l     w
+    =  l   R      l     w
+    ⊘  l   =   r  lwwwwww
+   c   l   ↦      l        c
+c      l          l        c
+cc     llllllllllll  f     F
+ccc                       c=
+ccccc    K=⧜ D=⨶       c cc✓

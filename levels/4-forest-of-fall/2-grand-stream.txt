@@ -1,0 +1,23 @@
+h = water
+w = wall
+k = keke down
+x = box
+b = baba
+y = key
+f = flag
+palette = autumn
+---
+hhhwK=K   hhhh w      hh
+hh wwwwww hhh  w       h
+h  w    wwwhhwwwwwwww
+wwww       hhh      wwww
+   w       hhh      wB=✥
+ x w     k hhh  by  wwww
+           hhh      wW=⊘
+ K       w hh       wwww
+ =         hh       wH=⩍
+ → w   Y=↣whh       wwww
+wwwwwwwww  hhw wwwwww
+wX=⨶w   ww hh  w       h
+w~  wY=⧜w      w      hh
+wF=✓w   w  hh  w  hh hhh

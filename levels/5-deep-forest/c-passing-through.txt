@@ -1,0 +1,23 @@
+g = grass
+f = flag
+b = baba down
+k = keke down
+r = rock
+s = skull
+palette = ruins
++ g = 5,1
+---
+B=✥ggggggggggg R=✓ r G=⩍
+gggggggggggggg       K=↔
+gggggggggggggggggg ggggg
+ggg     gggggg        gg
+gg         gg          g
+gg         gg          g
+g  b        g
+g           g
+g    k      g
+g           g
+g   K=↦     g
+gg  S →     g
+gg         ggg
+ggg     ggggggg

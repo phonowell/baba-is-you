@@ -1,0 +1,27 @@
+c = brick
+g = grass
+w = wall
+b = baba
+l = baba left
+k = keke
+f = flag
+palette = ruins
+---
+cc       c gg    wW=⊘wcc
+cc  c   cccgg    wwwwwcc
+c        ccgg       Bwcc
+c  l      cgga      =wcc
+           gg       Bwcc
+    B=→    gg      w&wcc
+           gg     G=⩍wcc
+   c k  K  gg     w  wwc
+  ccc   =  gg         ww
+  ccc↦  ✥  gg
+   c       gg
+      l    gg
+c          gg     f
+c        c gg
+c b     cccgg    F=✓  ww
+         c gg        wwc
+   c       gg  w     wcc
+  ccc      gg        wcc

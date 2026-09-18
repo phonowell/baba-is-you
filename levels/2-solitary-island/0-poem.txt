@@ -1,0 +1,26 @@
+r = rose
+v = violet
+w = wall
+f = flag
+b = baba left
+e = "red"
+l = "blue"
+palette = factory
+right pad = 1
++ v = 5,2
++ r = 3,2
+---
+
+         v        r
+    r   v
+  r        r v      r
+
+    wwR=ew      wwwww
+    w V=lw      w   w
+ v  wwF=✓w  b   w f w
+     wB=✥w      w   w
+                wwwww
+           r
+   r            r     v
+    r   v            v
+W=⊘

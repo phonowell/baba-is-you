@@ -1,0 +1,24 @@
+w = water
+m = me down
+t = tree
+f = fence
+b = box
+l = flag
+palette = autumn
+---
+W=W&≉&¬✥    fff   f     t
+M=✓&¬✥   ffff     ft  t    f
+T=⚲    t fwwwwwww f  t   t f
+ffffffffffwwwwwww ffffffffff
+          ww   ww
+          ww m ww
+          ww   ww
+ff        wwwwwww
+Lf        wwwwwww
+=f                fff
+Lf         b b    ¬↦f   fff
+ff                fff   f f
+Bf             l        f f
+=f   L=¬B           fffff f
+Bf   =              ft  f ff
+F=⊘&¬✥              f t f ft

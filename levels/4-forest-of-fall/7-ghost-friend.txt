@@ -1,0 +1,25 @@
+f = flag
+m = fungi
+n = fungus
+h = hedge
+s = skull down
+b = baba
+g = ghost down
+palette = autumn
+---
+      F=✥             m
+  hhhhhhhhhhh     n        m
+  h f      sh    n    sssss
+hhhhhhhhhhhhhS=⩍     sssssss
+ =✓hB=B&✥hhhhhhhh    ss   ss
+           hhhhhhhhhhhh Fhh
+    b      hhhh           h
+      g                   h
+    G=↣                   h
+    =      hhhh           h
+     →     hhhhhhhhhhhhhhhh
+           hhG=G&_         m
+hhhhhhhhhhhhhh
+  H=⊘hh  hhhh            n
+ m         hh        m n
+   n        h             m

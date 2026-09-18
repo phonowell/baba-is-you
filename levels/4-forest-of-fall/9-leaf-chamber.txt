@@ -1,0 +1,27 @@
+k = key
+h = hedge
+u = husk
+m = fungus
+f = flag
+l = leaf up
+b = baba up
+o = foliage
+palette = autumn
+right pad = 1
+---
+K=⧜          H=⊘hhh   u
+      u    hhhhhhmhhhh
+M=⨶&↣      h    ooo  h
+~         hh    ooo  h
+F=✓      hh     ooo  h
+       u h      h h  hh  u
+         h            h
+     u hhh       h    hhL=L
+       hk              h&
+       h h      L=→    hO
+       h h             h=
+ u    hh hhhh   K=↦  hhh⩍
+  u   h   hl         h
+     Bh   h      ↣  hh    u
+     =h b   l      hhh   u
+     ✥h   hhhhhhhhhh

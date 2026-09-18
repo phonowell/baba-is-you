@@ -1,0 +1,27 @@
+w = wall
+a = water
+r = reed
+b = baba
+t = tree
+d = door
+s = skull left
+f = flag
+c = brick
+palette = ruins
+---
+aaaa a
+aa
+a r      T=↦  D=≉       r
+              ~          r
+          b   T     r
+    r
+       wdwwwwwwwwwwww
+       w  ssssssss  w  r
+       wwwwwwwwwwwdww      a
+     r  wBwW=⊘w@wcccw      a
+        w=wF=✓w=wcfcw      a
+        w✥wT=Tw⚲wcccw    raa
+  r     wwwwwwwwwwwww    aaa
+   r      wS=⩍&→w       aaaa
+      r   wwwwwww  r   aaaaa
+                     aaaaaa

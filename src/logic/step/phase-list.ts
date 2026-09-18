@@ -1,3 +1,4 @@
+import { moveCursor } from '../overworld.js'
 import { applyTransforms } from '../resolve.js'
 
 import { applyInteractions } from './interactions.js'
@@ -27,6 +28,7 @@ export type StepStageSync =
 type ReuseRulesStage = {
   name:
     | 'player-move'
+    | 'cursor-move'
     | 'auto-move'
     | 'gravity'
     | 'shift'
@@ -71,6 +73,16 @@ export const buildStepStages = (
         false,
       )
       return { items: moved.items, changed: moved.moved }
+    },
+  },
+  {
+    // Overworld rail-hop: runs on directional input right after
+    // you-movement, like the predecessor. No-ops without a cursor.
+    name: 'cursor-move',
+    sync: { kind: 'reuse-rules' },
+    run: (items, runtime) => {
+      if (!direction) return { items, changed: false }
+      return moveCursor(items, direction, runtime.width, runtime.height)
     },
   },
   {

@@ -1,0 +1,866 @@
+{
+ "level": "levels/3-temple-ruins/1-fragility.txt",
+ "levelData": {
+  "title": "FRAGILITY",
+  "width": 24,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "x": 8,
+    "y": 0,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 2,
+    "x": 8,
+    "y": 1,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 3,
+    "x": 8,
+    "y": 2,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 4,
+    "x": 9,
+    "y": 2,
+    "name": "wall",
+    "isText": true
+   },
+   {
+    "id": 5,
+    "x": 10,
+    "y": 2,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 6,
+    "x": 11,
+    "y": 2,
+    "name": "stop",
+    "isText": true
+   },
+   {
+    "id": 7,
+    "x": 8,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 8,
+    "x": 9,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 9,
+    "x": 10,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 10,
+    "x": 11,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 11,
+    "x": 12,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 12,
+    "x": 13,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 13,
+    "x": 14,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 14,
+    "x": 15,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 15,
+    "x": 16,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 16,
+    "x": 17,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 17,
+    "x": 18,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 18,
+    "x": 19,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 19,
+    "x": 20,
+    "y": 3,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 20,
+    "x": 17,
+    "y": 4,
+    "name": "skull",
+    "isText": true
+   },
+   {
+    "id": 21,
+    "x": 18,
+    "y": 4,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 22,
+    "x": 19,
+    "y": 4,
+    "name": "defeat",
+    "isText": true
+   },
+   {
+    "id": 23,
+    "x": 20,
+    "y": 4,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 24,
+    "x": 9,
+    "y": 5,
+    "name": "grass",
+    "isText": false
+   },
+   {
+    "id": 25,
+    "x": 20,
+    "y": 5,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 26,
+    "x": 9,
+    "y": 6,
+    "name": "grass",
+    "isText": false
+   },
+   {
+    "id": 27,
+    "x": 12,
+    "y": 6,
+    "name": "baba",
+    "isText": true
+   },
+   {
+    "id": 28,
+    "x": 13,
+    "y": 6,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 29,
+    "x": 14,
+    "y": 6,
+    "name": "you",
+    "isText": true
+   },
+   {
+    "id": 30,
+    "x": 20,
+    "y": 6,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 31,
+    "x": 6,
+    "y": 7,
+    "name": "baba",
+    "isText": false
+   },
+   {
+    "id": 32,
+    "x": 9,
+    "y": 7,
+    "name": "grass",
+    "isText": false
+   },
+   {
+    "id": 33,
+    "x": 12,
+    "y": 7,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 34,
+    "x": 18,
+    "y": 7,
+    "name": "rock",
+    "isText": false
+   },
+   {
+    "id": 35,
+    "x": 20,
+    "y": 7,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 36,
+    "x": 9,
+    "y": 8,
+    "name": "grass",
+    "isText": false
+   },
+   {
+    "id": 37,
+    "x": 12,
+    "y": 8,
+    "name": "weak",
+    "isText": true
+   },
+   {
+    "id": 38,
+    "x": 20,
+    "y": 8,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 39,
+    "x": 0,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 40,
+    "x": 1,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 41,
+    "x": 2,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 42,
+    "x": 3,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 43,
+    "x": 4,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 44,
+    "x": 5,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 45,
+    "x": 6,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 46,
+    "x": 7,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 47,
+    "x": 8,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 48,
+    "x": 9,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 49,
+    "x": 10,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 50,
+    "x": 16,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 51,
+    "x": 17,
+    "y": 9,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 52,
+    "x": 18,
+    "y": 9,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 53,
+    "x": 19,
+    "y": 9,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 54,
+    "x": 20,
+    "y": 9,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 55,
+    "x": 10,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 56,
+    "x": 11,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 57,
+    "x": 12,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 58,
+    "x": 13,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 59,
+    "x": 14,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 60,
+    "x": 15,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 61,
+    "x": 16,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 62,
+    "x": 17,
+    "y": 10,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 63,
+    "x": 18,
+    "y": 10,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 64,
+    "x": 19,
+    "y": 10,
+    "name": "skull",
+    "isText": false
+   },
+   {
+    "id": 65,
+    "x": 20,
+    "y": 10,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 66,
+    "x": 12,
+    "y": 11,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 67,
+    "x": 13,
+    "y": 11,
+    "name": "rock",
+    "isText": true
+   },
+   {
+    "id": 68,
+    "x": 14,
+    "y": 11,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 69,
+    "x": 15,
+    "y": 11,
+    "name": "push",
+    "isText": true
+   },
+   {
+    "id": 70,
+    "x": 20,
+    "y": 11,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 71,
+    "x": 12,
+    "y": 12,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 72,
+    "x": 20,
+    "y": 12,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 73,
+    "x": 6,
+    "y": 13,
+    "name": "flag",
+    "isText": true
+   },
+   {
+    "id": 74,
+    "x": 7,
+    "y": 13,
+    "name": "is",
+    "isText": true
+   },
+   {
+    "id": 75,
+    "x": 8,
+    "y": 13,
+    "name": "win",
+    "isText": true
+   },
+   {
+    "id": 76,
+    "x": 12,
+    "y": 13,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 77,
+    "x": 20,
+    "y": 13,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 78,
+    "x": 10,
+    "y": 14,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 79,
+    "x": 12,
+    "y": 14,
+    "name": "rock",
+    "isText": false
+   },
+   {
+    "id": 80,
+    "x": 20,
+    "y": 14,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 81,
+    "x": 7,
+    "y": 15,
+    "name": "flag",
+    "isText": false
+   },
+   {
+    "id": 82,
+    "x": 12,
+    "y": 15,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 83,
+    "x": 20,
+    "y": 15,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 84,
+    "x": 12,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 85,
+    "x": 13,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 86,
+    "x": 14,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 87,
+    "x": 15,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 88,
+    "x": 16,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 89,
+    "x": 17,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 90,
+    "x": 18,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 91,
+    "x": 19,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 92,
+    "x": 20,
+    "y": 16,
+    "name": "wall",
+    "isText": false
+   },
+   {
+    "id": 93,
+    "x": 12,
+    "y": 17,
+    "name": "wall",
+    "isText": false
+   }
+  ]
+ },
+ "inputs": "ddzzlllllllzzzzzzzrrrzzzuuurrrdzzrrdddrrllldrrdduurrrrrdruuuudlllllldrrrdrulurrdrudrruuldddddduuuddduuuuuuulddldrluluuuurddldrrurdddddrdlllllrrrrrdlllllddrrrrurulldudluuuzzlurdruuzrulldddlllllddllllu",
+ "initial": "playing|wall@8,0(stop);wall@8,1(stop);wall@8,2(stop);wall!@9,2(push);is!@10,2(push);stop!@11,2(push);wall@8,3(stop);wall@9,3(stop);wall@10,3(stop);wall@11,3(stop);wall@12,3(stop);wall@13,3(stop);wall@14,3(stop);wall@15,3(stop);wall@16,3(stop);wall@17,3(stop);wall@18,3(stop);wall@19,3(stop);wall@20,3(stop);skull!@17,4(push);is!@18,4(push);defeat!@19,4(push);wall@20,4(stop);grass@9,5();wall@20,5(stop);grass@9,6();baba!@12,6(push);is!@13,6(push);you!@14,6(push);wall@20,6(stop);baba@6,7(weak+you);grass@9,7();is!@12,7(push);rock@18,7(push);wall@20,7(stop);grass@9,8();weak!@12,8(push);wall@20,8(stop);wall@0,9(stop);wall@1,9(stop);wall@2,9(stop);wall@3,9(stop);wall@4,9(stop);wall@5,9(stop);wall@6,9(stop);wall@7,9(stop);wall@8,9(stop);wall@9,9(stop);wall@10,9(stop);wall@16,9(stop);skull@17,9(defeat);skull@18,9(defeat);skull@19,9(defeat);wall@20,9(stop);wall@10,10(stop);wall@11,10(stop);wall@12,10(stop);wall@13,10(stop);wall@14,10(stop);wall@15,10(stop);wall@16,10(stop);skull@17,10(defeat);skull@18,10(defeat);skull@19,10(defeat);wall@20,10(stop);wall@12,11(stop);rock!@13,11(push);is!@14,11(push);push!@15,11(push);wall@20,11(stop);wall@12,12(stop);wall@20,12(stop);flag!@6,13(push);is!@7,13(push);win!@8,13(push);wall@12,13(stop);wall@20,13(stop);wall@10,14(stop);rock@12,14(push);wall@20,14(stop);flag@7,15(win);wall@12,15(stop);wall@20,15(stop);wall@12,16(stop);wall@13,16(stop);wall@14,16(stop);wall@15,16(stop);wall@16,16(stop);wall@17,16(stop);wall@18,16(stop);wall@19,16(stop);wall@20,16(stop);wall@12,17(stop)",
+ "hashes": [
+  "b351a40cbdab467b",
+  "25d8031751fdee82",
+  "b351a40cbdab467b",
+  "c156f56eac7cf4f3",
+  "8159d9e71155ef8c",
+  "4a27d72cd90da5bd",
+  "31e2ff9bc8a8b53f",
+  "6a05f4e429aea0ac",
+  "0bf03d44670ea104",
+  "d1048426d6feb912",
+  "25d8031751fdee82",
+  "d1048426d6feb912",
+  "0bf03d44670ea104",
+  "6a05f4e429aea0ac",
+  "31e2ff9bc8a8b53f",
+  "4a27d72cd90da5bd",
+  "8159d9e71155ef8c",
+  "c156f56eac7cf4f3",
+  "b4fb3f1fae1ec95c",
+  "e334d68977f2119c",
+  "25d8031751fdee82",
+  "e334d68977f2119c",
+  "b4fb3f1fae1ec95c",
+  "c156f56eac7cf4f3",
+  "d8a82b513feb1523",
+  "a6bc018a20b06f87",
+  "91b3e3005fada4e2",
+  "4e27314c5ee6f920",
+  "a147bb61bb9d78ad",
+  "f80cc289054ca5ab",
+  "25d8031751fdee82",
+  "f80cc289054ca5ab",
+  "a147bb61bb9d78ad",
+  "f80cc289054ca5ab",
+  "3f7059b67fc7be3d",
+  "061f5cc5addeb121",
+  "2ae7634c03b66688",
+  "c323a0431bd905f3",
+  "f628e2fba5a29a42",
+  "ebadd5d2fddb04f5",
+  "0b121e47d1a6c7db",
+  "6776454cf7ddf3dc",
+  "8e34ff486ad8a8dd",
+  "e4318fec8dbf6223",
+  "b1760e64386bce4e",
+  "ddf09bb3926e48f7",
+  "dda7521744d2c406",
+  "dda7521744d2c406",
+  "b2716d086f8dabf4",
+  "d20da161d17fb021",
+  "ebadd5d2fddb04f5",
+  "df2bc214af28f0bd",
+  "b38e8c13adfd8d66",
+  "2a35ac4889b9dbef",
+  "0ff4c41fe652c525",
+  "42801d4235455114",
+  "63f33bd1c3841889",
+  "0b11f02b324f6202",
+  "7ff3457fa1785771",
+  "7ff3457fa1785771",
+  "7ff3457fa1785771",
+  "0d04215f90333726",
+  "56cbfec7317946ef",
+  "2a80a145c56f0369",
+  "94fff8a875b624d7",
+  "c10a18168b0b1acc",
+  "d2e2bc322178964e",
+  "67be9c37271172d2",
+  "7733b5c44d447324",
+  "f106dc3257f82af0",
+  "9dae454d5bd43b07",
+  "2a0aead48f09e755",
+  "5925e06611a07ed4",
+  "2b78e12346e8e12b",
+  "656f09554fd84bdb",
+  "b2b8f97a414c6fcd",
+  "d9fdb70683593f3e",
+  "9563e3afd837b60d",
+  "3c61aa192e04a2fb",
+  "d3d13d1293527c52",
+  "bf26f20ab0cd9345",
+  "1ca215cbf03ee778",
+  "795c54afec597d20",
+  "10bc43ec207239fb",
+  "db339e9ee1111339",
+  "6d974b994c3968a9",
+  "b881e5e2159a93f1",
+  "a359f0251c779500",
+  "a4d31067c90e35f4",
+  "34c7a76ec7d11345",
+  "56bfdedaafc7cd25",
+  "a8c019ab66f1b945",
+  "38dd83ee9a3e119e",
+  "e6f24cba09c9e579",
+  "b8810a7c3cecfddc",
+  "da3336980d542b32",
+  "b5489511204236b4",
+  "f0d9a4fa0f667ab9",
+  "451b78eb13179a9a",
+  "e6f24cba09c9e579",
+  "b8810a7c3cecfddc",
+  "da3336980d542b32",
+  "b5489511204236b4",
+  "61451442bf25d602",
+  "890ed9032a8349d7",
+  "bfac0341eecb7d54",
+  "c6a68f0577dbd8bf",
+  "4c444060710d5b28",
+  "4e92c1484ca6b9f9",
+  "4b6d1009674d901d",
+  "777036b836ec5180",
+  "a9b9744fd25022c0",
+  "c621fcb5e021bce3",
+  "08a67546314b41f4",
+  "2813bdf46ab4c8ee",
+  "35534004a3ff566f",
+  "4c2c868addfd785a",
+  "d2ef2718d2304b2c",
+  "749b440e0e97f6c5",
+  "749b440e0e97f6c5",
+  "b94f0086f70789ed",
+  "657b12e32e789bd9",
+  "310dcbfeb7ef1398",
+  "fbcb5eff0d62e109",
+  "d73d93a1b24421bb",
+  "ad20579e592afecf",
+  "c9d6544abadc5bc4",
+  "d1b4aa705c267449",
+  "b95436f50cc483e1",
+  "3f41bd6362c50712",
+  "e6972e9946bc3843",
+  "26cf0cc8e3ab9a76",
+  "7e20bd20b011b251",
+  "f14b8bca18651049",
+  "f0ce0ec86feb7ae7",
+  "2a72cbdb386fb47a",
+  "ef498d2242e4a63e",
+  "467b406c61687009",
+  "d096ec6db5633077",
+  "9ca3e17a7ea9d8e6",
+  "4a1a88a479bcda8e",
+  "37fcc1e21eb6a3e1",
+  "1639fd942c885a26",
+  "0609b705789fb429",
+  "1bb6929cb651bfc4",
+  "ed39e0ef654d0142",
+  "0decc67e9344f69e",
+  "484597739797d96b",
+  "322dac22b06ad32c",
+  "f11596f26b2137f8",
+  "a50f9deb1e9f25a5",
+  "94139827d378a28f",
+  "62635d5f41d03f71",
+  "cb1ffe8342436c19",
+  "018c6fff91f62bec",
+  "baf4bb70f5139162",
+  "a3d1e65bc1cdd6c2",
+  "cfdee04e46c6771e",
+  "719cba830d71bad3",
+  "9008bd715cfa07c0",
+  "52bd669f71b55bd7",
+  "14d87280416b75fd",
+  "9c28c428f1ac2161",
+  "b28038dc5acc10a1",
+  "999762fda56bc88b",
+  "b28038dc5acc10a1",
+  "e4b4520548a42b8c",
+  "e61fbffe6ae385c9",
+  "061e29e97fbb4408",
+  "ba7e8e72d27a5bfe",
+  "061e29e97fbb4408",
+  "e61fbffe6ae385c9",
+  "32b1635dfdbd2c44",
+  "c375a292e081be3e",
+  "9586989d5d891329",
+  "e189deb8e813b0fd",
+  "0ec9adce0c4af17a",
+  "3940c33408251808",
+  "66627d5ea44255c6",
+  "3940c33408251808",
+  "b04b9955c7fce2be",
+  "cbbe803cf013aeee",
+  "11f68da22b314fb0",
+  "6f168c3710476d59",
+  "129c3f14e6b0c78b",
+  "49366d05474e6910",
+  "f92ebed03d5ae17c",
+  "496dbbbb71d7eb4d",
+  "c68971ff986a4c9a",
+  "0ab1e79f87fcaaa6",
+  "c2578d2d5e35a237",
+  "f54f5dd9a16a794a",
+  "069e03f423571833",
+  "1ebc28104096e645",
+  "8c60daaa9f592a66",
+  "18c030a2ac117150",
+  "ce4c05b8b79f6b45",
+  "32f1a8f2d2c754a5",
+  "e8bcd825f9ca6618"
+ ],
+ "final": "win|wall@8,0(stop);wall@8,1(stop);wall@8,2(stop);wall!@9,2(push);is!@10,2(push);stop!@11,2(push);wall@8,3(stop);wall@9,3(stop);wall@10,3(stop);wall@11,3(stop);wall@12,3(stop);wall@13,3(stop);wall@14,3(stop);wall@15,3(stop);wall@16,3(stop);wall@17,3(stop);wall@18,3(stop);wall@19,3(stop);wall@20,3(stop);skull!@17,4(push);is!@18,4(push);defeat!@19,4(push);wall@20,4(stop);grass@9,5();wall@20,5(stop);grass@9,6();baba!@12,6(push);is!@13,6(push);you!@14,6(push);wall@20,6(stop);baba@up@7,15(you);grass@9,7();is@left!@13,12(push);wall@20,7(stop);grass@9,8();weak@left!@13,13(push);wall@20,8(stop);wall@0,9(stop);wall@1,9(stop);wall@2,9(stop);wall@3,9(stop);wall@4,9(stop);wall@5,9(stop);wall@6,9(stop);wall@7,9(stop);wall@8,9(stop);wall@9,9(stop);wall@10,9(stop);wall@16,9(stop);skull@17,9(defeat);skull@19,9(defeat);wall@20,9(stop);wall@10,10(stop);wall@11,10(stop);wall@12,10(stop);wall@13,10(stop);wall@14,10(stop);wall@15,10(stop);wall@16,10(stop);skull@17,10(defeat);skull@19,10(defeat);wall@20,10(stop);wall@12,11(stop);rock!@13,11(push);is!@14,11(push);push!@15,11(push);wall@20,11(stop);wall@12,12(stop);wall@20,12(stop);flag!@6,13(push);is!@7,13(push);win!@8,13(push);wall@12,13(stop);wall@20,13(stop);wall@10,14(stop);wall@20,14(stop);flag@7,15(win);wall@12,15(stop);wall@20,15(stop);wall@12,16(stop);wall@13,16(stop);wall@14,16(stop);wall@15,16(stop);wall@16,16(stop);wall@17,16(stop);wall@18,16(stop);wall@19,16(stop);wall@20,16(stop);wall@12,17(stop)",
+ "status": "win"
+}

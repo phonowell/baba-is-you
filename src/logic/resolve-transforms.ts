@@ -110,22 +110,18 @@ export const applyTransforms = (
       continue
     }
 
+    // `x is x` vetoes every transform for x (predecessor `is_noun` returns
+    // no targets when the entity itself is among them), e.g.
+    // `flag is flag` + `flag is jelly` leaves flag unchanged.
     const nonIdentity = transformed.filter(
       (value) => value.name !== item.name || value.isText !== item.isText,
     )
-    if (!nonIdentity.length) {
+    if (nonIdentity.length !== transformed.length) {
       next.push(item)
       continue
     }
 
     changed = true
-    const hasIdentity = transformed.length !== nonIdentity.length
-    if (hasIdentity) {
-      next.push(item)
-      for (const extra of nonIdentity) next.push({ ...extra, id: nextId++ })
-      continue
-    }
-
     const first = nonIdentity[0]
     if (!first) continue
     next.push({ ...first, id: item.id })

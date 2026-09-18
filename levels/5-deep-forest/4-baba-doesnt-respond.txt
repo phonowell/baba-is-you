@@ -1,0 +1,29 @@
+t = tree
+h = hedge
+v = flower
+d = door
+k = keke down
+f = flag
+r = reed
+b = baba down
+l = belt down
+u = belt up
+palette = ruins
++ l = 1,1
+---
+    t       v    D=⊘
+  v  hhhhhhhhhhhhhhh
+ v   hK=✥      L=^ h      t
+     h            hhhh F=✓ v
+  t  h            hr d
+     h              hh  f
+   v h             hh
+     htttlttttttutthH=⊘
+     h             hT=⊘
+     h             hhhh   v
+     h  k  b  B=↦  hDRh    v
+     h             h==h  t
+   t h→      h     ⨶⩍ h v
+  v  hhhhhhhhhhhhhhh&hh
+   v               h⧜h    t
+                   hhh

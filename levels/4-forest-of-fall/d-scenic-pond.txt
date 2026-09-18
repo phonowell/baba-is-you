@@ -1,0 +1,31 @@
+g = grass
+s = skull left
+h = husk
+f = fence
+l = flag
+b = baba
+w = wall
+a = water
+o = foliage
+e = leaf
+k = keke
+palette = autumn
+---
+ggg      f  f   h   gggg
+gg    S=≉f  f      h  gg
+g    fffff Lfffff
+  A=≉faaa s   =✓fS~W
+   wwwaaawwwwwwwwwwwww
+  @w                 w h
+  =w                 w
+  ⩍w       K         w
+   w  B=✥  ~         w
+   w       @   fffffff
+   w           f     f
+h  w             w  af
+   w   b   l   f    =f
+   w           f    ⚲ffo
+ h w           f      f
+   wwwwwwwwwwwwffffffff
+g           F&W=⊘     e
+gg                 o
