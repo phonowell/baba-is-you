@@ -3,21 +3,19 @@ w = wall
 t = tree
 g = grass
 f = flag
-o = tile
 c = brick
 b = baba down
 x = box
 d = door
 palette = ruins
-+ o = 1,0
 ---
 K=⧜w        t              g
 wwww     g     gg wwwwwww
-                  woF=✓ow
-    gg            wooooow gg
- t ggg            woofoow  g
-t   g      X=_    wooooow
-                  wooooow
+                  w F=✓ w
+    gg            w     w gg
+ t ggg            w  f  w  g
+t   g      X=_    w     w
+                  w     w
  g         ccc X  wwwdwww t
 ggg      & cbc ~
  gg        ccc K         gg

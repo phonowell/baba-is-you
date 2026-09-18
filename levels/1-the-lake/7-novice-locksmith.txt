@@ -1,6 +1,5 @@
 w = wall
-t = tile
-b = baba on tile
+b = baba
 o = bubble
 a = algae
 s = seastar
@@ -10,18 +9,18 @@ f = flag
 right pad = 1
 palette = ocean
 ---
-      wtttttw           o
-    a wtttttw   o  a
-      wtttttw
+      w     w           o
+    a w     w   o  a
+      w     w
       wwwwwwwwwwwwwwww
- a    wtttttwttttttttw   a
-      wtKt⧜twttttttttw
-   o  wtttttwttttttttw  s
-      wtKt↦twttttttttw
-      wtttttdttttttttw
-   a  wtkt=twttttttttw   a
-  a   wttbttwwwwwdwwww
-      wtttttw
+ a    w     w        w   a
+      w K ⧜ w        w
+   o  w     w        w  s
+      w K ↦ w        w
+      w     d        w
+   a  w k = w        w   a
+  a   w  b  wwwwwdwwww
+      w     w
  o    wwwwwww    f      a o
 
      a          F=✓

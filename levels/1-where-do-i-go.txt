@@ -1,10 +1,8 @@
 g = grass
 w = wall
-t = tile
 f = flag
 b = baba
 right pad = 1
-+ t = 1,0
 ---
 
        g
@@ -13,9 +11,9 @@ right pad = 1
          w =    w g
          w      w
      wwwww    ✓ w
-     wtttt      w   g
- g   wtFtt f    w
-  g  wtttt      w
+     w          w   g
+ g   w F   f    w
+  g  w          w
      wwwwwwwwwwww
          w      w
       B  w W    w    g

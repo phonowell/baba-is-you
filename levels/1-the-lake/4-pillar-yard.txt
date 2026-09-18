@@ -5,9 +5,7 @@ s = seastar
 w = wall
 b = baba
 c = brick
-t = tile
 palette = ocean
-+ t = 1,0
 ---
 F=✓
  a              a p
@@ -15,9 +13,9 @@ F=✓
             p       a
    ccc c c
    cwwwwwc     sssss
-W  cwtttwc    cscccs
-=  cwtbtpccccccscfcs
-⊘  cwtttwca    scccsa
+W  cw   wc    cscccs
+=  cw b pccccccscfcs
+⊘  cw   wca    scccsa
    cwwwwwc     sssss
    cc  ccc
  a         p

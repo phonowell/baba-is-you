@@ -4,22 +4,20 @@ b = baba
 w = wall
 j = jelly
 f = flag
-t = tile
 palette = ocean
 right pad = 1
-+ t = 1,0
 ---
      a
                   a
    s    wwwwwwwww     a
- a      wbttttttw
-        wttjttWtw
-  F=✓   wjjjtt=tw
-        wttttt⊘tw   a
-  B=✥ a wtttttttw    a
-        wtJ=⊘tttw
-    a   wtttttttw   s
-  a     wtttttttw a
+ a      wb      w
+        w  j  W w
+  F=✓   wjjj  = w
+        w     ⊘ w   a
+  B=✥ a w       w    a
+        w J=⊘   w
+    a   w       w   s
+  a     w       w a
         wwwwwwwww
 
 W=⩍                  a

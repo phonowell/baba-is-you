@@ -5,9 +5,7 @@ w = wall
 b = baba
 z = bolt
 s = skull down
-t = tile
 palette = factory
-+ t = 1,0
 ---
    p                  p
 pppp     c            pp
@@ -19,11 +17,11 @@ pp         wwwwwwwwww
 wwBw=wwwwwww   Z=↦  wZ
   = ⌇ s    ⩍    →   w=
 ww✥wwswwwwww        w⌢
-    wtw    w        w
-  c wtw W=⊘w   b z  w
-pp  wtw  wwww       w
- p  wtwwwwt✓ttw     w
- p  wttttttwttwwwwwww pp
+    w w    w        w
+  c w w W=⊘w   b z  w
+pp  w w  wwww       w
+ p  w wwww ✓  w     w
+ p  w      w  wwwwwww pp
 ppp wwwwwwwwwww       p
   p             c  ppppp
   p                p

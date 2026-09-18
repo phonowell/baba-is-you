@@ -1,10 +1,8 @@
 b = baba
 f = flag
 w = wall
-t = tile
 r = rock
 right pad = 6
-+ t = 1,0
 ---
 B=⚲
 
@@ -12,9 +10,9 @@ B=⚲
 
        B=✥     F=✓
        wwwwwwwwwww
-       tttttrttttt
-       tbtttrtttft
-       tttttrttttt
+            r     
+        b   r   f 
+            r     
        wwwwwwwwwww
        W=⊘     R=↦
 

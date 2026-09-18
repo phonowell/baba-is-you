@@ -7,8 +7,6 @@ w = wall
 a = water
 b = baba
 k = keke
-i = tile
-+ i = 1,0
 palette = ruins
 ---
                t   t  t
@@ -16,9 +14,9 @@ palette = ruins
   eeeeeee  =     n   n
   e g ggeW=⊘        n  t
   e    gwwwwwww       t
-  e  ✓  iiiii wwK=K    n
+  e  ✓        wwK=K    n
  geg    wwwww wwwwwwww
- gegg   iiw   w K F  w
+ gegg     w   w K F  w
   eeeeeew       = =  w
    ggB=✥ww      ↦ *  w t
  n  g  www   b       w

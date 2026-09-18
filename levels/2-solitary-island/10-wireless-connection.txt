@@ -1,5 +1,4 @@
 p = pipe
-t = tile
 r = reed
 w = bog
 b = baba down
@@ -8,24 +7,23 @@ c = cog
 x = robot down
 o = rock
 palette = factory
-+ t = 1,0
 ---
-P=⊘ptp       r ww        ptt
-pppppp         wwr   pFppptt
-B=✥p           ww        ptt
-pppp  ttt      ww    pOppptt
-F=Fp  ttt      ww        ptt
-pppp  ttttt   rww    p✓ppppt
-W=⩍p  ttttt    ww         pt
-pppp  ttttt   rww         pt
-      ttt      ww         pp
-      ttt      ww
+P=⊘p p       r ww        p  
+pppppp         wwr   pFppp  
+B=✥p           ww        p  
+pppp           ww    pOppp  
+F=Fp           ww        p  
+pppp          rww    p✓pppp 
+W=⩍p           ww         p 
+pppp          rww         p 
+               ww         pp
+               ww
                wwr
                ww          w
 w    ppppp     ww          w
 ww   p   p    rww r      www
 ww   p   ppppp ww       wwww
-www  p   ptttp wwr     wwww
+www  p   p   p wwr     wwww
 ---
 
 

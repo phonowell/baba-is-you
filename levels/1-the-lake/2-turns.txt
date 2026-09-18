@@ -3,25 +3,23 @@ x = skull
 j = jelly
 c = crab down
 s = seastar
-b = baba on tile
+b = baba
 f = flag
-t = tile
 w = wall
 r = rock
 right pad = 1
 palette = ocean
-+ t = 1,0
 ---
  a                   aa
 a                        a
      X=⩍wwwwwwwwwwwww     a
     wwwww           w   j
-    wtttw           w
-    wt twww  S=≉    wW=⊘
+    w   w           w
+    w   www  S=≉    wW=⊘
   c w C x s         wwwwww
-    wt twww  R=↦     rtwtw
-    wtttw           wwtbtw
-    wwBww    r &    wwtwtw
+    w   www  R=↦     r w w
+    w   w           ww b w
+    wwBww    r &    ww w w
      w=ww           wwwwww
    f w✥ww           w
 a    wwwwwwwwwwwwwwww  j

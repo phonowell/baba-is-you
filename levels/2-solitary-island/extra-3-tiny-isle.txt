@@ -1,25 +1,23 @@
 g = grass
 c = cog
 b = baba
-t = tile
 w = water
 f = flag
 k = key
 palette = factory
-+ t = 1,0
 + g = 3,0
 ---
 gggggg           gg gggg
 gggg         c        gg
 g                      g
-g       tt b  t        g
-        Bt  tttt
-        =wwwwwtt      c
-  c     ✥wwttwt
- c      &wt✓tw         g
-       t⧜wwwww         g
-  F K   tt            gg
-  f k   t       c    ggg
+g          b           g
+        B       
+        =wwwww        c
+  c     ✥ww  w 
+ c      &w ✓ w         g
+        ⧜wwwww         g
+  F K                 gg
+  f k           c    ggg
                c     ggg
           c       wwwwww
                   wW=⊘&⨶
