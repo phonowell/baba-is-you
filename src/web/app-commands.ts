@@ -1,4 +1,4 @@
-import { MENU_WINDOW_SIZE } from '../view/render-menu.js'
+import { MENU_WINDOW_SIZE } from '../view/render-menu-html.js'
 
 import type { GameCommand, MenuCommand } from '../view/input.js'
 import type { WebAppAction, WebAppStateData } from './app-model.js'

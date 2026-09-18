@@ -1,11 +1,3 @@
-export const CELL_WIDTH = 2
-export const ANSI_RESET = '\x1b[0m'
-export const ANSI_TEXT = '\x1b[36m'
-export const ANSI_IS = '\x1b[33m'
-export const GRAPHEME_SEGMENTER = new Intl.Segmenter('en', {
-  granularity: 'grapheme',
-})
-
 export const OBJECT_GLYPHS: Record<string, string> = {
   algae: '🌱',
   anni: '👧',

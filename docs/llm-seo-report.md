@@ -2,7 +2,7 @@
 
 ## 现状摘要
 
-- 项目是 Baba Is You 的终端 + 单文件 Web 版本；入口分别为 `./src/cli.ts` 与 `./src/web/app.ts`
+- 项目是 Baba Is You 的单文件 Web 版本；入口为 `./src/web/app.ts`（CLI 前端已移除，无头推演用 `pnpm simulate`）
 - 规则系统并非仅 `X IS Y`：当前实现包含 `IS/HAS/MAKE/EAT/WRITE`，以及 `AND/NOT` 与 `ON/NEAR/FACING/LONELY`
 - 仓库已有多语言 README（EN / ZH / JA）
 
@@ -33,8 +33,8 @@
 ```md
 ## LLM Friendly Summary / LLM 友好摘要
 
-**EN:** Terminal-first Baba Is You with a pure logic core, plus CLI and single-file Web frontends.
-**ZH:** 以终端为主的 Baba Is You 实现，纯逻辑核心，提供 CLI 与单文件 Web 两套前端。
+**EN:** Baba Is You with a pure logic core and a single-file Web frontend.
+**ZH:** 纯逻辑核心的 Baba Is You 实现，前端为单文件 Web。
 
 ### Rule Coverage / 规则覆盖
 - Operators: IS / HAS / MAKE / EAT / WRITE
@@ -44,7 +44,6 @@
 ### Quickstart / 快速开始
 ```bash
 pnpm install
-pnpm start
 pnpm build
 ```
 ```
@@ -57,9 +56,7 @@ Core:
 - puzzle-game
 
 Product:
-- terminal-game
 - web-game
-- cli-game
 
 Tech:
 - rules-engine
@@ -67,7 +64,7 @@ Tech:
 - nodejs
 
 Suggested final list:
-baba-is-you puzzle-game terminal-game web-game cli-game rules-engine typescript nodejs
+baba-is-you puzzle-game web-game rules-engine typescript nodejs
 ```
 
 ## 待确认修改清单

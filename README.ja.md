@@ -1,14 +1,13 @@
-# Baba Is You CLI
+# Baba Is You
 
 日本語 | [English](./README.md) | [中文](./README.zh-CN.md)
 
-ターミナル中心の Baba Is You 実装です。純粋なロジックコアを共有し、CLI（`src/cli.ts`）と単一 HTML Web（`src/web/app.ts`）を提供します。
+純粋なロジックコアを持つ Baba Is You 実装です。フロントエンドは単一 HTML Web（`src/web/app.ts`）です。
 
 ## クイックスタート
 
 ```bash
 pnpm install
-pnpm start
 pnpm build
 pnpm verify-levels:official
 pnpm test
@@ -21,7 +20,6 @@ pnpm type-check
 | コマンド | 説明 |
 |---------|------|
 | `pnpm check` | lint + 型チェック + テストを一括実行 |
-| `pnpm start` | CLI ゲーム起動（`src/cli.ts`、対話 TTY 必須） |
 | `pnpm simulate` | ヘッドレスでレベルをステップ実行（例 `pnpm simulate 0 rrdl --trace`） |
 | `pnpm build` | 単一 HTML 生成（`release/baba-is-you.html`） |
 | `pnpm verify-levels:official` | `data/baba/*.(l|ld)` の公式レベルテキスト導入整合性を検証 |
@@ -32,9 +30,8 @@ pnpm type-check
 
 ## 操作
 
-- メニュー: `W/S` または `↑/↓` で選択、`A/D` または `←/→` でページ移動、`Enter/N/Space` で開始、`Q` で終了（CLI）
+- メニュー: `W/S` または `↑/↓` で選択、`A/D` または `←/→` でページ移動、`Enter/N/Space` で開始、`Q` で終了
 - ゲーム中: `WASD` または矢印で移動、`Space` で待機、`U` で取り消し、`R` でリスタート、勝利後 `N/Enter` で次へ、`Q` でメニューへ戻る
-- CLI プロセス終了: `Ctrl+C`
 
 ## ルールシステム（実装済み）
 
@@ -46,7 +43,6 @@ pnpm type-check
 
 ## レンダリング
 
-- ターミナル: 固定 2 桁幅セル、テキストタイルは 2 文字コード、`IS` は専用色、ルールと凡例を常時表示
 - Web: 盤面セルは常に正方形、テキストタイルは全文字表示、ルールと凡例はゲーム内ダイアログで表示
 - Web 3D 描画は単一固定のクレイ質感 preset を使用し、地面は単色マテリアル、カードは簡略テクスチャラベル（文字/emoji/向きマーカー）を使用します（実行時切替なし）
 - Web 3D の立体スタック順は固定: `you > text > move/fall > push/pull > open/shut > else`
@@ -70,10 +66,10 @@ pnpm build
 
 ```text
 src/
-  cli.ts
   levels.ts
   levels-data/
   logic/
+  tools/
   view/
   web/
 ```
@@ -82,7 +78,7 @@ src/
 
 - Node.js + TypeScript + ESM
 - Runtime: `tsx`
-- Lint: ESLint (`eslint.config.mjs`)
+- Lint: oxlint (`.oxlintrc.json`)
 
 ## 開発メモ
 

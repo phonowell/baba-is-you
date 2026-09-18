@@ -1,14 +1,13 @@
-# Baba Is You CLI
+# Baba Is You
 
 中文 | [English](./README.md) | [日本語](./README.ja.md)
 
-以终端为主的 Baba Is You 实现，采用纯逻辑核心，并提供 CLI（`src/cli.ts`）与单文件 Web（`src/web/app.ts`）两套前端。
+Baba Is You 实现，采用纯逻辑核心，前端为单文件 Web（`src/web/app.ts`）。
 
 ## 快速开始
 
 ```bash
 pnpm install
-pnpm start
 pnpm build
 pnpm verify-levels:official
 pnpm test
@@ -21,7 +20,6 @@ pnpm type-check
 | 命令 | 说明 |
 |------|------|
 | `pnpm check` | lint + 类型检查 + 测试一步完成 |
-| `pnpm start` | 运行 CLI 游戏（`src/cli.ts`，需交互式 TTY） |
 | `pnpm simulate` | 无头推演关卡（例 `pnpm simulate 0 rrdl --trace`） |
 | `pnpm build` | 构建单文件网页产物（`release/baba-is-you.html`） |
 | `pnpm verify-levels:official` | 校验 `data/baba/*.(l|ld)` 官方关卡文本导入一致性 |
@@ -32,9 +30,8 @@ pnpm type-check
 
 ## 操作
 
-- 菜单：`W/S` 或 `上/下` 选择，`A/D` 或 `左/右` 翻页，`Enter/N/Space` 开始，`Q` 退出（CLI）
+- 菜单：`W/S` 或 `上/下` 选择，`A/D` 或 `左/右` 翻页，`Enter/N/Space` 开始，`Q` 退出
 - 游戏内：`WASD` 或方向键移动，`Space` 原地等待，`U` 撤销，`R` 重开，胜利后 `N/Enter` 下一关，`Q` 返回菜单
-- CLI 进程退出：`Ctrl+C`
 
 ## 规则系统（当前实现）
 
@@ -46,7 +43,6 @@ pnpm type-check
 
 ## 渲染
 
-- 终端：固定 2 列宽单元；文字块使用 2 字母缩写；`IS` 单独着色；规则与字典常驻显示
 - Web：棋盘格子固定正方形；文本块显示完整单词；规则与字典在游戏内弹层查看
 - Web 3D 渲染使用单一固定粘土质感 preset：地面为纯色材质，卡牌使用简化纹理标签（文本/emoji/朝向标记），不提供运行时切换
 - Web 3D 立体元素堆叠顺序固定为：`you > text > move/fall > push/pull > open/shut > else`
@@ -70,10 +66,10 @@ pnpm build
 
 ```text
 src/
-  cli.ts
   levels.ts
   levels-data/
   logic/
+  tools/
   view/
   web/
 ```
@@ -82,7 +78,7 @@ src/
 
 - Node.js + TypeScript + ESM
 - Runtime: `tsx`
-- Lint: ESLint（`eslint.config.mjs`）
+- Lint: oxlint（`.oxlintrc.json`）
 
 ## 开发说明
 

@@ -1,8 +1,5 @@
 {
-  "bin": {
-    "baba-cli": "./src/cli.ts"
-  },
-  "description": "Terminal Baba Is You (simplified) CLI",
+  "description": "Baba Is You (simplified) — single-file web build",
   "engines": {
     "node": ">=20"
   },
@@ -16,8 +13,7 @@
     "typescript": "^5.9.3"
   },
   "license": "MIT",
-  "main": "src/index.ts",
-  "name": "baba-is-you-cli",
+  "name": "baba-is-you",
   "scripts": {
     "build": "node scripts/build-single-html.mjs",
     "check": "pnpm lint && pnpm type-check && pnpm test",
@@ -25,8 +21,7 @@
     "verify-levels:official": "tsx src/tools/import-official-levels.ts --verify",
     "lint": "tsx scripts/remove-bom.ts && tsx scripts/fix-crlf.ts && oxlint",
     "simulate": "tsx scripts/simulate.ts",
-    "start": "tsx src/cli.ts",
-    "test": "tsx --test src/**/*.test.ts",
+    "test": "tsx --test 'src/**/*.test.ts'",
     "type-check": "tsc -p tsconfig.json --noEmit",
     "watch": "node scripts/watch-build.mjs",
     "wt-rebase": "node scripts/worktree/rebase-worktree.js --base main",

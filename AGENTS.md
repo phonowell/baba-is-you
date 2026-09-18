@@ -1,8 +1,10 @@
 # AGENTS.md
 
 ## 关键约束
-- 保持分层：`src/logic` 只做规则与状态推进；CLI/Web 输入输出在 `src/cli.ts`、`src/view/*`、`src/web/*`
-- 逻辑保持可组合与可测试：核心入口 `src/logic/step.ts`，避免把 IO、DOM、Three.js 逻辑混入 `src/logic`
+- 保持分层：`src/logic` 只做规则与状态推进；Web 输入输出在 `src/view/*`、`src/web/*`
+- 依赖方向单向：`logic` 不依赖任何外层；`view` → `logic`；`web` → `view`/`logic`；`tools/` 为顶层入口，`levels*.ts` 由入口装配，禁止内层反向依赖
+- `src/view` 承载 Web 共享渲染配置与输入映射；web 端必须复用 view 的词表与输入逻辑，禁止平行实现
+- 逻辑保持可组合与可测试：编排入口 `src/logic/step.ts`，流水线实现在 `src/logic/step/`（阶段序列集中在 `step/phase-list.ts`）；避免把 IO、DOM、Three.js 逻辑混入 `src/logic`
 - 状态更新遵循不可变风格：`step(state, action)` 返回新状态，不就地改写旧状态
 - 项目文件编码统一为 UTF-8（新增/修改文件均保持 UTF-8，禁止使用其他编码）
 - 优先暴露领域语义，避免只靠引擎内部术语命名：阶段/状态名应让人直接看懂玩法时序，文档同步解释“为什么此时生效”
@@ -20,8 +22,8 @@
   - 特殊名词：`TEXT/EMPTY/ALL/GROUP/LEVEL`
   - 属性词：以 `src/logic/types.ts` 的 `CORE_PROPERTIES` 为准
 - 修改规则词表时同步：`src/logic/types.ts`、`src/logic/rules*.ts`、`src/view/render-config.ts`、相关测试；若已集中导出语法集合，禁止再手写镜像副本
-- CLI 渲染约束：双宽格子、文本两字母码、语法词高亮；避免破坏 `src/view/render*.ts` 的输出兼容
 - Web 渲染约束：入口在 `src/web/app.ts`；3D 渲染使用 `src/web/board-3d-renderer*.ts` 体系，是唯一场景，不实现 2D/无 WebGL 回退；必须保证可释放（`dispose`）
+- 无头调试输出经 `src/tools/print-board.ts`：双宽格子、文本两字母码；该文件是 simulate 的打印器，不是第二套前端
 
 ## 技术栈
 - Node.js + TypeScript + ESM
@@ -31,8 +33,7 @@
 
 ## 核心命令
 - `pnpm check`：lint + type-check + test 一步验证（改动后默认先跑它）
-- `pnpm start`：运行 CLI（需要交互式 TTY，非交互环境请用 simulate/test）
-- `pnpm simulate`：无头推演关卡，例 `pnpm simulate 0 rrdl --trace`
+- `pnpm simulate`：无头推演关卡，例 `pnpm simulate 0 rrdl --trace`；`pnpm simulate --ascii levels/0-baba-is-you.txt rrr` 推演 ASCII 关卡；大地图（`index.txt`）支持 `e` 进入关卡、`b` 返回上级
 - `pnpm build`：构建单文件 Web（`release/baba-is-you.html`）
 - `pnpm watch`：监听并自动 build
 - `pnpm test`：运行 `src/**/*.test.ts`
@@ -42,16 +43,24 @@
 - `pnpm verify-levels:official`
 
 ## 目录结构
-- `src/cli.ts`：CLI 应用入口
 - `src/web/app.ts`：Web 应用入口
-- `src/logic/`：规则解析、匹配、状态推进
-- `src/view/`：输入映射与 CLI/HTML 渲染
-- `src/levels.ts`、`src/levels-data/*.ts`：关卡入口与数据包
-- `src/tools/import-official-levels.ts`：官方关卡导入/校验
+- `src/tools/level-graph.ts`：关卡目录 → 大地图导航图（供 simulate 加载 `index.txt`）
+- `src/tools/print-board.ts`：纯文本棋盘打印器（供 simulate 输出）
+- `src/logic/overworld.ts`：大地图纯逻辑（光标放置/移动、进入/返回、会话栈）
+- `src/logic/`：规则解析、匹配、状态推进；`src/logic/step/` 为推进流水线（`step.ts` 编排、`step/phase-list.ts` 定义阶段序列）
+- `src/view/`：输入映射、HTML 渲染与 Web 共享渲染配置
+- `src/levels.ts`、`src/levels-data/*.ts`：关卡入口与数据包（由 `web/app.ts` 装配，内层不反向依赖）
+- `levels/**/*.txt`：前身 Rust 项目移植的 ASCII 关卡（`src/logic/parse-ascii-level.ts` 解析；`index.txt` 为大地图，含 Level 图标/Cursor/`map N icon` 图例）
+- `src/logic/rules-override.ts`：规则实例源格溯源与被否决规则划分
+- `goldens/**/*.json`：通关回放快照，由 `src/logic/goldens.test.ts` 全量回放断言；`scripts/port-rust-goldens.ts` 可从 `../baba/goldens` 重新生成
+- `src/tools/import-official-levels.ts`：官方关卡导入/校验（独立脚本入口，只依赖 `logic`）
 - `scripts/build-single-html.mjs`：单文件构建脚本
 - `docs/logic-architecture.md`：逻辑流水线说明
 
 ## 工作流
+- 协作前提：main 分支多人并行改动；变更保持小而聚焦，避免无关重排/改名/大范围格式化，降低冲突面
+- 不采用 TDD（不要求先写失败测试），不使用 git worktree；直接在当前工作区完成改动
+- 测试准入从严：新增用例必须锁定真实行为风险或回归场景；低 ROI 用例（凑覆盖率、重复快照、镜像已有断言）不予准入
 - 规则/推进改动：优先补或改 `src/logic/*.test.ts`，再跑 `pnpm test && pnpm type-check`
 - 渲染/UI 改动：补 `src/view/*.test.ts` 或 `src/web/*.test.ts`，再跑 `pnpm test`
 - 输入/状态管理改动：至少覆盖“有效操作”和“无效操作”两类测试，防止把未生效命令当成已处理

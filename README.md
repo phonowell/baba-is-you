@@ -1,14 +1,13 @@
-# Baba Is You CLI
+# Baba Is You
 
 English | [中文](./README.zh-CN.md) | [日本語](./README.ja.md)
 
-Terminal-first Baba Is You with a pure logic core and two frontends: CLI (`src/cli.ts`) and single-file Web (`src/web/app.ts`).
+Baba Is You with a pure logic core and a single-file Web frontend (`src/web/app.ts`).
 
 ## Quick Start
 
 ```bash
 pnpm install
-pnpm start
 pnpm build
 pnpm verify-levels:official
 pnpm test
@@ -21,7 +20,6 @@ pnpm type-check
 | Command | Description |
 |---------|-------------|
 | `pnpm check` | Lint + type-check + test in one step |
-| `pnpm start` | Run CLI game (`src/cli.ts`, needs an interactive TTY) |
 | `pnpm simulate` | Headless level stepping, e.g. `pnpm simulate 0 rrdl --trace` |
 | `pnpm build` | Build single-file web output (`release/baba-is-you.html`) |
 | `pnpm verify-levels:official` | Verify imported official level text from `data/baba/*.(l|ld)` |
@@ -32,9 +30,8 @@ pnpm type-check
 
 ## Controls
 
-- Menu: `W/S` or `Up/Down` select, `A/D` or `Left/Right` page, `Enter/N/Space` start, `Q` quit (CLI)
+- Menu: `W/S` or `Up/Down` select, `A/D` or `Left/Right` page, `Enter/N/Space` start, `Q` quit
 - In game: `WASD` or arrows move, `Space` wait, `U` undo, `R` restart, `N/Enter` next after win, `Q` back to menu
-- CLI process exit: `Ctrl+C`
 
 ## Rule System (Implemented)
 
@@ -46,7 +43,6 @@ pnpm type-check
 
 ## Rendering
 
-- Terminal: fixed 2-column cells; text tiles use 2-letter codes; `IS` has dedicated color; rules and legend are always shown
 - Web: fixed square board; text tiles render full words; rules and legend are available in the in-game dialog
 - Web 3D path uses one fixed clay-look preset: ground uses solid-color material, cards use simplified texture labels (text/emoji/direction), with no runtime preset switch
 - Web 3D upright stack order is fixed: `you > text > move/fall > push/pull > open/shut > else`
@@ -70,10 +66,10 @@ pnpm build
 
 ```text
 src/
-  cli.ts
   levels.ts
   levels-data/
   logic/
+  tools/
   view/
   web/
 ```
@@ -82,7 +78,7 @@ src/
 
 - Node.js + TypeScript + ESM
 - Runtime: `tsx`
-- Lint: ESLint (`eslint.config.mjs`)
+- Lint: oxlint (`.oxlintrc.json`)
 
 ## Development Notes
 

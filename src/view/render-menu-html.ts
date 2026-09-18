@@ -1,4 +1,4 @@
-import { MENU_WINDOW_SIZE } from './render-menu.js'
+export const MENU_WINDOW_SIZE = 10
 
 type MenuLevel = {
   title: string
