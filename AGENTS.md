@@ -35,6 +35,7 @@
 - `pnpm check`：lint + type-check + test 一步验证（改动后默认先跑它）
 - `pnpm simulate`：无头推演关卡，例 `pnpm simulate 0 rrdl --trace`；`pnpm simulate --ascii levels/0-baba-is-you.txt rrr` 推演 ASCII 关卡；大地图（`index.txt`）支持 `e` 进入关卡、`b` 返回上级
 - `pnpm build`：构建单文件 Web（`release/baba-is-you.html`）
+- `pnpm deploy`：构建并部署到 `auvya.com/baba`（流程与坑位见 `docs/deploy.md`）
 - `pnpm watch`：监听并自动 build
 - `pnpm test`：运行 `src/**/*.test.ts`
 - `pnpm lint`：oxlint + BOM/CRLF 归一
@@ -57,10 +58,12 @@
 - `src/tools/import-official-levels.ts`：官方关卡导入/校验（独立脚本入口，只依赖 `logic`）
 - `scripts/build-single-html.mjs`：单文件构建脚本
 - `docs/logic-architecture.md`：逻辑流水线说明
+- `docs/deploy.md`：部署到 `auvya.com/baba` 的流程与边界（`wrangler.toml` + `src/tools/deploy-worker.ts`）
 
 ## 工作流
 - 协作前提：main 分支多人并行改动；变更保持小而聚焦，避免无关重排/改名/大范围格式化，降低冲突面
 - 不采用 TDD（不要求先写失败测试），不使用 git worktree；直接在当前工作区完成改动
+- 禁用 `git stash` 等可能丢失文件状态的 git 操作（含 `git reset --hard`、`git checkout --`/`git restore` 丢弃改动、`git clean`、改写历史与强推）；确需执行必须先向用户说明影响并获确认
 - 测试准入从严：新增用例必须锁定真实行为风险或回归场景；低 ROI 用例（凑覆盖率、重复快照、镜像已有断言）不予准入
 - 规则/推进改动：优先补或改 `src/logic/*.test.ts`，再跑 `pnpm test && pnpm type-check`
 - 渲染/UI 改动：补 `src/view/*.test.ts` 或 `src/web/*.test.ts`，再跑 `pnpm test`

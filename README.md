@@ -33,6 +33,7 @@ pnpm type-check
 
 - Menu: `W/S` or `Up/Down` select, `A/D` or `Left/Right` page, `Enter/N/Space` start, `Q` quit
 - In game: `WASD` or arrows move, `Space` wait, `U` undo, `R` restart, `N/Enter` next after win, `Q` back to menu
+- Gamepad (standard layout): `D-Pad`/left stick move or select, `A` wait / confirm, `B` undo / close dialog, `X` restart, `Start` back to menu
 
 ## Rule System (Implemented)
 
@@ -44,7 +45,7 @@ pnpm type-check
 
 ## Rendering
 
-- Web: fixed square board; text tiles render full words; rules and legend are available in the in-game dialog
+- Web: fixed square board; text tiles render full words; controls and rules are available in the in-game dialog
 - Web 3D path uses one fixed clay-look preset with no runtime switch: sprite-backed objects render as voxel-extruded pixel sprites; other items (text/emoji/glyph labels) render as textured plates; facing directions show as arrow overlays on top
 - Web 3D upright stack order is fixed: `cursor > you > text > move/fall > push/pull > open/shut > else` (`cursor` only appears on overworld maps)
 - Ground-hug objects (`tile`, `water`, `belt`, `line`) lie flat and skip the upright stack priority
