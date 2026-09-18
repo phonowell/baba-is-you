@@ -15,16 +15,14 @@ import {
 } from './derive.js'
 import { forEachPixel, frameContentDrawRect } from './blit.js'
 import { DIRECTION_ARROW_FRAMES } from './arrows.js'
+import { OVERRIDDEN_CROSS_FRAME } from './cross.js'
 import { PIXEL_SPRITES, spriteForName } from './index.js'
 
 import type { PixelFrame } from './types.js'
 
-const isAsciiMarker = (name: string): boolean =>
-  name.startsWith('marker-') || name.startsWith('glyph-')
-
 test('pixel sprites cover every renderable object glyph', () => {
   const missing = Object.keys(OBJECT_GLYPHS).filter(
-    (name) => !isAsciiMarker(name) && !spriteForName(name),
+    (name) => !spriteForName(name),
   )
   assert.deepEqual(missing, [])
 })
@@ -181,6 +179,25 @@ test('direction arrow tips point along each direction', () => {
   assert.ok(painted(left, 0, 3), 'left tip missing')
   const up = DIRECTION_ARROW_FRAMES.up
   assert.ok(painted(up, 3, 0), 'up tip missing')
+})
+
+// The vetoed-rule mark must read as an X: symmetric on both axes, painted
+// in all four corners (the arm tips) and at the center (the crossing).
+test('overridden cross frame is a symmetric X spanning its grid', () => {
+  const { width, height } = frameSize(OVERRIDDEN_CROSS_FRAME)
+  const painted = (x: number, y: number): boolean =>
+    OVERRIDDEN_CROSS_FRAME[y]?.[x] === 'x'
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      assert.equal(painted(x, y), painted(width - 1 - x, y))
+      assert.equal(painted(x, y), painted(x, height - 1 - y))
+    }
+  }
+  assert.ok(painted(0, 0))
+  assert.ok(painted(width - 1, 0))
+  assert.ok(painted(0, height - 1))
+  assert.ok(painted(width - 1, height - 1))
+  assert.ok(painted(Math.floor(width / 2), Math.floor(height / 2)))
 })
 
 test('orientedSprite rotates directional sprites while keeping the palette', () => {

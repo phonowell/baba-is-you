@@ -3,7 +3,12 @@ import type { Item } from '../logic/types.js'
 const STACK_MOVE_FALL_PROPS = new Set<Item['props'][number]>(['move', 'fall'])
 const STACK_PUSH_PULL_PROPS = new Set<Item['props'][number]>(['push', 'pull'])
 const STACK_OPEN_SHUT_PROPS = new Set<Item['props'][number]>(['open', 'shut'])
-const GROUND_HUG_NAMES = new Set(['tile', 'water', 'belt', 'line'])
+const GROUND_HUG_NAMES = new Set(['tile', 'water', 'lava', 'belt', 'line'])
+
+// Imported unknown tiles are named tile_<x>_<y> (see import-official-levels
+// convert) — every one is floor art, so the whole family hugs the ground.
+const isGroundHugName = (name: string): boolean =>
+  GROUND_HUG_NAMES.has(name) || name.startsWith('tile_')
 
 export const STACK_LAYER_PRIORITY = {
   cursor: 6,
@@ -16,7 +21,7 @@ export const STACK_LAYER_PRIORITY = {
 } as const
 
 export const isGroundHugItem = (item: Item): boolean =>
-  !item.isText && GROUND_HUG_NAMES.has(item.name)
+  !item.isText && isGroundHugName(item.name)
 
 export const stackLayerPriorityForItem = (item: Item): number => {
   if (item.name === 'cursor') return STACK_LAYER_PRIORITY.cursor

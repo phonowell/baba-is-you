@@ -11,6 +11,10 @@ export const BOARD3D_VOXEL_CONFIG = {
   VOXEL_CARD_BACK_LAYERS: 2,
   // Back slices stacked under ground-hug tiles (3 texels ≈ old slab depth).
   VOXEL_GROUND_HUG_BACK_LAYERS: 2,
+  // Ground-hug tiles put their surface just above the ground plane: the
+  // frame front sits ~0.04 over GROUND_SURFACE_Z and the back slices sink
+  // below it, so tiles read as ground cover instead of hovering cards.
+  VOXEL_GROUND_HUG_FRAME_Z: 0.02,
   // Corner radius of the text/emoji plate, world units — the rounded slab
   // silhouette doubles as the card's rounded face edge.
   VOXEL_PLATE_CORNER_RADIUS: 0.12,

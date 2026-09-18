@@ -179,8 +179,12 @@ test('advanceNodeGeometries swaps mesh geometry through the frame cycle', () => 
   const g0 = { id: 'g0' }
   const g1 = { id: 'g1' }
   const g2 = { id: 'g2' }
-  const animated = { mesh: { geometry: g0 }, frameGeometries: [g0, g1, g2] }
-  const still = { mesh: { geometry: g0 }, frameGeometries: [g0] }
+  const animated = {
+    mesh: { geometry: g0 },
+    frameGeometries: [g0, g1, g2],
+    idleFrameOffset: 0,
+  }
+  const still = { mesh: { geometry: g0 }, frameGeometries: [g0], idleFrameOffset: 0 }
   const nodes = new Map([
     [1, animated],
     [2, still],
@@ -191,4 +195,32 @@ test('advanceNodeGeometries swaps mesh geometry through the frame cycle', () => 
   assert.equal(advanceNodeGeometries(nodes, 1), 0)
   assert.equal(advanceNodeGeometries(nodes, 2), 1)
   assert.equal(animated.mesh.geometry, g2)
+})
+
+test('advanceNodeGeometries staggers the cycle per node frame offset', () => {
+  const g0 = { id: 'g0' }
+  const g1 = { id: 'g1' }
+  const g2 = { id: 'g2' }
+  const inPhase = {
+    mesh: { geometry: g0 },
+    frameGeometries: [g0, g1, g2],
+    idleFrameOffset: 0,
+  }
+  const aheadTwo = {
+    mesh: { geometry: g0 },
+    frameGeometries: [g0, g1, g2],
+    idleFrameOffset: 2,
+  }
+  const nodes = new Map([
+    [1, inPhase],
+    [2, aheadTwo],
+  ]) as never
+
+  advanceNodeGeometries(nodes, 0)
+  assert.equal(inPhase.mesh.geometry, g0)
+  assert.equal(aheadTwo.mesh.geometry, g2)
+
+  advanceNodeGeometries(nodes, 1)
+  assert.equal(inPhase.mesh.geometry, g1)
+  assert.equal(aheadTwo.mesh.geometry, g0)
 })

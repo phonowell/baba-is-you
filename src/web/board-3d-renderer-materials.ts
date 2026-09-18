@@ -49,6 +49,7 @@ const {
   VOXEL_FRAME_Z,
   VOXEL_CARD_BACK_LAYERS,
   VOXEL_GROUND_HUG_BACK_LAYERS,
+  VOXEL_GROUND_HUG_FRAME_Z,
   VOXEL_PLATE_CORNER_RADIUS,
   VOXEL_SHADE_FRONT,
   VOXEL_SHADE_TOP,
@@ -103,16 +104,21 @@ export const advanceFrameMaps = <M extends { map: unknown }, T>(
 }
 
 // Voxel nodes animate by swapping geometry rather than texture maps; only
-// nodes with multi-frame lists ever change. Kept DOM-free for tests.
+// nodes with multi-frame lists ever change. Each node reads the shared tick
+// through its own frame offset, so cards wobble out of phase with each
+// other. Kept DOM-free for tests.
 export const advanceNodeGeometries = (
-  nodes: ReadonlyMap<number, Pick<EntityNode, 'mesh' | 'frameGeometries'>>,
+  nodes: ReadonlyMap<
+    number,
+    Pick<EntityNode, 'mesh' | 'frameGeometries' | 'idleFrameOffset'>
+  >,
   frameIx: number,
 ): number => {
   let changed = 0
   for (const node of nodes.values()) {
     const frames = node.frameGeometries
     if (!frames || frames.length < 2) continue
-    const next = frames[frameIx % frames.length]
+    const next = frames[(frameIx + node.idleFrameOffset) % frames.length]
     if (next !== undefined && node.mesh.geometry !== next) {
       node.mesh.geometry = next
       changed += 1
@@ -328,13 +334,17 @@ export const createBoard3dRendererMaterialStore = (
     const volumes = spriteVolumes(sprite, fallback)
     const bounds = spriteVolumeBounds(sprite, volumes)
     if (!bounds) throw new Error(`Empty sprite for ${spec.key}.`)
-    const rect = voxelDrawRect(bounds, voxelInnerSize)
+    // Ground-hug tiles span the whole 1x1 cell — they are the floor, not
+    // cards on it — while upright sprites keep the card's inner margin.
+    const rect = voxelDrawRect(bounds, groundHug ? 1 : voxelInnerSize)
     const outlineColor = groundHug ? undefined : VOXEL_OUTLINE_COLOR
     const frameBounds = spriteContentBounds(sprite) ?? bounds
     // Facing arrows belong to silhouette cards only — a rotating authored
-    // model already points its whole body at the direction.
+    // model or a direction-rotated sprite already points at the direction.
     const overlays =
-      facing && !rotates ? arrowOverlaysForDirection(facing, frameBounds) : []
+      facing && !rotates && !spec.rotatesWithDirection
+        ? arrowOverlaysForDirection(facing, frameBounds)
+        : []
     // Standing models plant their bottom row on the ground plane and spin
     // around the volume's depth center; billboard cards keep the authored
     // frame plane just in front of the card origin.
@@ -349,7 +359,9 @@ export const createBoard3dRendererMaterialStore = (
         ? (((volume0.backSlices?.length ?? 0) + 1) -
             (volume0.frontSlices?.length ?? 0)) *
           (rect.texel / 2)
-        : VOXEL_FRAME_Z
+        : groundHug
+          ? VOXEL_GROUND_HUG_FRAME_Z
+          : VOXEL_FRAME_Z
     const geoKeyPrefix = rotates ? `voxrot:${item.name}` : `vox:${spec.key}`
 
     const frameGeometries = spriteFrames(sprite).map((frame, ix) => {

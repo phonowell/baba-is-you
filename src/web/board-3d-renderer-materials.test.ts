@@ -4,6 +4,7 @@ import test from 'node:test'
 import { MeshToonMaterial } from 'three'
 
 import { advanceFrameMaps, createBoard3dRendererMaterialStore } from './board-3d-renderer-materials.js'
+import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
 import { CLAY_PRESET } from './clay-config.js'
 
 import type { Item } from '../logic/types.js'
@@ -53,6 +54,34 @@ test('getVisual keys belt geometry per direction', () => {
 
   assert.notEqual(right.key, down.key)
   assert.notEqual(right.geometry, down.geometry)
+  store.dispose()
+})
+
+test('getVisual lays ground-hug tiles on the ground plane, not at card height', () => {
+  const store = createStore()
+  const flats = ['water', 'lava', 'tile', 'tile_5_10'].map((name) =>
+    store.getVisual(objectItem(name)),
+  )
+  // A facing belt must not poke direction-arrow relief past the ground
+  // plane — the rotated sprite art already carries the direction.
+  const belt = store.getVisual(objectItem('belt', { dir: 'right' }))
+  const upright = store.getVisual(objectItem('wall'))
+
+  for (const visual of [...flats, belt, upright]) {
+    visual.geometry.computeBoundingBox()
+  }
+  // The slab's top face is the frame plane's front z; ground tiles hug the
+  // ground instead of floating where upright cards put their face.
+  const maxZ = (visual: { geometry: { boundingBox: { max: { z: number } } | null } }) =>
+    visual.geometry.boundingBox?.max.z ?? -Infinity
+  for (const visual of [...flats, belt]) {
+    assert.equal(visual.facingYaw, undefined)
+    assert.ok(
+      Math.abs(maxZ(visual) - BOARD3D_VOXEL_CONFIG.VOXEL_GROUND_HUG_FRAME_Z) <
+        1e-6,
+    )
+  }
+  assert.ok(Math.abs(maxZ(upright) - BOARD3D_VOXEL_CONFIG.VOXEL_FRAME_Z) < 1e-6)
   store.dispose()
 })
 
