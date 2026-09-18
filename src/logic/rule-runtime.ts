@@ -14,6 +14,15 @@ export type RuleBuckets = {
   isTransform: Rule[]
   make: Rule[]
   write: Rule[]
+  // `isProperty` re-indexed for per-item evaluation in `applyProperties`:
+  // concrete non-negated subjects keyed by name, non-negated `text`
+  // subject rules (only text entities can match), and everything else —
+  // special subjects `all`/`group` plus every negated subject —
+  // in `propertyWildcard`. Evaluation order across buckets is irrelevant:
+  // the yes/no sets dedupe and vetoes apply afterwards.
+  propertyBySubject: Map<string, Rule[]>
+  propertyText: Rule[]
+  propertyWildcard: Rule[]
 }
 
 export type RuleRuntime = {
@@ -24,6 +33,11 @@ export type RuleRuntime = {
   width: number
 }
 
+// Subject words matching more than a single entity name. `level` and
+// `empty` stay in the by-name index: `level` only matches items literally
+// named `level`, and `empty` never matches an item at all.
+const WILDCARD_SUBJECT_WORDS = new Set(['all', 'group'])
+
 export const createRuleBuckets = (rules: Rule[]): RuleBuckets => {
   const buckets: RuleBuckets = {
     eat: [],
@@ -32,11 +46,23 @@ export const createRuleBuckets = (rules: Rule[]): RuleBuckets => {
     isTransform: [],
     make: [],
     write: [],
+    propertyBySubject: new Map(),
+    propertyText: [],
+    propertyWildcard: [],
   }
 
   for (const rule of rules) {
-    if (rule.kind === 'is-property') buckets.isProperty.push(rule)
-    else if (rule.kind === 'is-transform') buckets.isTransform.push(rule)
+    if (rule.kind === 'is-property') {
+      buckets.isProperty.push(rule)
+      if (rule.subjectNegated || WILDCARD_SUBJECT_WORDS.has(rule.subject))
+        buckets.propertyWildcard.push(rule)
+      else if (rule.subject === 'text') buckets.propertyText.push(rule)
+      else {
+        const list = buckets.propertyBySubject.get(rule.subject) ?? []
+        list.push(rule)
+        buckets.propertyBySubject.set(rule.subject, list)
+      }
+    } else if (rule.kind === 'is-transform') buckets.isTransform.push(rule)
     else if (rule.kind === 'has') buckets.has.push(rule)
     else if (rule.kind === 'make') buckets.make.push(rule)
     else if (rule.kind === 'eat') buckets.eat.push(rule)

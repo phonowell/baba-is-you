@@ -93,19 +93,21 @@ const matchesCondition = (
   if (condition.kind === 'lonely' || condition.kind === 'on') {
     const cellItems =
       context.byCell.get(keyFor(item.x, item.y, context.width)) ?? []
-    const otherCellItems = cellItems.filter(
-      (candidate) => candidate.id !== item.id,
-    )
 
     if (condition.kind === 'lonely') {
-      const lonely = otherCellItems.length === 0
+      const lonely = !cellItems.some(
+        (candidate) => candidate.id !== item.id,
+      )
       return condition.negated ? !lonely : lonely
     }
 
     const matched =
       condition.object === 'empty'
-        ? otherCellItems.length === 0
-        : otherCellItems.some((candidate) => termMatches(candidate))
+        ? !cellItems.some((candidate) => candidate.id !== item.id)
+        : cellItems.some(
+            (candidate) =>
+              candidate.id !== item.id && termMatches(candidate),
+          )
     return condition.negated ? !matched : matched
   }
 
@@ -120,13 +122,18 @@ const matchesCondition = (
 
         const neighbors =
           context.byCell.get(keyFor(nx, ny, context.width)) ?? []
-        const candidateItems =
-          dx === 0 && dy === 0
-            ? neighbors.filter((candidate) => candidate.id !== item.id)
-            : neighbors
+        const self = dx === 0 && dy === 0
         if (condition.object === 'empty') {
-          if (!candidateItems.length) matched = true
-        } else if (candidateItems.some((candidate) => termMatches(candidate)))
+          const occupied = self
+            ? neighbors.some((candidate) => candidate.id !== item.id)
+            : neighbors.length > 0
+          if (!occupied) matched = true
+        } else if (
+          neighbors.some(
+            (candidate) =>
+              (!self || candidate.id !== item.id) && termMatches(candidate),
+          )
+        )
           matched = true
       }
     }

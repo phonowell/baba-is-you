@@ -161,6 +161,20 @@ const hasEmptyPropertyRules = (rules: Rule[]): boolean =>
       !rule.subjectNegated,
   )
 
+// Per-cell target resolution re-checks kind/subject/negated for every
+// rule; hoisting that filter out of the cell loop keeps each cell's work
+// proportional to the rules that can actually apply.
+const emptySubjectRules = (
+  rules: Rule[],
+  kind: Rule['kind'],
+): Rule[] =>
+  rules.filter(
+    (rule) =>
+      rule.kind === kind &&
+      rule.subject === 'empty' &&
+      !rule.subjectNegated,
+  )
+
 export const resolveActiveEmptyProps = (
   rules: Rule[],
   items: EmptyMatchItem[],
@@ -172,11 +186,12 @@ export const resolveActiveEmptyProps = (
   if (!hasAnyEmptyCell(items, width, height)) return active
 
   const context = createEmptyMatchContext(items, rules, width, height)
+  const emptyRules = emptySubjectRules(rules, 'is-property')
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       if (itemsAt(context, x, y).length) continue
       const targets = resolveEmptyRuleTargetsAt(
-        rules,
+        emptyRules,
         context,
         x,
         y,
@@ -198,11 +213,12 @@ export const emptyHasProp = (
   if (!hasEmptyPropertyRules(rules)) return false
   if (!hasAnyEmptyCell(items, width, height)) return false
   const context = createEmptyMatchContext(items, rules, width, height)
+  const emptyRules = emptySubjectRules(rules, 'is-property')
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       if (itemsAt(context, x, y).length) continue
       const targets = resolveEmptyRuleTargetsAt(
-        rules,
+        emptyRules,
         context,
         x,
         y,

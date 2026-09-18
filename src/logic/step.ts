@@ -1,3 +1,4 @@
+import { resolveActiveEmptyProps } from './empty.js'
 import { applyProperties } from './resolve.js'
 import { collectRuleRuntime, createRuleRuntime } from './rule-runtime.js'
 import { buildStepStages } from './step/phase-list.js'
@@ -19,11 +20,40 @@ type StepFrame = {
 const itemSignature = (item: Item): string =>
   `${item.name}@${item.x},${item.y}${item.isText ? '!' : ''}${item.dir ?? ''}(${[...item.props].sort().join('+')})`
 
+const sameItemFields = (a: Item, b: Item): boolean =>
+  a === b ||
+  (a.name === b.name &&
+  a.x === b.x &&
+  a.y === b.y &&
+  a.isText === b.isText &&
+  a.dir === b.dir &&
+  (a.props === b.props ||
+    (a.props.length === b.props.length &&
+      a.props.every((prop, index) => prop === b.props[index]))))
+
 const sameItems = (before: Item[], after: Item[]): boolean => {
+  if (before === after) return true
   if (before.length !== after.length) return false
+
+  // Order-identical fast path: stage pipelines keep survivors in place and
+  // append spawns, so a net-unchanged step usually yields a field-equal
+  // sequence — comparing fields avoids building any signature strings.
+  let ordered = true
+  for (let index = 0; index < before.length; index += 1) {
+    const a = before[index]
+    const b = after[index]
+    if (!a || !b || !sameItemFields(a, b)) {
+      ordered = false
+      break
+    }
+  }
+  if (ordered) return true
+
   const counts = new Map<string, number>()
-  for (const item of before)
-    counts.set(itemSignature(item), (counts.get(itemSignature(item)) ?? 0) + 1)
+  for (const item of before) {
+    const key = itemSignature(item)
+    counts.set(key, (counts.get(key) ?? 0) + 1)
+  }
   for (const item of after) {
     const key = itemSignature(item)
     const left = (counts.get(key) ?? 0) - 1
@@ -154,20 +184,21 @@ export const step = (
     rulesStale = stageResult.rulesStale
   }
 
-  const didWin = checkWin(
+  // One empty-cells scan feeds both the win and the lose checks (the
+  // resolver early-outs cheaply when no `empty is …` rules exist).
+  const emptyProps = resolveActiveEmptyProps(
+    frame.runtime.rules,
     frame.items,
     state.width,
-    frame.runtime.rules,
     state.height,
   )
+  const didWin = checkWin(frame.items, state.width, emptyProps)
   // Maps never lose: the overworld cursor is not a `you` entity, and the
   // predecessor has no lose state at all — without this, decorative rule
   // text like `BABA IS YOU` on a map would soft-lock navigation.
   const hasCursor = frame.items.some((item) => item.name === 'cursor')
   const didLose =
-    !didWin &&
-    !hasCursor &&
-    !hasAnyYou(frame.items, frame.runtime.rules, state.width, state.height)
+    !didWin && !hasCursor && !hasAnyYou(frame.items, emptyProps)
 
   const nextState: GameState = {
     ...state,

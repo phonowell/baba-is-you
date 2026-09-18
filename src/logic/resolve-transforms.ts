@@ -129,13 +129,10 @@ export const applyTransforms = (
       next.push({ ...rest, id: nextId++ })
   }
 
-  const hasEmptyTransformRules = transformRules.some(
-    (rule) =>
-      rule.kind === 'is-transform' &&
-      rule.subject === 'empty' &&
-      !rule.subjectNegated,
+  const emptyTransformRules = transformRules.filter(
+    (rule) => rule.subject === 'empty' && !rule.subjectNegated,
   )
-  if (hasEmptyTransformRules) {
+  if (emptyTransformRules.length) {
     const emptyContext = createEmptyMatchContext(next, runtime.rules, width, height)
     const occupied = new Set<number>()
     for (const item of next) occupied.add(item.y * width + item.x)
@@ -145,7 +142,7 @@ export const applyTransforms = (
         const cellKey = y * width + x
         if (occupied.has(cellKey)) continue
         const emptyTargets = resolveEmptyRuleTargetsAt(
-          transformRules,
+          emptyTransformRules,
           emptyContext,
           x,
           y,

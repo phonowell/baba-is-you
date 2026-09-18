@@ -25,12 +25,22 @@ export const createSingleMoveRuntime = (
   isMovePhase: boolean,
 ): {
   canMove: (id: number, visiting: Set<number>) => boolean
+  canMoveRoot: (id: number) => boolean
   doMove: (id: number) => void
 } => {
   const [dx, dy] = MOVE_DELTAS[direction]
 
   const isMoveEntity = (id: number): boolean =>
     isMovePhase && context.moverIds.has(id)
+
+  // Root-level `canMove` checks each want a fresh visiting set; one scratch
+  // set cleared per call replaces the per-call allocation (the recursion
+  // is synchronous, so sharing is safe).
+  const visitingScratch = new Set<number>()
+  const canMoveRoot = (id: number): boolean => {
+    visitingScratch.clear()
+    return canMove(id, visitingScratch)
+  }
 
   const canMove = (id: number, visiting: Set<number>): boolean => {
     if (visiting.has(id)) return true
@@ -143,7 +153,7 @@ export const createSingleMoveRuntime = (
     for (const target of pushTargets) {
       if (context.moved.has(target.id) || context.removed.has(target.id))
         continue
-      if (!canMove(target.id, new Set())) {
+      if (!canMoveRoot(target.id)) {
         if (context.weakIds.has(target.id) && !isMoveEntity(target.id))
           if (removeOne(context, target)) context.status.anyMoved = true
 
@@ -170,7 +180,7 @@ export const createSingleMoveRuntime = (
       for (const target of pullTargets) {
         if (context.moved.has(target.id) || context.removed.has(target.id))
           continue
-        if (!canMove(target.id, new Set())) continue
+        if (!canMoveRoot(target.id)) continue
         doMove(target.id)
       }
 
@@ -197,10 +207,10 @@ export const createSingleMoveRuntime = (
     for (const target of pullTargets) {
       if (context.moved.has(target.id) || context.removed.has(target.id))
         continue
-      if (!canMove(target.id, new Set())) continue
+      if (!canMoveRoot(target.id)) continue
       doMove(target.id)
     }
   }
 
-  return { canMove, doMove }
+  return { canMove, canMoveRoot, doMove }
 }

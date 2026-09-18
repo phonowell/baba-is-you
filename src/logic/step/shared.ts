@@ -65,9 +65,9 @@ export const appendHasSpawns = (
   const context = createRuleMatchContext(sourceItems, hasRules, width, height)
 
   let nextId =
-    [...survivors, ...removedItems].reduce(
-      (max, item) => Math.max(max, item.id),
-      0,
+    Math.max(
+      survivors.reduce((max, item) => Math.max(max, item.id), 0),
+      removedItems.reduce((max, item) => Math.max(max, item.id), 0),
     ) + 1
   const spawned: Item[] = []
 

@@ -1,51 +1,36 @@
-import { emptyHasProp, resolveActiveEmptyProps } from '../empty.js'
+import { keyForLayer } from '../helpers.js'
 
-import { hasProp, keyFor, splitByFloatLayer } from './shared.js'
+import { hasProp } from './shared.js'
 
-import type { Item, Rule } from '../types.js'
+import type { Item } from '../types.js'
 
-const buildCellMap = (items: Item[], width: number): Map<number, Item[]> => {
-  const byCell = new Map<number, Item[]>()
-  for (const item of items) {
-    const key = keyFor(item.x, item.y, width)
-    const list = byCell.get(key) ?? []
-    list.push(item)
-    byCell.set(key, list)
-  }
-  return byCell
-}
-
+// Single pass: win iff some (cell, float-layer) holds both `you` and
+// `win`. Layer keys mirror `splitByFloatLayer` without building cell
+// lists; the EMPTY-subject half is decided by the caller's precomputed
+// `emptyProps` (`resolveActiveEmptyProps` already covers the
+// no-empty-rules/no-empty-cells early-outs).
 export const checkWin = (
   items: Item[],
   width: number,
-  rules: Rule[] = [],
-  height = 0,
+  emptyProps: ReadonlySet<string>,
 ): boolean => {
-  const byCell = buildCellMap(items, width)
-  for (const list of byCell.values()) {
-    for (const layer of splitByFloatLayer(list)) {
-      const hasYou = layer.some((item) => hasProp(item, 'you'))
-      if (!hasYou) continue
-      if (layer.some((item) => hasProp(item, 'win'))) return true
-    }
+  const youLayers = new Set<number>()
+  const winLayers = new Set<number>()
+  for (const item of items) {
+    if (hasProp(item, 'you'))
+      youLayers.add(keyForLayer(item.x, item.y, width, hasProp(item, 'float')))
+    if (hasProp(item, 'win'))
+      winLayers.add(keyForLayer(item.x, item.y, width, hasProp(item, 'float')))
   }
+  for (const key of youLayers) if (winLayers.has(key)) return true
 
-  if (!height || !rules.length) return false
-  const emptyProps = resolveActiveEmptyProps(rules, items, width, height)
-  if (!emptyProps.has('you')) return false
-  if (!emptyProps.has('win')) return false
-  return true
+  return emptyProps.has('you') && emptyProps.has('win')
 }
 
 export const hasAnyYou = (
   items: Item[],
-  rules: Rule[] = [],
-  width = 0,
-  height = 0,
+  emptyProps: ReadonlySet<string>,
 ): boolean => {
   for (const item of items) if (hasProp(item, 'you')) return true
-
-  if (width > 0 && height > 0 && rules.length)
-    return emptyHasProp(rules, 'you', items, width, height)
-  return false
+  return emptyProps.has('you')
 }

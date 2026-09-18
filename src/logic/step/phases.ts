@@ -58,12 +58,22 @@ export const applyMore = (
   }
 }
 
+const FACING_PROPS = new Set(['up', 'down', 'left', 'right'])
+
 export const applyDirectionalFacing = (
   items: Item[],
 ): {
   items: Item[]
   changed: boolean
 } => {
+  // Most boards carry no facing rules at all — skip the map entirely.
+  if (
+    !items.some((item) =>
+      item.props.some((prop) => FACING_PROPS.has(prop)),
+    )
+  )
+    return { items, changed: false }
+
   let changed = false
   const next = items.map((item) => {
     let { dir } = item

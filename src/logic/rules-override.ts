@@ -1,7 +1,7 @@
 import { collectRuleInstances } from './rules.js'
 import { stringifyCondition } from './rules-subjects.js'
 
-import type { LevelItem } from './types.js'
+import type { LevelItem, Rule } from './types.js'
 import type { RuleInstance } from './rules.js'
 
 // Port of the predecessor's `partition_overridden_rules`: positive rules
@@ -15,20 +15,32 @@ export const partitionRuleInstances = (
   const noRules = instances.filter((i) => i.rule.objectNegated)
   const yesRules = instances.filter((i) => !i.rule.objectNegated)
 
+  // Veto candidates must share kind/object/condition — index that triple
+  // once so each yes-rule probes only its compatible no-rules instead of
+  // scanning (and re-stringifying) the whole set.
+  const noRuleKey = (rule: Rule): string =>
+    `${rule.kind}\u0000${rule.object}\u0000${stringifyCondition(rule.condition)}`
+  const noRulesByKey = new Map<string, RuleInstance[]>()
+  for (const noRule of noRules) {
+    const key = noRuleKey(noRule.rule)
+    const list = noRulesByKey.get(key) ?? []
+    list.push(noRule)
+    noRulesByKey.set(key, list)
+  }
+
   const vetoed = new Set<RuleInstance>()
   for (const yesRule of yesRules) {
-    const overridden = noRules.some((noRule) => {
-      const r = yesRule.rule
-      const n = noRule.rule
-      if (r.kind !== n.kind || r.object !== n.object) return false
-      if (stringifyCondition(r.condition) !== stringifyCondition(n.condition))
-        return false
-      if (!r.subjectNegated && n.subjectNegated)
-        return r.subject !== n.subject
-      return (
-        r.subject === n.subject && !r.subjectNegated === !n.subjectNegated
-      )
-    })
+    const overridden = (noRulesByKey.get(noRuleKey(yesRule.rule)) ?? []).some(
+      (noRule) => {
+        const r = yesRule.rule
+        const n = noRule.rule
+        if (!r.subjectNegated && n.subjectNegated)
+          return r.subject !== n.subject
+        return (
+          r.subject === n.subject && !r.subjectNegated === !n.subjectNegated
+        )
+      },
+    )
     if (overridden) vetoed.add(yesRule)
   }
 

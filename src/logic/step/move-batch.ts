@@ -2,7 +2,7 @@ import { resolveActiveEmptyProps } from '../empty.js'
 
 import { applyBatchMovement } from './move-batch-apply.js'
 import { resolveBatchArrows } from './move-batch-runtime.js'
-import { appendHasSpawns, buildGrid, hasProp } from './shared.js'
+import { appendHasSpawns, buildGrid } from './shared.js'
 
 import type { RuleRuntime } from '../rule-runtime.js'
 import type { Direction, Item } from '../types.js'
@@ -25,12 +25,14 @@ export const moveItemsBatch = (
 
   for (const item of next) {
     byId.set(item.id, item)
-    if (hasProp(item, 'push')) pushIds.add(item.id)
-    if (hasProp(item, 'stop')) stopIds.add(item.id)
-    if (hasProp(item, 'pull')) pullIds.add(item.id)
-    if (hasProp(item, 'open')) openIds.add(item.id)
-    if (hasProp(item, 'shut')) shutIds.add(item.id)
-    if (hasProp(item, 'weak')) weakIds.add(item.id)
+    for (const prop of item.props) {
+      if (prop === 'push') pushIds.add(item.id)
+      else if (prop === 'stop') stopIds.add(item.id)
+      else if (prop === 'pull') pullIds.add(item.id)
+      else if (prop === 'open') openIds.add(item.id)
+      else if (prop === 'shut') shutIds.add(item.id)
+      else if (prop === 'weak') weakIds.add(item.id)
+    }
   }
 
   const removed = new Set<number>()

@@ -71,13 +71,17 @@ export const moveOne = (
   return true
 }
 
+const NO_ITEMS: Item[] = []
+
 export const getLiveCellItems = (
   context: MoveCoreContext,
   x: number,
   y: number,
 ): Item[] => {
-  if (!inBounds(context, x, y)) return []
-  return (context.grid.get(keyFor(x, y, context.width)) ?? []).filter(
-    (target) => !context.removed.has(target.id),
-  )
+  if (!inBounds(context, x, y)) return NO_ITEMS
+  const list = context.grid.get(keyFor(x, y, context.width)) ?? NO_ITEMS
+  // Callers only read the result, so the live list can be shared whenever
+  // nothing has been removed yet — which is most queries.
+  if (!context.removed.size) return list
+  return list.filter((target) => !context.removed.has(target.id))
 }
