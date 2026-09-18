@@ -17,7 +17,6 @@ import { BOARD3D_LAYOUT_CONFIG } from '../web/board-3d-config-layout.js'
 import { getToonGradientMap } from '../web/board-3d-textures.js'
 import { applyVolumeOrientation } from '../web/board-3d-card-facing.js'
 import { spriteFrames, spriteVolumeBounds } from '../web/pixel-sprites/derive.js'
-import { arrowMarkerSlices } from '../web/pixel-sprites/arrows.js'
 import { PIXEL_SPRITES } from '../web/pixel-sprites/index.js'
 import {
   buildVoxelVolumeGeometry,
@@ -51,7 +50,8 @@ const SHADE = {
 const INNER_SIZE = 0.88 * VOXEL_INNER_SIZE_RATIO
 
 // Mirrors voxelVisual's rotating branch: feet planted on the ground plane,
-// depth centered, floor-arrow marker in front, mesh stood upright + yawed.
+// depth centered, mesh stood upright + yawed — no direction marker, the
+// body's own facing is the indicator.
 const buildStandingMesh = (name: string, material: MeshToonMaterial): Mesh => {
   const sprite = PIXEL_SPRITES[name]
   if (!sprite) throw new Error(`missing sprite ${name}`)
@@ -70,9 +70,8 @@ const buildStandingMesh = (name: string, material: MeshToonMaterial): Mesh => {
         (volume0.frontSlices?.length ?? 0)) *
       (rect.texel / 2)
     : VOXEL_FRAME_Z
-  const overlays = arrowMarkerSlices(bounds)
   const geometry = buildVoxelVolumeGeometry(
-    { frame, palette: sprite.palette, volume: volume0, overlays },
+    { frame, palette: sprite.palette, volume: volume0, overlays: [] },
     {
       drawX: rect.drawX,
       drawY,
@@ -118,8 +117,7 @@ const material = new MeshToonMaterial({
 })
 
 // One upright model per facing: down/right/up/left — the four yaw states the
-// game produces. Each stands on the floor plate; the white arrow marker
-// should sit in front of the feet, pointing where the model faces.
+// game produces; the face/back/profile itself shows the direction.
 const FACING_YAWS = [
   ['down', 0],
   ['right', Math.PI / 2],

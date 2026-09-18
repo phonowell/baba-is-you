@@ -38,13 +38,9 @@ import type { PixelSprite } from './pixel-sprites/types.js'
 const {
   CARD_TEXTURE_SIZE,
   CARD_TEXTURE_PAD_RATIO,
-  CARD_TEXTURE_CORNER_RADIUS_RATIO,
   CARD_TEXTURE_EMOJI_FONT_RATIO,
-  CARD_TEXTURE_TEXT_LONG_THRESHOLD,
-  CARD_TEXTURE_TEXT_MEDIUM_THRESHOLD,
-  CARD_TEXTURE_TEXT_LONG_FONT_SIZE,
-  CARD_TEXTURE_TEXT_MEDIUM_FONT_SIZE,
-  CARD_TEXTURE_TEXT_SHORT_FONT_SIZE,
+  CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
+  CARD_TEXTURE_TEXT_FILL_RATIO,
   CARD_TEXTURE_LABEL_OFFSET_Y,
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO,
   CARD_TEXTURE_EMOJI_FONT_FAMILY,
@@ -67,28 +63,6 @@ const {
 } = BOARD3D_SHADOW_TEXTURE_CONFIG
 
 const { HAS_EMOJI } = BOARD3D_RULE_VISUAL_CONFIG
-
-const roundRectPath = (
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-): void => {
-  const clamped = Math.min(radius, width / 2, height / 2)
-  ctx.beginPath()
-  ctx.moveTo(x + clamped, y)
-  ctx.lineTo(x + width - clamped, y)
-  ctx.quadraticCurveTo(x + width, y, x + width, y + clamped)
-  ctx.lineTo(x + width, y + height - clamped)
-  ctx.quadraticCurveTo(x + width, y + height, x + width - clamped, y + height)
-  ctx.lineTo(x + clamped, y + height)
-  ctx.quadraticCurveTo(x, y + height, x, y + height - clamped)
-  ctx.lineTo(x, y + clamped)
-  ctx.quadraticCurveTo(x, y, x + clamped, y)
-  ctx.closePath()
-}
 
 const createCanvasTexture = (
   canvas: HTMLCanvasElement,
@@ -189,24 +163,27 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
 
   const pad = textureSize * CARD_TEXTURE_PAD_RATIO
   const size = textureSize - pad * 2
-  const radius = textureSize * CARD_TEXTURE_CORNER_RADIUS_RATIO
 
   ctx.clearRect(0, 0, textureSize, textureSize)
   if (!spec.isEmojiLabel) {
-    roundRectPath(ctx, pad, pad, size, size, radius)
+    // Text cards are silhouette cards: the face fills the whole card
+    // square, so the plate edge and the face edge are the same line.
     ctx.fillStyle = spec.background
-    ctx.fill()
+    ctx.fillRect(0, 0, textureSize, textureSize)
   }
 
-  const labelLength = [...spec.label].length
   const isEmojiLabel = spec.isEmojiLabel || HAS_EMOJI.test(spec.label)
-  const fontSize = isEmojiLabel
-    ? Math.round(textureSize * CARD_TEXTURE_EMOJI_FONT_RATIO)
-    : labelLength >= CARD_TEXTURE_TEXT_LONG_THRESHOLD
-      ? CARD_TEXTURE_TEXT_LONG_FONT_SIZE
-      : labelLength >= CARD_TEXTURE_TEXT_MEDIUM_THRESHOLD
-        ? CARD_TEXTURE_TEXT_MEDIUM_FONT_SIZE
-        : CARD_TEXTURE_TEXT_SHORT_FONT_SIZE
+  let fontSize = Math.round(textureSize * CARD_TEXTURE_EMOJI_FONT_RATIO)
+  if (!isEmojiLabel) {
+    // Measure at 100px then scale to fill the content box — short words
+    // cap out big, long words shrink to fit instead of bleeding off.
+    ctx.font = `700 100px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
+    const measured = ctx.measureText(spec.label).width
+    fontSize = Math.min(
+      CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
+      Math.floor((100 * size * CARD_TEXTURE_TEXT_FILL_RATIO) / Math.max(measured, 1)),
+    )
+  }
 
   const labelOffsetY = isEmojiLabel ? 0 : CARD_TEXTURE_LABEL_OFFSET_Y
   ctx.textAlign = 'center'

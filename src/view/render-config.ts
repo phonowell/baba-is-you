@@ -178,3 +178,8 @@ export const TEXT_CODES: Record<string, string> = {
 
 export const textCodeForName = (name: string): string =>
   TEXT_CODES[name] ?? name.slice(0, 2).toUpperCase()
+
+export const glyphForLegendName = (name: string): string => {
+  if (name === 'belt') return '⬆️➡️⬇️⬅️'
+  return OBJECT_GLYPHS[name] ?? ''
+}

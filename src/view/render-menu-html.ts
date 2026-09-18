@@ -40,7 +40,7 @@ export const renderMenuHtml = (state: MenuHtmlState): string => {
 
   const listRows: string[] = []
   if (start > 0)
-    listRows.push('<li class="menu-row muted" role="option" aria-hidden="true">...</li>')
+    listRows.push('<li class="menu-row muted" role="presentation" aria-hidden="true">...</li>')
 
   for (let i = start; i < end; i += 1) {
     const level = state.levels[i]
@@ -57,7 +57,7 @@ export const renderMenuHtml = (state: MenuHtmlState): string => {
   }
 
   if (end < total)
-    listRows.push('<li class="menu-row muted" role="option" aria-hidden="true">...</li>')
+    listRows.push('<li class="menu-row muted" role="presentation" aria-hidden="true">...</li>')
 
   return [
     '<section class="menu-screen" aria-label="Level Menu">',

@@ -1,4 +1,8 @@
-import { OBJECT_GLYPHS, textCodeForName } from '../view/render-config.js'
+import {
+  glyphForLegendName,
+  OBJECT_GLYPHS,
+  textCodeForName,
+} from '../view/render-config.js'
 import { renderRules } from '../view/render-helpers.js'
 import { statusLine } from '../view/status-line.js'
 import { sortRenderStack } from '../view/stack-policy.js'
@@ -137,11 +141,6 @@ const glyphForItem = (item: Item): string | undefined => {
   }
 
   return OBJECT_GLYPHS[item.name]
-}
-
-const glyphForLegendName = (name: string): string => {
-  if (name === 'belt') return '⬆️➡️⬇️⬅️'
-  return OBJECT_GLYPHS[name] ?? ''
 }
 
 const cellForItem = (item: Item): string =>

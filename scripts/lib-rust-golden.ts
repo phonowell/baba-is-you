@@ -74,8 +74,8 @@ export type RustEntity = {
 }
 
 export const entityItem = (
-  e: Ron,
-  dir: Ron,
+  e: Ron | undefined,
+  dir: Ron | undefined,
 ): RustEntity | undefined => {
   if (typeof e !== 'object' || Array.isArray(e)) return undefined
   const inner = e.args[0]

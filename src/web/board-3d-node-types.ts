@@ -13,7 +13,7 @@ import type {
 import type { Item } from '../logic/types.js'
 import type { EntityVisual } from './board-3d-renderer-materials.js'
 
-export type CardMaterial = MeshToonMaterial
+export type CardMaterial = MeshToonMaterial | MeshBasicMaterial
 export type EntityMaterial = Material | Material[]
 export type EntityMesh = Mesh<BufferGeometry, EntityMaterial>
 

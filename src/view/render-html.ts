@@ -1,6 +1,5 @@
-import { OBJECT_GLYPHS } from './render-config.js'
+import { glyphForLegendName } from './render-config.js'
 import { renderRules } from './render-helpers.js'
-import { statusLine } from './status-line.js'
 import { SYNTAX_WORDS } from './syntax-words.js'
 
 import type { GameState } from '../logic/types.js'
@@ -14,15 +13,6 @@ const escapeHtml = (value: string): string =>
     .replaceAll("'", '&#39;')
 
 const textLabel = (name: string): string => name.toUpperCase()
-
-const glyphForLegendName = (name: string): string => {
-  if (name === 'belt') return '⬆️➡️⬇️⬅️'
-  return OBJECT_GLYPHS[name] ?? ''
-}
-
-export type RenderHtmlUiState = {
-  showReferenceDialog: boolean
-}
 
 const legendEntries = (names: Set<string>): string[] =>
   Array.from(names)
@@ -56,35 +46,4 @@ export const renderReferenceLegendHtml = (state: GameState): string => {
   const textNames = collectTextNames(state)
   const legend = legendEntries(textNames)
   return legend.length ? legend.join('') : '<li>(no text tiles)</li>'
-}
-
-export const renderHtml = (
-  state: GameState,
-  uiState: RenderHtmlUiState = { showReferenceDialog: false },
-): string => {
-  const showDialog = uiState.showReferenceDialog
-  const dialogHiddenAttr = showDialog ? '' : ' hidden'
-
-  return [
-    '<section class="game-screen" aria-label="Game">',
-    '<div class="game-toolbar">',
-    `<span class="status" aria-live="polite">${escapeHtml(statusLine(state.status))}</span>`,
-    `<button class="btn reference-btn" data-action="toggle-reference" aria-haspopup="dialog" aria-expanded="${showDialog ? 'true' : 'false'}">Rules & Legend</button>`,
-    '</div>',
-    '<div class="board-wrap">',
-    `<div class="board" role="grid" style="--board-width:${state.width};--board-height:${state.height};"></div>`,
-    '</div>',
-    `<div class="reference-backdrop" data-role="reference-backdrop"${dialogHiddenAttr}>`,
-    '<section class="reference-dialog" data-role="reference-dialog" role="dialog" aria-modal="true" aria-label="Rules and legend">',
-    '<header class="reference-header">',
-    '<button class="btn reference-close" data-action="close-reference" aria-label="Close rules and legend">Close</button>',
-    '</header>',
-    '<h3 class="reference-subtitle">Rules</h3>',
-    `<ul class="rules-list">${renderReferenceRulesHtml(state)}</ul>`,
-    '<h3 class="reference-subtitle">Legend</h3>',
-    `<ul class="legend-list">${renderReferenceLegendHtml(state)}</ul>`,
-    '</section>',
-    '</div>',
-    '</section>',
-  ].join('')
 }

@@ -104,7 +104,9 @@ const levelPath = findLevelFile(rel)
 const { screens, inputs } = loadRustGolden(goldenPath)
 
 const parsed = parseAsciiLevel(readFileSync(levelPath, 'utf8'), levelPath)
-const recorded = levelFromScreen(screens[0], parsed.title)
+const firstScreen = screens[0]
+if (!firstScreen) throw new Error('golden has no screens')
+const recorded = levelFromScreen(firstScreen, parsed.title)
 const level =
   layoutOf(recorded) !== layoutOf(parsed) ? recorded : parsed
 console.log(
@@ -131,7 +133,7 @@ for (const item of level.items) {
   rawCells.set(key, list)
 }
 for (const [k, v] of rawCells) rawCells.set(k, v.sort())
-const first = diffCells(rustScreenCells(screens[0]), rawCells)
+const first = diffCells(rustScreenCells(firstScreen), rawCells)
 if (first.length) {
   console.log(`initial screen diverges:`)
   console.log(first.slice(0, 30).join('\n'))
@@ -139,16 +141,17 @@ if (first.length) {
 }
 
 for (let i = 0; i < inputs.length; i += 1) {
-  const current = history[history.length - 1]
-  const code = inputs[i]
+  // history never empties: pops are guarded by length > 1
+  const current = history.at(-1)!
+  const code = inputs[i] ?? '?'
   if (code === 'z') {
     if (history.length > 1) history.pop()
   } else {
-    const result = step(current, code === 'w' ? null : DIRS[code])
+    const result = step(current, code === 'w' ? null : (DIRS[code] ?? null))
     if (result.changed) history.push(result.state)
   }
   const expected = rustScreenCells(screens[i + 1])
-  const actual = ourCells(history[history.length - 1])
+  const actual = ourCells(history.at(-1)!)
   const diff = diffCells(expected, actual)
   if (diff.length) {
     console.log(`\nfirst divergence at input ${i} ('${code}'), screen ${i + 1}:`)

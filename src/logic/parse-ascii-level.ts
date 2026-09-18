@@ -315,15 +315,22 @@ export const parseAsciiLevel = (
     }
   }
 
-  // `+ glyphs = cx,cy` object color overrides, `+ "glyphs" = a,b,c,d`
-  // text color overrides — each glyph resolves through cellPartsFor to a
+  // `+ glyphs = cx,cy` object color overrides, `+ "glyphs" = ix,iy ax,ay`
+  // text color overrides ([inactive, active] — also written `i,i,a,a` in a
+  // single comma run) — each glyph resolves through cellPartsFor to a
   // noun/level entity, same as the predecessor.
   for (const { key, value } of overrideLines) {
     const quoted = key.includes('"')
-    const coords = value.split(',').map((n) => Number(n.trim()))
-    if (!quoted && coords.length !== 2) continue
-    if (quoted && coords.length !== 4) continue
-    if (coords.some((n) => !Number.isInteger(n) || n < 0)) continue
+    const pairs: number[][] = []
+    let malformed = false
+    for (const token of value.trim().split(/\s+/)) {
+      const nums = token.split(',').map((n) => Number(n.trim()))
+      if (nums.length === 4) pairs.push(nums.slice(0, 2), nums.slice(2))
+      else if (nums.length === 2) pairs.push(nums)
+      else malformed = true
+      if (nums.some((n) => !Number.isInteger(n) || n < 0)) malformed = true
+    }
+    if (malformed || pairs.length !== (quoted ? 2 : 1)) continue
 
     for (const glyph of key.slice(1).replaceAll('"', '').split(',')) {
       const char = glyph.trim()
@@ -333,11 +340,11 @@ export const parseAsciiLevel = (
       const overrideKey = overrideKeyFor(part.name, part.levelTarget)
       if (quoted) {
         meta.textColorOverrides[overrideKey] = [
-          [coords[0] ?? 0, coords[1] ?? 0],
-          [coords[2] ?? 0, coords[3] ?? 0],
+          [pairs[0]?.[0] ?? 0, pairs[0]?.[1] ?? 0],
+          [pairs[1]?.[0] ?? 0, pairs[1]?.[1] ?? 0],
         ]
       } else {
-        meta.colorOverrides[overrideKey] = [coords[0] ?? 0, coords[1] ?? 0]
+        meta.colorOverrides[overrideKey] = [pairs[0]?.[0] ?? 0, pairs[0]?.[1] ?? 0]
       }
     }
   }

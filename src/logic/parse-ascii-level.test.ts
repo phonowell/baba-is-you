@@ -171,7 +171,8 @@ r = rocket up
 palette = ocean
 background = island island_decor
 + w,r = 3,2
-+ "w" = 1,2,1,4
++ "w" = 1,2 1,4
++ "r" = 2,0,2,1
 ---
 wr
 `,
@@ -187,6 +188,10 @@ wr
     wall: [
       [1, 2],
       [1, 4],
+    ],
+    rocket: [
+      [2, 0],
+      [2, 1],
     ],
   })
 })

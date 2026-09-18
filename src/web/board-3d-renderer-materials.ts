@@ -1,9 +1,13 @@
 import {
-  BoxGeometry,
+  BufferAttribute,
+  BufferGeometry,
   CanvasTexture,
   Color,
   DoubleSide,
+  ExtrudeGeometry,
+  MeshBasicMaterial,
   MeshToonMaterial,
+  Shape,
 } from 'three'
 
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
@@ -16,7 +20,6 @@ import {
   spriteVolumeBounds,
 } from './pixel-sprites/derive.js'
 import {
-  arrowMarkerSlices,
   arrowOverlaysForDirection,
 } from './pixel-sprites/arrows.js'
 import {
@@ -27,7 +30,7 @@ import {
 } from './pixel-sprites/voxel.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
 
-import type { BufferGeometry, Material } from 'three'
+import type { Material } from 'three'
 import type { Direction, Item } from '../logic/types.js'
 import type { CardMaterial, EntityNode } from './board-3d-node-types.js'
 
@@ -46,13 +49,12 @@ const {
   VOXEL_FRAME_Z,
   VOXEL_CARD_BACK_LAYERS,
   VOXEL_GROUND_HUG_BACK_LAYERS,
-  VOXEL_PLATE_DEPTH,
+  VOXEL_PLATE_CORNER_RADIUS,
   VOXEL_SHADE_FRONT,
   VOXEL_SHADE_TOP,
   VOXEL_SHADE_SIDE,
   VOXEL_SHADE_BOTTOM,
   VOXEL_SHADE_BACK,
-  VOXEL_PLATE_EDGE_SHADE,
   VOXEL_OUTLINE_COLOR,
   VOXEL_STAND_LIFT,
 } = BOARD3D_VOXEL_CONFIG
@@ -127,6 +129,98 @@ export type Board3dRendererMaterialStore = {
   dispose: () => void
 }
 
+// Plate material group order — matches the material array in plateVisual:
+// front lid, back lid, then top/side/bottom wall strips.
+const PLATE_GROUP_FRONT = 0
+
+// Rounded-rect slab for text/emoji cards: an extruded rounded rectangle
+// whose triangles are regrouped by face normal into five material groups
+// (front lid, back lid, top/side/bottom wall strips). The wall strips shade
+// with the shared VOXEL_SHADE factors, so plates and sprite silhouette
+// slabs are the same card language — the rounded perimeter is the card's
+// actual silhouette, nothing can poke out misaligned.
+const createPlateGeometry = (
+  size: number,
+  depth: number,
+  radius: number,
+): BufferGeometry => {
+  const half = size / 2
+  const shape = new Shape()
+    .moveTo(-half + radius, -half)
+    .lineTo(half - radius, -half)
+    .absarc(half - radius, -half + radius, radius, -Math.PI / 2, 0)
+    .lineTo(half, half - radius)
+    .absarc(half - radius, half - radius, radius, 0, Math.PI / 2)
+    .lineTo(-half + radius, half)
+    .absarc(-half + radius, half - radius, radius, Math.PI / 2, Math.PI)
+    .lineTo(-half, -half + radius)
+    .absarc(-half + radius, -half + radius, radius, Math.PI, Math.PI * 1.5)
+  const source = new ExtrudeGeometry(shape, {
+    depth,
+    bevelEnabled: false,
+    curveSegments: 5,
+  })
+  source.translate(0, 0, -depth / 2)
+
+  const position = source.getAttribute('position')
+  const normal = source.getAttribute('normal')
+  const uv = source.getAttribute('uv')
+  const triCount = position.count / 3
+  const front: number[] = []
+  const back: number[] = []
+  const top: number[] = []
+  const side: number[] = []
+  const bottom: number[] = []
+  for (let t = 0; t < triCount; t++) {
+    let nx = 0
+    let ny = 0
+    let nz = 0
+    for (let v = 0; v < 3; v++) {
+      nx += normal.getX(t * 3 + v)
+      ny += normal.getY(t * 3 + v)
+      nz += normal.getZ(t * 3 + v)
+    }
+    if (nz > 0) front.push(t)
+    else if (nz < 0) back.push(t)
+    else if (Math.abs(ny) > Math.abs(nx)) (ny > 0 ? top : bottom).push(t)
+    else side.push(t)
+  }
+  const buckets = [front, back, top, side, bottom]
+
+  const geometry = new BufferGeometry()
+  const outPos = new Float32Array(position.count * 3)
+  const outNormal = new Float32Array(position.count * 3)
+  const outUv = new Float32Array(uv.count * 2)
+  let write = 0
+  let groupStart = 0
+  buckets.forEach((tris, groupIx) => {
+    for (const t of tris) {
+      for (let v = 0; v < 3; v++) {
+        const src = t * 3 + v
+        const x = position.getX(src)
+        const y = position.getY(src)
+        outPos.set([x, y, position.getZ(src)], write * 3)
+        outNormal.set(
+          [normal.getX(src), normal.getY(src), normal.getZ(src)],
+          write * 3,
+        )
+        if (groupIx === PLATE_GROUP_FRONT) {
+          // Front lid UVs map the card texture 1:1 across the rounded face.
+          outUv.set([(x + half) / size, (y + half) / size], write * 2)
+        }
+        write++
+      }
+    }
+    geometry.addGroup(groupStart, tris.length * 3, groupIx)
+    groupStart += tris.length * 3
+  })
+  geometry.setAttribute('position', new BufferAttribute(outPos, 3))
+  geometry.setAttribute('normal', new BufferAttribute(outNormal, 3))
+  geometry.setAttribute('uv', new BufferAttribute(outUv, 2))
+  source.dispose()
+  return geometry
+}
+
 export const createBoard3dRendererMaterialStore = (
   args: CreateBoard3dRendererMaterialStoreArgs,
 ): Board3dRendererMaterialStore => {
@@ -135,7 +229,7 @@ export const createBoard3dRendererMaterialStore = (
   const materialCache = new Map<string, CardMaterial>()
   const animatedFrames = new Map<CardMaterial, CanvasTexture[]>()
   const geometryCache = new Map<string, BufferGeometry>()
-  const edgeMaterialCache = new Map<string, MeshToonMaterial>()
+  const edgeMaterialCache = new Map<string, MeshBasicMaterial>()
   const plateMaterialCache = new Map<string, Material[]>()
   const visualCache = new Map<string, EntityVisual>()
 
@@ -153,12 +247,16 @@ export const createBoard3dRendererMaterialStore = (
     emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
     emissiveIntensity: preset.materials.objectEmissiveIntensity,
   })
-  const plateGeometry = new BoxGeometry(
-    CARD_WORLD_SIZE,
-    CARD_WORLD_SIZE,
-    VOXEL_PLATE_DEPTH,
-  )
   const voxelInnerSize = CARD_WORLD_SIZE * VOXEL_INNER_SIZE_RATIO
+  // Plates are silhouette cards too: same depth as the sprite slab
+  // (frame layer + back slices, at the canonical 24-texel frame width).
+  const plateDepth =
+    (voxelInnerSize / 24) * (VOXEL_CARD_BACK_LAYERS + 1)
+  const plateGeometry = createPlateGeometry(
+    CARD_WORLD_SIZE,
+    plateDepth,
+    VOXEL_PLATE_CORNER_RADIUS,
+  )
 
   const frontMaterial = (spec: ReturnType<typeof cardSpecForItem>): CardMaterial => {
     const cached = materialCache.get(spec.key)
@@ -172,15 +270,12 @@ export const createBoard3dRendererMaterialStore = (
     const firstFrame = frames[0]
     if (!firstFrame) throw new Error(`No card texture for ${spec.key}.`)
 
-    const material = new MeshToonMaterial({
+    // Flat unlit plate faces: text/emoji cards read as one solid colour
+    // chip — no shading bands or edge seams breaking the surface.
+    const material = new MeshBasicMaterial({
       map: firstFrame,
       transparent: true,
       alphaTest: CARD_MATERIAL_ALPHA_TEST,
-      ...toonSurface,
-      emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
-      emissiveIntensity: spec.isText
-        ? preset.materials.textEmissiveIntensity
-        : preset.materials.objectEmissiveIntensity,
       side: DoubleSide,
     })
     materialCache.set(spec.key, material)
@@ -188,19 +283,19 @@ export const createBoard3dRendererMaterialStore = (
     return material
   }
 
-  const edgeMaterial = (spec: ReturnType<typeof cardSpecForItem>): MeshToonMaterial => {
-    const cached = edgeMaterialCache.get(spec.key)
+  // Plate edges shade exactly like the sprite slab's voxel faces — the
+  // card's own colour times the shared VOXEL_SHADE factors per face.
+  const edgeMaterial = (
+    spec: ReturnType<typeof cardSpecForItem>,
+    face: keyof typeof VOXEL_SHADE,
+  ): MeshBasicMaterial => {
+    const key = `${spec.key}:${face}`
+    const cached = edgeMaterialCache.get(key)
     if (cached) return cached
-    const color = new Color(spec.background).multiplyScalar(VOXEL_PLATE_EDGE_SHADE)
-    const material = new MeshToonMaterial({
-      color,
-      ...toonSurface,
-      emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
-      emissiveIntensity: spec.isText
-        ? preset.materials.textEmissiveIntensity
-        : preset.materials.objectEmissiveIntensity,
+    const material = new MeshBasicMaterial({
+      color: new Color(spec.background).multiplyScalar(VOXEL_SHADE[face]),
     })
-    edgeMaterialCache.set(spec.key, material)
+    edgeMaterialCache.set(key, material)
     return material
   }
 
@@ -236,11 +331,10 @@ export const createBoard3dRendererMaterialStore = (
     const rect = voxelDrawRect(bounds, voxelInnerSize)
     const outlineColor = groundHug ? undefined : VOXEL_OUTLINE_COLOR
     const frameBounds = spriteContentBounds(sprite) ?? bounds
-    const overlays = facing
-      ? rotates
-        ? arrowMarkerSlices(frameBounds)
-        : arrowOverlaysForDirection(facing, frameBounds)
-      : []
+    // Facing arrows belong to silhouette cards only — a rotating authored
+    // model already points its whole body at the direction.
+    const overlays =
+      facing && !rotates ? arrowOverlaysForDirection(facing, frameBounds) : []
     // Standing models plant their bottom row on the ground plane and spin
     // around the volume's depth center; billboard cards keep the authored
     // frame plane just in front of the card origin.
@@ -292,9 +386,15 @@ export const createBoard3dRendererMaterialStore = (
     const key = `plate:${spec.key}`
     let material = plateMaterialCache.get(key)
     if (!material) {
-      const edge = edgeMaterial(spec)
-      // BoxGeometry group order: +x -x +y -y +z -z; +z is the card face.
-      material = [edge, edge, edge, edge, frontMaterial(spec), edge]
+      // Group order from createPlateGeometry: front/back lids, then
+      // top/side/bottom wall strips.
+      material = [
+        frontMaterial(spec),
+        edgeMaterial(spec, 'back'),
+        edgeMaterial(spec, 'top'),
+        edgeMaterial(spec, 'side'),
+        edgeMaterial(spec, 'bottom'),
+      ]
       plateMaterialCache.set(key, material)
     }
     return {

@@ -79,7 +79,9 @@ for (const path of walk(join(SRC, 'goldens')).sort()) {
   try {
     golden_ = loadRustGolden(path)
     levelData = parseAsciiLevel(readFileSync(levelPath, 'utf8'), levelPath)
-    const recorded = levelFromScreen(golden_.screens[0], levelData.title)
+    const firstScreen = golden_.screens[0]
+    if (!firstScreen) throw new Error('golden has no screens')
+    const recorded = levelFromScreen(firstScreen, levelData.title)
     if (layoutOf(recorded) !== layoutOf(levelData)) {
       levelData = recorded
       usedRecordedLayout = true

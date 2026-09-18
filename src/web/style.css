@@ -6,7 +6,6 @@
   --panel-soft: #e6dcc4;
   --panel-strong: #c9a86a;
   --well-bg: #e2dac6;
-  --messages-bg: #eee7d5;
   --text: #3d4757;
   --muted: #5d6577;
   --navy: #2e3c50;
@@ -16,32 +15,15 @@
 
   --accent: #c9a86a;
   --accent-dark: #8a6d3a;
-  --teal: #4dc3be;
-  --success: #4d9a68;
-  --warning: #c8923a;
-  --danger: #c95656;
 
-  --bubble-agent-bg: #e7e0cc;
-  --bubble-agent-text: #3b4355;
-  --bubble-agent-border: #cfc2a0;
   --bubble-user-bg: #dbe7f0;
   --bubble-user-text: #2f5f8a;
   --bubble-user-border: #a9c4d8;
-  --bubble-system-bg: #e9e4d8;
-  --bubble-system-text: #6d7486;
-  --bubble-system-border: #cdc5ae;
-
-  --status-running: #4a9bb0;
-  --status-success: #4d9a68;
-  --status-fail: #c95656;
-  --status-pending: #8a93a6;
-  --status-canceled: #9a8fa8;
 
   --shadow-raised: 0 1px 2px rgb(90 80 55 / 18%), 0 4px 10px rgb(90 80 55 / 12%);
   --shadow-raised-soft: 0 1px 2px rgb(90 80 55 / 14%), 0 2px 5px rgb(90 80 55 / 10%);
   --shadow-inset: inset 0 1px 4px rgb(90 80 55 / 18%);
   --shadow-inset-soft: inset 0 1px 3px rgb(90 80 55 / 14%);
-  --shadow-floating: 0 10px 26px rgb(60 70 90 / 28%);
   --shadow-dialog: 0 16px 40px rgb(50 60 80 / 35%);
 
   --radius: 14px;
