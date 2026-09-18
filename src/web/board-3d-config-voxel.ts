@@ -12,4 +12,7 @@ export const BOARD3D_VOXEL_CONFIG = {
   VOXEL_SHADE_BOTTOM: 0.5,
   VOXEL_SHADE_BACK: 0.35,
   VOXEL_PLATE_EDGE_SHADE: 0.45,
+  // Flat one-cell silhouette ring on object sprites (not ground-hug tiles) —
+  // keeps pale sprites like baba readable against the dark board.
+  VOXEL_OUTLINE_COLOR: '#141b2a',
 } as const

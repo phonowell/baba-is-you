@@ -4,12 +4,14 @@ import {
   Color,
   DirectionalLight,
   Group,
+  HalfFloatType,
   PCFSoftShadowMap,
   PerspectiveCamera,
   SRGBColorSpace,
   Scene,
   Vector2,
   WebGLRenderer,
+  WebGLRenderTarget,
 } from 'three'
 import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
@@ -98,7 +100,13 @@ export const createBoard3dRendererScene = (
   renderer.domElement.className = 'board-3d-canvas'
   renderer.domElement.setAttribute('aria-hidden', 'true')
 
-  const composer = new EffectComposer(renderer)
+  // Multisampled target so the RenderPass output is MSAA-resolved before the
+  // post chain; the canvas itself stays antialias:false.
+  const composerTarget = new WebGLRenderTarget(1, 1, {
+    type: HalfFloatType,
+    samples: 4,
+  })
+  const composer = new EffectComposer(renderer, composerTarget)
   composer.addPass(new RenderPass(scene, camera))
 
   const bloomPass = new UnrealBloomPass(

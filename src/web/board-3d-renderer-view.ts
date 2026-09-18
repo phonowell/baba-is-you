@@ -23,6 +23,7 @@ const {
   BLOOM_DENSE_TEXT_RESOLUTION_SCALE,
   BOKEH_ENABLE_MARGIN,
   BOKEH_FOCUS_MIN,
+  BOKEH_INITIAL_FOCUS,
 } = BOARD3D_POSTFX_CONFIG
 
 type BokehUniform = {
@@ -74,6 +75,7 @@ export const createBoard3dRendererViewController = (
   let currentReadabilityMix = 0
   let activeBokehAperture = preset.bokeh.aperture
   let activeBokehMaxBlur = preset.bokeh.maxBlur
+  let lastFocusDistance: number = BOKEH_INITIAL_FOCUS
 
   const updateBloomResolution = (): void => {
     if (viewportWidth <= 0 || viewportHeight <= 0) return
@@ -84,11 +86,16 @@ export const createBoard3dRendererViewController = (
     )
   }
 
-  const updateBokehFocus = (): void => {
+  const updateBokehFocus = (focusDistance: number): void => {
+    lastFocusDistance = focusDistance
+    applyBokehUniforms()
+  }
+
+  const applyBokehUniforms = (): void => {
     const uniforms = bokehPass.materialBokeh.uniforms as Record<string, BokehUniform>
     const focus = Math.max(
       BOKEH_FOCUS_MIN,
-      camera.position.z - CARD_BASE_Z + preset.bokeh.focusOffset,
+      lastFocusDistance - CARD_BASE_Z + preset.bokeh.focusOffset,
     )
     if (uniforms.focus) uniforms.focus.value = focus
     if (uniforms.aperture) uniforms.aperture.value = activeBokehAperture
@@ -187,7 +194,7 @@ export const createBoard3dRendererViewController = (
       activeBokehAperture > preset.readability.apertureFloor * BOKEH_ENABLE_MARGIN
     if (bokehPass.enabled !== shouldEnableBokeh) bokehPass.enabled = shouldEnableBokeh
     updateBloomResolution()
-    updateBokehFocus()
+    applyBokehUniforms()
   }
 
   return {

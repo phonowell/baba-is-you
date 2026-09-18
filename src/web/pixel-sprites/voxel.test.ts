@@ -60,7 +60,8 @@ test('voxel soup keeps holes open through a hollow ring', () => {
 test('voxel soup bakes face shading into vertex colors', () => {
   const soup = voxelVertexSoup({ frame: singleCell, palette: PALETTE }, options())
   const colorAt = (vertexIx: number): number => soup.colors[vertexIx * 3]!
-  const base = 128 / 255
+  // Palette hex is decoded sRGB -> linear before shading is multiplied in.
+  const base = ((128 / 255 + 0.055) / 1.055) ** 2.4
   // First emitted quad is the front face (shade 1.0).
   assert.ok(Math.abs(colorAt(0) - base) < 1e-6)
   // Find a top-face vertex: normal +y.

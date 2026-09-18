@@ -1,4 +1,10 @@
-import { CanvasTexture, LinearFilter, NearestFilter, SRGBColorSpace } from 'three'
+import {
+  CanvasTexture,
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  NearestFilter,
+  SRGBColorSpace,
+} from 'three'
 
 import {
   BOARD3D_CARD_TEXTURE_CONFIG,
@@ -88,9 +94,10 @@ const createCanvasTexture = (
 ): CanvasTexture => {
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = SRGBColorSpace
-  const filter = nearest ? NearestFilter : LinearFilter
-  texture.minFilter = filter
-  texture.magFilter = filter
+  // Cards are minified well below texture size; mipmaps keep text/shapes
+  // stable instead of shimmering. Pixel sprites keep Nearest on both ends.
+  texture.minFilter = nearest ? NearestFilter : LinearMipmapLinearFilter
+  texture.magFilter = nearest ? NearestFilter : LinearFilter
   texture.anisotropy = anisotropy
   return texture
 }

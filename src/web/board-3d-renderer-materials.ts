@@ -41,6 +41,7 @@ const {
   VOXEL_SHADE_BOTTOM,
   VOXEL_SHADE_BACK,
   VOXEL_PLATE_EDGE_SHADE,
+  VOXEL_OUTLINE_COLOR,
 } = BOARD3D_VOXEL_CONFIG
 
 const VOXEL_SHADE = {
@@ -191,7 +192,9 @@ export const createBoard3dRendererMaterialStore = (
     const bounds = spriteContentBounds(sprite)
     if (!bounds) throw new Error(`Empty sprite for ${spec.key}.`)
     const rect = voxelDrawRect(bounds, voxelInnerSize)
-    const depth = isGroundHugItem(item) ? VOXEL_DEPTH_GROUND_HUG : VOXEL_DEPTH_OBJECT
+    const groundHug = isGroundHugItem(item)
+    const depth = groundHug ? VOXEL_DEPTH_GROUND_HUG : VOXEL_DEPTH_OBJECT
+    const outlineColor = groundHug ? undefined : VOXEL_OUTLINE_COLOR
     const overlays = spec.facingDirection
       ? arrowOverlaysForDirection(spec.facingDirection, VOXEL_ARROW_LIFT, bounds)
       : []
@@ -202,7 +205,14 @@ export const createBoard3dRendererMaterialStore = (
       if (!geometry) {
         geometry = buildVoxelGeometry(
           { frame, palette: sprite.palette, overlays },
-          { drawX: rect.drawX, drawY: rect.drawY, texel: rect.texel, depth, shade: VOXEL_SHADE },
+          {
+            drawX: rect.drawX,
+            drawY: rect.drawY,
+            texel: rect.texel,
+            depth,
+            shade: VOXEL_SHADE,
+            outlineColor,
+          },
         )
         geometryCache.set(key, geometry)
       }

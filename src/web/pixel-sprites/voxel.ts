@@ -38,6 +38,10 @@ export type VoxelBuildOptions = {
   // Slab thickness along local +z.
   depth: number
   shade: VoxelFaceShade
+  // When set, empty cells adjacent to the silhouette are filled with this
+  // color in the same slab — a flat one-cell outline ring that keeps the
+  // sprite readable against the board.
+  outlineColor?: string | undefined
 }
 
 // A relief layer in front of the sprite face — used for the direction arrow.
@@ -66,10 +70,16 @@ export type VoxelVertexSoup = {
   indices: number[]
 }
 
-const hexToRgb = (hex: string): [number, number, number] => [
-  Number.parseInt(hex.slice(1, 3), 16) / 255,
-  Number.parseInt(hex.slice(3, 5), 16) / 255,
-  Number.parseInt(hex.slice(5, 7), 16) / 255,
+// Palette hexes are authored in sRGB; vertex colors are consumed as linear
+// values by the lighting pipeline, so decode them or every sprite renders a
+// washed-out step brighter than intended.
+const srgbChannelToLinear = (channel: number): number =>
+  channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+
+const hexToLinearRgb = (hex: string): [number, number, number] => [
+  srgbChannelToLinear(Number.parseInt(hex.slice(1, 3), 16) / 255),
+  srgbChannelToLinear(Number.parseInt(hex.slice(3, 5), 16) / 255),
+  srgbChannelToLinear(Number.parseInt(hex.slice(5, 7), 16) / 255),
 ]
 
 const pushQuad = (
@@ -109,7 +119,7 @@ const paintedCells = (
       if (key === '.') continue
       const color = palette[key]
       if (!color) continue
-      cells.set(cellKey(x + dx, y + dy), hexToRgb(color))
+      cells.set(cellKey(x + dx, y + dy), hexToLinearRgb(color))
     }
   }
   return cells
@@ -223,6 +233,29 @@ const emitLayer = (
   }
 }
 
+// Expands the cell map in place by a one-cell ring of outline cells on
+// every silhouette-adjacent empty position.
+const addOutlineRing = (
+  cells: Map<number, [number, number, number]>,
+  color: [number, number, number],
+): void => {
+  const ring: number[] = []
+  for (const key of cells.keys()) {
+    const cx = (key % 2048) - 512
+    const cy = Math.floor(key / 2048) - 512
+    for (let dy = -1; dy <= 1; dy += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        if (dx === 0 && dy === 0) continue
+        const nk = cellKey(cx + dx, cy + dy)
+        if (!cells.has(nk)) ring.push(nk)
+      }
+    }
+  }
+  for (const key of ring) {
+    if (!cells.has(key)) cells.set(key, color)
+  }
+}
+
 // Vertex soup for the sprite slab plus optional overlay reliefs. Overlay
 // side walls cull only against their own cells, so the relief sticks out of
 // the face underneath regardless of what the sprite paints there.
@@ -232,6 +265,7 @@ export const voxelVertexSoup = (
 ): VoxelVertexSoup => {
   const soup: VoxelVertexSoup = { positions: [], normals: [], colors: [], indices: [] }
   const cells = paintedCells(args.frame, args.palette)
+  if (options.outlineColor) addOutlineRing(cells, hexToLinearRgb(options.outlineColor))
   emitLayer(
     soup,
     cells,
