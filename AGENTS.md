@@ -40,10 +40,11 @@
 - `pnpm lint`：oxlint + BOM/CRLF 归一
 - `pnpm type-check`
 - `pnpm import-levels:official`
-- `pnpm verify-levels:official`
+- `pnpm verify-levels:official`（依赖本地 `data/baba` dump，已 gitignore）
 
 ## 目录结构
 - `src/web/app.ts`：Web 应用入口
+- `src/web/pixel-sprites/`：像素 sprite 数据与体素几何（帧派生、blit、voxel 挤出）
 - `src/tools/level-graph.ts`：关卡目录 → 大地图导航图（供 simulate 加载 `index.txt`）
 - `src/tools/print-board.ts`：纯文本棋盘打印器（供 simulate 输出）
 - `src/logic/overworld.ts`：大地图纯逻辑（光标放置/移动、进入/返回、会话栈）

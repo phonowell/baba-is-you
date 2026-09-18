@@ -10,6 +10,7 @@ Core turn flow is in `src/logic/step.ts`.
 
 - Each turn runs a fixed stage pipeline in gameplay order:
   - `player-move`
+  - `cursor-move` (overworld rail-hop; no-ops on boards without a cursor)
   - `auto-move`
   - `gravity`
   - `shift`
@@ -39,7 +40,20 @@ Rule evaluation state is centralized in `src/logic/rule-runtime.ts`.
 - `RuleRuntime`: `{ rules, buckets, context, width, height }`.
 - Match context is created once per frame and reused by phases that need rule matching.
 
-`resolve.ts`, `step/make.ts`, `step/write.ts`, and `step/interactions.ts` consume `RuleRuntime` directly.
+`RuleRuntime` is threaded through every stage (`buildStepStages`) and consumed by the resolvers (`resolve.ts`, `resolve-transforms.ts`), the movement code (`move-single*.ts`, `move-batch*.ts`, `phases-movement.ts`), the rule spawner (`spawn-by-rule.ts` via `make.ts`/`write.ts`), and `interactions.ts`.
+
+## Overridden Rules
+
+`src/logic/rules-override.ts` partitions collected rule instances into active and overridden sets (a port of the predecessor's `partition_overridden_rules`):
+
+- A positive rule is vetoed by a matching `NOT`-object rule with the same predicate/object/condition and a compatible subject (`X IS NOT P` vetoes `X IS P`; `NOT A IS NOT P` vetoes `B IS P` for `B ≠ A`).
+- `x is x` suppresses every other transform on subject `x`.
+
+`collectRuleRuntime` feeds only active rules into the runtime, so overridden rules have no gameplay effect; `collectTextRuleMarks` / `collectOverriddenTextIds` expose the same partition for struck-through text rendering in the web layer.
+
+## Overworld
+
+`src/logic/overworld.ts` owns map-mode logic: cursor placement/movement (`placeCursor`, `moveCursor`), enter/leave target resolution (`resolveEnterTarget`), and the session stack (`createOverworldSession`, `applyEnter`, `applyLeave`). Enter/leave are session-level inputs handled outside `step()`; `pnpm simulate --ascii levels/index.txt` drives them via `e`/`b`.
 
 ## Rule Vocabulary
 

@@ -9,7 +9,7 @@
 ```bash
 pnpm install
 pnpm build
-pnpm verify-levels:official
+pnpm verify-levels:official   # ローカルの data/baba ダンプが必要（gitignore 済み）
 pnpm test
 pnpm lint
 pnpm type-check
@@ -22,7 +22,8 @@ pnpm type-check
 | `pnpm check` | lint + 型チェック + テストを一括実行 |
 | `pnpm simulate` | ヘッドレスでレベルをステップ実行（例 `pnpm simulate 0 rrdl --trace`） |
 | `pnpm build` | 単一 HTML 生成（`release/baba-is-you.html`） |
-| `pnpm verify-levels:official` | `data/baba/*.(l|ld)` の公式レベルテキスト導入整合性を検証 |
+| `pnpm watch` | 変更を監視して単一ファイルを再ビルド |
+| `pnpm verify-levels:official` | ローカルの `data/baba/*.(l|ld)` ダンプ（gitignore 済み・非配布）と公式レベルテキストの導入整合性を検証 |
 | `pnpm import-levels:official` | 公式レベルを `src/levels-data/*.ts` に再導入 |
 | `pnpm test` | `src/**/*.test.ts` を実行 |
 | `pnpm lint` | UTF-8/LF 正規化 + oxlint で `src/` を lint |
@@ -44,9 +45,9 @@ pnpm type-check
 ## レンダリング
 
 - Web: 盤面セルは常に正方形、テキストタイルは全文字表示、ルールと凡例はゲーム内ダイアログで表示
-- Web 3D 描画は単一固定のクレイ質感 preset を使用し、地面は単色マテリアル、カードは簡略テクスチャラベル（文字/emoji/向きマーカー）を使用します（実行時切替なし）
-- Web 3D の立体スタック順は固定: `you > text > move/fall > push/pull > open/shut > else`
-- 地貼り要素（`tile`、`water`、`belt`）は上記の立体スタック優先度に参加しません
+- Web 3D 描画は単一固定のクレイ質感 preset（実行時切替なし）: ピクセル sprite 付きオブジェクトはボクセル押出しのピクセルモデル、それ以外（テキスト/emoji/グリフラベル）は厚み付きプレートとして描画、向き矢印はオーバーレイ層として表示
+- Web 3D の立体スタック順は固定: `cursor > you > text > move/fall > push/pull > open/shut > else`（`cursor` はオーバーワールドマップのみ）
+- 地貼り要素（`tile`、`water`、`belt`、`line`）は平置きで、上記の立体スタック優先度に参加しません
 
 ## 単一 HTML
 
@@ -60,7 +61,7 @@ pnpm build
 ## レベルデータ
 
 - 入口: `src/levels.ts`
-- データパック: `src/levels-data/00-official.ts`、`src/levels-data/01-official.ts`、`src/levels-data/02-official.ts`
+- データパック: `src/levels-data/00-official.ts` … `src/levels-data/04-official.ts`（`src/levels.ts` で集約）
 
 ## 構成
 

@@ -9,7 +9,7 @@ Baba Is You with a pure logic core and a single-file Web frontend (`src/web/app.
 ```bash
 pnpm install
 pnpm build
-pnpm verify-levels:official
+pnpm verify-levels:official   # needs the local data/baba dump (gitignored)
 pnpm test
 pnpm lint
 pnpm type-check
@@ -22,7 +22,8 @@ pnpm type-check
 | `pnpm check` | Lint + type-check + test in one step |
 | `pnpm simulate` | Headless level stepping, e.g. `pnpm simulate 0 rrdl --trace` |
 | `pnpm build` | Build single-file web output (`release/baba-is-you.html`) |
-| `pnpm verify-levels:official` | Verify imported official level text from `data/baba/*.(l|ld)` |
+| `pnpm watch` | Rebuild the single-file web output on change |
+| `pnpm verify-levels:official` | Verify imported official level text against the local `data/baba/*.(l|ld)` dump (gitignored, not committed) |
 | `pnpm import-levels:official` | Re-import official levels into `src/levels-data/*.ts` |
 | `pnpm test` | Run `src/**/*.test.ts` |
 | `pnpm lint` | Normalize UTF-8/LF, then oxlint `src/` |
@@ -44,9 +45,9 @@ pnpm type-check
 ## Rendering
 
 - Web: fixed square board; text tiles render full words; rules and legend are available in the in-game dialog
-- Web 3D path uses one fixed clay-look preset: ground uses solid-color material, cards use simplified texture labels (text/emoji/direction), with no runtime preset switch
-- Web 3D upright stack order is fixed: `you > text > move/fall > push/pull > open/shut > else`
-- Ground-hug objects (`tile`, `water`, `belt`) are excluded from upright stack priority
+- Web 3D path uses one fixed clay-look preset with no runtime switch: sprite-backed objects render as voxel-extruded pixel sprites; other items (text/emoji/glyph labels) render as textured plates; facing directions show as arrow overlays on top
+- Web 3D upright stack order is fixed: `cursor > you > text > move/fall > push/pull > open/shut > else` (`cursor` only appears on overworld maps)
+- Ground-hug objects (`tile`, `water`, `belt`, `line`) lie flat and skip the upright stack priority
 
 ## Single-file HTML
 
@@ -60,7 +61,7 @@ pnpm build
 ## Level Source
 
 - Entry: `src/levels.ts`
-- Data packs: `src/levels-data/00-official.ts`, `src/levels-data/01-official.ts`, `src/levels-data/02-official.ts`
+- Data packs: `src/levels-data/00-official.ts` … `src/levels-data/04-official.ts` (aggregated by `src/levels.ts`)
 
 ## Structure
 
