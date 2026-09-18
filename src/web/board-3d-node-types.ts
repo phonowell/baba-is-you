@@ -1,4 +1,5 @@
 import type {
+  Camera,
   CanvasTexture,
   Group,
   Mesh,
@@ -17,7 +18,7 @@ export type EntityNode = {
   shadowMaterial: MeshBasicMaterial
   isEmoji: boolean
   emojiPhaseOffsetMs: number
-  rotX: number
+  facesCamera: boolean
   rotRoll: number
   rollStep: number
   fromX: number
@@ -54,6 +55,7 @@ export type SyncEntityNodesDeps = {
   nodes: Map<number, EntityNode>
   getMaterial: (item: Item) => CardMaterial
   createNode: (item: Item, nowMs: number) => EntityNode
+  camera: Camera
 }
 
 export type PoseStepResult = {

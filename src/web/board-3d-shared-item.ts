@@ -1,6 +1,5 @@
 import { createClayObjectPalette } from './clay-config.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
-import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import {
   BOARD3D_RULE_VISUAL_CONFIG,
   BOARD3D_TEXT_CARD_STYLE_CONFIG,
@@ -12,12 +11,6 @@ import { SYNTAX_WORDS } from '../view/syntax-words.js'
 
 import type { Direction, Item } from '../logic/types.js'
 import type { CardSpec } from './board-3d-shared-types.js'
-
-const {
-  CARD_UPRIGHT_ROT_X,
-  CARD_BACK_TILT_RAD,
-  CARD_FLAT_ROT_X,
-} = BOARD3D_LAYOUT_CONFIG
 
 const {
   MOVE_ROLL_AMPLITUDE,
@@ -54,8 +47,8 @@ const rollForMoveStep = (itemId: number, step: number): number => {
   return ((seed & 0xfff) / 0xfff - 0.5) * MOVE_ROLL_AMPLITUDE
 }
 
-export const cardRotXForItem = (item: Item): number =>
-  isGroundHugItem(item) ? CARD_FLAT_ROT_X : CARD_UPRIGHT_ROT_X - CARD_BACK_TILT_RAD
+export const cardFacesCamera = (item: Item): boolean =>
+  !isGroundHugItem(item)
 
 export const cardRollForItemStep = (item: Item, step: number): number =>
   item.isText || isGroundHugItem(item) ? 0 : rollForMoveStep(item.id, step)

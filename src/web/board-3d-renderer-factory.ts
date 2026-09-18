@@ -77,6 +77,7 @@ export const createBoard3dRendererFactoryDeps = () => {
     getMaterial,
     createNode: (item: Item, nowMs: number): EntityNode =>
       createEntityNode(createNodeDeps, item, nowMs),
+    camera,
     viewController: createBoard3dRendererViewController({
       preset,
       camera,

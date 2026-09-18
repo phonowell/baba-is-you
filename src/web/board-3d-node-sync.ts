@@ -3,9 +3,11 @@ import {
 } from './board-3d-config-layout.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { applyCardOrientation } from './board-3d-card-facing.js'
+import { nodeRollAtMs } from './board-3d-node-pose.js'
 import {
+  cardFacesCamera,
   cardRollForItemStep,
-  cardRotXForItem,
   emojiPhaseOffsetMsForItem,
   emojiStretchEnabledForItem,
   isEmojiItem,
@@ -15,7 +17,7 @@ import {
   computeEntityBaseTarget,
 } from './board-3d-shared-layout.js'
 
-import type { Group } from 'three'
+import type { Camera, Group } from 'three'
 import type { GameState } from '../logic/types.js'
 import type {
   EntityBaseTarget,
@@ -37,9 +39,14 @@ const {
   MOVE_ANIM_MS,
 } = BOARD3D_ANIMATION_CONFIG
 
-const setNodeIdlePose = (node: EntityNode, target: EntityBaseTarget, roll: number): void => {
+const setNodeIdlePose = (
+  node: EntityNode,
+  target: EntityBaseTarget,
+  roll: number,
+  camera: Camera,
+): void => {
   node.mesh.position.set(target.x, target.y, target.baseZ)
-  node.mesh.rotation.set(node.rotX, 0, roll)
+  applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
   node.mesh.scale.set(1, 1, 1)
   node.shadow.position.set(target.x, target.y, SHADOW_BASE_Z)
   node.shadow.scale.set(
@@ -56,14 +63,18 @@ const setNodeTarget = (node: EntityNode, target: EntityBaseTarget): void => {
   node.toBaseZ = target.baseZ
 }
 
-const initializeNodeAtTarget = (node: EntityNode, target: EntityBaseTarget): void => {
+const initializeNodeAtTarget = (
+  node: EntityNode,
+  target: EntityBaseTarget,
+  camera: Camera,
+): void => {
   setNodeTarget(node, target)
   node.fromX = node.toX
   node.fromY = node.toY
   node.fromBaseZ = node.toBaseZ
   node.fromRoll = node.rotRoll
   node.toRoll = node.rotRoll
-  setNodeIdlePose(node, target, node.rotRoll)
+  setNodeIdlePose(node, target, node.rotRoll, camera)
 }
 
 export const removeEntityNode = (
@@ -80,7 +91,7 @@ export const removeEntityNode = (
 }
 
 export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): void => {
-  const { nodes, createNode, getMaterial } = deps
+  const { nodes, createNode, getMaterial, camera } = deps
   const nowMs = performance.now()
   const seen = new Set<number>()
   const views = buildEntityViews(state)
@@ -107,7 +118,7 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)
     node.mesh.castShadow = true
     node.mesh.receiveShadow = !emoji
-    node.rotX = cardRotXForItem(item)
+    node.facesCamera = cardFacesCamera(item)
     const stableRoll = cardRollForItemStep(item, node.rollStep)
     if (!node.moving && Math.abs(node.rotRoll - stableRoll) > POSITION_EPSILON) {
       node.rotRoll = stableRoll
@@ -116,7 +127,7 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     }
 
     if (nodeCreated) {
-      initializeNodeAtTarget(node, target)
+      initializeNodeAtTarget(node, target, camera)
       continue
     }
 
@@ -129,7 +140,7 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       node.fromX = node.mesh.position.x
       node.fromY = node.mesh.position.y
       node.fromBaseZ = node.mesh.position.z
-      node.fromRoll = node.mesh.rotation.z
+      node.fromRoll = nodeRollAtMs(node, nowMs)
       node.rollStep += 1
       node.rotRoll = cardRollForItemStep(item, node.rollStep)
       setNodeTarget(node, target)
@@ -141,7 +152,7 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       setNodeTarget(node, target)
       node.toRoll = node.rotRoll
       if (!node.moving && node.landStartMs === null) {
-        setNodeIdlePose(node, target, node.toRoll)
+        setNodeIdlePose(node, target, node.toRoll, camera)
       }
     }
   }

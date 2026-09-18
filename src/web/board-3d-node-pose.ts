@@ -1,5 +1,6 @@
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
+import { applyCardOrientation } from './board-3d-card-facing.js'
 import {
   clamp01,
   easeOutCubic,
@@ -8,6 +9,7 @@ import {
   lerp,
 } from './board-3d-shared-math.js'
 
+import type { Camera } from 'three'
 import type { EntityNode, PoseStepResult } from './board-3d-node-types.js'
 
 const {
@@ -35,7 +37,19 @@ const {
   DESPAWN_VERTICAL_OFFSET,
 } = BOARD3D_ANIMATION_CONFIG
 
-export const applyNodePose = (node: EntityNode, nowMs: number): PoseStepResult => {
+export const nodeRollAtMs = (node: EntityNode, nowMs: number): number => {
+  const animDuration = Math.max(1, node.animDurationMs)
+  const eased = easeOutCubic(
+    clamp01((nowMs - node.animStartMs) / animDuration),
+  )
+  return lerp(node.fromRoll, node.toRoll, eased)
+}
+
+export const applyNodePose = (
+  node: EntityNode,
+  nowMs: number,
+  camera: Camera,
+): PoseStepResult => {
   const animDuration = Math.max(1, node.animDurationMs)
   const rawProgress = clamp01((nowMs - node.animStartMs) / animDuration)
   const eased = easeOutCubic(rawProgress)
@@ -43,7 +57,7 @@ export const applyNodePose = (node: EntityNode, nowMs: number): PoseStepResult =
   const x = lerp(node.fromX, node.toX, eased)
   const y = lerp(node.fromY, node.toY, eased)
   const baseZ = lerp(node.fromBaseZ, node.toBaseZ, eased)
-  const roll = lerp(node.fromRoll, node.toRoll, eased)
+  const roll = nodeRollAtMs(node, nowMs)
 
   const dx = node.toX - node.fromX
   const dy = node.toY - node.fromY
@@ -104,7 +118,7 @@ export const applyNodePose = (node: EntityNode, nowMs: number): PoseStepResult =
   }
 
   node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
-  node.mesh.rotation.set(node.rotX, 0, roll)
+  applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
   node.mesh.scale.set(scaleX, scaleY, 1)
 
   const shadowScale =

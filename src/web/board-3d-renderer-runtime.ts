@@ -1,4 +1,4 @@
-import type { Group, WebGLRenderer } from 'three'
+import type { Camera, Group, WebGLRenderer } from 'three'
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 
 import { rebuildGroundVisuals } from './board-3d-ground.js'
@@ -30,6 +30,7 @@ type CreateBoard3dRendererRuntimeArgs = {
   nodes: Map<number, EntityNode>
   getMaterial: (item: Item) => CardMaterial
   createNode: (item: Item, nowMs: number) => EntityNode
+  camera: Camera
   disposeResources: (groundVisuals: GroundVisuals) => GroundVisuals
   rebuildGround?: (
     world: Group,
@@ -37,7 +38,11 @@ type CreateBoard3dRendererRuntimeArgs = {
     boardHeight: number,
     visuals: GroundVisuals,
   ) => GroundVisuals
-  applyNodePoseStep?: (node: EntityNode, nowMs: number) => PoseStepResult
+  applyNodePoseStep?: (
+    node: EntityNode,
+    nowMs: number,
+    camera: Camera,
+  ) => PoseStepResult
   syncNodes?: (state: GameState, deps: SyncEntityNodesDeps) => void
   requestFrame?: RequestFrame | null
   cancelFrame?: CancelFrame | null
@@ -62,6 +67,7 @@ export const createBoard3dRendererRuntime = (
     nodes,
     getMaterial,
     createNode,
+    camera,
     disposeResources,
     rebuildGround = rebuildGroundVisuals,
     applyNodePoseStep = applyNodePose,
@@ -109,7 +115,7 @@ export const createBoard3dRendererRuntime = (
     const leavingDoneIds: number[] = []
 
     for (const [id, node] of nodes) {
-      const step = applyNodePoseStep(node, nowMs)
+      const step = applyNodePoseStep(node, nowMs, camera)
       if (step.animating) hasAnimation = true
       if (step.finishedLeaving) leavingDoneIds.push(id)
     }
@@ -193,6 +199,7 @@ export const createBoard3dRendererRuntime = (
       nodes,
       getMaterial,
       createNode,
+      camera,
     })
     needsRender = true
     ensureFrame()

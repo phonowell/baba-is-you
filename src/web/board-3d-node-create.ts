@@ -11,8 +11,8 @@ import {
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import {
+  cardFacesCamera,
   cardRollForItemStep,
-  cardRotXForItem,
   emojiPhaseOffsetMsForItem,
   emojiStretchEnabledForItem,
   isEmojiItem,
@@ -71,7 +71,7 @@ export const createEntityNode = (
     shadowMaterial,
     isEmoji: stretchEnabled,
     emojiPhaseOffsetMs: emojiPhaseOffsetMsForItem(item),
-    rotX: cardRotXForItem(item),
+    facesCamera: cardFacesCamera(item),
     rotRoll: rollNoise,
     rollStep: 0,
     fromX: 0,

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { PerspectiveCamera } from 'three'
+
 import { createBoard3dRendererRuntime } from './board-3d-renderer-runtime.js'
 
 import type { GameState } from '../logic/types.js'
@@ -81,7 +83,7 @@ const createNode = (): EntityNode =>
     shadowMaterial: { opacity: 1, dispose: () => undefined },
     isEmoji: false,
     emojiPhaseOffsetMs: 0,
-    rotX: 0,
+    facesCamera: false,
     rotRoll: 0,
     rollStep: 0,
     fromX: 0,
@@ -144,6 +146,7 @@ const createRuntime = (overrides: {
     nodes: overrides.nodes ?? new Map<number, EntityNode>(),
     getMaterial: () => ({}) as never,
     createNode: () => createNode(),
+    camera: new PerspectiveCamera(),
     disposeResources:
       overrides.disposeResources ??
       ((groundVisuals) => groundVisuals),
