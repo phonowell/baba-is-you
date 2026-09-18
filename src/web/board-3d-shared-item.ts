@@ -5,6 +5,8 @@ import {
   BOARD3D_TEXT_CARD_STYLE_CONFIG,
 } from './board-3d-config-visuals.js'
 import { fnv1a, hashSeed01 } from './board-3d-shared-math.js'
+import { mirroredSprite, orientedSprite } from './pixel-sprites/derive.js'
+import { spriteForName } from './pixel-sprites/index.js'
 import { OBJECT_GLYPHS } from '../view/render-config.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
 import { SYNTAX_WORDS } from '../view/syntax-words.js'
@@ -33,6 +35,10 @@ const {
   TEXT_CARD_NORMAL_BACKGROUND,
   TEXT_CARD_NORMAL_TEXT,
   TEXT_CARD_NORMAL_OUTLINE,
+  TEXT_CARD_OVERRIDDEN_BACKGROUND,
+  TEXT_CARD_OVERRIDDEN_TEXT,
+  TEXT_CARD_OVERRIDDEN_OUTLINE,
+  TEXT_CARD_OVERRIDDEN_STRIKE,
 } = BOARD3D_TEXT_CARD_STYLE_CONFIG
 
 export const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
@@ -63,6 +69,9 @@ const directionFromProps = (item: Item): Direction | null => {
 
 const facingDirectionForItem = (item: Item): Direction | null => {
   if (item.isText) return null
+  // Belts always show their travel direction; other objects only while a
+  // facing prop (you/move/shift) is active.
+  if (item.name === 'belt') return item.dir ?? 'right'
   if (!item.props.some((prop) => FACING_ARROW_PROPS.has(prop))) return null
   if (item.dir) return item.dir
   const propDirection = directionFromProps(item)
@@ -81,6 +90,7 @@ const labelForItem = (item: Item): string => {
 
 export const isEmojiItem = (item: Item): boolean => {
   if (item.isText) return false
+  if (spriteForName(item.name)) return false
   return HAS_EMOJI.test(labelForItem(item))
 }
 
@@ -93,17 +103,37 @@ const objectPalette = (
   return palette
 }
 
-export const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec => {
+export const cardSpecForItem = (
+  item: Item,
+  minContrastRatio: number,
+  overridden = false,
+): CardSpec => {
   const label = labelForItem(item)
   const facingDirection = facingDirectionForItem(item)
   const isEmojiLabel = HAS_EMOJI.test(label)
   if (item.isText) {
+    if (overridden) {
+      return {
+        key: `text:overridden:${item.name}`,
+        label,
+        facingDirection: null,
+        isEmojiLabel: false,
+        sprite: null,
+        background: TEXT_CARD_OVERRIDDEN_BACKGROUND,
+        textColor: TEXT_CARD_OVERRIDDEN_TEXT,
+        outlineColor: TEXT_CARD_OVERRIDDEN_OUTLINE,
+        isText: true,
+        strikethrough: true,
+        strikeColor: TEXT_CARD_OVERRIDDEN_STRIKE,
+      }
+    }
     if (SYNTAX_WORDS.has(item.name)) {
       return {
         key: `text:syntax:${item.name}`,
         label,
         facingDirection: null,
         isEmojiLabel: false,
+        sprite: null,
         background: TEXT_CARD_SYNTAX_BACKGROUND,
         textColor: TEXT_CARD_SYNTAX_TEXT,
         outlineColor: TEXT_CARD_SYNTAX_OUTLINE,
@@ -115,6 +145,7 @@ export const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec 
       label,
       facingDirection: null,
       isEmojiLabel: false,
+      sprite: null,
       background: TEXT_CARD_NORMAL_BACKGROUND,
       textColor: TEXT_CARD_NORMAL_TEXT,
       outlineColor: TEXT_CARD_NORMAL_OUTLINE,
@@ -128,11 +159,25 @@ export const cardSpecForItem = (item: Item, minContrastRatio: number): CardSpec 
     label,
     facingDirection,
     isEmojiLabel,
+    sprite: spriteForName(item.name),
+    rotatesWithDirection: item.name === 'belt',
     background: palette.background,
     textColor: palette.textColor,
     outlineColor: palette.outlineColor,
     isText: false,
   }
+}
+
+// Directional sprites (belt) rotate wholesale; other sprites only mirror for
+// left-facing. Single orientation source for both texture and voxel paths.
+export const orientedSpriteForSpec = (spec: CardSpec) => {
+  const sprite = spec.sprite
+  if (!sprite) return null
+  if (spec.rotatesWithDirection && spec.facingDirection) {
+    return orientedSprite(sprite, spec.facingDirection)
+  }
+  if (spec.facingDirection === 'left') return mirroredSprite(sprite)
+  return sprite
 }
 
 export const emojiStretchEnabledForItem = (item: Item): boolean =>

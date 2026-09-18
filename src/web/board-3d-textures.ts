@@ -1,13 +1,30 @@
-import { CanvasTexture, LinearFilter, SRGBColorSpace } from 'three'
+import { CanvasTexture, LinearFilter, NearestFilter, SRGBColorSpace } from 'three'
 
 import {
   BOARD3D_CARD_TEXTURE_CONFIG,
   BOARD3D_SHADOW_TEXTURE_CONFIG,
 } from './board-3d-config-textures.js'
 import { BOARD3D_RULE_VISUAL_CONFIG } from './board-3d-config-visuals.js'
-import { BELT_DIRECTION_GLYPHS } from './board-3d-shared-item.js'
+import { orientedSpriteForSpec } from './board-3d-shared-item.js'
+import {
+  frameSize,
+  spriteContentBounds,
+  spriteFrames,
+} from './pixel-sprites/derive.js'
+import {
+  drawPixelFrame,
+  drawPixelFrameUniform,
+  frameContentDrawRect,
+} from './pixel-sprites/blit.js'
+import {
+  ARROW_FILL_PALETTE,
+  ARROW_SHADOW_PALETTE,
+  DIRECTION_ARROW_FRAMES,
+} from './pixel-sprites/arrows.js'
 
+import type { Direction } from '../logic/types.js'
 import type { CardSpec } from './board-3d-shared-types.js'
+import type { PixelSprite } from './pixel-sprites/types.js'
 
 const {
   CARD_TEXTURE_SIZE,
@@ -64,6 +81,94 @@ const roundRectPath = (
   ctx.closePath()
 }
 
+const createCanvasTexture = (
+  canvas: HTMLCanvasElement,
+  anisotropy: number,
+  nearest: boolean,
+): CanvasTexture => {
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  const filter = nearest ? NearestFilter : LinearFilter
+  texture.minFilter = filter
+  texture.magFilter = filter
+  texture.anisotropy = anisotropy
+  return texture
+}
+
+// Pixel arrow overlay: shadow pass offset a couple of texels keeps the
+// indicator readable on light sprites. Centered on the facing edge inset.
+const drawDirectionArrow = (
+  ctx: CanvasRenderingContext2D,
+  direction: Direction,
+  pad: number,
+  textureSize: number,
+): void => {
+  const frame = DIRECTION_ARROW_FRAMES[direction]
+  const { width, height } = frameSize(frame)
+  if (width === 0 || height === 0) return
+  const arrowSize = Math.round(textureSize * CARD_TEXTURE_DIRECTION_FONT_RATIO)
+  const texel = arrowSize / Math.max(width, height)
+  const edgeInset = pad + textureSize * CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO
+  const center = textureSize / 2
+  const markerX =
+    direction === 'left' ? edgeInset : direction === 'right' ? textureSize - edgeInset : center
+  const markerY =
+    direction === 'up' ? edgeInset : direction === 'down' ? textureSize - edgeInset : center
+  const dstX = markerX - (width * texel) / 2
+  const dstY = markerY + CARD_TEXTURE_DIRECTION_OFFSET_Y - (height * texel) / 2
+  const shadow = Math.max(1, Math.round(texel / 3))
+  drawPixelFrameUniform(ctx, frame, ARROW_SHADOW_PALETTE, dstX + shadow, dstY + shadow, texel)
+  drawPixelFrameUniform(ctx, frame, ARROW_FILL_PALETTE, dstX, dstY, texel)
+}
+
+// Pixel sprites are drawn nearest-neighbor onto a transparent card; the
+// facing arrow overlay still applies on top.
+const createSpriteFrameTexture = (
+  spec: CardSpec,
+  sprite: PixelSprite,
+  frameIx: number,
+  anisotropy: number,
+): CanvasTexture => {
+  const textureSize = CARD_TEXTURE_SIZE
+  const canvas = document.createElement('canvas')
+  canvas.width = textureSize
+  canvas.height = textureSize
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to create sprite texture context.')
+
+  const pad = textureSize * CARD_TEXTURE_PAD_RATIO
+  const box = textureSize - pad * 2
+  const frame = spriteFrames(sprite)[frameIx]
+  if (!frame) throw new Error(`Missing sprite frame ${frameIx}.`)
+  const bounds = spriteContentBounds(sprite)
+  if (bounds) {
+    const rect = frameContentDrawRect(bounds, pad, pad, box)
+    drawPixelFrameUniform(ctx, frame, sprite.palette, rect.x, rect.y, rect.texel)
+  } else {
+    drawPixelFrame(ctx, frame, sprite.palette, pad, pad, box)
+  }
+
+  if (spec.facingDirection) {
+    drawDirectionArrow(ctx, spec.facingDirection, pad, textureSize)
+  }
+
+  return createCanvasTexture(canvas, anisotropy, true)
+}
+
+// One texture per animation frame; sprites without hand-drawn frames are
+// padded to the shared count by the derive layer's wobble.
+export const createCardTextures = (
+  spec: CardSpec,
+  anisotropy: number,
+): CanvasTexture[] => {
+  if (!spec.sprite) return [createCardTexture(spec, anisotropy)]
+  const sprite = orientedSpriteForSpec(spec)
+  if (!sprite) return [createCardTexture(spec, anisotropy)]
+  return spriteFrames(sprite).map((_, ix) =>
+    createSpriteFrameTexture(spec, sprite, ix, anisotropy),
+  )
+}
+
 export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture => {
   const textureSize = spec.isEmojiLabel ? EMOJI_CARD_TEXTURE_SIZE : CARD_TEXTURE_SIZE
   const canvas = document.createElement('canvas')
@@ -109,33 +214,22 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
   }
   ctx.fillText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
 
-  if (spec.facingDirection) {
-    const marker = BELT_DIRECTION_GLYPHS[spec.facingDirection]
-    const markerFontSize = Math.round(textureSize * CARD_TEXTURE_DIRECTION_FONT_RATIO)
-    const edgeInset = pad + textureSize * CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO
-    const center = textureSize / 2
-    const markerX =
-      spec.facingDirection === 'left'
-        ? edgeInset
-        : spec.facingDirection === 'right'
-          ? textureSize - edgeInset
-          : center
-    const markerY =
-      spec.facingDirection === 'up'
-        ? edgeInset
-        : spec.facingDirection === 'down'
-          ? textureSize - edgeInset
-          : center
-    ctx.font = `${markerFontSize}px ${CARD_TEXTURE_EMOJI_FONT_FAMILY}`
-    ctx.fillText(marker, markerX, markerY + CARD_TEXTURE_DIRECTION_OFFSET_Y)
+  if (spec.strikethrough) {
+    const strikeY = textureSize / 2 + labelOffsetY
+    const strikeHalf = Math.min(size / 2, fontSize * spec.label.length * 0.36)
+    ctx.strokeStyle = spec.strikeColor ?? spec.textColor
+    ctx.lineWidth = Math.max(2, textureSize * 0.02)
+    ctx.beginPath()
+    ctx.moveTo(textureSize / 2 - strikeHalf, strikeY)
+    ctx.lineTo(textureSize / 2 + strikeHalf, strikeY)
+    ctx.stroke()
   }
 
-  const texture = new CanvasTexture(canvas)
-  texture.colorSpace = SRGBColorSpace
-  texture.minFilter = LinearFilter
-  texture.magFilter = LinearFilter
-  texture.anisotropy = anisotropy
-  return texture
+  if (spec.facingDirection) {
+    drawDirectionArrow(ctx, spec.facingDirection, pad, textureSize)
+  }
+
+  return createCanvasTexture(canvas, anisotropy, false)
 }
 
 export const createShadowTexture = (): CanvasTexture => {

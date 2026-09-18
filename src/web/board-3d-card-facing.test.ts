@@ -164,10 +164,14 @@ const createSyncNode = (entityGroup: Group) => {
     createEntityNode(
       {
         entityGroup,
-        cardGeometry,
         shadowGeometry,
         shadowTexture: {} as CanvasTexture,
-        getMaterial: () => material,
+        getVisual: () => ({
+          key: 'stub',
+          geometry: cardGeometry,
+          material,
+          frameGeometries: [],
+        }),
       },
       item,
       nowMs,
@@ -185,7 +189,12 @@ test('board-3d sync orients a spawned upright card toward the camera', () => {
     ]),
     {
       nodes,
-      getMaterial: () => new MeshStandardMaterial(),
+      getVisual: () => ({
+        key: 'stub',
+        geometry: new PlaneGeometry(0.88, 0.88),
+        material: new MeshStandardMaterial(),
+        frameGeometries: [],
+      }),
       createNode: createSyncNode(entityGroup),
       camera,
     },
@@ -206,7 +215,12 @@ test('board-3d pose keeps a moving card tilted at the camera', () => {
 
   syncEntityNodes(state, {
     nodes,
-    getMaterial: () => new MeshStandardMaterial(),
+    getVisual: () => ({
+      key: 'stub',
+      geometry: new PlaneGeometry(0.88, 0.88),
+      material: new MeshStandardMaterial(),
+      frameGeometries: [],
+    }),
     createNode: createSyncNode(entityGroup),
     camera,
   })

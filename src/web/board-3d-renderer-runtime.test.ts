@@ -113,8 +113,12 @@ const createRuntime = (overrides: {
   entityGroup?: RuntimeArgs['entityGroup']
   requestFrame?: RuntimeArgs['requestFrame']
   cancelFrame?: RuntimeArgs['cancelFrame']
+  advanceSpriteFrames?: RuntimeArgs['advanceSpriteFrames']
+  scheduleTimer?: RuntimeArgs['scheduleTimer']
+  cancelTimer?: RuntimeArgs['cancelTimer']
 }) => {
   const scheduledCallbacks: FrameRequestCallback[] = []
+  const scheduledTimers: Array<() => void> = []
   const rendererDomElement = {
     parentElement: null as HTMLElement | null,
     remove: () => {
@@ -144,7 +148,7 @@ const createRuntime = (overrides: {
     entityGroup,
     viewController,
     nodes: overrides.nodes ?? new Map<number, EntityNode>(),
-    getMaterial: () => ({}) as never,
+    getVisual: () => ({}) as never,
     createNode: () => createNode(),
     camera: new PerspectiveCamera(),
     disposeResources:
@@ -163,6 +167,15 @@ const createRuntime = (overrides: {
       return scheduledCallbacks.length
     })
   args.cancelFrame = overrides.cancelFrame ?? (() => undefined)
+  if (overrides.advanceSpriteFrames)
+    args.advanceSpriteFrames = overrides.advanceSpriteFrames
+  args.scheduleTimer =
+    overrides.scheduleTimer ??
+    ((callback: () => void) => {
+      scheduledTimers.push(callback)
+      return scheduledTimers.length
+    })
+  args.cancelTimer = overrides.cancelTimer ?? (() => undefined)
 
   return createBoard3dRendererRuntime(args)
 }
@@ -436,4 +449,155 @@ test('board-3d runtime renders the leaving cleanup frame and removes finished no
   assert.equal(shadowRemoved, 1)
   assert.equal(shadowDisposed, 1)
   assert.equal(callbacks.length, 0)
+})
+
+test('board-3d runtime drives sprite frames on the slow timer without holding RAF', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const timers: Array<() => void> = []
+  const renders: number[] = []
+  const advances: number[] = []
+  const runtime = createRuntime({
+    composerRender: () => {
+      renders.push(1)
+    },
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+    advanceSpriteFrames: (frameIx) => {
+      advances.push(frameIx)
+      return 2
+    },
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: () => undefined,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  assert.equal(timers.length, 1)
+  assert.equal(callbacks.length, 1)
+
+  const mountTick = callbacks.shift()
+  assert.ok(mountTick)
+  mountTick(16)
+  assert.equal(renders.length, 1)
+  assert.equal(callbacks.length, 0)
+
+  const realNow = performance.now
+  performance.now = () => 0
+  try {
+    timers[0]!()
+  } finally {
+    performance.now = realNow
+  }
+
+  assert.equal(advances.length, 1)
+  assert.equal(callbacks.length, 1)
+  const tick = callbacks.shift()
+  assert.ok(tick)
+  tick(16)
+  assert.equal(renders.length, 2)
+  assert.equal(callbacks.length, 0)
+})
+
+test('board-3d runtime dedupes sprite timer fires inside the same frame slot', () => {
+  const timers: Array<() => void> = []
+  const advances: number[] = []
+  const runtime = createRuntime({
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    advanceSpriteFrames: (frameIx) => {
+      advances.push(frameIx)
+      return 1
+    },
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: () => undefined,
+  })
+  const container = createContainer()
+  runtime.mount(container)
+
+  const realNow = performance.now
+  performance.now = () => 0
+  try {
+    timers[0]!()
+    timers[0]!()
+    timers[0]!()
+  } finally {
+    performance.now = realNow
+  }
+
+  assert.equal(advances.length, 1)
+})
+
+test('board-3d runtime cancels the sprite timer on unmount', () => {
+  const cancelled: number[] = []
+  const runtime = createRuntime({
+    advanceSpriteFrames: () => 0,
+    scheduleTimer: () => 7,
+    cancelTimer: (id) => {
+      cancelled.push(id)
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  runtime.unmount()
+
+  assert.deepEqual(cancelled, [7])
+})
+
+test('board-3d runtime stops the sprite timer and ignores fires after dispose', () => {
+  const timers: Array<() => void> = []
+  const cancelled: number[] = []
+  const advances: number[] = []
+  const runtime = createRuntime({
+    advanceSpriteFrames: (frameIx) => {
+      advances.push(frameIx)
+      return 1
+    },
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: (id) => {
+      cancelled.push(id)
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  assert.equal(timers.length, 1)
+  runtime.dispose()
+
+  assert.deepEqual(cancelled, [1])
+  timers[0]!()
+  assert.equal(advances.length, 0)
+})
+
+test('board-3d runtime skips the sprite timer when no frame advancer is wired', () => {
+  const timers: Array<() => void> = []
+  const runtime = createRuntime({
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: () => undefined,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+
+  assert.equal(timers.length, 0)
 })

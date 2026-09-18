@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  cardSpecForItem,
   emojiPhaseOffsetMsForItem,
   emojiStretchEnabledForItem,
 } from './board-3d-shared-item.js'
@@ -95,8 +96,8 @@ test('board-3d emoji anchor offset follows stretch direction from bottom', () =>
   assert.equal(emojiBottomAnchorOffset(1, 0.97) < 0, true)
 })
 
-test('board-3d emoji stretch excludes ground-hug items', () => {
-  const groundHugEmoji: GameState['items'][number] = {
+test('board-3d emoji stretch covers only sprite-less emoji items', () => {
+  const groundHugSprite: GameState['items'][number] = {
     id: 1,
     name: 'tile',
     x: 0,
@@ -104,7 +105,7 @@ test('board-3d emoji stretch excludes ground-hug items', () => {
     isText: false,
     props: ['push', 'you'],
   }
-  const uprightEmoji: GameState['items'][number] = {
+  const uprightSprite: GameState['items'][number] = {
     id: 2,
     name: 'baba',
     x: 0,
@@ -112,7 +113,16 @@ test('board-3d emoji stretch excludes ground-hug items', () => {
     isText: false,
     props: ['you'],
   }
-  assert.equal(emojiStretchEnabledForItem(groundHugEmoji), false)
+  const uprightEmoji: GameState['items'][number] = {
+    id: 3,
+    name: 'marker-u2022',
+    x: 0,
+    y: 0,
+    isText: false,
+    props: [],
+  }
+  assert.equal(emojiStretchEnabledForItem(groundHugSprite), false)
+  assert.equal(emojiStretchEnabledForItem(uprightSprite), false)
   assert.equal(emojiStretchEnabledForItem(uprightEmoji), true)
 })
 
@@ -142,6 +152,18 @@ test('board-3d emoji phase offset is stable and within one cycle', () => {
   assert.equal(a0 !== b0, true)
 })
 
+test('board-3d belt cards always carry a facing direction and rotate their sprite', () => {
+  const belt = { id: 1, name: 'belt', x: 0, y: 0, isText: false, props: [], dir: 'down' as const }
+  const spec = cardSpecForItem(belt, 0)
+  assert.equal(spec.facingDirection, 'down')
+  assert.equal(spec.rotatesWithDirection, true)
+
+  const rock = { id: 2, name: 'rock', x: 0, y: 0, isText: false, props: [] }
+  const rockSpec = cardSpecForItem(rock, 0)
+  assert.equal(rockSpec.facingDirection, null)
+  assert.equal(rockSpec.rotatesWithDirection, false)
+})
+
 test('board-3d cell grid draws interior borders on cell boundaries', () => {
   const points = buildCellGridPoints(4, 3, -0.221)
   const segments: Array<[number, number, number, number]> = []
@@ -166,4 +188,15 @@ test('board-3d cell grid draws interior borders on cell boundaries', () => {
 test('board-3d cell grid stays empty for single-cell boards', () => {
   assert.equal(buildCellGridPoints(1, 1, -0.221).length, 0)
   assert.equal(buildCellGridPoints(1, 5, -0.221).length, 8)
+})
+
+test('board-3d marks overridden rule text with a strike-through card', () => {
+  const item = { id: 1, name: 'push', x: 0, y: 0, isText: true, props: [] }
+  const normal = cardSpecForItem(item, 0)
+  const overridden = cardSpecForItem(item, 0, true)
+
+  assert.equal(overridden.strikethrough, true)
+  assert.equal(typeof overridden.strikeColor, 'string')
+  assert.equal(overridden.key !== normal.key, true)
+  assert.equal(normal.strikethrough ?? false, false)
 })

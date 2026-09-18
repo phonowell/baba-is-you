@@ -7,6 +7,11 @@ export const BOARD3D_ANIMATION_CONFIG = {
   LAND_PULSE_MS: 125,
   JUMP_HEIGHT: 0.17,
   EMOJI_MICRO_STRETCH_CYCLE_MS: 1000,
+  // Idle sprite animation cadence: the shared frame index advances at this
+  // interval (original-game style, board-wide sync). Driven by a low-cost
+  // timer — ~3 wakeups/sec — instead of keeping RAF alive, so static boards
+  // still render on demand only.
+  SPRITE_FRAME_MS: 320,
   EMOJI_MICRO_STRETCH_Y_AMP: 0.035,
   EMOJI_MICRO_STRETCH_X_AMP: 0.014,
   MOVE_STRETCH_FACTOR: 0.17,

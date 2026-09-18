@@ -1,7 +1,9 @@
 import type {
+  BufferGeometry,
   Camera,
   CanvasTexture,
   Group,
+  Material,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -9,13 +11,18 @@ import type {
 } from 'three'
 
 import type { Item } from '../logic/types.js'
+import type { EntityVisual } from './board-3d-renderer-materials.js'
 
 export type CardMaterial = MeshStandardMaterial
+export type EntityMaterial = Material | Material[]
+export type EntityMesh = Mesh<BufferGeometry, EntityMaterial>
 
 export type EntityNode = {
-  mesh: Mesh<PlaneGeometry, CardMaterial>
+  mesh: EntityMesh
   shadow: Mesh<PlaneGeometry, MeshBasicMaterial>
   shadowMaterial: MeshBasicMaterial
+  specKey: string
+  frameGeometries: BufferGeometry[]
   isEmoji: boolean
   emojiPhaseOffsetMs: number
   facesCamera: boolean
@@ -45,15 +52,14 @@ export type EntityBaseTarget = {
 
 export type CreateEntityNodeDeps = {
   entityGroup: Group
-  cardGeometry: PlaneGeometry
   shadowGeometry: PlaneGeometry
   shadowTexture: CanvasTexture
-  getMaterial: (item: Item) => CardMaterial
+  getVisual: (item: Item, overridden?: boolean) => EntityVisual
 }
 
 export type SyncEntityNodesDeps = {
   nodes: Map<number, EntityNode>
-  getMaterial: (item: Item) => CardMaterial
+  getVisual: (item: Item, overridden?: boolean) => EntityVisual
   createNode: (item: Item, nowMs: number) => EntityNode
   camera: Camera
 }

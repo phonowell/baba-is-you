@@ -41,9 +41,10 @@ export const createEntityNode = (
   item: Item,
   nowMs: number,
 ): EntityNode => {
-  const { entityGroup, cardGeometry, shadowGeometry, shadowTexture, getMaterial } = deps
+  const { entityGroup, shadowGeometry, shadowTexture, getVisual } = deps
   const rollNoise = cardRollForItemStep(item, 0)
-  const mesh = new Mesh(cardGeometry, getMaterial(item))
+  const visual = getVisual(item)
+  const mesh = new Mesh(visual.geometry, visual.material)
   const emoji = isEmojiItem(item)
   const stretchEnabled = emojiStretchEnabledForItem(item)
   mesh.castShadow = true
@@ -69,6 +70,8 @@ export const createEntityNode = (
     mesh,
     shadow,
     shadowMaterial,
+    specKey: visual.key,
+    frameGeometries: visual.frameGeometries,
     isEmoji: stretchEnabled,
     emojiPhaseOffsetMs: emojiPhaseOffsetMsForItem(item),
     facesCamera: cardFacesCamera(item),

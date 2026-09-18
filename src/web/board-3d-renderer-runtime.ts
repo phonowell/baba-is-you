@@ -2,6 +2,8 @@ import type { Camera, Group, WebGLRenderer } from 'three'
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 
 import { rebuildGroundVisuals } from './board-3d-ground.js'
+import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { SPRITE_FRAME_COUNT } from './pixel-sprites/derive.js'
 import { applyNodePose } from './board-3d-node-pose.js'
 import {
   removeEntityNode,
@@ -11,15 +13,19 @@ import type { Board3dRendererViewController } from './board-3d-renderer-view.js'
 
 import type { GameState, Item } from '../logic/types.js'
 import type { GroundVisuals } from './board-3d-ground.js'
+import type { EntityVisual } from './board-3d-renderer-materials.js'
 import type {
-  CardMaterial,
   EntityNode,
   PoseStepResult,
   SyncEntityNodesDeps,
 } from './board-3d-node-types.js'
 
+const { SPRITE_FRAME_MS } = BOARD3D_ANIMATION_CONFIG
+
 type RequestFrame = (callback: FrameRequestCallback) => number
 type CancelFrame = (handle: number) => void
+type ScheduleTimer = (callback: () => void, ms: number) => number
+type CancelTimer = (handle: number) => void
 
 type CreateBoard3dRendererRuntimeArgs = {
   renderer: WebGLRenderer
@@ -28,7 +34,7 @@ type CreateBoard3dRendererRuntimeArgs = {
   entityGroup: Group
   viewController: Board3dRendererViewController
   nodes: Map<number, EntityNode>
-  getMaterial: (item: Item) => CardMaterial
+  getVisual: (item: Item, overridden?: boolean) => EntityVisual
   createNode: (item: Item, nowMs: number) => EntityNode
   camera: Camera
   disposeResources: (groundVisuals: GroundVisuals) => GroundVisuals
@@ -46,6 +52,9 @@ type CreateBoard3dRendererRuntimeArgs = {
   syncNodes?: (state: GameState, deps: SyncEntityNodesDeps) => void
   requestFrame?: RequestFrame | null
   cancelFrame?: CancelFrame | null
+  advanceSpriteFrames?: (frameIx: number) => number
+  scheduleTimer?: ScheduleTimer | null
+  cancelTimer?: CancelTimer | null
 }
 
 export type Board3dRendererRuntime = {
@@ -65,7 +74,7 @@ export const createBoard3dRendererRuntime = (
     entityGroup,
     viewController,
     nodes,
-    getMaterial,
+    getVisual,
     createNode,
     camera,
     disposeResources,
@@ -74,12 +83,19 @@ export const createBoard3dRendererRuntime = (
     syncNodes = syncEntityNodes,
     requestFrame = null,
     cancelFrame = null,
+    advanceSpriteFrames = null,
+    scheduleTimer = null,
+    cancelTimer = null,
   } = args
 
   const scheduleFrame: RequestFrame =
     requestFrame ?? globalThis.requestAnimationFrame.bind(globalThis)
   const unscheduleFrame: CancelFrame =
     cancelFrame ?? globalThis.cancelAnimationFrame.bind(globalThis)
+  const scheduleSpriteTimer: ScheduleTimer =
+    scheduleTimer ?? globalThis.setInterval.bind(globalThis)
+  const cancelSpriteTimer: CancelTimer =
+    cancelTimer ?? globalThis.clearInterval.bind(globalThis)
 
   let container: HTMLElement | null = null
   let boardWidth = 0
@@ -94,6 +110,8 @@ export const createBoard3dRendererRuntime = (
   let frameActive = false
   let needsRender = true
   let disposed = false
+  let spriteTimerId: number | null = null
+  let lastSpriteFrameIx = -1
 
   const tick = (nowMs: number): void => {
     frameActive = false
@@ -144,6 +162,32 @@ export const createBoard3dRendererRuntime = (
     rafId = scheduleFrame(tick)
   }
 
+  // Idle sprite wobble runs on a slow interval rather than the RAF loop:
+  // frames swap ~3x/sec and only schedule a render when a texture changed.
+  const onSpriteTimer = (): void => {
+    if (disposed || !advanceSpriteFrames) return
+    if (!container || !container.isConnected) return
+    const frameIx =
+      Math.floor(performance.now() / SPRITE_FRAME_MS) % SPRITE_FRAME_COUNT
+    if (frameIx === lastSpriteFrameIx) return
+    if (advanceSpriteFrames(frameIx) > 0 || lastSpriteFrameIx < 0) {
+      lastSpriteFrameIx = frameIx
+      needsRender = true
+      ensureFrame()
+    }
+  }
+
+  const startSpriteTimer = (): void => {
+    if (!advanceSpriteFrames || spriteTimerId !== null || disposed) return
+    spriteTimerId = scheduleSpriteTimer(onSpriteTimer, SPRITE_FRAME_MS)
+  }
+
+  const stopSpriteTimer = (): void => {
+    if (spriteTimerId === null) return
+    cancelSpriteTimer(spriteTimerId)
+    spriteTimerId = null
+  }
+
   const mount = (nextContainer: HTMLElement): void => {
     if (disposed) return
     if (container && container !== nextContainer) {
@@ -165,6 +209,7 @@ export const createBoard3dRendererRuntime = (
     if (viewController.updateViewport(container, boardWidth, boardHeight)) {
       needsRender = true
     }
+    startSpriteTimer()
     ensureFrame()
   }
 
@@ -173,6 +218,7 @@ export const createBoard3dRendererRuntime = (
     frameActive = false
     rafId = 0
     needsRender = true
+    stopSpriteTimer()
 
     if (!container) return
 
@@ -198,7 +244,7 @@ export const createBoard3dRendererRuntime = (
     viewController.applyReadabilityGuard(state)
     syncNodes(state, {
       nodes,
-      getMaterial,
+      getVisual,
       createNode,
       camera,
     })

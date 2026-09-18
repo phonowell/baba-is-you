@@ -14,7 +14,6 @@ import type { EntityNode } from './board-3d-node-types.js'
 type DisposeBoard3dRendererResourcesArgs = {
   nodes: Map<number, EntityNode>
   entityGroup: Group
-  cardGeometry: PlaneGeometry
   shadowGeometry: PlaneGeometry
   disposeMaterials: () => void
   shadowTexture: CanvasTexture
@@ -30,7 +29,6 @@ export const disposeBoard3dRendererResources = (
   const {
     nodes,
     entityGroup,
-    cardGeometry,
     shadowGeometry,
     disposeMaterials,
     shadowTexture,
@@ -47,7 +45,6 @@ export const disposeBoard3dRendererResources = (
   }
   nodes.clear()
 
-  cardGeometry.dispose()
   shadowGeometry.dispose()
   disposeMaterials()
   shadowTexture.dispose()

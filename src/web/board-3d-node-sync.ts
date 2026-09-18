@@ -16,6 +16,7 @@ import {
   buildEntityViews,
   computeEntityBaseTarget,
 } from './board-3d-shared-layout.js'
+import { collectOverriddenTextIds } from '../logic/rules-override.js'
 
 import type { Camera, Group } from 'three'
 import type { GameState } from '../logic/types.js'
@@ -91,10 +92,15 @@ export const removeEntityNode = (
 }
 
 export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): void => {
-  const { nodes, createNode, getMaterial, camera } = deps
+  const { nodes, createNode, getVisual, camera } = deps
   const nowMs = performance.now()
   const seen = new Set<number>()
   const views = buildEntityViews(state)
+  const overriddenTextIds = collectOverriddenTextIds(
+    state.items,
+    state.width,
+    state.height,
+  )
 
   for (const view of views) {
     const item = view.item
@@ -111,8 +117,16 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     }
 
     const target = computeEntityBaseTarget(state, view)
-    const material = getMaterial(item)
-    if (node.mesh.material !== material) node.mesh.material = material
+    const visual = getVisual(
+      item,
+      item.isText && overriddenTextIds.has(item.id),
+    )
+    if (node.specKey !== visual.key) {
+      node.specKey = visual.key
+      node.mesh.material = visual.material
+      node.mesh.geometry = visual.geometry
+      node.frameGeometries = visual.frameGeometries
+    }
     const emoji = isEmojiItem(item)
     node.isEmoji = emojiStretchEnabledForItem(item)
     node.emojiPhaseOffsetMs = emojiPhaseOffsetMsForItem(item)

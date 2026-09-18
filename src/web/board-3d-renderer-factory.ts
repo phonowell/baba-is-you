@@ -4,7 +4,10 @@ import { CLAY_PRESET } from './clay-config.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { updateLightShadowCamera } from './board-3d-ground.js'
-import { createBoard3dRendererMaterialStore } from './board-3d-renderer-materials.js'
+import {
+  advanceNodeGeometries,
+  createBoard3dRendererMaterialStore,
+} from './board-3d-renderer-materials.js'
 import { disposeBoard3dRendererResources } from './board-3d-renderer-dispose.js'
 import { createBoard3dRendererScene } from './board-3d-renderer-scene.js'
 import { createBoard3dRendererViewController } from './board-3d-renderer-view.js'
@@ -13,13 +16,13 @@ import {
   createEntityNode,
 } from './board-3d-node-create.js'
 import type {
-  CardMaterial,
   CreateEntityNodeDeps,
   EntityNode,
 } from './board-3d-node-types.js'
+import type { EntityVisual } from './board-3d-renderer-materials.js'
 
 import type { Item } from '../logic/types.js'
-const { CARD_WORLD_SIZE, TEXTURE_ANISOTROPY_CAP } = BOARD3D_LAYOUT_CONFIG
+const { TEXTURE_ANISOTROPY_CAP } = BOARD3D_LAYOUT_CONFIG
 const { SHADOW_GEOMETRY_SIZE } = BOARD3D_SHADOW_CONFIG
 
 export type Board3dRendererFactoryDeps = ReturnType<
@@ -41,7 +44,6 @@ export const createBoard3dRendererFactoryDeps = () => {
     entityGroup,
   } = scene
 
-  const cardGeometry = new PlaneGeometry(CARD_WORLD_SIZE, CARD_WORLD_SIZE)
   const shadowGeometry = new PlaneGeometry(
     SHADOW_GEOMETRY_SIZE,
     SHADOW_GEOMETRY_SIZE,
@@ -57,15 +59,14 @@ export const createBoard3dRendererFactoryDeps = () => {
     textureAnisotropy,
   })
 
-  const getMaterial = (item: Item): CardMaterial =>
-    materialStore.getMaterial(item)
+  const getVisual = (item: Item, overridden?: boolean): EntityVisual =>
+    materialStore.getVisual(item, overridden)
 
   const createNodeDeps: CreateEntityNodeDeps = {
     entityGroup,
-    cardGeometry,
     shadowGeometry,
     shadowTexture,
-    getMaterial,
+    getVisual,
   }
 
   return {
@@ -74,10 +75,15 @@ export const createBoard3dRendererFactoryDeps = () => {
     world,
     entityGroup,
     nodes,
-    getMaterial,
+    getVisual,
     createNode: (item: Item, nowMs: number): EntityNode =>
       createEntityNode(createNodeDeps, item, nowMs),
     camera,
+    // Sprite animation advances along two paths: textured faces swap material
+    // maps, voxel meshes swap geometries. The runtime only needs the count.
+    advanceSpriteFrames: (frameIx: number): number =>
+      materialStore.advanceSpriteFrames(frameIx) +
+      advanceNodeGeometries(nodes, frameIx),
     viewController: createBoard3dRendererViewController({
       preset,
       camera,
@@ -95,7 +101,6 @@ export const createBoard3dRendererFactoryDeps = () => {
       disposeBoard3dRendererResources({
         nodes,
         entityGroup,
-        cardGeometry,
         shadowGeometry,
         disposeMaterials: materialStore.dispose,
         shadowTexture,
