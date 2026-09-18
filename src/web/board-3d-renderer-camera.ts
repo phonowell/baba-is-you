@@ -18,7 +18,6 @@ type UpdateRendererCameraArgs = {
   viewportWidth: number
   viewportHeight: number
   updateLightRig: () => void
-  updateBokehFocus: (focusDistance: number) => void
 }
 
 export const updateRendererCamera = (
@@ -31,7 +30,6 @@ export const updateRendererCamera = (
     viewportWidth,
     viewportHeight,
     updateLightRig,
-    updateBokehFocus,
   } = args
 
   const width = Math.max(1, boardWidth)
@@ -57,9 +55,4 @@ export const updateRendererCamera = (
   camera.lookAt(0, lookAtY, lookAtZ)
   camera.updateProjectionMatrix()
   updateLightRig()
-  // View depth of the board center: the camera looks at this point, so its
-  // distance to the camera position is the bokeh focal distance. Using the
-  // camera's z coordinate alone under-focuses by ~4x at this pitch.
-  const focusDistance = Math.hypot(cameraHeight - lookAtY, distance - lookAtZ)
-  updateBokehFocus(focusDistance)
 }

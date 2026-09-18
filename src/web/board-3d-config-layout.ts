@@ -12,25 +12,26 @@ export const BOARD3D_LAYOUT_CONFIG = {
   FLOAT_ITEM_LIFT_Z: 0.14,
   GROUND_EXPANDED_MIN_SIZE: 220,
   CELL_GRID_Z: -0.221,
-  CELL_GRID_COLOR: '#8fa0b2',
-  CELL_GRID_OPACITY: 0.32,
+  CELL_GRID_COLOR: '#3f6e28',
+  CELL_GRID_OPACITY: 0.12,
   PLAY_AREA_OUTLINE_Z: -0.065,
   PLAY_AREA_OUTLINE_RADIUS: 0.34,
   PLAY_AREA_OUTLINE_OPACITY: 0.88,
   CARD_FACE_CAMERA_BLEND: 0.55,
   TEXTURE_ANISOTROPY_CAP: 8,
   CARD_MATERIAL_ALPHA_TEST: 0.08,
-  CARD_MATERIAL_ROUGHNESS: 0.78,
-  CARD_MATERIAL_METALNESS: 0.02,
   CARD_MATERIAL_EMISSIVE_COLOR: '#101019',
   GROUND_EXPANDED_PADDING: 0.65,
-  GROUND_BASE_COLOR: '#d1dbe4',
-  GROUND_MATERIAL_ROUGHNESS: 0.66,
-  GROUND_MATERIAL_METALNESS: 0,
-  PLAY_AREA_FILL_COLOR: '#eff4f8',
-  PLAY_AREA_FILL_ROUGHNESS: 0.68,
-  PLAY_AREA_FILL_METALNESS: 0,
-  PLAY_AREA_OUTLINE_COLOR: '#8fa0b2',
+  // Genshin-style grass: warm yellow-green; the play area reads as a
+  // sunnier patch of the same meadow rather than a second surface.
+  // Kept a touch brighter than the target since the mottle map multiplies.
+  GROUND_BASE_COLOR: '#7ab858',
+  PLAY_AREA_FILL_COLOR: '#98d463',
+  // Warm sandy edge: reads as a sunlit path border and brings the warm
+  // hue family the scene was missing (rock/dirt tones vs all-green).
+  PLAY_AREA_OUTLINE_COLOR: '#d8c98e',
+  // World units per painterly-mottle tile — blotch scale ends up sub-cell.
+  GROUND_MOTTLE_TILE_WORLD: 14,
   ENTITY_IDLE_SHADOW_SCALE: 0.62,
   POSITION_EPSILON: 0.0001,
   PLAY_AREA_OUTLINE_SAMPLES_MIN: 24,

@@ -1,10 +1,7 @@
 import type { DirectionalLight, PerspectiveCamera, WebGLRenderer } from 'three'
-import type { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
-import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
-import type { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import type { BloomEffect, EffectComposer } from 'postprocessing'
 
 import { readabilityMix } from './clay-config.js'
-import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_POSTFX_CONFIG } from './board-3d-config-postfx.js'
 import { lerp } from './board-3d-shared-math.js'
 import { updateRendererCamera } from './board-3d-renderer-camera.js'
@@ -13,22 +10,8 @@ import { updateRendererLightRig } from './board-3d-renderer-lighting.js'
 import type { GameState } from '../logic/types.js'
 
 const {
-  CARD_BASE_Z,
-} = BOARD3D_LAYOUT_CONFIG
-
-const {
   MAX_DEVICE_PIXEL_RATIO,
-  POSTFX_PIXEL_RATIO_SCALE,
-  BLOOM_RESOLUTION_SCALE,
-  BLOOM_DENSE_TEXT_RESOLUTION_SCALE,
-  BOKEH_ENABLE_MARGIN,
-  BOKEH_FOCUS_MIN,
-  BOKEH_INITIAL_FOCUS,
 } = BOARD3D_POSTFX_CONFIG
-
-type BokehUniform = {
-  value: number
-}
 
 type ClayPreset = typeof import('./clay-config.js').CLAY_PRESET
 
@@ -37,8 +20,7 @@ type Board3dRendererViewDeps = {
   camera: PerspectiveCamera
   renderer: WebGLRenderer
   composer: EffectComposer
-  bloomPass: UnrealBloomPass
-  bokehPass: BokehPass
+  bloomEffect: BloomEffect
   leftLight: DirectionalLight
   rightLight: DirectionalLight
   updateLightShadowCamera: (
@@ -62,8 +44,7 @@ export const createBoard3dRendererViewController = (
     camera,
     renderer,
     composer,
-    bloomPass,
-    bokehPass,
+    bloomEffect,
     leftLight,
     rightLight,
     updateLightShadowCamera,
@@ -72,36 +53,6 @@ export const createBoard3dRendererViewController = (
   let viewportWidth = 0
   let viewportHeight = 0
   let devicePixelRatio = 1
-  let currentReadabilityMix = 0
-  let activeBokehAperture = preset.bokeh.aperture
-  let activeBokehMaxBlur = preset.bokeh.maxBlur
-  let lastFocusDistance: number = BOKEH_INITIAL_FOCUS
-
-  const updateBloomResolution = (): void => {
-    if (viewportWidth <= 0 || viewportHeight <= 0) return
-    const readabilityScale = lerp(1, BLOOM_DENSE_TEXT_RESOLUTION_SCALE, currentReadabilityMix)
-    bloomPass.resolution.set(
-      Math.max(1, Math.floor(viewportWidth * BLOOM_RESOLUTION_SCALE * readabilityScale)),
-      Math.max(1, Math.floor(viewportHeight * BLOOM_RESOLUTION_SCALE * readabilityScale)),
-    )
-  }
-
-  const updateBokehFocus = (focusDistance: number): void => {
-    lastFocusDistance = focusDistance
-    applyBokehUniforms()
-  }
-
-  const applyBokehUniforms = (): void => {
-    const uniforms = bokehPass.materialBokeh.uniforms as Record<string, BokehUniform>
-    const focus = Math.max(
-      BOKEH_FOCUS_MIN,
-      lastFocusDistance - CARD_BASE_Z + preset.bokeh.focusOffset,
-    )
-    if (uniforms.focus) uniforms.focus.value = focus
-    if (uniforms.aperture) uniforms.aperture.value = activeBokehAperture
-    if (uniforms.maxblur) uniforms.maxblur.value = activeBokehMaxBlur
-    if (uniforms.aspect) uniforms.aspect.value = viewportWidth / Math.max(1, viewportHeight)
-  }
 
   const updateLightRig = (boardWidth: number, boardHeight: number): void => {
     updateRendererLightRig({
@@ -127,7 +78,6 @@ export const createBoard3dRendererViewController = (
       viewportWidth,
       viewportHeight,
       updateLightRig: () => updateLightRig(boardWidth, boardHeight),
-      updateBokehFocus,
     })
     void container
   }
@@ -151,12 +101,11 @@ export const createBoard3dRendererViewController = (
     viewportWidth = nextWidth
     viewportHeight = nextHeight
     devicePixelRatio = nextRatio
-    const postFxPixelRatio = Math.max(1, devicePixelRatio * POSTFX_PIXEL_RATIO_SCALE)
+    // The pmndrs composer derives its buffer size from the renderer's
+    // drawing buffer, so pixel ratio is only applied on the renderer.
     renderer.setPixelRatio(devicePixelRatio)
     renderer.setSize(viewportWidth, viewportHeight, false)
-    composer.setPixelRatio(postFxPixelRatio)
     composer.setSize(viewportWidth, viewportHeight)
-    updateBloomResolution()
     updateCamera(container, boardWidth, boardHeight)
     return true
   }
@@ -173,28 +122,11 @@ export const createBoard3dRendererViewController = (
       state.width * state.height,
       preset.readability.textDensitySoftCap,
     )
-    currentReadabilityMix = mix
-    bloomPass.strength = lerp(
+    bloomEffect.intensity = lerp(
       preset.bloom.strength,
       preset.readability.bloomStrengthFloor,
       mix,
     )
-    activeBokehAperture = lerp(
-      preset.bokeh.aperture,
-      preset.readability.apertureFloor,
-      mix,
-    )
-    activeBokehMaxBlur = lerp(
-      preset.bokeh.maxBlur,
-      preset.readability.maxBlurFloor,
-      mix,
-    )
-    const shouldEnableBokeh =
-      activeBokehMaxBlur > preset.readability.maxBlurFloor * BOKEH_ENABLE_MARGIN ||
-      activeBokehAperture > preset.readability.apertureFloor * BOKEH_ENABLE_MARGIN
-    if (bokehPass.enabled !== shouldEnableBokeh) bokehPass.enabled = shouldEnableBokeh
-    updateBloomResolution()
-    applyBokehUniforms()
   }
 
   return {

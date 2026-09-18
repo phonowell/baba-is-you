@@ -54,6 +54,40 @@ test('pixel sprite frames stay inside the grid and use declared palette keys', (
   }
 })
 
+test('pixel sprite volumes align with frames and use declared palette keys', () => {
+  for (const [name, sprite] of Object.entries(PIXEL_SPRITES)) {
+    const volumes = sprite.volumes ?? []
+    assert.ok(
+      volumes.length <= sprite.frames.length,
+      `${name}: ${volumes.length} volumes for ${sprite.frames.length} frames`,
+    )
+    volumes.forEach((volume, vi) => {
+      if (!volume) return
+      const sliceSets = [
+        ['front', volume.frontSlices],
+        ['back', volume.backSlices],
+      ] as const
+      for (const [kind, slices] of sliceSets) {
+        slices?.forEach((slice, si) => {
+          const { width, height } = frameSize(slice)
+          assert.ok(
+            height <= SPRITE_GRID_SIZE && width <= SPRITE_GRID_SIZE,
+            `${name} volume ${vi} ${kind} slice ${si}: ${width}x${height} exceeds grid`,
+          )
+          slice.forEach((row, ri) => {
+            for (const ch of row) {
+              assert.ok(
+                ch === '.' || ch in sprite.palette,
+                `${name} volume ${vi} ${kind} slice ${si} row ${ri}: undeclared char ${JSON.stringify(ch)}`,
+              )
+            }
+          })
+        })
+      }
+    })
+  }
+})
+
 const TEST_FRAME: PixelFrame = [
   '....',
   '.aa.',

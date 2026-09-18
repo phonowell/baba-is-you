@@ -36,12 +36,12 @@ export const createBoard3dRendererFactoryDeps = () => {
     camera,
     renderer,
     composer,
-    bloomPass,
-    bokehPass,
+    bloomEffect,
     leftLight,
     rightLight,
     world,
     entityGroup,
+    skyTexture,
   } = scene
 
   const shadowGeometry = new PlaneGeometry(
@@ -89,8 +89,7 @@ export const createBoard3dRendererFactoryDeps = () => {
       camera,
       renderer,
       composer,
-      bloomPass,
-      bokehPass,
+      bloomEffect,
       leftLight,
       rightLight,
       updateLightShadowCamera,
@@ -108,6 +107,7 @@ export const createBoard3dRendererFactoryDeps = () => {
         groundVisuals,
         composer,
         renderer,
+        skyTexture,
       }),
   }
 }

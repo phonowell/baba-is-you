@@ -4,9 +4,10 @@ import type {
   PlaneGeometry,
   WebGLRenderer,
 } from 'three'
-import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import type { EffectComposer } from 'postprocessing'
 
 import { disposeGroundVisuals } from './board-3d-ground.js'
+import { disposeToonGradientMap } from './board-3d-textures.js'
 
 import type { GroundVisuals } from './board-3d-ground.js'
 import type { EntityNode } from './board-3d-node-types.js'
@@ -21,6 +22,7 @@ type DisposeBoard3dRendererResourcesArgs = {
   groundVisuals: GroundVisuals
   composer: EffectComposer
   renderer: WebGLRenderer
+  skyTexture: CanvasTexture
 }
 
 export const disposeBoard3dRendererResources = (
@@ -36,6 +38,7 @@ export const disposeBoard3dRendererResources = (
     groundVisuals,
     composer,
     renderer,
+    skyTexture,
   } = args
 
   for (const node of nodes.values()) {
@@ -51,7 +54,11 @@ export const disposeBoard3dRendererResources = (
 
   const nextGroundVisuals = disposeGroundVisuals(world, groundVisuals)
 
+  // pmndrs EffectComposer.dispose cascades to every pass, the shared depth
+  // target and both frame buffers — no manual per-pass release needed.
   composer.dispose()
+  skyTexture.dispose()
+  disposeToonGradientMap()
   renderer.dispose()
   renderer.domElement.remove()
 

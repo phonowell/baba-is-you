@@ -3,7 +3,10 @@ import {
 } from './board-3d-config-layout.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
-import { applyCardOrientation } from './board-3d-card-facing.js'
+import {
+  applyCardOrientation,
+  applyVolumeOrientation,
+} from './board-3d-card-facing.js'
 import { nodeRollAtMs } from './board-3d-node-pose.js'
 import {
   cardFacesCamera,
@@ -47,7 +50,11 @@ const setNodeIdlePose = (
   camera: Camera,
 ): void => {
   node.mesh.position.set(target.x, target.y, target.baseZ)
-  applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
+  if (node.facingYaw === undefined) {
+    applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
+  } else {
+    applyVolumeOrientation(node.mesh, roll, node.facingYaw)
+  }
   node.mesh.scale.set(1, 1, 1)
   node.shadow.position.set(target.x, target.y, SHADOW_BASE_Z)
   node.shadow.scale.set(
@@ -133,6 +140,7 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     node.mesh.castShadow = true
     node.mesh.receiveShadow = !emoji
     node.facesCamera = cardFacesCamera(item)
+    node.facingYaw = visual.facingYaw
     const stableRoll = cardRollForItemStep(item, node.rollStep)
     if (!node.moving && Math.abs(node.rotRoll - stableRoll) > POSITION_EPSILON) {
       node.rotRoll = stableRoll

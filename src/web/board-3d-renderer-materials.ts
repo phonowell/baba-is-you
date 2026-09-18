@@ -3,38 +3,52 @@ import {
   CanvasTexture,
   Color,
   DoubleSide,
-  MeshStandardMaterial,
+  MeshToonMaterial,
 } from 'three'
 
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
 import { cardSpecForItem, orientedSpriteForSpec } from './board-3d-shared-item.js'
-import { createCardTextures } from './board-3d-textures.js'
-import { spriteContentBounds, spriteFrames } from './pixel-sprites/derive.js'
-import { arrowOverlaysForDirection } from './pixel-sprites/arrows.js'
-import { buildVoxelGeometry, voxelDrawRect } from './pixel-sprites/voxel.js'
+import { createCardTextures, getToonGradientMap } from './board-3d-textures.js'
+import {
+  spriteContentBounds,
+  spriteFrames,
+  spriteVolumeBounds,
+} from './pixel-sprites/derive.js'
+import {
+  arrowMarkerSlices,
+  arrowOverlaysForDirection,
+} from './pixel-sprites/arrows.js'
+import {
+  buildVoxelVolumeGeometry,
+  inflateVolume,
+  slabVolume,
+  spriteVolumes,
+  voxelDrawRect,
+} from './pixel-sprites/voxel.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
 
 import type { BufferGeometry, Material } from 'three'
-import type { Item } from '../logic/types.js'
+import type { Direction, Item } from '../logic/types.js'
 import type { CardMaterial, EntityNode } from './board-3d-node-types.js'
 
 type ClayPreset = typeof import('./clay-config.js').CLAY_PRESET
 
 const {
+  CARD_BASE_Z,
   CARD_MATERIAL_ALPHA_TEST,
-  CARD_MATERIAL_ROUGHNESS,
-  CARD_MATERIAL_METALNESS,
   CARD_MATERIAL_EMISSIVE_COLOR,
   CARD_WORLD_SIZE,
+  GROUND_SURFACE_Z,
 } = BOARD3D_LAYOUT_CONFIG
 
 const {
   VOXEL_INNER_SIZE_RATIO,
-  VOXEL_DEPTH_OBJECT,
-  VOXEL_DEPTH_GROUND_HUG,
+  VOXEL_FRAME_Z,
+  VOXEL_INFLATE_MAX_LAYERS,
+  VOXEL_INFLATE_MIN_LAYERS,
+  VOXEL_GROUND_HUG_BACK_LAYERS,
   VOXEL_PLATE_DEPTH,
-  VOXEL_ARROW_LIFT,
   VOXEL_SHADE_FRONT,
   VOXEL_SHADE_TOP,
   VOXEL_SHADE_SIDE,
@@ -54,11 +68,15 @@ const VOXEL_SHADE = {
 
 // Everything a node needs to display one spec: shared geometry/material
 // handles plus the per-frame geometry list when the sprite animates.
+// facingYaw is set only for authored voxel models that stand upright on the
+// board and turn with the item's direction; flat visuals leave it undefined
+// and keep the camera-facing card orientation.
 export type EntityVisual = {
   key: string
   geometry: BufferGeometry
   material: Material | Material[]
   frameGeometries: BufferGeometry[]
+  facingYaw: number | undefined
 }
 
 type CreateBoard3dRendererMaterialStoreArgs = {
@@ -118,15 +136,20 @@ export const createBoard3dRendererMaterialStore = (
   const materialCache = new Map<string, CardMaterial>()
   const animatedFrames = new Map<CardMaterial, CanvasTexture[]>()
   const geometryCache = new Map<string, BufferGeometry>()
-  const edgeMaterialCache = new Map<string, MeshStandardMaterial>()
+  const edgeMaterialCache = new Map<string, MeshToonMaterial>()
   const plateMaterialCache = new Map<string, Material[]>()
+
+  // Cel-banded toon surface: the shared gradient map quantizes N·L into a
+  // few steps, which is the anime look.
+  const toonSurface = {
+    gradientMap: getToonGradientMap(),
+  }
 
   // Voxel slabs share one vertex-colored material: every pixel's color is
   // baked into the geometry's color attribute with per-face shading.
-  const voxelMaterial = new MeshStandardMaterial({
+  const voxelMaterial = new MeshToonMaterial({
     vertexColors: true,
-    roughness: CARD_MATERIAL_ROUGHNESS,
-    metalness: CARD_MATERIAL_METALNESS,
+    ...toonSurface,
     emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
     emissiveIntensity: preset.materials.objectEmissiveIntensity,
   })
@@ -149,12 +172,11 @@ export const createBoard3dRendererMaterialStore = (
     const firstFrame = frames[0]
     if (!firstFrame) throw new Error(`No card texture for ${spec.key}.`)
 
-    const material = new MeshStandardMaterial({
+    const material = new MeshToonMaterial({
       map: firstFrame,
       transparent: true,
       alphaTest: CARD_MATERIAL_ALPHA_TEST,
-      roughness: CARD_MATERIAL_ROUGHNESS,
-      metalness: CARD_MATERIAL_METALNESS,
+      ...toonSurface,
       emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
       emissiveIntensity: spec.isText
         ? preset.materials.textEmissiveIntensity
@@ -166,14 +188,13 @@ export const createBoard3dRendererMaterialStore = (
     return material
   }
 
-  const edgeMaterial = (spec: ReturnType<typeof cardSpecForItem>): MeshStandardMaterial => {
+  const edgeMaterial = (spec: ReturnType<typeof cardSpecForItem>): MeshToonMaterial => {
     const cached = edgeMaterialCache.get(spec.key)
     if (cached) return cached
     const color = new Color(spec.background).multiplyScalar(VOXEL_PLATE_EDGE_SHADE)
-    const material = new MeshStandardMaterial({
+    const material = new MeshToonMaterial({
       color,
-      roughness: CARD_MATERIAL_ROUGHNESS,
-      metalness: CARD_MATERIAL_METALNESS,
+      ...toonSurface,
       emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
       emissiveIntensity: spec.isText
         ? preset.materials.textEmissiveIntensity
@@ -183,33 +204,72 @@ export const createBoard3dRendererMaterialStore = (
     return material
   }
 
+  // Upright voxel models spin around the board's vertical axis: down shows
+  // the front, right/left the profiles, up the back.
+  const FACING_YAW: Record<Direction, number> = {
+    down: 0,
+    right: Math.PI / 2,
+    up: Math.PI,
+    left: -Math.PI / 2,
+  }
+
   const voxelVisual = (
     item: Item,
     spec: ReturnType<typeof cardSpecForItem>,
   ): EntityVisual => {
-    const sprite = orientedSpriteForSpec(spec)
+    const baseSprite = spec.sprite
+    const groundHug = isGroundHugItem(item)
+    const facing = spec.facingDirection
+    // Authored volumes are sculpted for all four sides: they stand on the
+    // board and turn with the item instead of mirroring + billboarding.
+    const rotates =
+      facing !== null && !groundHug && baseSprite?.volumes?.[0] !== undefined
+    const sprite = rotates ? baseSprite : orientedSpriteForSpec(spec)
     if (!sprite) throw new Error(`Missing sprite for ${spec.key}.`)
-    const bounds = spriteContentBounds(sprite)
+    // Ground-hug tiles stay flat slabs; upright sprites inflate into a
+    // tapered body unless the sprite authors its own slices.
+    const inflate = groundHug
+      ? (frame: Parameters<typeof slabVolume>[0]) =>
+          slabVolume(frame, VOXEL_GROUND_HUG_BACK_LAYERS)
+      : (frame: Parameters<typeof inflateVolume>[0]) =>
+          inflateVolume(frame, VOXEL_INFLATE_MAX_LAYERS, VOXEL_INFLATE_MIN_LAYERS)
+    const volumes = spriteVolumes(sprite, inflate)
+    const bounds = spriteVolumeBounds(sprite, volumes)
     if (!bounds) throw new Error(`Empty sprite for ${spec.key}.`)
     const rect = voxelDrawRect(bounds, voxelInnerSize)
-    const groundHug = isGroundHugItem(item)
-    const depth = groundHug ? VOXEL_DEPTH_GROUND_HUG : VOXEL_DEPTH_OBJECT
     const outlineColor = groundHug ? undefined : VOXEL_OUTLINE_COLOR
-    const overlays = spec.facingDirection
-      ? arrowOverlaysForDirection(spec.facingDirection, VOXEL_ARROW_LIFT, bounds)
+    const frameBounds = spriteContentBounds(sprite) ?? bounds
+    const overlays = facing
+      ? rotates
+        ? arrowMarkerSlices(frameBounds)
+        : arrowOverlaysForDirection(facing, frameBounds)
       : []
+    // Standing models plant their bottom row on the ground plane and spin
+    // around the volume's depth center; billboard cards keep the authored
+    // frame plane just in front of the card origin.
+    const drawY = rotates
+      ? (bounds.maxY + 1) * rect.texel - (CARD_BASE_Z - GROUND_SURFACE_Z)
+      : rect.drawY
+    const volume0 = volumes[0]
+    const frameFrontZ =
+      rotates && volume0
+        ? (((volume0.backSlices?.length ?? 0) + 1) -
+            (volume0.frontSlices?.length ?? 0)) *
+          (rect.texel / 2)
+        : VOXEL_FRAME_Z
+    const geoKeyPrefix = rotates ? `voxrot:${item.name}` : `vox:${spec.key}`
 
     const frameGeometries = spriteFrames(sprite).map((frame, ix) => {
-      const key = `vox:${spec.key}:${ix}`
+      const key = `${geoKeyPrefix}:${ix}`
       let geometry = geometryCache.get(key)
       if (!geometry) {
-        geometry = buildVoxelGeometry(
-          { frame, palette: sprite.palette, overlays },
+        geometry = buildVoxelVolumeGeometry(
+          { frame, palette: sprite.palette, volume: volumes[ix], overlays },
           {
             drawX: rect.drawX,
-            drawY: rect.drawY,
+            drawY,
             texel: rect.texel,
-            depth,
+            frameFrontZ,
             shade: VOXEL_SHADE,
             outlineColor,
           },
@@ -225,6 +285,7 @@ export const createBoard3dRendererMaterialStore = (
       geometry,
       material: voxelMaterial,
       frameGeometries,
+      facingYaw: rotates && facing ? FACING_YAW[facing] : undefined,
     }
   }
 
@@ -237,7 +298,13 @@ export const createBoard3dRendererMaterialStore = (
       material = [edge, edge, edge, edge, frontMaterial(spec), edge]
       plateMaterialCache.set(key, material)
     }
-    return { key, geometry: plateGeometry, material, frameGeometries: [] }
+    return {
+      key,
+      geometry: plateGeometry,
+      material,
+      frameGeometries: [],
+      facingYaw: undefined,
+    }
   }
 
   const getVisual = (item: Item, overridden = false): EntityVisual => {

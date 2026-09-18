@@ -1,23 +1,29 @@
 import {
-  ACESFilmicToneMapping,
-  AmbientLight,
-  Color,
+  CanvasTexture,
   DirectionalLight,
+  FogExp2,
   Group,
   HalfFloatType,
+  HemisphereLight,
+  NoToneMapping,
   PCFSoftShadowMap,
   PerspectiveCamera,
   SRGBColorSpace,
   Scene,
-  Vector2,
   WebGLRenderer,
-  WebGLRenderTarget,
 } from 'three'
-import { BokehPass } from 'three/examples/jsm/postprocessing/BokehPass.js'
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import {
+  BloomEffect,
+  BrightnessContrastEffect,
+  EffectComposer,
+  EffectPass,
+  HueSaturationEffect,
+  RenderPass,
+  ToneMappingEffect,
+  ToneMappingMode,
+  VignetteEffect,
+} from 'postprocessing'
+import { N8AOPostPass } from 'n8ao'
 
 import { selectClayCameraTier } from './clay-config.js'
 import {
@@ -27,12 +33,10 @@ import {
   BOARD3D_LIGHTING_CONFIG,
 } from './board-3d-config-lighting.js'
 import {
-  BOARD3D_POSTFX_CONFIG,
-} from './board-3d-config-postfx.js'
-import {
   BOARD3D_SHADOW_CONFIG,
 } from './board-3d-config-shadow.js'
 import { configureTopLight } from './board-3d-ground.js'
+import { createSkyGradientTexture } from './board-3d-textures.js'
 
 type ClayPreset = typeof import('./clay-config.js').CLAY_PRESET
 
@@ -44,9 +48,12 @@ const {
 
 const {
   AMBIENT_LIGHT_COLOR,
+  HEMISPHERE_GROUND_COLOR,
   AMBIENT_LIGHT_INTENSITY_MUL,
   SIDE_LIGHT_INTENSITY_MIN,
   SIDE_LIGHT_INTENSITY_MUL,
+  FILL_LIGHT_COLOR,
+  FILL_LIGHT_INTENSITY_MUL,
   SIDE_LIGHT_INITIAL_Y,
   SIDE_LIGHT_INITIAL_Z,
 } = BOARD3D_LIGHTING_CONFIG
@@ -55,22 +62,16 @@ const {
   SHADOW_MAP_SIZE_SCALE,
 } = BOARD3D_SHADOW_CONFIG
 
-const {
-  BLOOM_INITIAL_RESOLUTION_X,
-  BLOOM_INITIAL_RESOLUTION_Y,
-  BOKEH_INITIAL_FOCUS,
-} = BOARD3D_POSTFX_CONFIG
-
 export type Board3dRendererScene = {
   camera: PerspectiveCamera
   renderer: WebGLRenderer
   composer: EffectComposer
-  bloomPass: UnrealBloomPass
-  bokehPass: BokehPass
+  bloomEffect: BloomEffect
   leftLight: DirectionalLight
   rightLight: DirectionalLight
   world: Group
   entityGroup: Group
+  skyTexture: CanvasTexture
 }
 
 export const createBoard3dRendererScene = (
@@ -78,7 +79,11 @@ export const createBoard3dRendererScene = (
 ): Board3dRendererScene => {
   const initialCameraTier = selectClayCameraTier(1, 1)
   const scene = new Scene()
-  scene.background = new Color(preset.sceneBackground)
+  // Genshin-style backdrop: vertical sky gradient behind the board, fog
+  // tinted to the horizon so the ground edge dissolves into the haze.
+  const skyTexture = createSkyGradientTexture(preset.sky.top, preset.sky.horizon)
+  scene.background = skyTexture
+  scene.fog = new FogExp2(preset.sceneBackground, preset.fog.density)
 
   const camera = new PerspectiveCamera(
     initialCameraTier.fov,
@@ -93,43 +98,60 @@ export const createBoard3dRendererScene = (
     powerPreference: 'high-performance',
   })
   renderer.outputColorSpace = SRGBColorSpace
-  renderer.toneMapping = ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.15
+  // Tone mapping runs as a ToneMappingEffect at the end of the chain, so the
+  // renderer itself must not bake it into the scene render.
+  renderer.toneMapping = NoToneMapping
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = PCFSoftShadowMap
   renderer.domElement.className = 'board-3d-canvas'
   renderer.domElement.setAttribute('aria-hidden', 'true')
 
-  // Multisampled target so the RenderPass output is MSAA-resolved before the
-  // post chain; the canvas itself stays antialias:false.
-  const composerTarget = new WebGLRenderTarget(1, 1, {
-    type: HalfFloatType,
-    samples: 4,
+  // pmndrs composer: MSAA on the HDR buffers, and every pass that declares
+  // needsDepthTexture shares a single resolved depth copy per frame.
+  const composer = new EffectComposer(renderer, {
+    frameBufferType: HalfFloatType,
+    multisampling: 4,
   })
-  const composer = new EffectComposer(renderer, composerTarget)
   composer.addPass(new RenderPass(scene, camera))
 
-  const bloomPass = new UnrealBloomPass(
-    new Vector2(
-      BLOOM_INITIAL_RESOLUTION_X,
-      BLOOM_INITIAL_RESOLUTION_Y,
-    ),
-    preset.bloom.strength,
-    preset.bloom.radius,
-    preset.bloom.threshold,
-  )
-  composer.addPass(bloomPass)
+  // Depth-based AO: samples the shared depth texture and reconstructs
+  // normals from it, so unlike GTAO there is no scene re-render and no
+  // alpha-test halo. halfRes quarters the AO pixel cost.
+  const aoPass = new N8AOPostPass(scene, camera)
+  aoPass.configuration.halfRes = preset.ao.halfRes
+  aoPass.configuration.aoSamples = preset.ao.samples
+  aoPass.configuration.aoRadius = preset.ao.radius
+  aoPass.configuration.intensity = preset.ao.intensity
+  aoPass.configuration.distanceFalloff = preset.ao.distanceFalloff
+  composer.addPass(aoPass)
 
-  const bokehPass = new BokehPass(scene, camera, {
-    focus: BOKEH_INITIAL_FOCUS,
-    aperture: preset.bokeh.aperture,
-    maxblur: preset.bokeh.maxBlur,
+  const bloomEffect = new BloomEffect({
+    intensity: preset.bloom.strength,
+    luminanceThreshold: preset.bloom.threshold,
+    luminanceSmoothing: 0.2,
+    mipmapBlur: true,
+    radius: preset.bloom.radius,
   })
-  composer.addPass(bokehPass)
-  composer.addPass(new OutputPass())
+  composer.addPass(new EffectPass(camera, bloomEffect))
 
-  const ambientLight = new AmbientLight(
+  composer.addPass(
+    new EffectPass(
+      camera,
+      new BrightnessContrastEffect({ contrast: preset.grade.contrast - 1 }),
+      new HueSaturationEffect({ saturation: preset.grade.saturation - 1 }),
+      new ToneMappingEffect({ mode: ToneMappingMode.ACES_FILMIC }),
+      new VignetteEffect({
+        offset: preset.grade.vignetteOffset,
+        darkness: preset.grade.vignetteStrength,
+      }),
+    ),
+  )
+
+  // Hemisphere light: sky-blue fill from above, green ground bounce from
+  // below — toon materials pick up the two-tone ambient like anime cel.
+  const ambientLight = new HemisphereLight(
     AMBIENT_LIGHT_COLOR,
+    HEMISPHERE_GROUND_COLOR,
     preset.lighting.ambientIntensity * AMBIENT_LIGHT_INTENSITY_MUL,
   )
   scene.add(ambientLight)
@@ -152,8 +174,13 @@ export const createBoard3dRendererScene = (
   scene.add(leftLight)
   scene.add(leftLight.target)
 
-  const rightLight = new DirectionalLight(preset.lighting.topLightColor, sideLightIntensity)
-  configureTopLight(rightLight, shadowMapSize, preset.lighting.topLightShadowFar)
+  // Cool fill opposite the warm key: blue-tints shaded faces instead of
+  // washing them out with a second warm light. No shadow casting — one
+  // shadowed key keeps shadows readable (and halves shadow-map cost).
+  const rightLight = new DirectionalLight(
+    FILL_LIGHT_COLOR,
+    preset.lighting.topLightIntensity * FILL_LIGHT_INTENSITY_MUL,
+  )
   scene.add(rightLight)
   scene.add(rightLight.target)
 
@@ -168,11 +195,11 @@ export const createBoard3dRendererScene = (
     camera,
     renderer,
     composer,
-    bloomPass,
-    bokehPass,
+    bloomEffect,
     leftLight,
     rightLight,
     world,
     entityGroup,
+    skyTexture,
   }
 }

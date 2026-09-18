@@ -6,15 +6,30 @@ type Rgb = {
 
 export type ClayPreset = {
   sceneBackground: string
+  sky: {
+    top: string
+    horizon: string
+  }
+  fog: {
+    density: number
+  }
   bloom: {
     strength: number
     radius: number
     threshold: number
   }
-  bokeh: {
-    aperture: number
-    maxBlur: number
-    focusOffset: number
+  ao: {
+    radius: number
+    intensity: number
+    distanceFalloff: number
+    halfRes: boolean
+    samples: number
+  }
+  grade: {
+    vignetteStrength: number
+    vignetteOffset: number
+    contrast: number
+    saturation: number
   }
   lighting: {
     ambientIntensity: number
@@ -32,8 +47,6 @@ export type ClayPreset = {
     minContrastRatio: number
     textDensitySoftCap: number
     bloomStrengthFloor: number
-    apertureFloor: number
-    maxBlurFloor: number
   }
 }
 
@@ -121,35 +134,54 @@ const DARK_OUTLINE = '#f2f6ff'
 const LIGHT_OUTLINE = '#0a1320'
 
 export const CLAY_PRESET: ClayPreset = {
-  sceneBackground: '#dfe7ee',
-  bloom: {
-    strength: 0.12,
-    radius: 0.32,
-    threshold: 0.94,
+  // Pale blue-lavender: doubles as the fog tint so the board's far edge
+  // dissolves into aerial-perspective haze.
+  sceneBackground: '#b4d4ea',
+  // Genshin-style sky backdrop: saturated azure zenith fading to a pale
+  // hazy horizon.
+  sky: {
+    top: '#2f9be8',
+    horizon: '#dcedf8',
   },
-  bokeh: {
-    aperture: 0.000007,
-    maxBlur: 0.0014,
-    focusOffset: 0.1,
+  fog: {
+    density: 0.0075,
+  },
+  bloom: {
+    // The Ghibli-like ethereal glow is a signature — aggressive by neutral
+    // standards, still keyed to highlights only.
+    strength: 0.34,
+    radius: 0.5,
+    threshold: 0.82,
+  },
+  ao: {
+    radius: 0.5,
+    intensity: 3.0,
+    distanceFalloff: 0.6,
+    halfRes: true,
+    samples: 8,
+  },
+  grade: {
+    vignetteStrength: 0.08,
+    vignetteOffset: 0.35,
+    contrast: 1.05,
+    saturation: 1.12,
   },
   lighting: {
-    ambientIntensity: 1.6,
-    topLightIntensity: 2.2,
-    topLightColor: '#ffffff',
+    ambientIntensity: 1.05,
+    topLightIntensity: 1.8,
+    topLightColor: '#ffedc8',
     topLightShadowFar: 46,
     topLightShadowMapSize: 1024,
-    groundEmissiveIntensity: 0.18,
+    groundEmissiveIntensity: 0.05,
   },
   materials: {
-    textEmissiveIntensity: 0.3,
-    objectEmissiveIntensity: 0.15,
+    textEmissiveIntensity: 0.1,
+    objectEmissiveIntensity: 0.05,
   },
   readability: {
     minContrastRatio: 4.8,
     textDensitySoftCap: 0.22,
     bloomStrengthFloor: 0.08,
-    apertureFloor: 0.0000045,
-    maxBlurFloor: 0.0009,
   },
 }
 
@@ -209,7 +241,7 @@ export const createClayObjectPalette = (
   hue: number,
   minContrastRatio: number,
 ): ClayObjectPalette => {
-  const background = hslToRgb(hue, 0.52, 0.78)
+  const background = hslToRgb(hue, 0.52, 0.7)
 
   const darkContrast = contrastRatio(background, DARK_TEXT)
   const lightContrast = contrastRatio(background, LIGHT_TEXT)
@@ -220,8 +252,8 @@ export const createClayObjectPalette = (
 
   if (contrast >= minContrastRatio) {
     return {
-      background: hslCss(hue, 0.52, 0.78),
-      border: hslCss(hue, 0.47, 0.54),
+      background: hslCss(hue, 0.52, 0.7),
+      border: hslCss(hue, 0.47, 0.48),
       textColor: rgbHex(textRgb),
       outlineColor: useDark ? DARK_OUTLINE : LIGHT_OUTLINE,
       contrastRatio: contrast,
@@ -231,8 +263,8 @@ export const createClayObjectPalette = (
   const fallbackText = luminance(background) > 0.4 ? DARK_TEXT : LIGHT_TEXT
   const fallbackUseDark = fallbackText === DARK_TEXT
   return {
-    background: hslCss(hue, 0.52, 0.78),
-    border: hslCss(hue, 0.47, 0.54),
+    background: hslCss(hue, 0.52, 0.7),
+    border: hslCss(hue, 0.47, 0.48),
     textColor: rgbHex(fallbackText),
     outlineColor: fallbackUseDark ? DARK_OUTLINE : LIGHT_OUTLINE,
     contrastRatio: contrastRatio(background, fallbackText),

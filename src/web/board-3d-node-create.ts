@@ -75,6 +75,7 @@ export const createEntityNode = (
     isEmoji: stretchEnabled,
     emojiPhaseOffsetMs: emojiPhaseOffsetMsForItem(item),
     facesCamera: cardFacesCamera(item),
+    facingYaw: visual.facingYaw,
     rotRoll: rollNoise,
     rollStep: 0,
     fromX: 0,

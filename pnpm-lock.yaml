@@ -11,6 +11,12 @@ importers:
 
   .:
     dependencies:
+      n8ao:
+        specifier: 2.0.1
+        version: 2.0.1(postprocessing@6.39.5(three@0.183.1))(three@0.183.1)
+      postprocessing:
+        specifier: 6.39.5
+        version: 6.39.5(three@0.183.1)
       three:
         specifier: ^0.183.1
         version: 0.183.1
@@ -558,6 +564,12 @@ packages:
     resolution: {integrity: sha512-vpLQEs+VLCr1nU0BXS07maYoFwlDAH0gngQuuttxIwutDFEMHq2blX+8vpgxDdK3J1PwjCJiep77OitTZ4Ll1A==}
     engines: {node: 18 || 20 || >=22}
 
+  n8ao@2.0.1:
+    resolution: {integrity: sha512-MoP1QKUdj4/3cKEnhFl917t0eQwWGER1l43ckz5mNOPyYWGRDGQbVoTOQz/VBvy01in6QVNG+AL6Xxx5AjZBYA==}
+    peerDependencies:
+      postprocessing: '>=6.30.0'
+      three: '>=0.137'
+
   normalize-path@3.0.0:
     resolution: {integrity: sha512-6eZs5Ls3WtCisHWp9S2GUy8dqkpGi4BVSz3GaqiE6ezub0512ESztXUwUB6C6IKbQkY2Pnb/mD4WYojCRwcwLA==}
     engines: {node: '>=0.10.0'}
@@ -578,6 +590,11 @@ packages:
   picomatch@4.0.7:
     resolution: {integrity: sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==}
     engines: {node: '>=12'}
+
+  postprocessing@6.39.5:
+    resolution: {integrity: sha512-YmH+t74J2X1lwYjKzK/tgs9C9kqWWPB9JwZiDF5mEf4BdCEAmEFbO8lXBA7NM0/j4g+x6FgD/Tt5/kT7ogbEDA==}
+    peerDependencies:
+      three: '>= 0.168.0 < 0.187.0'
 
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
@@ -1084,6 +1101,11 @@ snapshots:
     dependencies:
       brace-expansion: 5.0.12
 
+  n8ao@2.0.1(postprocessing@6.39.5(three@0.183.1))(three@0.183.1):
+    dependencies:
+      postprocessing: 6.39.5(three@0.183.1)
+      three: 0.183.1
+
   normalize-path@3.0.0: {}
 
   oxlint@1.82.0:
@@ -1109,6 +1131,10 @@ snapshots:
       '@oxlint/binding-win32-x64-msvc': 1.82.0
 
   picomatch@4.0.7: {}
+
+  postprocessing@6.39.5(three@0.183.1):
+    dependencies:
+      three: 0.183.1
 
   process-nextick-args@2.0.1: {}
 

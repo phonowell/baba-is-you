@@ -12,7 +12,10 @@ import {
   Vector3,
 } from 'three'
 
-import { applyCardOrientation } from './board-3d-card-facing.js'
+import {
+  applyCardOrientation,
+  applyVolumeOrientation,
+} from './board-3d-card-facing.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { createEntityNode } from './board-3d-node-create.js'
 import { applyNodePose, nodeRollAtMs } from './board-3d-node-pose.js'
@@ -171,6 +174,7 @@ const createSyncNode = (entityGroup: Group) => {
           geometry: cardGeometry,
           material,
           frameGeometries: [],
+          facingYaw: undefined,
         }),
       },
       item,
@@ -194,6 +198,7 @@ test('board-3d sync orients a spawned upright card toward the camera', () => {
         geometry: new PlaneGeometry(0.88, 0.88),
         material: new MeshStandardMaterial(),
         frameGeometries: [],
+        facingYaw: undefined,
       }),
       createNode: createSyncNode(entityGroup),
       camera,
@@ -220,6 +225,7 @@ test('board-3d pose keeps a moving card tilted at the camera', () => {
       geometry: new PlaneGeometry(0.88, 0.88),
       material: new MeshStandardMaterial(),
       frameGeometries: [],
+      facingYaw: undefined,
     }),
     createNode: createSyncNode(entityGroup),
     camera,
@@ -236,6 +242,40 @@ test('board-3d pose keeps a moving card tilted at the camera', () => {
   applyNodePose(node, 100, camera)
 
   assertVectorNear(meshWorldNormal(node.mesh), expectedFacingNormal(camera))
+})
+
+test('board-3d volume model stands upright and turns to each board direction', () => {
+  const { mesh } = createFacingRig()
+  mesh.position.set(0, 0, 0.09)
+  const worldUp = new Vector3(0, 1, 0)
+
+  // down = front toward the camera, right/left = profiles, up = back.
+  const cases: [number, Vector3][] = [
+    [0, new Vector3(0, 0, 1)],
+    [Math.PI / 2, new Vector3(1, 0, 0)],
+    [Math.PI, new Vector3(0, 0, -1)],
+    [-Math.PI / 2, new Vector3(-1, 0, 0)],
+  ]
+  for (const [yaw, expectedFront] of cases) {
+    applyVolumeOrientation(mesh, 0, yaw)
+    assertVectorNear(meshWorldNormal(mesh), expectedFront)
+    // The model never lies down: sprite-up stays world-up for every facing.
+    assertVectorNear(meshWorldUpAxis(mesh), worldUp)
+  }
+})
+
+test('board-3d volume roll rocks around the facing axis without tumbling', () => {
+  const { mesh } = createFacingRig()
+  mesh.position.set(0, 0, 0.09)
+  const roll = 0.5
+
+  applyVolumeOrientation(mesh, 0, Math.PI / 2)
+  const frontBefore = meshWorldNormal(mesh)
+  const upBefore = meshWorldUpAxis(mesh)
+  applyVolumeOrientation(mesh, roll, Math.PI / 2)
+
+  assertVectorNear(meshWorldNormal(mesh), frontBefore)
+  assert.ok(Math.abs(upBefore.dot(meshWorldUpAxis(mesh)) - Math.cos(roll)) < EPSILON)
 })
 
 test('board-3d node roll interpolates along the eased move progress', () => {

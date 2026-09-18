@@ -36,3 +36,21 @@ export const applyCardOrientation = (
   mesh.lookAt(cardWorldPos.add(facingNormal))
   mesh.rotateZ(roll)
 }
+
+// Group-space vertical axis: entityGroup lives inside the world group that
+// is pitched -90deg around X, so the group's +Z is true world up.
+const BOARD_UP_AXIS = new Vector3(0, 0, 1)
+
+// Volumetric models stand upright on the board like figurines instead of
+// billboarding: the geometry's sprite-up (+Y) points at group up and its
+// front (+Z) faces the board-down direction, then `yaw` spins the whole
+// model around the vertical axis so each facing shows a real side.
+export const applyVolumeOrientation = (
+  mesh: Mesh,
+  roll: number,
+  yaw: number,
+): void => {
+  mesh.rotation.set(Math.PI / 2, 0, 0)
+  mesh.rotateOnWorldAxis(BOARD_UP_AXIS, yaw)
+  mesh.rotateZ(roll)
+}

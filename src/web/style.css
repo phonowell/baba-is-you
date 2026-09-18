@@ -1,46 +1,54 @@
 :root {
-  --bg: #edf1f4;
-  --panel: #eef2f5;
-  --panel-soft: #f4f7fa;
-  --panel-strong: #e4e9ee;
-  --well-bg: #e9edf1;
-  --messages-bg: #ebeff3;
-  --text: #1f2a34;
-  --muted: #62707d;
+  color-scheme: light;
+  /* Genshin-style chrome: parchment pills + navy tiles + gold diamonds. */
+  --bg: #242e3e;
+  --panel: #f0e9d6;
+  --panel-soft: #e6dcc4;
+  --panel-strong: #c9a86a;
+  --well-bg: #e2dac6;
+  --messages-bg: #eee7d5;
+  --text: #3d4757;
+  --muted: #5d6577;
+  --navy: #2e3c50;
+  --navy-soft: #3d4757;
+  --cream: #ece5d5;
+  --cream-hi: #f8f2e2;
 
-  --accent: #2d6da8;
-  --success: #2f8f67;
-  --warning: #ad7d2c;
-  --danger: #b34d4d;
+  --accent: #c9a86a;
+  --accent-dark: #8a6d3a;
+  --teal: #4dc3be;
+  --success: #4d9a68;
+  --warning: #c8923a;
+  --danger: #c95656;
 
-  --bubble-agent-bg: #f5f8fb;
-  --bubble-agent-text: #1f2a34;
-  --bubble-agent-border: #c8d2dd;
-  --bubble-user-bg: #eaf2fc;
-  --bubble-user-text: #16324d;
-  --bubble-user-border: #bfd2e8;
-  --bubble-system-bg: #e7edf2;
-  --bubble-system-text: #2d3944;
-  --bubble-system-border: #c1ccd7;
+  --bubble-agent-bg: #e7e0cc;
+  --bubble-agent-text: #3b4355;
+  --bubble-agent-border: #cfc2a0;
+  --bubble-user-bg: #dbe7f0;
+  --bubble-user-text: #2f5f8a;
+  --bubble-user-border: #a9c4d8;
+  --bubble-system-bg: #e9e4d8;
+  --bubble-system-text: #6d7486;
+  --bubble-system-border: #cdc5ae;
 
-  --status-running: #2d6da8;
-  --status-success: #2f8f67;
-  --status-fail: #b34d4d;
-  --status-pending: #8a99a8;
-  --status-canceled: #7c6f8f;
+  --status-running: #4a9bb0;
+  --status-success: #4d9a68;
+  --status-fail: #c95656;
+  --status-pending: #8a93a6;
+  --status-canceled: #9a8fa8;
 
-  --shadow-raised: -5px -5px 10px rgb(255 255 255 / 90%), 5px 5px 12px rgb(170 181 193 / 35%);
-  --shadow-raised-soft: -3px -3px 6px rgb(255 255 255 / 85%), 3px 3px 7px rgb(176 186 197 / 30%);
-  --shadow-inset: inset 4px 4px 8px rgb(182 192 202 / 38%), inset -4px -4px 8px rgb(255 255 255 / 90%);
-  --shadow-inset-soft: inset 2px 2px 4px rgb(182 192 202 / 26%), inset -2px -2px 4px rgb(255 255 255 / 88%);
-  --shadow-floating: 0 12px 24px rgb(113 127 142 / 26%);
-  --shadow-dialog: 0 18px 36px rgb(98 112 127 / 28%);
+  --shadow-raised: 0 1px 2px rgb(90 80 55 / 18%), 0 4px 10px rgb(90 80 55 / 12%);
+  --shadow-raised-soft: 0 1px 2px rgb(90 80 55 / 14%), 0 2px 5px rgb(90 80 55 / 10%);
+  --shadow-inset: inset 0 1px 4px rgb(90 80 55 / 18%);
+  --shadow-inset-soft: inset 0 1px 3px rgb(90 80 55 / 14%);
+  --shadow-floating: 0 10px 26px rgb(60 70 90 / 28%);
+  --shadow-dialog: 0 16px 40px rgb(50 60 80 / 35%);
 
   --radius: 14px;
   --radius-sm: 9px;
-  --focus-ring: 0 0 0 3px rgb(67 122 173 / 40%);
+  --focus-ring: 0 0 0 3px rgb(184 150 90 / 45%);
   --cell-size: 44px;
-  --grid-line: rgb(228 233 238 / 50%);
+  --grid-line: rgb(90 100 120 / 18%);
   --grid-dash-size: 5px;
   --motion-duration: 100ms;
 }
@@ -58,21 +66,37 @@ body {
   font-family: 'Courier New', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
 }
 
+body {
+  min-height: 100vh;
+  /* Flat ink-navy under the menu chrome — the same role as the dimmed
+     backdrop behind Genshin's floating menu rows. The 3D canvas covers it
+     in game, so it only shows on the level-select page. */
+  background: #242e3e;
+}
+
 button,
 .btn {
   user-select: none;
 }
 
 .btn {
-  border: none;
-  border-radius: 8px;
-  background: var(--panel-soft);
+  /* Genshin buttons are parchment pills: fully rounded, no hard border,
+     dark slate text on warm ivory. */
+  border: 1px solid rgb(201 168 106 / 55%);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--cream-hi), var(--cream));
   color: var(--text);
   box-shadow: var(--shadow-raised-soft);
-  padding: 6px 10px;
+  padding: 6px 14px;
   font: inherit;
   cursor: pointer;
   transition: box-shadow var(--motion-duration) ease-out, transform var(--motion-duration) ease-out;
+}
+
+.btn:hover {
+  background: linear-gradient(180deg, #fdf8ea, var(--cream-hi));
+  border-color: var(--accent);
+  color: var(--accent-dark);
 }
 
 .btn:active,
@@ -104,17 +128,46 @@ body.game-3d-fullscreen .game-screen {
   padding-bottom: 0;
 }
 
-.title {
-  margin: 0;
-  color: var(--accent);
-  font-size: clamp(24px, 3vw, 32px);
-  letter-spacing: 0.02em;
+body.game-3d-fullscreen .btn {
+  box-shadow: none;
+  /* HUD chip over the bright board: translucent glass on the dark bar,
+     matching Genshin's in-game HUD buttons. */
+  background: rgb(255 255 255 / 12%);
+  border-color: rgb(255 255 255 / 20%);
+  color: #e8e4d8;
 }
 
+body.game-3d-fullscreen .btn:hover {
+  background: rgb(255 255 255 / 24%);
+  border-color: rgb(255 255 255 / 34%);
+  color: #f6f1e7;
+}
+
+body.game-3d-fullscreen .reference-backdrop::before {
+  opacity: 0.25;
+}
+
+.title {
+  margin: 0;
+  color: #f8f2e2;
+  font-size: clamp(24px, 3vw, 32px);
+  letter-spacing: 0.16em;
+  text-shadow: 0 1px 3px rgb(30 45 65 / 45%);
+}
+
+/* Gold diamond markers — the Genshin menu bullet. Gold (not dark gold) so
+   it reads on the ink backdrop. */
 .section-title {
   margin: 14px 0 8px;
   font-size: 17px;
   color: var(--accent);
+}
+
+.section-title::before {
+  content: '◆';
+  margin-right: 6px;
+  color: var(--accent);
+  font-size: 0.8em;
 }
 
 .status,
@@ -127,6 +180,11 @@ body.game-3d-fullscreen .game-screen {
   font-weight: 700;
 }
 
+/* Muted gray is too dark on the ink menu backdrop — lift it. */
+.menu-screen .meta {
+  color: #a5aec0;
+}
+
 .game-toolbar {
   position: fixed;
   bottom: 0;
@@ -137,7 +195,7 @@ body.game-3d-fullscreen .game-screen {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 16px;
-  background: rgb(237 241 244 / 80%);
+  background: rgb(30 42 58 / 70%);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
   backdrop-filter: blur(14px) saturate(1.4);
   z-index: 100;
@@ -150,6 +208,7 @@ body.game-3d-fullscreen .game-screen {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: #cfd4da;
 }
 
 .reference-btn {
@@ -197,7 +256,7 @@ body.game-3d-fullscreen .board-wrap {
 
 .board.board-3d {
   --board-3d-height-scale: 0.72;
-  background: #ffffff;
+  background: #a8cfe0;
   height: calc((var(--board-height) * var(--slot) - var(--gap)) * var(--board-3d-height-scale));
 }
 
@@ -296,7 +355,11 @@ body.game-3d-fullscreen .board.board-3d {
   padding: 18px;
   display: grid;
   place-items: center;
-  background: rgb(232 238 243 / 78%);
+  /* Navy dim like the Genshin menu backdrop, softened so the board still
+     shows through. */
+  background: rgb(28 38 54 / 58%);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
   z-index: 1200;
   animation: backdrop-in var(--motion-duration) ease-out;
 }
@@ -311,10 +374,10 @@ body.game-3d-fullscreen .board.board-3d {
   inset: 0;
   background: repeating-linear-gradient(
     135deg,
-    rgb(215 223 231 / 35%) 0,
-    rgb(215 223 231 / 35%) 6px,
-    rgb(233 239 245 / 15%) 6px,
-    rgb(233 239 245 / 15%) 12px
+    rgb(211 188 142 / 10%) 0,
+    rgb(211 188 142 / 10%) 6px,
+    rgb(90 110 140 / 8%) 6px,
+    rgb(90 110 140 / 8%) 12px
   );
   pointer-events: none;
 }
@@ -324,11 +387,13 @@ body.game-3d-fullscreen .board.board-3d {
   width: min(560px, 90vw);
   max-height: min(80vh, 760px);
   overflow: auto;
-  background: var(--panel);
-  border: 1px solid var(--panel-strong);
+  background: linear-gradient(180deg, var(--cream-hi), var(--panel));
+  border: 1px solid rgb(201 168 106 / 65%);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-dialog);
-  padding: 14px;
+  /* Hairline gold keyline inside the edge — the fine filigree Genshin
+     panels use instead of chunky borders. */
+  box-shadow: var(--shadow-dialog), inset 0 0 0 1px rgb(201 168 106 / 45%);
+  padding: 16px;
   animation: dialog-in var(--motion-duration) ease-out;
 }
 
@@ -339,10 +404,30 @@ body.game-3d-fullscreen .board.board-3d {
   gap: 10px;
 }
 
+/* Close reads as the dark Genshin-style X control on the cream panel.
+   Scoped under game-3d-fullscreen so it beats the glass HUD chip rule. */
+body.game-3d-fullscreen .reference-header .btn {
+  background: var(--navy);
+  border-color: transparent;
+  color: var(--cream);
+}
+
+body.game-3d-fullscreen .reference-header .btn:hover {
+  background: var(--navy-soft);
+  color: var(--cream-hi);
+}
+
 .reference-subtitle {
   margin: 12px 0 8px;
-  color: var(--accent);
+  color: var(--accent-dark);
   font-size: 15px;
+}
+
+.reference-subtitle::before {
+  content: '◆';
+  margin-right: 6px;
+  color: var(--accent);
+  font-size: 0.8em;
 }
 
 .rules-list,
@@ -351,17 +436,14 @@ body.game-3d-fullscreen .board.board-3d {
   padding-left: 18px;
 }
 
-.menu-list {
-  background: var(--messages-bg);
-  border: 1px solid var(--panel-strong);
-  border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-inset-soft);
-  padding: 8px 10px;
-}
-
+/* Genshin menus float pill rows on the dimmed scene — no containing
+   panel, each row is its own parchment bar. */
 .menu-list {
   margin: 0;
-  padding-left: 10px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 
 .legend-row,
@@ -373,9 +455,9 @@ body.game-3d-fullscreen .board.board-3d {
   display: inline-flex;
   min-width: 6ch;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 999px;
   border: 1px solid var(--panel-strong);
-  padding: 2px 5px;
+  padding: 2px 9px;
   font-weight: 700;
   margin-right: 8px;
   box-shadow: var(--shadow-raised-soft);
@@ -388,9 +470,9 @@ body.game-3d-fullscreen .board.board-3d {
 }
 
 .legend-text.syntax {
-  color: #6f561a;
-  background: #f5edda;
-  border-color: #dfcfab;
+  color: #6b5626;
+  background: #e9dcb8;
+  border-color: #b8965a;
 }
 
 .legend-name {
@@ -405,10 +487,16 @@ body.game-3d-fullscreen .board.board-3d {
 .menu-row {
   list-style: none;
   display: grid;
-  grid-template-columns: 14px 52px 1fr;
+  grid-template-columns: 18px 52px 1fr;
   gap: 4px;
-  padding: 2px 4px;
-  border-radius: 6px;
+  margin: 5px 0;
+  padding: 7px 16px;
+  /* Parchment pill rows like the Genshin settings list, with a faint gold
+     keyline inside the edge. */
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--cream), #e2d7bd);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgb(201 168 106 / 32%), var(--shadow-raised-soft);
   cursor: default;
 }
 
@@ -417,17 +505,25 @@ body.game-3d-fullscreen .board.board-3d {
 }
 
 .menu-row:not(.muted):not(.selected):hover {
-  color: var(--accent);
+  background: linear-gradient(180deg, var(--cream-hi), var(--cream));
+  color: var(--accent-dark);
 }
 
 .menu-row.selected {
+  color: var(--accent-dark);
+  background: linear-gradient(180deg, #fbf4df, var(--cream-hi));
+  box-shadow: inset 0 0 0 1.5px var(--accent), var(--shadow-raised-soft);
+}
+
+.menu-row.selected .marker {
   color: var(--accent);
-  background: var(--panel-soft);
-  box-shadow: var(--shadow-raised-soft);
+  text-shadow: 0 0 4px rgb(201 168 106 / 60%);
 }
 
 .menu-row.muted {
-  color: #8693a0;
+  color: #8a93a6;
+  background: rgb(236 229 213 / 55%);
+  box-shadow: none;
 }
 
 @media (max-width: 640px) {

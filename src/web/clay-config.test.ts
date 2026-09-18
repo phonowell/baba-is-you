@@ -10,8 +10,8 @@ import {
 import { BOARD3D_LIGHTING_CONFIG } from './board-3d-config-lighting.js'
 
 test('CLAY_PRESET exposes single fixed config', () => {
-  assert.equal(CLAY_PRESET.sceneBackground, '#dfe7ee')
-  assert.equal(CLAY_PRESET.lighting.topLightColor, '#ffffff')
+  assert.equal(CLAY_PRESET.sceneBackground, '#b4d4ea')
+  assert.equal(CLAY_PRESET.lighting.topLightColor, '#ffedc8')
   assert.equal(CLAY_PRESET.readability.minContrastRatio, 4.8)
 })
 
@@ -37,27 +37,30 @@ test('createClayObjectPalette meets minimum contrast target for default threshol
   assert.ok(palette.contrastRatio >= 4.8)
 })
 
-test('CLAY_PRESET keeps matte lighting and bloom below whiteout levels', () => {
+test('CLAY_PRESET keeps luminous lighting and bloom below whiteout levels', () => {
   const effectiveAmbient =
     CLAY_PRESET.lighting.ambientIntensity *
     BOARD3D_LIGHTING_CONFIG.AMBIENT_LIGHT_INTENSITY_MUL
-  const effectiveSide = Math.max(
+  const effectiveKey = Math.max(
     BOARD3D_LIGHTING_CONFIG.SIDE_LIGHT_INTENSITY_MIN,
     CLAY_PRESET.lighting.topLightIntensity *
       BOARD3D_LIGHTING_CONFIG.SIDE_LIGHT_INTENSITY_MUL,
   )
-  const peakLightBudget = effectiveAmbient + effectiveSide * 2
+  const effectiveFill =
+    CLAY_PRESET.lighting.topLightIntensity *
+    BOARD3D_LIGHTING_CONFIG.FILL_LIGHT_INTENSITY_MUL
+  const peakLightBudget = effectiveAmbient + effectiveKey + effectiveFill
 
   assert.ok(
     peakLightBudget <= 4.2,
     `Expected restrained clay light budget, got ${peakLightBudget.toFixed(3)}`,
   )
   assert.ok(
-    CLAY_PRESET.bloom.strength <= 0.18,
-    `Expected restrained bloom strength, got ${CLAY_PRESET.bloom.strength}`,
+    CLAY_PRESET.bloom.strength <= 0.4,
+    `Expected Ghibli glow to stay bounded, got ${CLAY_PRESET.bloom.strength}`,
   )
   assert.ok(
-    CLAY_PRESET.bloom.threshold >= 0.9,
+    CLAY_PRESET.bloom.threshold >= 0.75,
     `Expected bloom to target highlights only, got ${CLAY_PRESET.bloom.threshold}`,
   )
 })

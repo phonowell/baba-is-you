@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
+import { MeshToonMaterial } from 'three'
+
 import { advanceFrameMaps, createBoard3dRendererMaterialStore } from './board-3d-renderer-materials.js'
 import { CLAY_PRESET } from './clay-config.js'
 
@@ -30,6 +32,17 @@ test('getVisual builds animated voxel visuals for sprite items', () => {
 
   const again = store.getVisual(objectItem('baba', { props: ['you'] }))
   assert.equal(again.geometry, visual.geometry)
+  store.dispose()
+})
+
+test('entity visuals use cel-banded toon materials', () => {
+  const store = createStore()
+  const voxel = store.getVisual(objectItem('baba', { props: ['you'] }))
+  const voxelMaterial = voxel.material as MeshToonMaterial
+
+  assert.equal(voxelMaterial instanceof MeshToonMaterial, true)
+  assert.equal(voxelMaterial.gradientMap !== null, true)
+
   store.dispose()
 })
 

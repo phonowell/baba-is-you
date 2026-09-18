@@ -1,8 +1,11 @@
 import {
   CanvasTexture,
+  DataTexture,
   LinearFilter,
   LinearMipmapLinearFilter,
   NearestFilter,
+  RedFormat,
+  RepeatWrapping,
   SRGBColorSpace,
 } from 'three'
 
@@ -237,6 +240,139 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
   }
 
   return createCanvasTexture(canvas, anisotropy, false)
+}
+
+// Toon shading bands: dotNL is quantized through this map into a few
+// luminance steps — the anime cel look. The floor stays high (≈0.66) so
+// shadowed faces remain luminous instead of crushing to black; Genshin's
+// painted shadows are colourful, never dead dark. Shared by every toon
+// material as a lazily-created module singleton; disposeToonGradientMap
+// resets it for renderer teardown/recreate cycles.
+const TOON_GRADIENT_STEPS = [182, 214, 238, 255] as const
+
+let toonGradientMap: DataTexture | null = null
+
+export const getToonGradientMap = (): DataTexture => {
+  if (!toonGradientMap) {
+    toonGradientMap = new DataTexture(
+      new Uint8Array(TOON_GRADIENT_STEPS),
+      TOON_GRADIENT_STEPS.length,
+      1,
+      RedFormat,
+    )
+    toonGradientMap.minFilter = NearestFilter
+    toonGradientMap.magFilter = NearestFilter
+    toonGradientMap.needsUpdate = true
+  }
+  return toonGradientMap
+}
+
+export const disposeToonGradientMap = (): void => {
+  toonGradientMap?.dispose()
+  toonGradientMap = null
+}
+
+// Painterly ground mottle: soft colour blotches + fine speckle multiply over
+// the flat grass colour, approximating the hand-painted terrain texture that
+// keeps Genshin fields from reading as flat fills. The canvas is a shared
+// singleton; each call returns a fresh CanvasTexture clone over it so callers
+// can set per-mesh repeat and dispose their own texture.
+const GROUND_MOTTLE_SIZE = 512
+const GROUND_MOTTLE_BASE = 'rgb(240,240,230)'
+const GROUND_MOTTLE_BLOTCHES: readonly string[] = [
+  'rgb(255,250,214)', // sunlit warm
+  'rgb(214,236,214)', // sage
+  'rgb(214,228,244)', // cool haze
+  'rgb(196,216,190)', // deeper grass
+]
+const GROUND_MOTTLE_SPECKLE = ['rgb(255,255,250)', 'rgb(190,205,185)']
+
+let groundMottleCanvas: HTMLCanvasElement | null = null
+
+const drawGroundMottleCanvas = (): HTMLCanvasElement => {
+  const canvas = document.createElement('canvas')
+  canvas.width = GROUND_MOTTLE_SIZE
+  canvas.height = GROUND_MOTTLE_SIZE
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to create ground mottle context.')
+
+  ctx.fillStyle = GROUND_MOTTLE_BASE
+  ctx.fillRect(0, 0, GROUND_MOTTLE_SIZE, GROUND_MOTTLE_SIZE)
+
+  // Large soft blotches — painterly meadow patches like Genshin's
+  // hand-textured fields: wide, low-contrast colour regions, not noise.
+  let seed = 137
+  const rand = () => {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    return seed / 2147483648
+  }
+  for (let i = 0; i < 170; i++) {
+    const x = rand() * GROUND_MOTTLE_SIZE
+    const y = rand() * GROUND_MOTTLE_SIZE
+    const radius = 22 + rand() * 95
+    const color =
+      GROUND_MOTTLE_BLOTCHES[Math.floor(rand() * GROUND_MOTTLE_BLOTCHES.length)]!
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius)
+    gradient.addColorStop(0, color)
+    gradient.addColorStop(1, `${color.slice(0, -1)},0)`)
+    ctx.globalAlpha = 0.1 + rand() * 0.12
+    ctx.fillStyle = gradient
+    ctx.beginPath()
+    ctx.ellipse(x, y, radius, radius * (0.55 + rand() * 0.45), rand() * Math.PI, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // Fine speckle — grain/tooth so flat regions don't look vector-clean.
+  ctx.globalAlpha = 0.22
+  for (let i = 0; i < 3200; i++) {
+    ctx.fillStyle = GROUND_MOTTLE_SPECKLE[Math.floor(rand() * 2)]!
+    ctx.fillRect(
+      rand() * GROUND_MOTTLE_SIZE,
+      rand() * GROUND_MOTTLE_SIZE,
+      1,
+      1,
+    )
+  }
+  ctx.globalAlpha = 1
+  return canvas
+}
+
+// Each caller gets its own texture over the shared canvas: repeat/offset are
+// per-texture state, and the caller disposes its clone with its material.
+export const createGroundMottleTexture = (): CanvasTexture => {
+  if (!groundMottleCanvas) groundMottleCanvas = drawGroundMottleCanvas()
+  const texture = new CanvasTexture(groundMottleCanvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.wrapS = RepeatWrapping
+  texture.wrapT = RepeatWrapping
+  texture.minFilter = LinearMipmapLinearFilter
+  texture.magFilter = LinearFilter
+  return texture
+}
+
+// Screen-space sky backdrop: a vertical gradient texture used as
+// scene.background — the painterly sky behind the board.
+export const createSkyGradientTexture = (
+  topColor: string,
+  horizonColor: string,
+): CanvasTexture => {
+  const canvas = document.createElement('canvas')
+  canvas.width = 2
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Failed to create sky texture context.')
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+  gradient.addColorStop(0, topColor)
+  gradient.addColorStop(1, horizonColor)
+  ctx.fillStyle = gradient
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace
+  texture.minFilter = LinearFilter
+  texture.magFilter = LinearFilter
+  return texture
 }
 
 export const createShadowTexture = (): CanvasTexture => {

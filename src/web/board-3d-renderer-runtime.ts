@@ -1,5 +1,5 @@
 import type { Camera, Group, WebGLRenderer } from 'three'
-import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import type { EffectComposer } from 'postprocessing'
 
 import { rebuildGroundVisuals } from './board-3d-ground.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'

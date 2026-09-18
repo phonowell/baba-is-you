@@ -6,14 +6,14 @@ import type {
   Material,
   Mesh,
   MeshBasicMaterial,
-  MeshStandardMaterial,
+  MeshToonMaterial,
   PlaneGeometry,
 } from 'three'
 
 import type { Item } from '../logic/types.js'
 import type { EntityVisual } from './board-3d-renderer-materials.js'
 
-export type CardMaterial = MeshStandardMaterial
+export type CardMaterial = MeshToonMaterial
 export type EntityMaterial = Material | Material[]
 export type EntityMesh = Mesh<BufferGeometry, EntityMaterial>
 
@@ -26,6 +26,7 @@ export type EntityNode = {
   isEmoji: boolean
   emojiPhaseOffsetMs: number
   facesCamera: boolean
+  facingYaw: number | undefined
   rotRoll: number
   rollStep: number
   fromX: number

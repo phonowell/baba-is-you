@@ -46,7 +46,7 @@ export const renderMenuHtml = (state: MenuHtmlState): string => {
     const level = state.levels[i]
     if (!level) continue
 
-    const marker = i === selected ? '&gt;' : '&nbsp;'
+    const marker = i === selected ? '&#9670;' : '&nbsp;'
     const number = String(i + 1).padStart(3, ' ')
     const title = escapeHtml(level.title)
     const className = i === selected ? 'menu-row selected' : 'menu-row'

@@ -1,6 +1,9 @@
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
-import { applyCardOrientation } from './board-3d-card-facing.js'
+import {
+  applyCardOrientation,
+  applyVolumeOrientation,
+} from './board-3d-card-facing.js'
 import {
   clamp01,
   easeOutCubic,
@@ -64,15 +67,17 @@ export const applyNodePose = (
   const dominantX = Math.abs(dx) >= Math.abs(dy)
 
   let jump = 0
+  let moveStretch = 1
+  let moveSquash = 1
   let stretchX = 1
   let stretchY = 1
   if (node.moving && node.despawnStartMs === null) {
     const wave = Math.sin(Math.PI * rawProgress)
     jump = wave * JUMP_HEIGHT
-    const stretch = 1 + wave * MOVE_STRETCH_FACTOR
-    const squash = 1 - wave * MOVE_SQUASH_FACTOR
-    stretchX = dominantX ? stretch : squash
-    stretchY = dominantX ? squash : stretch
+    moveStretch = 1 + wave * MOVE_STRETCH_FACTOR
+    moveSquash = 1 - wave * MOVE_SQUASH_FACTOR
+    stretchX = dominantX ? moveStretch : moveSquash
+    stretchY = dominantX ? moveSquash : moveStretch
     if (rawProgress >= 1) {
       node.moving = false
       node.landStartMs = nowMs
@@ -118,8 +123,19 @@ export const applyNodePose = (
   }
 
   node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
-  applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
-  node.mesh.scale.set(scaleX, scaleY, 1)
+  let scaleZ = 1
+  if (node.facingYaw === undefined) {
+    applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
+  } else {
+    applyVolumeOrientation(node.mesh, roll, node.facingYaw)
+    // The mesh is yawed upright: the move stretch has to land on the
+    // model-local axis matching the dominant move direction (local X or Z),
+    // not always on X like a camera-facing card.
+    const lateralOnX = dominantX === (Math.abs(Math.cos(node.facingYaw)) >= 0.5)
+    scaleX = scaleFactor * (lateralOnX ? moveStretch : moveSquash)
+    scaleZ = scaleFactor * (lateralOnX ? moveSquash : moveStretch)
+  }
+  node.mesh.scale.set(scaleX, scaleY, scaleZ)
 
   const shadowScale =
     SHADOW_SCALE_BASE +

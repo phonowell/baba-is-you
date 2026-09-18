@@ -1,8 +1,16 @@
 import { BufferAttribute, BufferGeometry } from 'three'
 
-import { frameSize } from './derive.js'
+import {
+  WOBBLE_PHASES,
+  contentBounds,
+  erodeFrame,
+  frameSize,
+  spriteFrames,
+  wobbleShift,
+  wobbleVolume,
+} from './derive.js'
 
-import type { PixelFrame } from './types.js'
+import type { FrameBounds, PixelFrame, PixelSprite, PixelVolume } from './types.js'
 
 export type VoxelFaceShade = {
   front: number
@@ -12,7 +20,7 @@ export type VoxelFaceShade = {
   back: number
 }
 
-export type VoxelBounds = { minX: number; minY: number; maxX: number; maxY: number }
+export type VoxelBounds = FrameBounds
 
 // World placement of the sprite grid inside the [-size/2, +size/2] card area:
 // content bounds are centered, matching the texture path's draw rect.
@@ -30,35 +38,38 @@ export const voxelDrawRect = (
   }
 }
 
-export type VoxelBuildOptions = {
-  // Result of voxelDrawRect for the sprite's union content bounds.
+// One sprite-grid layer merged into the voxel volume at its own depth —
+// authored slices use the sprite palette at dx/dy 0; arrow reliefs carry
+// their own palette and grid-space offset.
+export type VolumeSlice = {
+  frame: PixelFrame
+  palette: Record<string, string>
+  dx: number
+  dy: number
+}
+
+export type VoxelVolumeArgs = {
+  frame: PixelFrame
+  palette: Record<string, string>
+  volume?: PixelVolume | undefined
+  // Relief slices stacked in front of the volume's own front slices (each
+  // one voxel thick) — the direction arrow and its dark backing pad.
+  overlays?: readonly VolumeSlice[]
+}
+
+export type VoxelVolumeBuildOptions = {
+  // Result of voxelDrawRect for the union content bounds.
   drawX: number
   drawY: number
   texel: number
-  // Slab thickness along local +z.
-  depth: number
+  // World z of the frame plane's front face; the volume grows backward in
+  // texel steps and frontSlices/overlays protrude past it toward camera.
+  frameFrontZ: number
   shade: VoxelFaceShade
-  // When set, empty cells adjacent to the silhouette are filled with this
-  // color in the same slab — a flat one-cell outline ring that keeps the
-  // sprite readable against the board.
+  // When set, empty cells adjacent to the frame-plane silhouette are filled
+  // with this color — a flat one-voxel outline rim that keeps the sprite
+  // readable against the board.
   outlineColor?: string | undefined
-}
-
-// A relief layer in front of the sprite face — used for the direction arrow.
-export type VoxelOverlay = {
-  frame: PixelFrame
-  palette: Record<string, string>
-  // Grid-space offset (in sprite cells) applied to the overlay frame.
-  dx: number
-  dy: number
-  // Layer thickness; the overlay front sits at depth/2 + lift.
-  lift: number
-}
-
-export type VoxelGeometryArgs = {
-  frame: PixelFrame
-  palette: Record<string, string>
-  overlays?: readonly VoxelOverlay[]
 }
 
 // Raw vertex soup kept separate from BufferGeometry assembly so the cell/face
@@ -104,6 +115,23 @@ const pushQuad = (
 
 const cellKey = (x: number, y: number): number => (y + 512) * 2048 + (x + 512)
 
+// 3D occupancy key: z layers sit in the high bits (±128 around the frame
+// plane), x/y reuse the 2D cell packing.
+const LAYER_OFFSET = 128
+const cellKey3 = (x: number, y: number, z: number): number =>
+  ((z + LAYER_OFFSET) * 2048 + (y + 512)) * 2048 + (x + 512)
+
+const decodeCell = (key: number): [number, number] => [
+  (key % 2048) - 512,
+  Math.floor(key / 2048) - 512,
+]
+
+const decodeCell3 = (key: number): [number, number, number] => [
+  (key % 2048) - 512,
+  Math.floor(key / 2048) % 2048 - 512,
+  Math.floor(key / 4194304) - LAYER_OFFSET,
+]
+
 const paintedCells = (
   frame: PixelFrame,
   palette: Record<string, string>,
@@ -123,114 +151,6 @@ const paintedCells = (
     }
   }
   return cells
-}
-
-// Emits front + optional per-cell back + boundary-only side walls for one
-// layer of cells. The layer is `thick` deep with its front at `zFront`.
-const emitLayer = (
-  soup: VoxelVertexSoup,
-  cells: Map<number, [number, number, number]>,
-  drawX: number,
-  drawY: number,
-  texel: number,
-  zFront: number,
-  thick: number,
-  shade: VoxelFaceShade,
-  emitBack: boolean,
-): void => {
-  const zBack = zFront - thick
-  for (const [key, color] of cells) {
-    const cx = (key % 2048) - 512
-    const cy = Math.floor(key / 2048) - 512
-    const x0 = drawX + cx * texel
-    const x1 = x0 + texel
-    const yTop = drawY - cy * texel
-    const yBot = yTop - texel
-
-    pushQuad(
-      soup,
-      [
-        [x0, yBot, zFront],
-        [x1, yBot, zFront],
-        [x1, yTop, zFront],
-        [x0, yTop, zFront],
-      ],
-      [0, 0, 1],
-      color,
-      shade.front,
-    )
-    if (emitBack) {
-      pushQuad(
-        soup,
-        [
-          [x1, yBot, zBack],
-          [x0, yBot, zBack],
-          [x0, yTop, zBack],
-          [x1, yTop, zBack],
-        ],
-        [0, 0, -1],
-        color,
-        shade.back,
-      )
-    }
-
-    if (!cells.has(cellKey(cx, cy - 1))) {
-      pushQuad(
-        soup,
-        [
-          [x0, yTop, zBack],
-          [x0, yTop, zFront],
-          [x1, yTop, zFront],
-          [x1, yTop, zBack],
-        ],
-        [0, 1, 0],
-        color,
-        shade.top,
-      )
-    }
-    if (!cells.has(cellKey(cx, cy + 1))) {
-      pushQuad(
-        soup,
-        [
-          [x0, yBot, zFront],
-          [x0, yBot, zBack],
-          [x1, yBot, zBack],
-          [x1, yBot, zFront],
-        ],
-        [0, -1, 0],
-        color,
-        shade.bottom,
-      )
-    }
-    if (!cells.has(cellKey(cx - 1, cy))) {
-      pushQuad(
-        soup,
-        [
-          [x0, yTop, zFront],
-          [x0, yTop, zBack],
-          [x0, yBot, zBack],
-          [x0, yBot, zFront],
-        ],
-        [-1, 0, 0],
-        color,
-        shade.side,
-      )
-    }
-    if (!cells.has(cellKey(cx + 1, cy))) {
-      pushQuad(
-        soup,
-        [
-          [x1, yTop, zBack],
-          [x1, yTop, zFront],
-          [x1, yBot, zFront],
-          [x1, yBot, zBack],
-        ],
-        [1, 0, 0],
-        color,
-        shade.side,
-      )
-    }
-  }
 }
 
 // Expands the cell map in place by a one-cell ring of outline cells on
@@ -256,55 +176,228 @@ const addOutlineRing = (
   }
 }
 
-// Vertex soup for the sprite slab plus optional overlay reliefs. Overlay
-// side walls cull only against their own cells, so the relief sticks out of
-// the face underneath regardless of what the sprite paints there.
-export const voxelVertexSoup = (
-  args: VoxelGeometryArgs,
-  options: VoxelBuildOptions,
+const mergeSlice = (
+  cells: Map<number, [number, number, number]>,
+  slice: VolumeSlice,
+  z: number,
+): void => {
+  for (const [key, color] of paintedCells(slice.frame, slice.palette, slice.dx, slice.dy)) {
+    const [cx, cy] = decodeCell(key)
+    cells.set(cellKey3(cx, cy, z), color)
+  }
+}
+
+// Occupancy map for the whole volume: frame plane at z=0 (with the outline
+// rim), authored slices behind/in front, relief overlays outermost.
+export const buildVolumeCells = (
+  args: VoxelVolumeArgs,
+  outlineColor?: string,
+): Map<number, [number, number, number]> => {
+  const cells = new Map<number, [number, number, number]>()
+  const plane = paintedCells(args.frame, args.palette)
+  if (outlineColor) addOutlineRing(plane, hexToLinearRgb(outlineColor))
+  for (const [key, color] of plane) {
+    const [cx, cy] = decodeCell(key)
+    cells.set(cellKey3(cx, cy, 0), color)
+  }
+  const bodySlice = (frame: PixelFrame): VolumeSlice => ({
+    frame,
+    palette: args.palette,
+    dx: 0,
+    dy: 0,
+  })
+  args.volume?.backSlices?.forEach((slice, i) => {
+    mergeSlice(cells, bodySlice(slice), i + 1)
+  })
+  args.volume?.frontSlices?.forEach((slice, i) => {
+    mergeSlice(cells, bodySlice(slice), -(i + 1))
+  })
+  const frontDepth = args.volume?.frontSlices?.length ?? 0
+  args.overlays?.forEach((slice, i) => {
+    mergeSlice(cells, slice, -(frontDepth + i + 1))
+  })
+  return cells
+}
+
+// Surface emission: a voxel face is drawn only where the neighboring cell
+// is empty, so interior faces and contacts between layers stay culled.
+export const voxelVolumeSoup = (
+  args: VoxelVolumeArgs,
+  options: VoxelVolumeBuildOptions,
 ): VoxelVertexSoup => {
   const soup: VoxelVertexSoup = { positions: [], normals: [], colors: [], indices: [] }
-  const cells = paintedCells(args.frame, args.palette)
-  if (options.outlineColor) addOutlineRing(cells, hexToLinearRgb(options.outlineColor))
-  emitLayer(
-    soup,
-    cells,
-    options.drawX,
-    options.drawY,
-    options.texel,
-    options.depth / 2,
-    options.depth,
-    options.shade,
-    true,
-  )
+  const cells = buildVolumeCells(args, options.outlineColor)
+  const { drawX, drawY, texel, frameFrontZ, shade } = options
+  for (const [key, color] of cells) {
+    const [cx, cy, cz] = decodeCell3(key)
+    const x0 = drawX + cx * texel
+    const x1 = x0 + texel
+    const yTop = drawY - cy * texel
+    const yBot = yTop - texel
+    const zF = frameFrontZ - cz * texel
+    const zB = zF - texel
 
-  for (const overlay of args.overlays ?? []) {
-    if (overlay.lift <= 0) continue
-    const overlayCells = paintedCells(overlay.frame, overlay.palette, overlay.dx, overlay.dy)
-    emitLayer(
-      soup,
-      overlayCells,
-      options.drawX,
-      options.drawY,
-      options.texel,
-      options.depth / 2 + overlay.lift,
-      overlay.lift,
-      options.shade,
-      false,
-    )
+    if (!cells.has(cellKey3(cx, cy, cz - 1))) {
+      pushQuad(
+        soup,
+        [
+          [x0, yBot, zF],
+          [x1, yBot, zF],
+          [x1, yTop, zF],
+          [x0, yTop, zF],
+        ],
+        [0, 0, 1],
+        color,
+        shade.front,
+      )
+    }
+    if (!cells.has(cellKey3(cx, cy, cz + 1))) {
+      pushQuad(
+        soup,
+        [
+          [x1, yBot, zB],
+          [x0, yBot, zB],
+          [x0, yTop, zB],
+          [x1, yTop, zB],
+        ],
+        [0, 0, -1],
+        color,
+        shade.back,
+      )
+    }
+    if (!cells.has(cellKey3(cx, cy - 1, cz))) {
+      pushQuad(
+        soup,
+        [
+          [x0, yTop, zB],
+          [x0, yTop, zF],
+          [x1, yTop, zF],
+          [x1, yTop, zB],
+        ],
+        [0, 1, 0],
+        color,
+        shade.top,
+      )
+    }
+    if (!cells.has(cellKey3(cx, cy + 1, cz))) {
+      pushQuad(
+        soup,
+        [
+          [x0, yBot, zF],
+          [x0, yBot, zB],
+          [x1, yBot, zB],
+          [x1, yBot, zF],
+        ],
+        [0, -1, 0],
+        color,
+        shade.bottom,
+      )
+    }
+    if (!cells.has(cellKey3(cx - 1, cy, cz))) {
+      pushQuad(
+        soup,
+        [
+          [x0, yTop, zF],
+          [x0, yTop, zB],
+          [x0, yBot, zB],
+          [x0, yBot, zF],
+        ],
+        [-1, 0, 0],
+        color,
+        shade.side,
+      )
+    }
+    if (!cells.has(cellKey3(cx + 1, cy, cz))) {
+      pushQuad(
+        soup,
+        [
+          [x1, yTop, zB],
+          [x1, yTop, zF],
+          [x1, yBot, zF],
+          [x1, yBot, zB],
+        ],
+        [1, 0, 0],
+        color,
+        shade.side,
+      )
+    }
   }
   return soup
 }
 
-export const buildVoxelGeometry = (
-  args: VoxelGeometryArgs,
-  options: VoxelBuildOptions,
+export const buildVoxelVolumeGeometry = (
+  args: VoxelVolumeArgs,
+  options: VoxelVolumeBuildOptions,
 ): BufferGeometry => {
-  const soup = voxelVertexSoup(args, options)
+  const soup = voxelVolumeSoup(args, options)
   const geometry = new BufferGeometry()
   geometry.setAttribute('position', new BufferAttribute(new Float32Array(soup.positions), 3))
   geometry.setAttribute('normal', new BufferAttribute(new Float32Array(soup.normals), 3))
   geometry.setAttribute('color', new BufferAttribute(new Float32Array(soup.colors), 3))
   geometry.setIndex(soup.indices)
   return geometry
+}
+
+// Inflate fallback for sprites without authored volumes: erosion rings are
+// resampled over ~2x the ring count so depth scales with silhouette width —
+// wide sprites get a real dome, thin poles stay pole-thin. The smallest ring
+// always lands last, so the back closes instead of cutting off flat. Sprites
+// too thin to erode still get `minLayers` copies of the front silhouette.
+export const inflateVolume = (
+  frame: PixelFrame,
+  maxLayers: number,
+  minLayers: number,
+): PixelVolume => {
+  const rings: PixelFrame[] = []
+  let current = frame
+  while (rings.length < maxLayers) {
+    const next = erodeFrame(current)
+    if (!contentBounds(next)) break
+    rings.push(next)
+    current = next
+  }
+  const depth = Math.max(minLayers, Math.min(maxLayers, rings.length * 2))
+  if (rings.length === 0) return { backSlices: Array.from({ length: depth }, () => frame) }
+  const backSlices: PixelFrame[] = []
+  for (let i = 0; i < depth; i++) {
+    const ringIx = Math.min(rings.length - 1, Math.floor((i * rings.length) / depth))
+    backSlices.push(rings[ringIx]!)
+  }
+  return { backSlices }
+}
+
+// Flat slab volume for ground-hug tiles: identical slices stacked behind the
+// frame plane keep the old thin-plate look on the volume path.
+export const slabVolume = (frame: PixelFrame, backLayers: number): PixelVolume => ({
+  backSlices: Array.from({ length: backLayers }, () => frame),
+})
+
+// Resolves one volume per padded animation frame: authored entries win,
+// authored frames without a volume inflate, wobble-derived frames reuse the
+// base frame's volume shifted by the same vertical offset.
+export const spriteVolumes = (
+  sprite: PixelSprite,
+  inflate: (frame: PixelFrame) => PixelVolume,
+): PixelVolume[] => {
+  const frames = spriteFrames(sprite)
+  const base = frames[0]
+  if (!base) return []
+  const cache = new Map<PixelFrame, PixelVolume>()
+  const inflateOnce = (frame: PixelFrame): PixelVolume => {
+    let volume = cache.get(frame)
+    if (!volume) {
+      volume = inflate(frame)
+      cache.set(frame, volume)
+    }
+    return volume
+  }
+  const baseVolume = sprite.volumes?.[0] ?? inflateOnce(base)
+  const authoredCount = sprite.frames.length
+  return frames.map((frame, ix) => {
+    const authored = sprite.volumes?.[ix]
+    if (authored) return authored
+    if (ix < authoredCount) return inflateOnce(frame)
+    const dy = wobbleShift(base, WOBBLE_PHASES[ix] ?? 0)
+    return wobbleVolume(baseVolume, dy)
+  })
 }

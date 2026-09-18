@@ -1,5 +1,5 @@
 import type { Direction } from '../../logic/types.js'
-import type { PixelFrame, PixelSprite } from './types.js'
+import type { FrameBounds, PixelFrame, PixelSprite, PixelVolume } from './types.js'
 
 export const SPRITE_GRID_SIZE = 24
 export const SPRITE_FRAME_COUNT = 3
@@ -23,9 +23,9 @@ export const frameSize = (
   height: frame.length,
 })
 
-const contentBounds = (
+export const contentBounds = (
   frame: PixelFrame,
-): { minX: number; minY: number; maxX: number; maxY: number } | null => {
+): FrameBounds | null => {
   const { width, height } = frameSize(frame)
   let minX = width
   let minY = height
@@ -43,19 +43,29 @@ const contentBounds = (
   return maxX < 0 ? null : { minX, minY, maxX, maxY }
 }
 
-// Idle wobble: shift the occupied cells vertically inside the same grid.
-// Phase 0 returns the frame unchanged; ±1 reads as a gentle bob when cycled.
-export const wobbleFrame = (frame: PixelFrame, phase: number): PixelFrame => {
-  if (phase === 0) return frame
-  const bounds = contentBounds(frame)
-  if (!bounds) return frame
-  const { width, height } = frameSize(frame)
-  const maxUp = bounds.minY
-  const maxDown = height - 1 - bounds.maxY
-  const dy = phase < 0 ? -Math.min(-phase, maxUp) : Math.min(phase, maxDown)
+// Vertical shift inside the same grid; rows outside the grid read as empty.
+export const shiftFrame = (frame: PixelFrame, dy: number): PixelFrame => {
   if (dy === 0) return frame
+  const { width, height } = frameSize(frame)
   return buildFrame(width, height, (x, y) => cellAt(frame, x, y - dy))
 }
+
+// Idle wobble offset: how far the occupied cells may shift vertically inside
+// the same grid without clipping the content bounds.
+export const wobbleShift = (frame: PixelFrame, phase: number): number => {
+  if (phase === 0) return 0
+  const bounds = contentBounds(frame)
+  if (!bounds) return 0
+  const { height } = frameSize(frame)
+  const maxUp = bounds.minY
+  const maxDown = height - 1 - bounds.maxY
+  return phase < 0 ? -Math.min(-phase, maxUp) : Math.min(phase, maxDown)
+}
+
+// Idle wobble: shift the occupied cells vertically inside the same grid.
+// Phase 0 returns the frame unchanged; ±1 reads as a gentle bob when cycled.
+export const wobbleFrame = (frame: PixelFrame, phase: number): PixelFrame =>
+  shiftFrame(frame, wobbleShift(frame, phase))
 
 export const mirrorXFrame = (frame: PixelFrame): PixelFrame => {
   const { width, height } = frameSize(frame)
@@ -81,6 +91,27 @@ export const dilateFrame = (frame: PixelFrame): PixelFrame => {
   )
 }
 
+// 4-neighbor erosion: a painted cell survives only when all orthogonal
+// neighbors are painted too. Iterating it shrinks the silhouette one ring
+// at a time — the voxel inflate fallback stacks these rings behind the
+// frame plane to grow a tapered body.
+export const erodeFrame = (frame: PixelFrame): PixelFrame => {
+  const { width, height } = frameSize(frame)
+  return buildFrame(width, height, (x, y) => {
+    const cell = cellAt(frame, x, y)
+    if (cell === '.') return '.'
+    const solid =
+      cellAt(frame, x - 1, y) !== '.' &&
+      cellAt(frame, x + 1, y) !== '.' &&
+      cellAt(frame, x, y - 1) !== '.' &&
+      cellAt(frame, x, y + 1) !== '.'
+    return solid ? cell : '.'
+  })
+}
+
+// Wobble phase applied to derived frame i (index into the padded frame list).
+export const WOBBLE_PHASES = [0, 1, -1] as const
+
 // Every sprite animates on the shared 3-frame clock. Hand-drawn frames are
 // used as-is; short sets are padded by wobbling the base frame.
 export const ensureFrames = (
@@ -89,9 +120,8 @@ export const ensureFrames = (
   const base = frames[0]
   if (!base) throw new Error('pixel sprite requires at least one frame')
   const result = frames.slice(0, SPRITE_FRAME_COUNT)
-  const wobblePhases = [0, 1, -1]
   while (result.length < SPRITE_FRAME_COUNT) {
-    const phase = wobblePhases[result.length] ?? 0
+    const phase = WOBBLE_PHASES[result.length] ?? 0
     result.push(phase === 0 ? base : wobbleFrame(base, phase))
   }
   return result
@@ -100,14 +130,12 @@ export const ensureFrames = (
 export const spriteFrames = (sprite: PixelSprite): PixelFrame[] =>
   ensureFrames(sprite.frames)
 
-export const spriteContentBounds = (
-  sprite: PixelSprite,
-): { minX: number; minY: number; maxX: number; maxY: number } | null => {
+const boundsUnion = (frames: Iterable<PixelFrame>): FrameBounds | null => {
   let minX = Infinity
   let minY = Infinity
   let maxX = -Infinity
   let maxY = -Infinity
-  for (const frame of spriteFrames(sprite)) {
+  for (const frame of frames) {
     const bounds = contentBounds(frame)
     if (!bounds) continue
     minX = Math.min(minX, bounds.minX)
@@ -118,14 +146,59 @@ export const spriteContentBounds = (
   return maxX < minX ? null : { minX, minY, maxX, maxY }
 }
 
+export const spriteContentBounds = (sprite: PixelSprite): FrameBounds | null =>
+  boundsUnion(spriteFrames(sprite))
+
+// All authored depth slices of a volume, front and back combined — the
+// draw rect has to fit the widest slice, not just the front silhouette.
+export const volumeSlices = (volume: PixelVolume): PixelFrame[] => [
+  ...(volume.frontSlices ?? []),
+  ...(volume.backSlices ?? []),
+]
+
+// Bounds across the padded frame list and every resolved volume slice.
+export const spriteVolumeBounds = (
+  sprite: PixelSprite,
+  volumes: readonly PixelVolume[],
+): FrameBounds | null =>
+  boundsUnion([
+    ...spriteFrames(sprite),
+    ...volumes.flatMap((volume) => volumeSlices(volume)),
+  ])
+
+// Volume transforms apply the same in-plane operation to every slice; the
+// z order is untouched, so depth layers stay registered with the frame.
+const mapVolumeSlices = (
+  volume: PixelVolume,
+  fn: (frame: PixelFrame) => PixelFrame,
+): PixelVolume => ({
+  ...(volume.frontSlices ? { frontSlices: volume.frontSlices.map(fn) } : {}),
+  ...(volume.backSlices ? { backSlices: volume.backSlices.map(fn) } : {}),
+})
+
+// Shift every slice by the same dy — computed from the frame's own bounds —
+// so derived wobble frames keep their layers vertically aligned.
+export const wobbleVolume = (volume: PixelVolume, dy: number): PixelVolume =>
+  dy === 0 ? volume : mapVolumeSlices(volume, (frame) => shiftFrame(frame, dy))
+
+const mapSpriteVolumes = (
+  sprite: PixelSprite,
+  fn: (volume: PixelVolume) => PixelVolume,
+): Partial<Pick<PixelSprite, 'volumes'>> =>
+  sprite.volumes
+    ? { volumes: sprite.volumes.map((volume) => (volume ? fn(volume) : volume)) }
+    : {}
+
 export const mirroredSprite = (sprite: PixelSprite): PixelSprite => ({
   palette: sprite.palette,
   frames: sprite.frames.map(mirrorXFrame),
+  ...mapSpriteVolumes(sprite, (volume) => mapVolumeSlices(volume, mirrorXFrame)),
 })
 
 const rotatedSprite = (sprite: PixelSprite): PixelSprite => ({
   palette: sprite.palette,
   frames: sprite.frames.map(rotate90Frame),
+  ...mapSpriteVolumes(sprite, (volume) => mapVolumeSlices(volume, rotate90Frame)),
 })
 
 // Directional sprites (belt) bake their base frame pointing right; the whole

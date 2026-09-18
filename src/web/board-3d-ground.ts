@@ -7,7 +7,7 @@ import {
   LineBasicMaterial,
   LineSegments,
   Mesh,
-  MeshStandardMaterial,
+  MeshToonMaterial,
   OrthographicCamera,
   PlaneGeometry,
   ShapeGeometry,
@@ -21,6 +21,10 @@ import {
   buildRoundedRectOutlinePoints,
   buildRoundedRectShape,
 } from './board-3d-ground-shape.js'
+import {
+  createGroundMottleTexture,
+  getToonGradientMap,
+} from './board-3d-textures.js'
 
 const {
   GROUND_SURFACE_Z,
@@ -33,12 +37,9 @@ const {
   CELL_GRID_OPACITY,
   GROUND_EXPANDED_PADDING,
   GROUND_BASE_COLOR,
-  GROUND_MATERIAL_ROUGHNESS,
-  GROUND_MATERIAL_METALNESS,
   PLAY_AREA_FILL_COLOR,
-  PLAY_AREA_FILL_ROUGHNESS,
-  PLAY_AREA_FILL_METALNESS,
   PLAY_AREA_OUTLINE_COLOR,
+  GROUND_MOTTLE_TILE_WORLD,
 } = BOARD3D_LAYOUT_CONFIG
 
 const {
@@ -52,8 +53,8 @@ const {
 } = BOARD3D_SHADOW_CONFIG
 
 export type GroundVisuals = {
-  groundMesh: Mesh<PlaneGeometry, MeshStandardMaterial> | null
-  playAreaFillMesh: Mesh<ShapeGeometry, MeshStandardMaterial> | null
+  groundMesh: Mesh<PlaneGeometry, MeshToonMaterial> | null
+  playAreaFillMesh: Mesh<ShapeGeometry, MeshToonMaterial> | null
   playAreaOutline: Line<BufferGeometry, LineBasicMaterial> | null
   cellGrid: LineSegments<BufferGeometry, LineBasicMaterial> | null
 }
@@ -101,6 +102,7 @@ export const disposeGroundVisuals = (
   if (playAreaFillMesh) {
     world.remove(playAreaFillMesh)
     playAreaFillMesh.geometry.dispose()
+    playAreaFillMesh.material.map?.dispose()
     playAreaFillMesh.material.dispose()
   }
   if (playAreaOutline) {
@@ -111,6 +113,7 @@ export const disposeGroundVisuals = (
   if (groundMesh) {
     world.remove(groundMesh)
     groundMesh.geometry.dispose()
+    groundMesh.material.map?.dispose()
     groundMesh.material.dispose()
   }
   return {
@@ -138,10 +141,18 @@ export const rebuildGroundVisuals = (
     GROUND_EXPANDED_MIN_SIZE,
   )
   const geometry = new PlaneGeometry(expandedWidth, expandedHeight)
-  const material = new MeshStandardMaterial({
+  // Painterly mottle multiplies the flat grass colour — the hand-painted
+  // terrain look. Plane UVs span 0..1 across the whole plane, so repeat is
+  // scaled to keep one tile per GROUND_MOTTLE_TILE_WORLD world units.
+  const groundTexture = createGroundMottleTexture()
+  groundTexture.repeat.set(
+    expandedWidth / GROUND_MOTTLE_TILE_WORLD,
+    expandedHeight / GROUND_MOTTLE_TILE_WORLD,
+  )
+  const material = new MeshToonMaterial({
     color: new Color(GROUND_BASE_COLOR),
-    roughness: GROUND_MATERIAL_ROUGHNESS,
-    metalness: GROUND_MATERIAL_METALNESS,
+    gradientMap: getToonGradientMap(),
+    map: groundTexture,
   })
   const groundMesh = new Mesh(geometry, material)
   groundMesh.position.z = GROUND_SURFACE_Z
@@ -152,10 +163,16 @@ export const rebuildGroundVisuals = (
   const halfHeight = boardHeight / 2
   const playAreaShape = buildRoundedRectShape(halfWidth, halfHeight)
   const playAreaFillGeometry = new ShapeGeometry(playAreaShape)
-  const playAreaFillMaterial = new MeshStandardMaterial({
+  // ShapeGeometry UVs are raw world-space xy — repeat inverts the tile size.
+  const playAreaTexture = createGroundMottleTexture()
+  playAreaTexture.repeat.set(
+    1 / GROUND_MOTTLE_TILE_WORLD,
+    1 / GROUND_MOTTLE_TILE_WORLD,
+  )
+  const playAreaFillMaterial = new MeshToonMaterial({
     color: new Color(PLAY_AREA_FILL_COLOR),
-    roughness: PLAY_AREA_FILL_ROUGHNESS,
-    metalness: PLAY_AREA_FILL_METALNESS,
+    gradientMap: getToonGradientMap(),
+    map: playAreaTexture,
   })
   const playAreaFillMesh = new Mesh(playAreaFillGeometry, playAreaFillMaterial)
   playAreaFillMesh.position.z = GROUND_ACTIVE_FILL_Z

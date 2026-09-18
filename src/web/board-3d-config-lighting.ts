@@ -8,10 +8,17 @@ export const BOARD3D_LIGHTING_CONFIG = {
   SIDE_LIGHT_OFFSET_Z_BASE: 2.4,
   SIDE_LIGHT_OFFSET_Z_MUL: 0.28,
   LIGHT_CAMERA_SIDE_TILT_RAD: CAMERA_TILT_FROM_VERTICAL_RAD_BASE,
-  AMBIENT_LIGHT_COLOR: '#edf2f7',
-  AMBIENT_LIGHT_INTENSITY_MUL: 0.82,
+  // Hemisphere ambient: saturated azure from above tints shadowed faces
+  // blue (the Genshin cool-shadow signature); warm sage bounce from below.
+  AMBIENT_LIGHT_COLOR: '#93baf0',
+  HEMISPHERE_GROUND_COLOR: '#8fa464',
+  AMBIENT_LIGHT_INTENSITY_MUL: 1.0,
   SIDE_LIGHT_INTENSITY_MIN: 0.28,
-  SIDE_LIGHT_INTENSITY_MUL: 0.48,
+  SIDE_LIGHT_INTENSITY_MUL: 0.62,
+  // Cool fill from the opposite side — no shadow casting; it exists purely
+  // to blue-tint whatever the warm key misses (warm-lit/cool-shade duality).
+  FILL_LIGHT_COLOR: '#a9c8ec',
+  FILL_LIGHT_INTENSITY_MUL: 0.3,
   SIDE_LIGHT_INITIAL_Y: 10,
   SIDE_LIGHT_INITIAL_Z: 6,
   LIGHT_SHADOW_CAMERA_NEAR: 0.1,
