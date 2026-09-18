@@ -251,6 +251,7 @@ test('board-3d runtime dispose clears resources once and blocks further work', (
         groundMesh: null,
         playAreaFillMesh: null,
         playAreaOutline: null,
+        cellGrid: null,
       }
     },
   })
@@ -275,6 +276,7 @@ test('board-3d runtime double dispose stays idempotent', () => {
         groundMesh: null,
         playAreaFillMesh: null,
         playAreaOutline: null,
+        cellGrid: null,
       }
     },
   })

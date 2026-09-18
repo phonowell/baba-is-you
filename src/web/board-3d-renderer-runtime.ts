@@ -88,6 +88,7 @@ export const createBoard3dRendererRuntime = (
     groundMesh: null,
     playAreaFillMesh: null,
     playAreaOutline: null,
+    cellGrid: null,
   }
   let rafId = 0
   let frameActive = false

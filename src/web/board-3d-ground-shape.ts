@@ -43,6 +43,25 @@ export const buildRoundedRectShape = (halfWidth: number, halfHeight: number): Sh
   return shape
 }
 
+export const buildCellGridPoints = (
+  boardWidth: number,
+  boardHeight: number,
+  z: number,
+): Vector3[] => {
+  const halfWidth = boardWidth / 2
+  const halfHeight = boardHeight / 2
+  const points: Vector3[] = []
+  for (let x = 1; x < boardWidth; x += 1) {
+    const px = x - halfWidth
+    points.push(new Vector3(px, -halfHeight, z), new Vector3(px, halfHeight, z))
+  }
+  for (let y = 1; y < boardHeight; y += 1) {
+    const py = halfHeight - y
+    points.push(new Vector3(-halfWidth, py, z), new Vector3(halfWidth, py, z))
+  }
+  return points
+}
+
 export const buildRoundedRectOutlinePoints = (
   halfWidth: number,
   halfHeight: number,

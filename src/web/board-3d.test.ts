@@ -5,6 +5,7 @@ import {
   emojiPhaseOffsetMsForItem,
   emojiStretchEnabledForItem,
 } from './board-3d-shared-item.js'
+import { buildCellGridPoints } from './board-3d-ground-shape.js'
 import { buildEntityViews, computeEntityBaseTarget } from './board-3d-shared-layout.js'
 import { emojiBottomAnchorOffset, emojiMicroStretch } from './board-3d-shared-math.js'
 
@@ -139,4 +140,30 @@ test('board-3d emoji phase offset is stable and within one cycle', () => {
   assert.equal(a0 >= 0 && a0 < 1000, true)
   assert.equal(b0 >= 0 && b0 < 1000, true)
   assert.equal(a0 !== b0, true)
+})
+
+test('board-3d cell grid draws interior borders on cell boundaries', () => {
+  const points = buildCellGridPoints(4, 3, -0.221)
+  const segments: Array<[number, number, number, number]> = []
+  for (let i = 0; i < points.length; i += 2) {
+    const a = points.at(i)
+    const b = points.at(i + 1)
+    assert.ok(a && b)
+    segments.push([a.x, a.y, b.x, b.y])
+    assert.equal(a.z, -0.221)
+    assert.equal(b.z, -0.221)
+  }
+
+  assert.deepEqual(segments, [
+    [-1, -1.5, -1, 1.5],
+    [0, -1.5, 0, 1.5],
+    [1, -1.5, 1, 1.5],
+    [-2, 0.5, 2, 0.5],
+    [-2, -0.5, 2, -0.5],
+  ])
+})
+
+test('board-3d cell grid stays empty for single-cell boards', () => {
+  assert.equal(buildCellGridPoints(1, 1, -0.221).length, 0)
+  assert.equal(buildCellGridPoints(1, 5, -0.221).length, 8)
 })

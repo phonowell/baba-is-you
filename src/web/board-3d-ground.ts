@@ -5,6 +5,7 @@ import {
   Group,
   Line,
   LineBasicMaterial,
+  LineSegments,
   Mesh,
   MeshStandardMaterial,
   OrthographicCamera,
@@ -15,7 +16,11 @@ import {
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_LIGHTING_CONFIG } from './board-3d-config-lighting.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
-import { buildRoundedRectOutlinePoints, buildRoundedRectShape } from './board-3d-ground-shape.js'
+import {
+  buildCellGridPoints,
+  buildRoundedRectOutlinePoints,
+  buildRoundedRectShape,
+} from './board-3d-ground-shape.js'
 
 const {
   GROUND_SURFACE_Z,
@@ -23,6 +28,9 @@ const {
   GROUND_EXPANDED_MIN_SIZE,
   PLAY_AREA_OUTLINE_Z,
   PLAY_AREA_OUTLINE_OPACITY,
+  CELL_GRID_Z,
+  CELL_GRID_COLOR,
+  CELL_GRID_OPACITY,
   GROUND_EXPANDED_PADDING,
   GROUND_BASE_COLOR,
   GROUND_MATERIAL_ROUGHNESS,
@@ -47,6 +55,7 @@ export type GroundVisuals = {
   groundMesh: Mesh<PlaneGeometry, MeshStandardMaterial> | null
   playAreaFillMesh: Mesh<ShapeGeometry, MeshStandardMaterial> | null
   playAreaOutline: Line<BufferGeometry, LineBasicMaterial> | null
+  cellGrid: LineSegments<BufferGeometry, LineBasicMaterial> | null
 }
 
 export const configureTopLight = (
@@ -83,7 +92,12 @@ export const disposeGroundVisuals = (
   world: Group,
   visuals: GroundVisuals,
 ): GroundVisuals => {
-  const { groundMesh, playAreaFillMesh, playAreaOutline } = visuals
+  const { groundMesh, playAreaFillMesh, playAreaOutline, cellGrid } = visuals
+  if (cellGrid) {
+    world.remove(cellGrid)
+    cellGrid.geometry.dispose()
+    cellGrid.material.dispose()
+  }
   if (playAreaFillMesh) {
     world.remove(playAreaFillMesh)
     playAreaFillMesh.geometry.dispose()
@@ -103,6 +117,7 @@ export const disposeGroundVisuals = (
     groundMesh: null,
     playAreaFillMesh: null,
     playAreaOutline: null,
+    cellGrid: null,
   }
 }
 
@@ -158,9 +173,21 @@ export const rebuildGroundVisuals = (
   const playAreaOutline = new Line(outlineGeometry, outlineMaterial)
   world.add(playAreaOutline)
 
+  const cellGridGeometry = new BufferGeometry().setFromPoints(
+    buildCellGridPoints(boardWidth, boardHeight, CELL_GRID_Z),
+  )
+  const cellGridMaterial = new LineBasicMaterial({
+    color: new Color(CELL_GRID_COLOR),
+    transparent: true,
+    opacity: CELL_GRID_OPACITY,
+  })
+  const cellGrid = new LineSegments(cellGridGeometry, cellGridMaterial)
+  world.add(cellGrid)
+
   return {
     groundMesh,
     playAreaFillMesh,
     playAreaOutline,
+    cellGrid,
   }
 }
