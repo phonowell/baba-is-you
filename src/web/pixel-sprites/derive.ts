@@ -91,24 +91,6 @@ export const dilateFrame = (frame: PixelFrame): PixelFrame => {
   )
 }
 
-// 4-neighbor erosion: a painted cell survives only when all orthogonal
-// neighbors are painted too. Iterating it shrinks the silhouette one ring
-// at a time — the voxel inflate fallback stacks these rings behind the
-// frame plane to grow a tapered body.
-export const erodeFrame = (frame: PixelFrame): PixelFrame => {
-  const { width, height } = frameSize(frame)
-  return buildFrame(width, height, (x, y) => {
-    const cell = cellAt(frame, x, y)
-    if (cell === '.') return '.'
-    const solid =
-      cellAt(frame, x - 1, y) !== '.' &&
-      cellAt(frame, x + 1, y) !== '.' &&
-      cellAt(frame, x, y - 1) !== '.' &&
-      cellAt(frame, x, y + 1) !== '.'
-    return solid ? cell : '.'
-  })
-}
-
 // Wobble phase applied to derived frame i (index into the padded frame list).
 export const WOBBLE_PHASES = [0, 1, -1] as const
 
@@ -149,10 +131,11 @@ const boundsUnion = (frames: Iterable<PixelFrame>): FrameBounds | null => {
 export const spriteContentBounds = (sprite: PixelSprite): FrameBounds | null =>
   boundsUnion(spriteFrames(sprite))
 
-// All authored depth slices of a volume, front and back combined — the
-// draw rect has to fit the widest slice, not just the front silhouette.
+// All authored depth slices of a volume — the draw rect has to fit the
+// widest slice, not just the front silhouette.
 export const volumeSlices = (volume: PixelVolume): PixelFrame[] => [
   ...(volume.frontSlices ?? []),
+  ...(volume.frame ? [volume.frame] : []),
   ...(volume.backSlices ?? []),
 ]
 
@@ -173,6 +156,7 @@ const mapVolumeSlices = (
   fn: (frame: PixelFrame) => PixelFrame,
 ): PixelVolume => ({
   ...(volume.frontSlices ? { frontSlices: volume.frontSlices.map(fn) } : {}),
+  ...(volume.frame ? { frame: fn(volume.frame) } : {}),
   ...(volume.backSlices ? { backSlices: volume.backSlices.map(fn) } : {}),
 })
 

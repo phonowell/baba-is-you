@@ -17,6 +17,7 @@ import {
   applyVolumeOrientation,
 } from './board-3d-card-facing.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
+import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
 import { createEntityNode } from './board-3d-node-create.js'
 import { applyNodePose, nodeRollAtMs } from './board-3d-node-pose.js'
 import { syncEntityNodes } from './board-3d-node-sync.js'
@@ -247,20 +248,23 @@ test('board-3d pose keeps a moving card tilted at the camera', () => {
 test('board-3d volume model stands upright and turns to each board direction', () => {
   const { mesh } = createFacingRig()
   mesh.position.set(0, 0, 0.09)
-  const worldUp = new Vector3(0, 1, 0)
 
-  // down = front toward the camera, right/left = profiles, up = back.
+  // The model leans back by VOXEL_STAND_LEAN so the steep camera reads its
+  // face; yaw then points the lean away from the facing direction.
+  const lean = BOARD3D_VOXEL_CONFIG.VOXEL_STAND_LEAN
+  const sinL = Math.sin(lean)
+  const cosL = Math.cos(lean)
   const cases: [number, Vector3][] = [
-    [0, new Vector3(0, 0, 1)],
-    [Math.PI / 2, new Vector3(1, 0, 0)],
-    [Math.PI, new Vector3(0, 0, -1)],
-    [-Math.PI / 2, new Vector3(-1, 0, 0)],
+    [0, new Vector3(0, sinL, cosL)],
+    [Math.PI / 2, new Vector3(cosL, sinL, 0)],
+    [Math.PI, new Vector3(0, sinL, -cosL)],
+    [-Math.PI / 2, new Vector3(-cosL, sinL, 0)],
   ]
   for (const [yaw, expectedFront] of cases) {
     applyVolumeOrientation(mesh, 0, yaw)
     assertVectorNear(meshWorldNormal(mesh), expectedFront)
-    // The model never lies down: sprite-up stays world-up for every facing.
-    assertVectorNear(meshWorldUpAxis(mesh), worldUp)
+    // The model never lies down: its up axis stays mostly vertical.
+    assert.ok(Math.abs(meshWorldUpAxis(mesh).y - cosL) < EPSILON)
   }
 })
 

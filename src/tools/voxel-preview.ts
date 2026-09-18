@@ -21,7 +21,7 @@ import { arrowMarkerSlices } from '../web/pixel-sprites/arrows.js'
 import { PIXEL_SPRITES } from '../web/pixel-sprites/index.js'
 import {
   buildVoxelVolumeGeometry,
-  inflateVolume,
+  slabVolume,
   spriteVolumes,
   voxelDrawRect,
 } from '../web/pixel-sprites/voxel.js'
@@ -29,8 +29,7 @@ import {
 const {
   VOXEL_FRAME_Z,
   VOXEL_INNER_SIZE_RATIO,
-  VOXEL_INFLATE_MAX_LAYERS,
-  VOXEL_INFLATE_MIN_LAYERS,
+  VOXEL_CARD_BACK_LAYERS,
   VOXEL_OUTLINE_COLOR,
   VOXEL_SHADE_FRONT,
   VOXEL_SHADE_TOP,
@@ -57,7 +56,7 @@ const buildStandingMesh = (name: string, material: MeshToonMaterial): Mesh => {
   const sprite = PIXEL_SPRITES[name]
   if (!sprite) throw new Error(`missing sprite ${name}`)
   const volumes = spriteVolumes(sprite, (frame) =>
-    inflateVolume(frame, VOXEL_INFLATE_MAX_LAYERS, VOXEL_INFLATE_MIN_LAYERS),
+    slabVolume(frame, VOXEL_CARD_BACK_LAYERS),
   )
   const bounds = spriteVolumeBounds(sprite, volumes)
   if (!bounds) throw new Error(`empty sprite ${name}`)
@@ -90,8 +89,9 @@ const scene = new Scene()
 scene.background = new Color('#7cc35f')
 
 const camera = new PerspectiveCamera(24, 2, 0.1, 100)
-camera.position.set(0, 7, 9)
-camera.lookAt(0, 0.2, 0)
+// ~75deg elevation like the game camera.
+camera.position.set(0, 7.5, 2.2)
+camera.lookAt(0, 0.1, 0)
 
 const renderer = new WebGLRenderer({ antialias: true })
 renderer.setSize(1200, 600)

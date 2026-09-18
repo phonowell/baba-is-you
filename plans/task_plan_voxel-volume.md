@@ -35,9 +35,7 @@ PixelSprite.volumes?: readonly (PixelVolume | undefined)[]  // 与 authored fram
 - 测试：变换后 z 序保持、bounds 含所有 slice、占据图坐标正确
 
 ### 3. 自动膨胀回退（F2）
-- `inflateVolume(frame)`：逐层 4 邻域腐蚀生成 backSlices，直到空或深度上限 `VOXEL_INFLATE_MAX_LAYERS`；帧平面保持最前 → 正面剪影零损失，轮廓边缘呈阶梯体积感
-- 细瘦 sprite 保底：腐蚀过早消失时保留最后非空层作核心
-- 测试：层数上限、单调收缩、2px 细条不消失
+- ~~`inflateVolume`~~ **已移除**（用户反馈可见性差）：非手雕 sprite 回退改为 `slabVolume` 平板（`VOXEL_CARD_BACK_LAYERS=6` ≈ 原 0.22 卡深），`erodeFrame` 与三个 inflate 用例一并删除——卡片路径恢复"剪影+厚度"观感
 
 ### 4. 渲染集成
 - `voxelVisual`：每帧 → 体积（`volumes[i]`，缺失帧 → 源帧体积 wobble，无源体积 → inflate 该帧）；z 锚定帧平面 `VOXEL_FRAME_Z≈0.11`；箭头 overlay 锚到最前表面 + lift；描边环只加在帧平面层
@@ -62,6 +60,24 @@ PixelSprite.volumes?: readonly (PixelVolume | undefined)[]  // 与 authored fram
 - 风险：多帧 sprite 的 volume 需逐帧配平，缺失帧走回退
 
 ## 状态
-- 完成：全部 6 阶段
-- pnpm check 全绿（328 测试）；pnpm build 通过；release 截图验证：baba 圆体+前凸脸+箭头凸起 ✓、rock 阶梯圆顶 ✓、flag 细杆体积 ✓、wall 砖面+厚度 ✓、tile/字板不变 ✓
+- 完成：全部 6 阶段 + 第 7 阶段（四向旋转）
+- pnpm check 全绿（330 测试）；pnpm build 通过
+- 截图验证：预览页四朝向（down=脸 / right·left=侧面+侧向地箭 / up=背面圆顶+指北箭）；游戏内 down 露脸、up 露背 ✓
 - 后续增量：其余 sprite 走自动膨胀，可按需逐选手雕 volumes 覆盖（baba/keke/me 已示范格式）
+
+## 第 7 阶段：真·四向旋转（用户反馈后追加）
+用户反馈："浮雕加厚"不是目标——要的是能四向旋转的圆雕。实现：
+- **朝向模型**：`applyVolumeOrientation(mesh, roll, yaw)`（`board-3d-card-facing.ts`）——`Rx(90°-VOXEL_STAND_LEAN)` 站立后倾 + `rotateOnWorldAxis(组Z=世界up, yaw)` 绕真竖直轴旋转 + `rotateZ(roll)` 摆动；绕组 Z 转保证 lean 永远朝"背向"，四向的脸/背/侧都抬向 75° 俯角相机
+- **管线**：`EntityVisual.facingYaw`（undefined=billboard 卡片 / number=直立旋转模型）→ `EntityNode.facingYaw` → `setNodeIdlePose`/`applyNodePose` 分支；移动拉伸按 yaw 映射到模型局部 X 或 Z 轴
+- **分类**：`voxelVisual` 中 `rotates = facing!=null && !groundHug && sprite.volumes?.[0]`——仅手雕体积+有朝向 prop 的实体走旋转；其余走原镜像/dome/billboard 路径
+- **yaw 映射**（组空间 Rz）：down=0(正面) right=+90(右侧) up=180(背面) left=-90(左侧)；未设 dir 的 you 实体默认 right
+- **几何**：直立模型脚落地面（`drawY` 底对齐 GROUND_SURFACE_Z + `VOXEL_STAND_LIFT`）、深度以身体为中心（`frameFrontZ` 居中）；缓存键 `voxrot:{name}:{ix}` 四向共享
+- **箭头**：旋转实体改用 `arrowMarkerSlices`——体素网格画在脚前一层的扁平地面箭头板，始终指向模型前方，随 yaw 转到真实方向；朝北时被模型挡住（背面自解释）；非旋转 sprite 保持原脸部浮雕箭头
+- **雕塑**：baba/keke/me 重写为 360° 圆雕——身体厚度贯穿前 2/3 深度、背面宽圆闭合非尖顶、耳朵/角/头发在顶前、脚在前下、尾巴/披风在后下
+- 测试：`applyVolumeOrientation` 四向世界法线+直立保持+roll 摆动不翻倒；`getVisual` 无头验证 yaw/undefined 分支（被动实体、无体积 sprite 保持卡片）
+
+## 第 8 阶段：零件化雕塑（用户两次反馈后重做）
+用户反馈"捏的很差"+"完全不使用帧图剪影"——手写切片是剪影的复读机，产出的是"脸盘+光蛋"。改为纯零件雕塑：
+- **`pixel-sprites/parts.ts`**：`volumeFromParts` 把 box/ellipsoid 零件栅格化成完整 PixelVolume（含 z=0 `frame` 切片——`PixelVolume.frame` 新字段，存在时替代 sprite 帧面且不发描边环）；不再有剪影/浮雕来源，2D 帧只剩非旋转回退路径在用
+- **雕塑构成**：baba=近球椭身体+耳桨+脚块+尾块+'f'脸垫+'e'眼；keke=椭球+角块+喙+尾；me=兜帽椭球+袍椭球+手+鞋+脸垫。无盒芯、深宽≈1:1——俯视下是球不是砖
+- 验证：`pnpm check` 331 绿；预览四向截图（耳/角/兜帽/喙各面可读）；游戏内 down=脸+耳、left/right=侧身 figurine

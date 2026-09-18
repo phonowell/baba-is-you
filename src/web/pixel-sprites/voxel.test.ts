@@ -4,7 +4,6 @@ import test from 'node:test'
 import { advanceNodeGeometries } from '../board-3d-renderer-materials.js'
 import {
   buildVolumeCells,
-  inflateVolume,
   slabVolume,
   spriteVolumes,
   voxelDrawRect,
@@ -127,36 +126,6 @@ test('voxel soup places overlay relief in front of the front surface', () => {
   assert.ok(Math.abs(maxZ - (0.11 + texel)) < 1e-6)
 })
 
-test('inflateVolume stretches erosion rings into a closing dome', () => {
-  const blob: PixelFrame = ['aaaaa', 'aaaaa', 'aaaaa', 'aaaaa', 'aaaaa']
-  const volume = inflateVolume(blob, 8, 2)
-  const slices = volume.backSlices!
-  // 5x5 gives two rings (3x3, then 1x1); each is held ~2 layers so the dome
-  // reaches 4 deep and still closes on the smallest ring.
-  assert.equal(slices.length, 4)
-  assert.deepEqual(slices[0], ['.....', '.aaa.', '.aaa.', '.aaa.', '.....'])
-  assert.deepEqual(slices[slices.length - 1], [
-    '.....',
-    '.....',
-    '..a..',
-    '.....',
-    '.....',
-  ])
-})
-
-test('inflateVolume honors the layer cap for very thick silhouettes', () => {
-  const blob: PixelFrame = Array.from({ length: 24 }, () => 'a'.repeat(24))
-  const volume = inflateVolume(blob, 4, 2)
-  assert.equal(volume.backSlices!.length, 4)
-})
-
-test('inflateVolume keeps thin sprites at least minLayers deep', () => {
-  const thin: PixelFrame = ['aaa']
-  const volume = inflateVolume(thin, 8, 2)
-  assert.equal(volume.backSlices!.length, 2)
-  assert.deepEqual(volume.backSlices![0], thin)
-})
-
 test('slabVolume stacks identical slices for flat tiles', () => {
   const volume = slabVolume(block2x2, 2)
   assert.deepEqual(volume.backSlices, [block2x2, block2x2])
@@ -178,7 +147,7 @@ test('spriteVolumes prefers authored volumes and wobbles the base volume', () =>
   assert.deepEqual(volumes[2]!.backSlices![0], ['....', '.aa.', '....', '....'])
 })
 
-test('spriteVolumes inflates authored frames that lack a volume', () => {
+test('spriteVolumes falls back for authored frames that lack a volume', () => {
   const f0: PixelFrame = ['....', '.aa.', '.aa.', '....']
   const f1: PixelFrame = ['....', '.aa.', '....', '....']
   const sprite = { palette: PALETTE, frames: [f0, f1] }
@@ -188,7 +157,7 @@ test('spriteVolumes inflates authored frames that lack a volume', () => {
     return { backSlices: [frame] }
   })
   assert.equal(volumes.length, 3)
-  // Frame 1 inflates from its own frame, not the base frame.
+  // Frame 1 falls back from its own frame, not the base frame.
   assert.deepEqual(calls, [f0, f1])
   assert.deepEqual(volumes[1]!.backSlices![0], f1)
 })

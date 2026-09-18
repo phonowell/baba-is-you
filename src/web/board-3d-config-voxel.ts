@@ -6,11 +6,9 @@ export const BOARD3D_VOXEL_CONFIG = {
   // World z of the frame plane's front face — keeps the front view where
   // the old slab put it; authored/inflated depth grows behind it.
   VOXEL_FRAME_Z: 0.11,
-  // Inflate fallback: erosion rings resampled to ~2x ring count, capped —
-  // depth tracks silhouette width so wide sprites dome and thin ones don't
-  // blow up. Sprites too thin to erode keep at least this many copies.
-  VOXEL_INFLATE_MAX_LAYERS: 12,
-  VOXEL_INFLATE_MIN_LAYERS: 3,
+  // Back slices stacked under upright sprite cards that lack authored
+  // volumes — a thin 3-texel slab, just enough for a visible edge.
+  VOXEL_CARD_BACK_LAYERS: 2,
   // Back slices stacked under ground-hug tiles (3 texels ≈ old slab depth).
   VOXEL_GROUND_HUG_BACK_LAYERS: 2,
   VOXEL_PLATE_DEPTH: 0.12,
@@ -23,4 +21,11 @@ export const BOARD3D_VOXEL_CONFIG = {
   // Flat one-voxel silhouette rim on the frame plane of object sprites (not
   // ground-hug tiles) — keeps pale sprites like baba readable on the board.
   VOXEL_OUTLINE_COLOR: '#141b2a',
+  // Upright models lean back this much (radians) so the camera — pitched
+  // ~75deg down — still reads the face/back instead of only the top. The
+  // yaw then keeps the lean pointing "behind" whatever direction it faces.
+  VOXEL_STAND_LEAN: 0.62,
+  // Extra lift (world units) so the leaning model's lowest point still rests
+  // on the ground instead of clipping through it.
+  VOXEL_STAND_LIFT: 0.06,
 } as const

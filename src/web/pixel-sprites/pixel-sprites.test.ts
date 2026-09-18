@@ -65,6 +65,7 @@ test('pixel sprite volumes align with frames and use declared palette keys', () 
       if (!volume) return
       const sliceSets = [
         ['front', volume.frontSlices],
+        ['frame', volume.frame ? [volume.frame] : undefined],
         ['back', volume.backSlices],
       ] as const
       for (const [kind, slices] of sliceSets) {

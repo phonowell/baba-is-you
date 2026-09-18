@@ -3,13 +3,16 @@
 // treated as right-padded with transparency.
 export type PixelFrame = readonly string[]
 
-// Hand-authored 3D volume around the frame plane. The frame itself is the
-// front-most painted slice (index 0); `backSlices[i]` sits i+1 voxels behind
-// it, `frontSlices[i]` protrudes i+1 voxels toward the camera. Each slice is
-// one voxel thick, so slice count directly controls body depth — slices may
-// extend beyond the front silhouette (ears, bulk) or taper inside it.
+// Hand-authored 3D volume around the frame plane. `backSlices[i]` sits i+1
+// voxels behind the z=0 plane, `frontSlices[i]` protrudes i+1 voxels toward
+// the camera. Each slice is one voxel thick, so slice count directly
+// controls body depth — slices may extend beyond the front silhouette
+// (ears, bulk) or taper inside it. By default the sprite frame is the z=0
+// slice; a volume may instead supply its own `frame`, making the voxel set
+// fully sculpted with no sprite silhouette anywhere.
 export type PixelVolume = {
   frontSlices?: readonly PixelFrame[] | undefined
+  frame?: PixelFrame | undefined
   backSlices?: readonly PixelFrame[] | undefined
 }
 

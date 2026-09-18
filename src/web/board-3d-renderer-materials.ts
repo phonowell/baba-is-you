@@ -21,7 +21,6 @@ import {
 } from './pixel-sprites/arrows.js'
 import {
   buildVoxelVolumeGeometry,
-  inflateVolume,
   slabVolume,
   spriteVolumes,
   voxelDrawRect,
@@ -45,8 +44,7 @@ const {
 const {
   VOXEL_INNER_SIZE_RATIO,
   VOXEL_FRAME_Z,
-  VOXEL_INFLATE_MAX_LAYERS,
-  VOXEL_INFLATE_MIN_LAYERS,
+  VOXEL_CARD_BACK_LAYERS,
   VOXEL_GROUND_HUG_BACK_LAYERS,
   VOXEL_PLATE_DEPTH,
   VOXEL_SHADE_FRONT,
@@ -56,6 +54,7 @@ const {
   VOXEL_SHADE_BACK,
   VOXEL_PLATE_EDGE_SHADE,
   VOXEL_OUTLINE_COLOR,
+  VOXEL_STAND_LIFT,
 } = BOARD3D_VOXEL_CONFIG
 
 const VOXEL_SHADE = {
@@ -226,14 +225,11 @@ export const createBoard3dRendererMaterialStore = (
       facing !== null && !groundHug && baseSprite?.volumes?.[0] !== undefined
     const sprite = rotates ? baseSprite : orientedSpriteForSpec(spec)
     if (!sprite) throw new Error(`Missing sprite for ${spec.key}.`)
-    // Ground-hug tiles stay flat slabs; upright sprites inflate into a
-    // tapered body unless the sprite authors its own slices.
-    const inflate = groundHug
-      ? (frame: Parameters<typeof slabVolume>[0]) =>
-          slabVolume(frame, VOXEL_GROUND_HUG_BACK_LAYERS)
-      : (frame: Parameters<typeof inflateVolume>[0]) =>
-          inflateVolume(frame, VOXEL_INFLATE_MAX_LAYERS, VOXEL_INFLATE_MIN_LAYERS)
-    const volumes = spriteVolumes(sprite, inflate)
+    // Sprites without authored volumes stay flat silhouette slabs — thick
+    // enough to read as cards, nothing more.
+    const fallback = (frame: Parameters<typeof slabVolume>[0]) =>
+      slabVolume(frame, groundHug ? VOXEL_GROUND_HUG_BACK_LAYERS : VOXEL_CARD_BACK_LAYERS)
+    const volumes = spriteVolumes(sprite, fallback)
     const bounds = spriteVolumeBounds(sprite, volumes)
     if (!bounds) throw new Error(`Empty sprite for ${spec.key}.`)
     const rect = voxelDrawRect(bounds, voxelInnerSize)
@@ -248,7 +244,9 @@ export const createBoard3dRendererMaterialStore = (
     // around the volume's depth center; billboard cards keep the authored
     // frame plane just in front of the card origin.
     const drawY = rotates
-      ? (bounds.maxY + 1) * rect.texel - (CARD_BASE_Z - GROUND_SURFACE_Z)
+      ? (bounds.maxY + 1) * rect.texel -
+        (CARD_BASE_Z - GROUND_SURFACE_Z) +
+        VOXEL_STAND_LIFT
       : rect.drawY
     const volume0 = volumes[0]
     const frameFrontZ =

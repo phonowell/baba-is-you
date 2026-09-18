@@ -2,8 +2,6 @@ import { BufferAttribute, BufferGeometry } from 'three'
 
 import {
   WOBBLE_PHASES,
-  contentBounds,
-  erodeFrame,
   frameSize,
   spriteFrames,
   wobbleShift,
@@ -187,15 +185,17 @@ const mergeSlice = (
   }
 }
 
-// Occupancy map for the whole volume: frame plane at z=0 (with the outline
-// rim), authored slices behind/in front, relief overlays outermost.
+// Occupancy map for the whole volume: z=0 is the sprite frame (with the
+// outline rim) unless the volume supplies its own sculpted midsection —
+// then no outline is emitted (the sculpture carries its own edges).
+// Authored slices stack behind/in front, relief overlays outermost.
 export const buildVolumeCells = (
   args: VoxelVolumeArgs,
   outlineColor?: string,
 ): Map<number, [number, number, number]> => {
   const cells = new Map<number, [number, number, number]>()
-  const plane = paintedCells(args.frame, args.palette)
-  if (outlineColor) addOutlineRing(plane, hexToLinearRgb(outlineColor))
+  const plane = paintedCells(args.volume?.frame ?? args.frame, args.palette)
+  if (outlineColor && !args.volume?.frame) addOutlineRing(plane, hexToLinearRgb(outlineColor))
   for (const [key, color] of plane) {
     const [cx, cy] = decodeCell(key)
     cells.set(cellKey3(cx, cy, 0), color)
@@ -338,65 +338,37 @@ export const buildVoxelVolumeGeometry = (
   return geometry
 }
 
-// Inflate fallback for sprites without authored volumes: erosion rings are
-// resampled over ~2x the ring count so depth scales with silhouette width —
-// wide sprites get a real dome, thin poles stay pole-thin. The smallest ring
-// always lands last, so the back closes instead of cutting off flat. Sprites
-// too thin to erode still get `minLayers` copies of the front silhouette.
-export const inflateVolume = (
-  frame: PixelFrame,
-  maxLayers: number,
-  minLayers: number,
-): PixelVolume => {
-  const rings: PixelFrame[] = []
-  let current = frame
-  while (rings.length < maxLayers) {
-    const next = erodeFrame(current)
-    if (!contentBounds(next)) break
-    rings.push(next)
-    current = next
-  }
-  const depth = Math.max(minLayers, Math.min(maxLayers, rings.length * 2))
-  if (rings.length === 0) return { backSlices: Array.from({ length: depth }, () => frame) }
-  const backSlices: PixelFrame[] = []
-  for (let i = 0; i < depth; i++) {
-    const ringIx = Math.min(rings.length - 1, Math.floor((i * rings.length) / depth))
-    backSlices.push(rings[ringIx]!)
-  }
-  return { backSlices }
-}
-
-// Flat slab volume for ground-hug tiles: identical slices stacked behind the
-// frame plane keep the old thin-plate look on the volume path.
+// Flat slab volume: identical slices stacked behind the frame plane — the
+// fallback look for every sprite that does not author its own parts volume.
 export const slabVolume = (frame: PixelFrame, backLayers: number): PixelVolume => ({
   backSlices: Array.from({ length: backLayers }, () => frame),
 })
 
 // Resolves one volume per padded animation frame: authored entries win,
-// authored frames without a volume inflate, wobble-derived frames reuse the
-// base frame's volume shifted by the same vertical offset.
+// authored frames without a volume take the caller's fallback, wobble-
+// derived frames reuse the base frame's volume shifted by the same offset.
 export const spriteVolumes = (
   sprite: PixelSprite,
-  inflate: (frame: PixelFrame) => PixelVolume,
+  fallback: (frame: PixelFrame) => PixelVolume,
 ): PixelVolume[] => {
   const frames = spriteFrames(sprite)
   const base = frames[0]
   if (!base) return []
   const cache = new Map<PixelFrame, PixelVolume>()
-  const inflateOnce = (frame: PixelFrame): PixelVolume => {
+  const fallbackOnce = (frame: PixelFrame): PixelVolume => {
     let volume = cache.get(frame)
     if (!volume) {
-      volume = inflate(frame)
+      volume = fallback(frame)
       cache.set(frame, volume)
     }
     return volume
   }
-  const baseVolume = sprite.volumes?.[0] ?? inflateOnce(base)
+  const baseVolume = sprite.volumes?.[0] ?? fallbackOnce(base)
   const authoredCount = sprite.frames.length
   return frames.map((frame, ix) => {
     const authored = sprite.volumes?.[ix]
     if (authored) return authored
-    if (ix < authoredCount) return inflateOnce(frame)
+    if (ix < authoredCount) return fallbackOnce(frame)
     const dy = wobbleShift(base, WOBBLE_PHASES[ix] ?? 0)
     return wobbleVolume(baseVolume, dy)
   })
