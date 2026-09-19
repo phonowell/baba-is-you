@@ -258,6 +258,27 @@ export const CREATURE_SPRITES: Record<string, PixelSprite> = {
         '........................',
       ],
     ],
+    // Sculpted parts: boxy build like the source sprite — armor-gray head
+    // and torso share one 'g' mass; light face plate, teal screen and proud
+    // cyan LED eyes stack in front; antenna, dark arms/feet and a rear
+    // battery pack finish the silhouette.
+    volumes: [
+      volumeFromParts([
+        { kind: 'box', x: 5, y: 5, w: 11, h: 7, z: 0, d: 8, key: 'g' },
+        { kind: 'box', x: 5, y: 12, w: 12, h: 5, z: 0, d: 8, key: 'g' },
+        { kind: 'box', x: 6, y: 6, w: 9, h: 5, z: -2, d: 2, key: 'l' },
+        { kind: 'box', x: 7, y: 7, w: 7, h: 3, z: -3, d: 1, key: 's' },
+        { kind: 'box', x: 8, y: 8, w: 2, h: 1, z: -4, d: 1, key: 'e' },
+        { kind: 'box', x: 11, y: 8, w: 2, h: 1, z: -4, d: 1, key: 'e' },
+        { kind: 'box', x: 8, y: 4, w: 3, h: 1, z: 3, d: 2, key: 'g' },
+        { kind: 'box', x: 9, y: 2, w: 1, h: 2, z: 3, d: 2, key: 'l' },
+        { kind: 'box', x: 4, y: 13, w: 2, h: 4, z: 1, d: 6, key: 'd' },
+        { kind: 'box', x: 15, y: 13, w: 2, h: 4, z: 1, d: 6, key: 'd' },
+        { kind: 'box', x: 6, y: 16, w: 3, h: 3, z: -1, d: 7, key: 'd' },
+        { kind: 'box', x: 12, y: 16, w: 3, h: 3, z: -1, d: 7, key: 'd' },
+        { kind: 'box', x: 7, y: 6, w: 7, h: 4, z: 8, d: 1, key: 'd' },
+      ]),
+    ],
   },
   anni: {
     palette: {

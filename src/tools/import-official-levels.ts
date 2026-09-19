@@ -7,6 +7,11 @@ import { createInitialState } from '../logic/state.js'
 import { parseLevelBinary } from './import-official-levels-binary.js'
 import { convertOneLevel } from './import-official-levels-convert.js'
 import { buildGlobalReference } from './import-official-levels-global-reference.js'
+import {
+  convertMap,
+  isMapFile,
+  renderMapsTs,
+} from './import-official-levels-maps.js'
 import { verifyOfficialImportConsistency } from './import-official-levels-verify.js'
 import { parseLd } from './import-official-levels-parse.js'
 
@@ -158,6 +163,7 @@ const collectConvertedLevels = (
   }
 
   for (const current of parsed) {
+    if (isMapFile(current.ld)) continue
     const { level, unknownTileKeys, meta } = convertOneLevel(
       current.fileName,
       current.ld,
@@ -244,7 +250,8 @@ const main = async (): Promise<void> => {
     if (
       verify.ambiguousCurrobjTiles > 0 ||
       verify.tileMapMismatches > 0 ||
-      verify.usedTileTruthMismatches > 0
+      verify.usedTileTruthMismatches > 0 ||
+      verify.unknownTileKeys.length > 0
     ) {
       throw new Error('Official import consistency verification failed')
     }
@@ -255,6 +262,39 @@ const main = async (): Promise<void> => {
     parsed,
     global,
   )
+
+  const levelIndexByFile = new Map<string, number>()
+  converted.forEach((level, index) => {
+    levelIndexByFile.set(
+      path.basename(level.source, '.l').toLowerCase(),
+      index,
+    )
+  })
+  const mapFiles = new Set(
+    parsed
+      .filter((current) => isMapFile(current.ld))
+      .map((current) => path.basename(current.fileName, '.l').toLowerCase()),
+  )
+  const convertedMaps = parsed
+    .filter((current) => isMapFile(current.ld))
+    .map((current) =>
+      convertMap(
+        current.fileName,
+        current.ld,
+        current.layers,
+        global,
+        levelIndexByFile,
+        mapFiles,
+      ),
+    )
+  const iconStats = { level: 0, map: 0, unresolved: 0 }
+  for (const map of convertedMaps) {
+    for (const icon of map.icons) {
+      if (icon.mapFile) iconStats.map += 1
+      else if (icon.levelIndex !== undefined) iconStats.level += 1
+      else iconStats.unresolved += 1
+    }
+  }
 
   await fs.rm(outputDir, { recursive: true, force: true })
   await fs.mkdir(outputDir, { recursive: true })
@@ -274,7 +314,13 @@ const main = async (): Promise<void> => {
   }
 
   await fs.writeFile(outputFile, renderLevelsIndex(chunkSpecs), 'utf8')
+  const mapsFile = path.resolve(cwd, 'src', 'levels-maps.ts')
+  await fs.writeFile(mapsFile, renderMapsTs(convertedMaps, '106level'), 'utf8')
   logImportSummary(converted, filteredOut, filteredReasonCounts, chunkSpecs.length)
+  console.log(`Imported maps: ${convertedMaps.length}`)
+  console.log(
+    `Map icons: level=${iconStats.level} map=${iconStats.map} unresolved=${iconStats.unresolved}`,
+  )
 }
 
 const isDirectRun = (() => {

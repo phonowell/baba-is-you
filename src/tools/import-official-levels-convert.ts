@@ -100,23 +100,6 @@ export const convertOneLevel = (
     }
   }
 
-  // Pure-decoration floor tiles: a `tile` entity can only matter when the
-  // level's text can name it or sweep it into a broader rule — without
-  // Tile/All/Not/Empty/Lonely/Group text no rule can ever reach it, so the
-  // floor slabs are inert and get dropped from the converted output.
-  const textNouns = new Set(
-    Array.from(grouped.keys())
-      .filter((key) => /^[A-Z]/.test(key))
-      .map((key) => key.toLowerCase()),
-  )
-  const TILE_REACHING_TEXT = ['tile', 'all', 'not', 'empty', 'lonely', 'group']
-  if (!TILE_REACHING_TEXT.some((noun) => textNouns.has(noun))) {
-    for (const key of Array.from(grouped.keys())) {
-      const noun = key.split('@')[0] ?? ''
-      if (noun === 'tile' || noun.startsWith('tile_')) grouped.delete(key)
-    }
-  }
-
   const titleRaw =
     ld.general.get('name') ??
     path.basename(fileName, '.l').replace(/level$/i, '')

@@ -1,9 +1,18 @@
+import { VANILLA_OBJECT_TILES } from './import-official-levels-vanilla-tiles.js'
+
 export type Direction = 'up' | 'right' | 'down' | 'left'
 
 export type LdData = {
   general: Map<string, string>
   currobjlist: Map<string, string>
   tiles: Map<string, string>
+  // Map-only sections (leveltype=1 files): level icons, path trails,
+  // world icon sprite names, background images, and special markers.
+  levels: Map<string, string>
+  paths: Map<string, string>
+  icons: Map<string, string>
+  images: Map<string, string>
+  specials: Map<string, string>
 }
 
 export type TileDescriptor = {
@@ -18,10 +27,21 @@ export type CurrobjEntry = {
   tileKey?: string
 }
 
+const LD_SECTIONS = [
+  'general',
+  'currobjlist',
+  'tiles',
+  'levels',
+  'paths',
+  'icons',
+  'images',
+  'specials',
+] as const
+
 export const parseLd = (source: string): LdData => {
-  const general = new Map<string, string>()
-  const currobjlist = new Map<string, string>()
-  const tiles = new Map<string, string>()
+  const data = Object.fromEntries(
+    LD_SECTIONS.map((name) => [name, new Map<string, string>()]),
+  ) as Record<(typeof LD_SECTIONS)[number], Map<string, string>>
   let section = ''
   for (const rawLine of source.replace(/\r\n/g, '\n').split('\n')) {
     const line = rawLine.trim()
@@ -36,20 +56,10 @@ export const parseLd = (source: string): LdData => {
     const key = line.slice(0, splitAt).trim()
     const value = line.slice(splitAt + 1).trim()
     if (!key) continue
-    if (section === 'general') {
-      general.set(key, value)
-      continue
-    }
-    if (section === 'currobjlist') {
-      currobjlist.set(key, value)
-      continue
-    }
-    if (section === 'tiles') {
-      tiles.set(key, value)
-      continue
-    }
+    const target = data[section as keyof typeof data]
+    if (target) target.set(key, value)
   }
-  return { general, currobjlist, tiles }
+  return data
 }
 
 export const parseTileKey = (raw: string | undefined): string | null => {
@@ -71,22 +81,18 @@ export const parseDirection = (
 
 export const toTileKey = (x: number, y: number): string => `${x},${y}`
 
-export const objectIdToTileKey = (objectId: number): string => {
-  const shifted = objectId + 1
-  return `${shifted % 12},${Math.floor(shifted / 12)}`
-}
+const TILE_KEY_TO_OBJECT_ID = new Map<string, number>(
+  Object.entries(VANILLA_OBJECT_TILES).map(([id, tileKey]) => [
+    tileKey,
+    Number(id),
+  ]),
+)
 
-export const tileKeyToObjectId = (tileKey: string): number | null => {
-  const parsed = parseTileKey(tileKey)
-  if (!parsed) return null
-  const [xRaw, yRaw] = parsed.split(',')
-  if (!xRaw || !yRaw) return null
-  const x = Number(xRaw)
-  const y = Number(yRaw)
-  if (!Number.isFinite(x) || !Number.isFinite(y)) return null
-  const objectId = y * 12 + x - 1
-  return objectId >= 0 ? objectId : null
-}
+export const objectIdToTileKey = (objectId: number): string | undefined =>
+  VANILLA_OBJECT_TILES[objectId]
+
+export const tileKeyToObjectId = (tileKey: string): number | null =>
+  TILE_KEY_TO_OBJECT_ID.get(tileKey) ?? null
 
 export const normalizeRawName = (
   rawName: string,

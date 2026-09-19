@@ -34,8 +34,9 @@ export const buildLevelTileMap = (
     if (!Number.isFinite(id) || !assignment) continue
     const objectId = `object${String(id).padStart(3, '0')}`
     const current = byObject.get(objectId)
+    const vanillaTile = objectIdToTileKey(id)
     if (current) {
-      if (!current.tileKey) current.tileKey = objectIdToTileKey(id)
+      if (!current.tileKey && vanillaTile) current.tileKey = vanillaTile
       if (current.desc.name === 'unknown')
         current.desc = normalizeRawName(assignment, false)
       byObject.set(objectId, current)
@@ -43,7 +44,7 @@ export const buildLevelTileMap = (
     }
     byObject.set(objectId, {
       desc: normalizeRawName(assignment, false),
-      tileKey: objectIdToTileKey(id),
+      ...(vanillaTile ? { tileKey: vanillaTile } : {}),
       priority: 0,
     })
   }
