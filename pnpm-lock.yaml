@@ -18,6 +18,9 @@ importers:
         specifier: ^0.183.1
         version: 0.183.1
     devDependencies:
+      '@gfx/zopfli':
+        specifier: ^1.0.15
+        version: 1.0.15
       '@types/node':
         specifier: ^25.3.0
         version: 25.3.0
@@ -409,6 +412,10 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@gfx/zopfli@1.0.15':
+    resolution: {integrity: sha512-7mBgpi7UD82fsff5ThQKet0uBTl4BYerQuc+/qA1ELTwWEiIedRTcD3JgiUu9wwZ2kytW8JOb165rSdAt8PfcQ==}
+    engines: {node: '>= 8'}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -1377,6 +1384,10 @@ snapshots:
 
   '@esbuild/win32-x64@0.28.2':
     optional: true
+
+  '@gfx/zopfli@1.0.15':
+    dependencies:
+      base64-js: 1.5.1
 
   '@img/colour@1.1.0': {}
 

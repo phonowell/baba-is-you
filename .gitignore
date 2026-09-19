@@ -32,3 +32,8 @@ test-report.md
 # Game data
 /data/baba
 release/baba-is-you.html
+release/baba-is-you.js
+/release-local
+
+# Wrangler local state
+/.wrangler
