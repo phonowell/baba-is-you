@@ -15,7 +15,10 @@ import {
 } from './board-3d-config-textures.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
-import { orientedSpriteForSpec } from './board-3d-shared-item.js'
+import {
+  cardLabelLines,
+  orientedSpriteForSpec,
+} from './board-3d-shared-item.js'
 import {
   dilateFrame,
   frameSize,
@@ -44,6 +47,7 @@ const {
   CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
   CARD_TEXTURE_TEXT_FILL_RATIO,
   CARD_TEXTURE_LABEL_OFFSET_Y,
+  CARD_TEXTURE_TEXT_LINE_HEIGHT,
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO,
   CARD_TEXTURE_TEXT_FONT_FAMILY,
   CARD_TEXTURE_DIRECTION_FONT_RATIO,
@@ -276,15 +280,25 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
   }
 
   // Measure at 100px then scale to fill the content box — short words
-  // cap out big, long words shrink to fit instead of bleeding off.
+  // cap out big; long words wrap onto two lines so each line stays big
+  // instead of shrinking to fit one row. The font must fit the widest
+  // line horizontally and the whole line block vertically.
+  const lines = cardLabelLines(spec)
+  const fit = size * CARD_TEXTURE_TEXT_FILL_RATIO
   ctx.font = `700 100px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
-  const measured = ctx.measureText(spec.label).width
   const fontSize = Math.min(
     CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
-    Math.floor((100 * size * CARD_TEXTURE_TEXT_FILL_RATIO) / Math.max(measured, 1)),
+    Math.floor(fit / (lines.length * CARD_TEXTURE_TEXT_LINE_HEIGHT)),
+    ...lines.map((line) =>
+      Math.floor((100 * fit) / Math.max(ctx.measureText(line).width, 1)),
+    ),
   )
 
-  const labelOffsetY = CARD_TEXTURE_LABEL_OFFSET_Y
+  const lineStep = fontSize * CARD_TEXTURE_TEXT_LINE_HEIGHT
+  const firstLineY =
+    textureSize / 2 +
+    CARD_TEXTURE_LABEL_OFFSET_Y -
+    ((lines.length - 1) * lineStep) / 2
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = spec.textColor
@@ -293,8 +307,11 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
   ctx.lineWidth = textureSize * CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO
   ctx.lineJoin = 'round'
   ctx.strokeStyle = spec.outlineColor
-  ctx.strokeText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
-  ctx.fillText(spec.label, textureSize / 2, textureSize / 2 + labelOffsetY)
+  lines.forEach((line, ix) => {
+    const y = firstLineY + ix * lineStep
+    ctx.strokeText(line, textureSize / 2, y)
+    ctx.fillText(line, textureSize / 2, y)
+  })
 
   if (spec.strikethrough) {
     drawOverriddenCross(

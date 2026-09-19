@@ -4,6 +4,7 @@ import test from 'node:test'
 import { PerspectiveCamera } from 'three'
 
 import {
+  cardLabelLines,
   cardSpecForItem,
   idleFloatEnabledForItem,
   idleFrameOffsetForItem,
@@ -397,4 +398,22 @@ test('board-3d text cards wear the menu pill chrome by category', () => {
   assert.equal(object.backgroundTop, undefined)
   assert.equal(object.keylineColor, undefined)
   assert.equal(object.diamondColor, undefined)
+})
+
+// Long labels would shrink to unreadable sizes on one row, so they wrap
+// near the middle: the shorter half rides on top unless an explicit cut
+// keeps the second line pronounceable (EM/PTY would orphan "PTY").
+test('board-3d wraps long text-card labels into two readable lines', () => {
+  const specFor = (name: string, isText = true) =>
+    cardSpecForItem({ id: 1, name, x: 0, y: 0, isText, props: [] }, 0)
+
+  assert.deepEqual(cardLabelLines(specFor('you')), ['YOU'])
+  assert.deepEqual(cardLabelLines(specFor('baba')), ['BA', 'BA'])
+  assert.deepEqual(cardLabelLines(specFor('water')), ['WA', 'TER'])
+  assert.deepEqual(cardLabelLines(specFor('seastar')), ['SEA', 'STAR'])
+  assert.deepEqual(cardLabelLines(specFor('empty')), ['EMP', 'TY'])
+  assert.deepEqual(cardLabelLines(specFor('foliage')), ['FOLI', 'AGE'])
+  assert.deepEqual(cardLabelLines(specFor('nonexistent-object', false)), [
+    'NO',
+  ])
 })

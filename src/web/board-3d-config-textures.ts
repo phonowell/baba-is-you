@@ -6,6 +6,12 @@ export const BOARD3D_CARD_TEXTURE_CONFIG = {
   CARD_TEXTURE_TEXT_MAX_FONT_SIZE: 108,
   CARD_TEXTURE_TEXT_FILL_RATIO: 0.88,
   CARD_TEXTURE_LABEL_OFFSET_Y: 4,
+  // Labels longer than this wrap onto two lines so they can stay big.
+  CARD_TEXTURE_TEXT_MAX_LINE_CHARS: 3,
+  // Wrapped lines step by this fraction of the font size: tight enough
+  // that the pair still reads as one word, loose enough that the stroke
+  // outlines don't touch.
+  CARD_TEXTURE_TEXT_LINE_HEIGHT: 0.95,
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO: 0.05,
   CARD_TEXTURE_TEXT_FONT_FAMILY:
     '"Trebuchet MS","Arial Rounded MT Bold","Segoe UI Emoji",sans-serif',

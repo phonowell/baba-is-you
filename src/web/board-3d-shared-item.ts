@@ -1,5 +1,6 @@
 import { createClayObjectPalette } from './clay-config.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { BOARD3D_CARD_TEXTURE_CONFIG } from './board-3d-config-textures.js'
 import {
   BOARD3D_RULE_VISUAL_CONFIG,
   BOARD3D_TEXT_CARD_STYLE_CONFIG,
@@ -22,6 +23,8 @@ const {
   MOVE_ROLL_AMPLITUDE,
   IDLE_STRETCH_CYCLE_MS,
 } = BOARD3D_ANIMATION_CONFIG
+
+const { CARD_TEXTURE_TEXT_MAX_LINE_CHARS } = BOARD3D_CARD_TEXTURE_CONFIG
 
 const {
   BELT_DIRECTION_GLYPH_UP,
@@ -96,6 +99,32 @@ const labelForItem = (item: Item): string => {
   if (item.isText) return item.name.toUpperCase()
   if (item.name === 'belt') return BELT_DIRECTION_GLYPHS[item.dir ?? 'right']
   return OBJECT_GLYPHS[item.name] ?? item.name.slice(0, 2).toUpperCase()
+}
+
+// Wrapped labels break near the middle so both halves stay big. The
+// shorter half rides on top — WA/TER lands on the word's natural
+// syllable boundary and leaves the wider line as a stable base. A few
+// words break the other way because the even split would orphan an
+// unpronounceable onset or a stunted first line; they carry explicit
+// cut points.
+const CARD_LABEL_CUTS: Record<string, number> = {
+  EMPTY: 3, // EMP/TY — EM/PTY opens the second line on "PTY"
+  FENCE: 3,
+  HEDGE: 3,
+  JELLY: 3,
+  LEVEL: 3,
+  FRUIT: 3,
+  GHOST: 3,
+  FOLIAGE: 4,
+}
+
+export const cardLabelLines = (spec: CardSpec): readonly string[] => {
+  const { label } = spec
+  if (!spec.isText || label.length <= CARD_TEXTURE_TEXT_MAX_LINE_CHARS) {
+    return [label]
+  }
+  const cut = CARD_LABEL_CUTS[label] ?? Math.floor(label.length / 2)
+  return [label.slice(0, cut), label.slice(cut)]
 }
 
 const objectPalette = (
