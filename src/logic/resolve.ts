@@ -1,4 +1,4 @@
-import { matchesRuleSubject } from './rule-match.js'
+import { GROUP_NOUNS, matchesRuleSubject } from './rule-match.js'
 import { isPropertyRule } from './types.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
@@ -9,6 +9,34 @@ const sameProps = (a: readonly Property[], b: readonly Property[]): boolean =>
   a.length === b.length && a.every((prop, index) => prop === b[index])
 
 const NO_RULES: Rule[] = []
+
+// When no is-property rule carries a condition and no unconditional
+// `all is group*` rule derives membership from the live item set, every
+// rule match is a pure function of (isText, name): props resolve to one
+// shared array per entity kind. Cached per rules array — rebinds and the
+// next step all pass the same `rules` reference, so the memo survives
+// them. `null` marks rulesets that are not name-only.
+const staticPropCaches = new WeakMap<Rule[], Map<string, Property[]> | null>()
+
+const staticPropCacheFor = (rules: Rule[]): Map<string, Property[]> | null => {
+  const cached = staticPropCaches.get(rules)
+  if (cached !== undefined) return cached
+  const nameOnly = !rules.some(
+    (rule) =>
+      isPropertyRule(rule) &&
+      // `empty` rules never match an entity — their conditions can't
+      // disturb item props, so they don't disqualify the memo.
+      rule.subject !== 'empty' &&
+      (rule.condition !== undefined ||
+        (rule.subject === 'all' &&
+          !rule.subjectNegated &&
+          !rule.objectNegated &&
+          GROUP_NOUNS.has(rule.object))),
+  )
+  const cache = nameOnly ? new Map<string, Property[]>() : null
+  staticPropCaches.set(rules, cache)
+  return cache
+}
 
 export const applyProperties = (
   items: LevelItem[],
@@ -41,7 +69,8 @@ export const applyProperties = (
     if (!list.includes(rule.object)) list.push(rule.object)
   }
 
-  return items.map((item) => {
+  const staticCache = staticPropCacheFor(runtime.rules)
+  const propsFor = (item: LevelItem): Property[] => {
     const yes: string[] = []
     const no: string[] = []
 
@@ -54,11 +83,30 @@ export const applyProperties = (
       ? propertyText
       : (propertyBySubject.get(item.name) ?? NO_RULES)
     for (const rule of candidates) applyRule(item, rule, yes, no)
-    if (!item.isText) for (const rule of propertyWildcard) applyRule(item, rule, yes, no)
+    if (!item.isText)
+      for (const rule of propertyWildcard) applyRule(item, rule, yes, no)
 
-    const props = (
+    return (
       no.length ? yes.filter((value) => !no.includes(value)) : yes
     ).sort() as Property[]
+  }
+
+  return items.map((item) => {
+    let props: Property[]
+    if (staticCache) {
+      // All text entities resolve identically (`text` subject + implicit
+      // `push`); units key by name. `\0` can't appear in a word name.
+      const key = item.isText ? '\u0000' : item.name
+      const cached = staticCache.get(key)
+      if (cached !== undefined) {
+        props = cached
+      } else {
+        props = propsFor(item)
+        staticCache.set(key, props)
+      }
+    } else {
+      props = propsFor(item)
+    }
 
     // Reapply pipelines rebuild the frame repeatedly; an item whose props
     // came out identical keeps its object, which the callers' clones and

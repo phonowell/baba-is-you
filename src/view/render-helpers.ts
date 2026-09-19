@@ -12,8 +12,8 @@ export const renderRules = (rules: Rule[]): string[] => {
         `${rule.subjectNegated ? 'NOT ' : ''}${rule.subject}`.toUpperCase()
       const condition = !rule.condition
         ? ''
-        : rule.condition.kind === 'lonely'
-          ? ` ${rule.condition.negated ? 'NOT ' : ''}LONELY`
+        : !('object' in rule.condition) && !('direction' in rule.condition)
+          ? ` ${rule.condition.negated ? 'NOT ' : ''}${rule.condition.kind.toUpperCase()}`
           : 'direction' in rule.condition
             ? ` FACING ${rule.condition.negated ? 'NOT ' : ''}${rule.condition.direction.toUpperCase()}`
             : ` ${rule.condition.kind.toUpperCase()} ${rule.condition.negated ? 'NOT ' : ''}${rule.condition.object.toUpperCase()}`

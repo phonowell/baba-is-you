@@ -1,6 +1,7 @@
-import { buildGrid, hasProp } from './shared.js'
+import { buildGrid, hasProp, resolveLevelProps } from './shared.js'
 
-import type { Item } from '../types.js'
+import type { RuleMatchContext } from '../rule-match.js'
+import type { Item, Rule } from '../types.js'
 
 // Bit-exact port of the predecessor's `oorandom::Rand32` (oorandom 11.1.3,
 // PCG-XSH-RR with u64 state) so teleported replays match recorded goldens.
@@ -47,11 +48,29 @@ const createRng = (seed: number): ((start: number, end: number) => number) => {
 export const applyTeleport = (
   items: Item[],
   width: number,
+  height: number,
   seed: number,
+  levelRules: Rule[],
+  context: RuleMatchContext,
 ): {
   items: Item[]
   moved: boolean
 } => {
+  // `level is tele`: the room teleports every unit to a random interior
+  // cell (official `action == "tele"` on the level entity).
+  if (resolveLevelProps(levelRules, context, 0, 0).has('tele')) {
+    const rng = createRng(seed)
+    let moved = false
+    const next = items.map((item) => {
+      const x = 1 + rng(0, Math.max(1, width - 2))
+      const y = 1 + rng(0, Math.max(1, height - 2))
+      if (item.x === x && item.y === y) return item
+      moved = true
+      return { ...item, x, y }
+    })
+    return { items: next, moved }
+  }
+
   if (!items.some((item) => hasProp(item, 'tele')))
     return { items, moved: false }
 

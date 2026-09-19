@@ -9,11 +9,11 @@ export const createInitialState = (
 ): GameState => {
   const baseRuntime = collectRuleRuntime(level.items, level.width, level.height)
   const transformResult = applyTransforms(level.items, baseRuntime)
-  const runtime = collectRuleRuntime(
-    transformResult.items,
-    level.width,
-    level.height,
-  )
+  // No transform → the second parse would rescan an identical layout and
+  // produce the same rules and cell index as `baseRuntime`.
+  const runtime = transformResult.changed
+    ? collectRuleRuntime(transformResult.items, level.width, level.height)
+    : baseRuntime
   const items = applyProperties(transformResult.items, runtime)
 
   return {
@@ -24,6 +24,7 @@ export const createInitialState = (
     items,
     rules: runtime.rules,
     overriddenTextIds: runtime.overriddenTextIds,
+    rulesSourceItems: transformResult.items,
     status: 'playing',
     turn: 0,
     ...(level.meta ? { meta: level.meta } : {}),

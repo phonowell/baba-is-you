@@ -4,7 +4,12 @@ import { hasProp } from './shared.js'
 
 import type { Item } from '../types.js'
 
-export { applyFall, applyMoveAdjective, applyShift } from './phases-movement.js'
+export {
+  applyBack,
+  applyFall,
+  applyMoveAdjective,
+  applyShift,
+} from './phases-movement.js'
 
 export const applyMore = (
   items: Item[],
@@ -60,16 +65,25 @@ export const applyMore = (
 
 const FACING_PROPS = new Set(['up', 'down', 'left', 'right'])
 
+const ROTATE_CW: Record<string, 'up' | 'right' | 'down' | 'left'> = {
+  up: 'right',
+  right: 'down',
+  down: 'left',
+  left: 'up',
+}
+
 export const applyDirectionalFacing = (
   items: Item[],
 ): {
   items: Item[]
   changed: boolean
 } => {
-  // Most boards carry no facing rules at all — skip the map entirely.
+  // Most boards carry no facing or rotation rules at all — skip the map.
   if (
     !items.some((item) =>
-      item.props.some((prop) => FACING_PROPS.has(prop)),
+      item.props.some(
+        (prop) => FACING_PROPS.has(prop) || prop === 'turn' || prop === 'deturn',
+      ),
     )
   )
     return { items, changed: false }
@@ -77,6 +91,13 @@ export const applyDirectionalFacing = (
   let changed = false
   const next = items.map((item) => {
     let { dir } = item
+    // `turn`/`deturn` rotate the facing a quarter turn each step —
+    // clockwise and counter-clockwise respectively.
+    if (hasProp(item, 'turn')) dir = ROTATE_CW[dir ?? 'right'] ?? dir
+    if (hasProp(item, 'deturn')) {
+      const cw = dir ?? 'right'
+      dir = ROTATE_CW[ROTATE_CW[ROTATE_CW[cw] ?? cw] ?? cw] ?? cw
+    }
     if (hasProp(item, 'up')) dir = 'up'
     if (hasProp(item, 'down')) dir = 'down'
     if (hasProp(item, 'left')) dir = 'left'

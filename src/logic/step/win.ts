@@ -1,8 +1,18 @@
 import { keyForLayer } from '../helpers.js'
+import { matchesRuleObjectWord } from '../rule-match.js'
 
-import { hasProp } from './shared.js'
+import { hasProp, isYouLike, resolveLevelPropsGlobal } from './shared.js'
 
-import type { Item } from '../types.js'
+import type { RuleRuntime } from '../rule-runtime.js'
+import type { Item, Property } from '../types.js'
+
+// `end`/`done` complete the level on contact like `win` — `end` is the
+// official ending trigger and `done` marks a finished room.
+const WIN_LIKE_PROPS = new Set<Property>(['win', 'end', 'done'])
+const WIN_LIKE_PROPS_LIST = [...WIN_LIKE_PROPS]
+
+const hasWinLike = (item: Item): boolean =>
+  item.props.some((prop) => WIN_LIKE_PROPS.has(prop))
 
 // Single pass: win iff some (cell, float-layer) holds both `you` and
 // `win`. Layer keys mirror `splitByFloatLayer` without building cell
@@ -12,25 +22,83 @@ import type { Item } from '../types.js'
 export const checkWin = (
   items: Item[],
   width: number,
+  height: number,
   emptyProps: ReadonlySet<string>,
+  runtime: RuleRuntime,
 ): boolean => {
   const youLayers = new Set<number>()
   const winLayers = new Set<number>()
   for (const item of items) {
-    if (hasProp(item, 'you'))
+    if (isYouLike(item))
       youLayers.add(keyForLayer(item.x, item.y, width, hasProp(item, 'float')))
-    if (hasProp(item, 'win'))
+    if (hasWinLike(item))
       winLayers.add(keyForLayer(item.x, item.y, width, hasProp(item, 'float')))
   }
   for (const key of youLayers) if (winLayers.has(key)) return true
 
-  return emptyProps.has('you') && emptyProps.has('win')
+  for (const prop of WIN_LIKE_PROPS) {
+    if (emptyProps.has('you') && emptyProps.has(prop)) return true
+  }
+
+  const { level: levelRules } = runtime.buckets
+  // No `level is …` rule means every level-prop check below short-circuits
+  // on an empty set — skip the resolution outright.
+  if (!levelRules.length) return false
+  const { context } = runtime
+
+  // `level is win/end/done`: the level entity itself is the goal — any
+  // `you` on a matching float layer completes it, as do `level is you`
+  // or `empty is you`. `level is you` also completes on any `x is
+  // win/end` rule with live units, and on `empty is win/end`.
+  const levelProps = resolveLevelPropsGlobal(levelRules, context, width, height)
+  const levelFloat = levelProps.has('float')
+  const levelYou =
+    levelProps.has('you') || levelProps.has('you2') || levelProps.has('3d')
+  const emptyYou =
+    (emptyProps.has('you') ||
+      emptyProps.has('you2') ||
+      emptyProps.has('3d')) &&
+    emptyProps.has('float') === levelFloat
+  const floatOk = (item: Item): boolean =>
+    hasProp(item, 'float') === levelFloat
+  const anyYou = items.some((item) => isYouLike(item) && floatOk(item))
+
+  if (
+    WIN_LIKE_PROPS_LIST.some((prop) => levelProps.has(prop)) &&
+    (anyYou || levelYou || emptyYou)
+  )
+    return true
+
+  if (levelYou) {
+    for (const rule of runtime.buckets.isProperty) {
+      if (rule.objectNegated || rule.subjectNegated) continue
+      if (!WIN_LIKE_PROPS.has(rule.object as Property)) continue
+      if (rule.subject === 'empty') {
+        if (emptyProps.has(rule.object)) return true
+        continue
+      }
+      if (rule.subject === 'level') continue // covered above
+      if (
+        items.some(
+          (item) =>
+            floatOk(item) &&
+            matchesRuleObjectWord(
+              item,
+              rule.subject,
+              context.groupMembers,
+            ),
+        )
+      )
+        return true
+    }
+  }
+  return false
 }
 
 export const hasAnyYou = (
   items: Item[],
   emptyProps: ReadonlySet<string>,
 ): boolean => {
-  for (const item of items) if (hasProp(item, 'you')) return true
-  return emptyProps.has('you')
+  for (const item of items) if (isYouLike(item)) return true
+  return emptyProps.has('you') || emptyProps.has('you2') || emptyProps.has('3d')
 }

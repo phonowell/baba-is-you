@@ -3,7 +3,7 @@ import { resolveRuleTargets } from './helpers.js'
 import { matchesRuleSubject } from './rule-match.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
-import type { LevelItem } from './types.js'
+import type { LevelItem, Rule } from './types.js'
 
 const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
   if (target === 'empty') return null
@@ -13,6 +13,7 @@ const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
       ...item,
       name: item.isText ? 'text' : item.name,
       isText: true,
+      originName: item.originName ?? item.name,
     }
   }
 
@@ -20,8 +21,17 @@ const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
     ...item,
     name: target,
     isText: false,
+    // The official `ogname` is the unit's birth name — the first rename
+    // records it so `x is revert` can transform back. Once set it stays
+    // sticky across further transforms.
+    originName: item.originName ?? item.name,
   }
 }
+
+// `x is revert` converts the entity back to the kind it originally was
+// (official `ogname`); entities never transformed revert to themselves.
+const resolveTransformTarget = (item: LevelItem, target: string): string =>
+  target === 'revert' ? (item.originName ?? item.name) : target
 
 const transformVariants = (
   item: LevelItem,
@@ -83,49 +93,75 @@ export const applyTransforms = (
   let nextId = items.reduce((max, item) => Math.max(max, item.id), 0) + 1
   let changed = false
 
+  // `become` shares the transform pipeline but is resolved separately:
+  // only `x is x`-style identity targets veto the whole transform set —
+  // `x become x` (or a `revert` that resolves to the current kind) is a
+  // silent no-op, matching the official convert() where same-name become
+  // still fires without suppressing other transforms.
+  const isTransformRules = transformRules.filter(
+    (rule) => rule.kind === 'is-transform',
+  )
+  const becomeRules = transformRules.filter(
+    (rule) => rule.kind === 'become',
+  )
+
   for (const item of items) {
-    const targets = resolveRuleTargets(
-      item,
-      transformRules,
-      (candidate, rule) => matchesRuleSubject(candidate, rule, context),
-    )
-    if (!targets.length) {
+    const resolveTargets = (rules: Rule[]) =>
+      resolveRuleTargets(item, rules, (candidate, rule) =>
+        matchesRuleSubject(candidate, rule, context),
+      )
+    const isTargets = resolveTargets(isTransformRules)
+    const becomeTargets = resolveTargets(becomeRules)
+    if (!isTargets.length && !becomeTargets.length) {
       next.push(item)
       continue
     }
 
     const transformedByKey = new Map<string, LevelItem>()
-    for (const target of targets) {
-      const variants = transformVariants(item, target, allTargets)
-      for (const variant of variants) {
-        transformedByKey.set(
-          `${variant.isText ? '1' : '0'}:${variant.name}`,
-          variant,
+    let vetoed = false
+    const collectVariants = (targets: string[], vetoOnIdentity: boolean) => {
+      for (const target of targets) {
+        const variants = transformVariants(
+          item,
+          resolveTransformTarget(item, target),
+          allTargets,
         )
+        for (const variant of variants) {
+          const identity =
+            variant.name === item.name && variant.isText === item.isText
+          if (identity) {
+            if (vetoOnIdentity) vetoed = true
+            continue
+          }
+          transformedByKey.set(
+            `${variant.isText ? '1' : '0'}:${variant.name}`,
+            variant,
+          )
+        }
       }
     }
+    collectVariants(isTargets, true)
+    collectVariants(becomeTargets, false)
+
+    // `x is x` vetoes every transform for x (predecessor `is_noun` returns
+    // no targets when the entity itself is among them), e.g.
+    // `flag is flag` + `flag is jelly` leaves flag unchanged.
+    if (vetoed) {
+      next.push(item)
+      continue
+    }
+
     const transformed = Array.from(transformedByKey.values())
     if (!transformed.length) {
       changed = true
       continue
     }
 
-    // `x is x` vetoes every transform for x (predecessor `is_noun` returns
-    // no targets when the entity itself is among them), e.g.
-    // `flag is flag` + `flag is jelly` leaves flag unchanged.
-    const nonIdentity = transformed.filter(
-      (value) => value.name !== item.name || value.isText !== item.isText,
-    )
-    if (nonIdentity.length !== transformed.length) {
-      next.push(item)
-      continue
-    }
-
     changed = true
-    const first = nonIdentity[0]
+    const first = transformed[0]
     if (!first) continue
     next.push({ ...first, id: item.id })
-    for (const rest of nonIdentity.slice(1))
+    for (const rest of transformed.slice(1))
       next.push({ ...rest, id: nextId++ })
   }
 
@@ -141,13 +177,22 @@ export const applyTransforms = (
       for (let x = 0; x < width; x += 1) {
         const cellKey = y * width + x
         if (occupied.has(cellKey)) continue
-        const emptyTargets = resolveEmptyRuleTargetsAt(
-          emptyTransformRules,
-          emptyContext,
-          x,
-          y,
-          'is-transform',
-        )
+        const emptyTargets = [
+          ...resolveEmptyRuleTargetsAt(
+            emptyTransformRules,
+            emptyContext,
+            x,
+            y,
+            'is-transform',
+          ),
+          ...resolveEmptyRuleTargetsAt(
+            emptyTransformRules,
+            emptyContext,
+            x,
+            y,
+            'become',
+          ),
+        ]
         if (!emptyTargets.length) continue
 
         for (const target of emptyTargets) {

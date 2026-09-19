@@ -1,17 +1,17 @@
-import { moveCursor } from '../overworld.js'
 import { applyTransforms } from '../resolve.js'
 
 import { applyInteractions } from './interactions.js'
 import { applyMake } from './make.js'
 import { moveItems } from './move-single.js'
 import {
+  applyBack,
   applyDirectionalFacing,
   applyFall,
   applyMore,
   applyMoveAdjective,
   applyShift,
 } from './phases.js'
-import { hasProp } from './shared.js'
+import { hasProp, isYouLike, reverseDirection } from './shared.js'
 import { applyTeleport } from './teleport.js'
 import { applyWrite } from './write.js'
 
@@ -28,7 +28,6 @@ export type StepStageSync =
 type ReuseRulesStage = {
   name:
     | 'player-move'
-    | 'cursor-move'
     | 'auto-move'
     | 'gravity'
     | 'shift'
@@ -37,6 +36,7 @@ type ReuseRulesStage = {
     | 'make'
     | 'write'
     | 'more'
+    | 'back'
     | 'interactions'
     | 'teleport'
   sync: { kind: 'reuse-rules' }
@@ -59,36 +59,38 @@ export type StepStage = ReuseRulesStage | RecomputeStage
 export const buildStepStages = (
   direction: Direction | null,
   turn: number,
+  levelDir?: Direction,
 ): StepStage[] => [
   {
     name: 'player-move',
     sync: { kind: 'reapply-properties' },
     run: (items, runtime) => {
       if (!direction) return { items, changed: false }
-      const moved = moveItems(
+      const isMover = (item: Item): boolean =>
+        isYouLike(item) &&
+        !hasProp(item, 'sleep') &&
+        !hasProp(item, 'broken')
+      // `reverse` flips the move direction for its own units only — run
+      // the two mover classes in separate passes.
+      const normal = moveItems(
         items,
         direction,
         runtime,
-        (item) => hasProp(item, 'you') && !hasProp(item, 'sleep'),
+        (item) => isMover(item) && !hasProp(item, 'reverse'),
         false,
       )
-      return { items: moved.items, changed: moved.moved }
-    },
-  },
-  {
-    // Overworld rail-hop: runs on directional input right after
-    // you-movement, like the predecessor. No-ops without a cursor.
-    name: 'cursor-move',
-    sync: { kind: 'reuse-rules' },
-    run: (items, runtime) => {
-      if (!direction) return { items, changed: false }
-      return moveCursor(
-        items,
-        direction,
-        runtime.width,
-        runtime.height,
-        runtime.context,
+      const flipped = moveItems(
+        normal.items,
+        reverseDirection(direction),
+        runtime,
+        (item) => isMover(item) && hasProp(item, 'reverse'),
+        false,
+        true,
       )
+      return {
+        items: flipped.items,
+        changed: normal.moved || flipped.moved,
+      }
     },
   },
   {
@@ -116,7 +118,7 @@ export const buildStepStages = (
     name: 'shift',
     sync: { kind: 'recollect-rules' },
     run: (items, runtime) => {
-      const moved = applyShift(items, runtime)
+      const moved = applyShift(items, runtime, levelDir)
       return { items: moved.items, changed: moved.moved }
     },
   },
@@ -152,6 +154,17 @@ export const buildStepStages = (
     run: (items, runtime) => applyMore(items, runtime.width, runtime.height),
   },
   {
+    // `x is back` rewinds movers to their pre-step cell (official
+    // undo-buffer restore in blocks.lua) — runs after all movement but
+    // before interactions, so the restored position still collides.
+    name: 'back',
+    sync: { kind: 'reuse-rules' },
+    run: (items, runtime) => {
+      const restored = applyBack(items, runtime.width, runtime.height)
+      return { items: restored.items, changed: restored.moved }
+    },
+  },
+  {
     name: 'interactions',
     sync: { kind: 'recollect-rules' },
     run: (items, runtime) => applyInteractions(items, runtime),
@@ -160,7 +173,14 @@ export const buildStepStages = (
     name: 'teleport',
     sync: { kind: 'recollect-rules' },
     run: (items, runtime) => {
-      const teleported = applyTeleport(items, runtime.width, turn)
+      const teleported = applyTeleport(
+        items,
+        runtime.width,
+        runtime.height,
+        turn,
+        runtime.buckets.level,
+        runtime.context,
+      )
       return { items: teleported.items, changed: teleported.moved }
     },
   },

@@ -9,10 +9,12 @@ import {
   asSubjectWord,
   isDirectionWord,
   isObjectWord,
+  INFIX_CONDITION_WORDS,
+  POSTFIX_CONDITION_WORDS,
   PROPERTY_WORDS,
 } from './types.js'
 
-import type { RuleCondition } from './types.js'
+import type { PostfixConditionKind, RuleCondition } from './types.js'
 
 type SubjectPattern = {
   subject: ReturnType<typeof asSubjectWord>
@@ -23,7 +25,11 @@ type SubjectPattern = {
   span: { start: number; end: number }
 }
 
-const CONDITION_OPERATOR_WORDS = ['on', 'near', 'facing'] as const
+const CONDITION_OPERATOR_WORDS = INFIX_CONDITION_WORDS
+
+// Type-3 condition words attach to the subject with no parameter — the
+// same slot `lonely` occupies: `BABA IDLE IS YOU`.
+const POSTFIX_CONDITION_WORD_SET = new Set<string>(POSTFIX_CONDITION_WORDS)
 
 const countConsecutiveNot = (
   readWordsAt: (position: number) => string[],
@@ -36,8 +42,8 @@ const countConsecutiveNot = (
 
 export const stringifyCondition = (condition?: RuleCondition): string => {
   if (!condition) return ''
-  if (condition.kind === 'lonely')
-    return `if:${condition.negated ? '!' : ''}lonely`
+  if (!('object' in condition))
+    return `if:${condition.negated ? '!' : ''}${condition.kind}`
   if ('direction' in condition)
     return `if:facing:${condition.negated ? '!' : ''}${condition.direction}`
   return `if:${condition.kind}:${condition.negated ? '!' : ''}${condition.object}`
@@ -88,13 +94,16 @@ export const collectSubjectPatterns = (
   for (const chain of subjectOrConditionChains.chains) {
     const nextWords = readWordsAt(chain.next)
 
-    if (nextWords.includes('lonely')) {
+    const postfixKind = nextWords.find((word) =>
+      POSTFIX_CONDITION_WORD_SET.has(word),
+    )
+    if (postfixKind) {
       const notCount = countConsecutiveNot(readWordsAt, chain.next + 1)
       addSubjectTerms(
         chain.terms,
         { start: 1, end: chain.next + 1 + notCount },
         {
-          kind: 'lonely',
+          kind: postfixKind as PostfixConditionKind,
           ...(notCount % 2 === 1 ? { negated: true } : {}),
         },
       )

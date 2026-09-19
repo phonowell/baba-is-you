@@ -72,6 +72,23 @@ test('step sets status lose when all YOU are defeated', () => {
   )
 })
 
+test('step keeps status playing in a room that never grants YOU', () => {
+  const level: LevelData = {
+    title: 'no-you-interlude',
+    width: 5,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 2, 1, false),
+      createItem(2, 'flag', 4, 1, false),
+    ],
+  }
+
+  const state = createInitialState(level, 0)
+  const result = step(state, 'right')
+
+  assert.equal(result.state.status, 'playing')
+})
+
 test('step preserves BABA IS YOU when trailing AND term is moved away', () => {
   const level: LevelData = {
     title: 'dangling-and-keeps-you',

@@ -34,8 +34,8 @@ const toRuleKeys = (
               : rule.kind
         const condition = !rule.condition
           ? ''
-          : rule.condition.kind === 'lonely'
-            ? `[${rule.condition.negated ? '!' : ''}lonely]`
+          : !('object' in rule.condition)
+            ? `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}]`
             : 'direction' in rule.condition
               ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
               : `[${rule.condition.kind}:${rule.condition.negated ? '!' : ''}${rule.condition.object}]`

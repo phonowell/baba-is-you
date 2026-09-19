@@ -23,6 +23,15 @@ const ruleKindFor = (
   if (operator === 'make') return 'make'
   if (operator === 'eat') return 'eat'
   if (operator === 'write') return 'write'
+  if (operator === 'fear') return 'fear'
+  if (operator === 'follow') return 'follow'
+  if (operator === 'mimic') return 'mimic'
+  if (operator === 'play') return 'play'
+  if (operator === 'become') return 'become'
+  // `x is revert` is the official transform back to the entity's original
+  // kind, not a property — route it into the transform bucket even though
+  // `revert` sits in the type-2 word list.
+  if (objectWord === 'revert') return 'is-transform'
   return PROPERTY_WORDS.has(objectWord) ? 'is-property' : 'is-transform'
 }
 
@@ -42,9 +51,8 @@ export type RuleInstance = {
 
 const conditionWords = (condition?: RuleCondition): string[] => {
   if (!condition) return []
-  if (condition.kind === 'lonely') return ['lonely']
-  if (condition.kind === 'facing' && 'direction' in condition)
-    return ['facing', condition.direction]
+  if ('direction' in condition) return ['facing', condition.direction]
+  if (!('object' in condition)) return [condition.kind]
   return [condition.kind, condition.object]
 }
 
@@ -56,7 +64,15 @@ export const collectRuleInstances = (
   const grid = new Map<number, string[]>()
   const textAt = new Map<number, LevelItem[]>()
   for (const item of items) {
-    if (!item.isText) continue
+    // `word` objects act as their noun in rule text (they contribute the
+    // word but are not text cards, so they stay out of `textAt`'s
+    // strike-through marking).
+    const isWord =
+      !item.isText &&
+      'props' in item &&
+      Array.isArray(item.props) &&
+      item.props.includes('word')
+    if (!item.isText && !isWord) continue
     if (item.x < 0 || item.x >= width || item.y < 0 || item.y >= height)
       continue
 
@@ -64,9 +80,11 @@ export const collectRuleInstances = (
     const list = grid.get(key) ?? []
     list.push(item.name)
     grid.set(key, list)
-    const cellItems = textAt.get(key) ?? []
-    cellItems.push(item)
-    textAt.set(key, cellItems)
+    if (item.isText) {
+      const cellItems = textAt.get(key) ?? []
+      cellItems.push(item)
+      textAt.set(key, cellItems)
+    }
   }
 
   const maxDepth = width + height
@@ -177,6 +195,62 @@ export const collectRuleInstances = (
   return instances
 }
 
+const ruleDedupeKey = (rule: Rule): string =>
+  `${rule.subjectNegated ? '!' : ''}${rule.subject}:${stringifyCondition(
+    rule.condition,
+  )}:${rule.kind}:${rule.objectNegated ? '!' : ''}${rule.object}`
+
+// `x mimic y` copies every active non-mimic rule whose subject is `y` onto
+// subject `x` (official `featureindex` copy in rules.lua). `x mimic not y`
+// is protection: it blocks copying `y`'s rules onto `x`. Negated-subject
+// rules (`not y is push`) are never copied — the official `trule[1] ==
+// target` check compares base words. Copied rules keep their own
+// condition, or inherit the mimic rule's when they have none.
+export const expandMimicRules = (rules: Rule[]): Rule[] => {
+  if (!rules.some((rule) => rule.kind === 'mimic')) return rules
+
+  const protectedPairs = new Set<string>()
+  for (const rule of rules) {
+    if (rule.kind === 'mimic' && rule.objectNegated)
+      protectedPairs.add(`${rule.subjectNegated ? '!' : ''}${rule.subject}:${rule.object}`)
+  }
+
+  const seen = new Set<string>(rules.map(ruleDedupeKey))
+  const expanded = [...rules]
+  for (const mimic of rules) {
+    if (mimic.kind !== 'mimic' || mimic.objectNegated) continue
+    if (
+      protectedPairs.has(
+        `${mimic.subjectNegated ? '!' : ''}${mimic.subject}:${mimic.object}`,
+      )
+    )
+      continue
+    for (const rule of rules) {
+      if (rule.kind === 'mimic') continue
+      if (
+        (rule.subject as string) !== (mimic.object as string) ||
+        rule.subjectNegated
+      )
+        continue
+      const copied: Rule = {
+        subject: mimic.subject,
+        ...(mimic.subjectNegated ? { subjectNegated: true } : {}),
+        kind: rule.kind,
+        object: rule.object,
+        ...(rule.objectNegated ? { objectNegated: true } : {}),
+        ...(rule.condition ?? mimic.condition
+          ? { condition: rule.condition ?? mimic.condition }
+          : {}),
+      }
+      const key = ruleDedupeKey(copied)
+      if (seen.has(key)) continue
+      seen.add(key)
+      expanded.push(copied)
+    }
+  }
+  return expanded
+}
+
 export const collectRules = (
   items: LevelItem[],
   width: number,
@@ -185,13 +259,10 @@ export const collectRules = (
   const rules: Rule[] = []
   const seen = new Set<string>()
   for (const { rule } of collectRuleInstances(items, width, height)) {
-    const conditionKey = stringifyCondition(rule.condition)
-    const key = `${rule.subjectNegated ? '!' : ''}${rule.subject}:${conditionKey}:${
-      rule.kind
-    }:${rule.objectNegated ? '!' : ''}${rule.object}`
+    const key = ruleDedupeKey(rule)
     if (seen.has(key)) continue
     seen.add(key)
     rules.push(rule)
   }
-  return rules
+  return expandMimicRules(rules)
 }

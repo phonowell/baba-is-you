@@ -1,6 +1,7 @@
 import {
   getLiveCellItems,
   inBounds,
+  isLockedFor,
   isOpenShutPair,
   removeOne,
 } from './move-core.js'
@@ -21,6 +22,8 @@ export type Arrow = {
 export type BatchMoveContext = MoveCoreContext & {
   emptyPush: boolean
   emptyStop: boolean
+  // `level is hold`-pinned units: can't move under their own power.
+  pinnedIds: Set<number>
   status: { changed: boolean }
 }
 
@@ -56,6 +59,11 @@ export const resolveBatchArrows = (
     const item = context.byId.get(id)
     if (!item) continue
 
+    if (isLockedFor(item, arrow.dir) || context.pinnedIds.has(id)) {
+      arrow.status = 'stopped'
+      continue
+    }
+
     const [dx, dy] = MOVE_DELTAS[arrow.dir]
     const nx = item.x + dx
     const ny = item.y + dy
@@ -88,6 +96,7 @@ export const resolveBatchArrows = (
       if (!blocked) {
         let pushed = false
         for (const target of targets) {
+          if (context.phantomIds.has(target.id)) continue
           if (!context.pushIds.has(target.id)) continue
           if (arrows.has(target.id)) continue
           addArrow(target.id, arrow.dir, false)
@@ -100,6 +109,7 @@ export const resolveBatchArrows = (
       }
 
       for (const target of targets) {
+        if (context.phantomIds.has(target.id)) continue
         if (!throughEmptyPush && isOpenShutPair(context, item, target)) {
           if (removeOne(context, item)) context.status.changed = true
           if (removeOne(context, target)) context.status.changed = true
@@ -110,7 +120,8 @@ export const resolveBatchArrows = (
         const push = context.pushIds.has(target.id)
         const pull = context.pullIds.has(target.id)
         const weak = context.weakIds.has(target.id)
-        if (weak || blocked || (!push && !stop && !pull)) continue
+        const still = context.stillIds.has(target.id)
+        if (weak || blocked || (!push && !stop && !pull && !still)) continue
 
         const targetArrow = arrows.get(target.id)
         if (targetArrow?.dir === arrow.dir) {
@@ -123,7 +134,7 @@ export const resolveBatchArrows = (
           continue
         }
 
-        if (stop || pull) blocked = true
+        if (stop || pull || still) blocked = true
       }
     }
 

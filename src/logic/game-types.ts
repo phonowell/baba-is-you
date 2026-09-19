@@ -1,22 +1,5 @@
 import type { Direction, Property, Rule } from './types.js'
 
-// Overworld icon entry point, from the official map files (`leveltype=1`
-// .ld `[levels]` entries). `kind` resolves the target file at import:
-// `level` opens a playable level, `map` dives into another map, and
-// `unresolved` icons point at levels the importer filtered out.
-// `number`/`style`/`colour`/`icon` mirror the .ld display fields
-// (style 0 = number dot, 1 = letter, 2 = special, -1 = world icon).
-export type LevelIcon = {
-  kind: 'level' | 'map' | 'unresolved'
-  file: string
-  number: number
-  style: number
-  colour?: string
-  icon?: string
-  levelIndex?: number
-  mapFile?: string
-}
-
 export type LevelItem = {
   id: number
   name: string
@@ -24,8 +7,14 @@ export type LevelItem = {
   y: number
   isText: boolean
   dir?: Direction
-  // `level` entities only: which map entry this icon opens.
-  levelTarget?: LevelIcon
+  // `x is revert` support: the kind this entity was first spawned/loaded
+  // as. Set when a transform first renames the entity; untouched items
+  // fall back to their own `name`.
+  originName?: string
+  // `x is back` support: the cell this entity occupied at the start of
+  // the previous step. Written by `step` for `back`-prop entities only.
+  prevX?: number
+  prevY?: number
 }
 
 export type Item = LevelItem & {
@@ -42,12 +31,6 @@ export type LevelMeta = {
     string,
     readonly [readonly [number, number], readonly [number, number]]
   >
-  // Official map files: cursor spawn cell and the parent map a bare
-  // "leave" falls through to when the session stack is exhausted.
-  map?: {
-    selector?: readonly [number, number]
-    parentFile?: string
-  }
 }
 
 export type LevelData = {
@@ -75,6 +58,18 @@ export type GameState = {
   // states built outside step (fixtures) leave it undefined and callers
   // fall back to `collectOverriddenTextIds`.
   overriddenTextIds?: ReadonlySet<number>
+  // The items array `rules`/`overriddenTextIds` were last parsed from.
+  // Rule collection reads only id/name/x/y/isText and the `word` prop, so a
+  // later step whose items match those fields element-wise can reuse the
+  // stored rules verbatim instead of rescanning the text grid.
+  rulesSourceItems?: readonly LevelItem[]
+  // `level is you/move/…` scrolls the whole room (official
+  // `MF_scrollroom`): purely visual — logical positions and rule
+  // adjacency never move. `levelOffset` accumulates in whole cells and
+  // wraps at the edges; `levelDir` is the official `mapdir` (starts at
+  // `down`) that `level is move`/`auto`/`fall*` scroll along.
+  levelOffset?: { x: number; y: number }
+  levelDir?: Direction
   meta?: LevelMeta
 }
 

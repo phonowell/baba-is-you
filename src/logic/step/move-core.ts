@@ -1,21 +1,34 @@
-import { keyFor } from './shared.js'
+import { hasProp, keyFor } from './shared.js'
 
-import type { Item } from '../types.js'
+import type { Direction, Item } from '../types.js'
 
 export type MoveCoreContext = {
   byId: Map<number, Item>
   grid: Map<number, Item[]>
   height: number
   openIds: Set<number>
+  phantomIds: Set<number>
   pullIds: Set<number>
   pushIds: Set<number>
   removed: Set<number>
   removedItems: Item[]
   shutIds: Set<number>
+  stillIds: Set<number>
   stopIds: Set<number>
   weakIds: Set<number>
   width: number
 }
+
+// `locked*` blocks any move in that direction — self-propelled or pushed.
+export const LOCKED_PROPS: Record<Direction, Item['props'][number]> = {
+  up: 'lockedup',
+  right: 'lockedright',
+  down: 'lockeddown',
+  left: 'lockedleft',
+}
+
+export const isLockedFor = (item: Item, direction: Direction): boolean =>
+  hasProp(item, LOCKED_PROPS[direction])
 
 export const inBounds = (
   context: MoveCoreContext,
@@ -33,6 +46,9 @@ export const isOpenShutPair = (
 
 export const removeOne = (context: MoveCoreContext, item: Item): boolean => {
   if (context.removed.has(item.id)) return false
+  // `safe` units survive every removal path that routes through the move
+  // engines (weak crumble, open/shut pairs).
+  if (hasProp(item, 'safe')) return false
   context.removed.add(item.id)
   context.removedItems.push(item)
   context.byId.delete(item.id)

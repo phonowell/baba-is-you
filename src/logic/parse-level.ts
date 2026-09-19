@@ -39,8 +39,12 @@ export const parseLevel = (levelText: string): LevelData => {
 
     if (lowerKey === 'background') continue
 
-    const isText = key !== lowerKey
-    let name = lowerKey
+    // `!` marks text whose name carries no case (`3d`, `0`–`9`) — the
+    // importer cannot rely on capitalization to flag those as words.
+    const hasTextMarker = key.endsWith('!')
+    const bareKey = hasTextMarker ? key.slice(0, -1) : key
+    const isText = hasTextMarker || bareKey !== bareKey.toLowerCase()
+    let name = bareKey.toLowerCase()
     let dir: LevelItem['dir']
     const directionMatch = lowerKey.match(DIRECTION_SUFFIX_RE)
     if (directionMatch) {

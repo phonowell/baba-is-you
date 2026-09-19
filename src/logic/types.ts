@@ -31,6 +31,73 @@ export const CORE_PROPERTIES = [
   'sleep',
   'group',
   'facing',
+  // Official type-2 vocabulary beyond the original core set. Behavioral:
+  // `word` (object acts as its noun in rule text), `safe` (survives
+  // destruction), `still` (cannot be pushed/pulled/shifted/swapped),
+  // `broken` (cannot self-move), `3d`/`you2` (extra you-layers),
+  // `bonus`/`end`/`done` (you-touch pickups/completions),
+  // `power`/`power2`/`power3` (enable `powered*` conditions),
+  // `phantom` (no collision/interaction), `auto`/`chill` (unprompted
+  // moves), `turn`/`deturn` (per-turn rotation), `locked*` (directional
+  // move lock), `fall*` (directional gravity), `boom` (explodes on
+  // contact). The rest parse as inert official vocabulary (emotions,
+  // colours, meta props) so imported rule text never silently degrades
+  // into nouns.
+  'word',
+  'safe',
+  'still',
+  'broken',
+  '3d',
+  'you2',
+  'bonus',
+  'end',
+  'done',
+  'power',
+  'power2',
+  'power3',
+  'phantom',
+  'auto',
+  'chill',
+  'turn',
+  'deturn',
+  'lockedup',
+  'lockeddown',
+  'lockedleft',
+  'lockedright',
+  'fallup',
+  'fallleft',
+  'fallright',
+  'boom',
+  'group2',
+  'group3',
+  'back',
+  'reverse',
+  'revert',
+  'hold',
+  'select',
+  'nudgeup',
+  'nudgedown',
+  'nudgeleft',
+  'nudgeright',
+  'wonder',
+  'sad',
+  'happy',
+  'angry',
+  'party',
+  'pet',
+  'black',
+  'brown',
+  'cyan',
+  'green',
+  'grey',
+  'lime',
+  'orange',
+  'pink',
+  'purple',
+  'rosy',
+  'silver',
+  'white',
+  'yellow',
 ] as const
 
 export type Property = (typeof CORE_PROPERTIES)[number]
@@ -42,6 +109,11 @@ export type RuleKind =
   | 'make'
   | 'eat'
   | 'write'
+  | 'fear'
+  | 'follow'
+  | 'mimic'
+  | 'play'
+  | 'become'
 
 export const RULE_OPERATOR_WORDS = [
   'is',
@@ -49,15 +121,46 @@ export const RULE_OPERATOR_WORDS = [
   'make',
   'eat',
   'write',
+  'fear',
+  'follow',
+  'mimic',
+  'play',
+  'become',
 ] as const
 
 export const RULE_CONNECTOR_WORDS = ['and', 'not'] as const
 
-export const RULE_CONDITION_WORDS = [
+// Infix (type 7) conditions take an object parameter: `X <cond> Y IS …`.
+export const INFIX_CONDITION_WORDS = [
   'on',
   'near',
   'facing',
+  'nextto',
+  'facedby',
+  'seeing',
+  'without',
+  'above',
+  'below',
+  'besideleft',
+  'besideright',
+  'feeling',
+] as const
+
+// Postfix (type 3) conditions attach to the subject directly:
+// `X <cond> IS …`.
+export const POSTFIX_CONDITION_WORDS = [
   'lonely',
+  'powered',
+  'powered2',
+  'powered3',
+  'idle',
+  'often',
+  'seldom',
+] as const
+
+export const RULE_CONDITION_WORDS = [
+  ...INFIX_CONDITION_WORDS,
+  ...POSTFIX_CONDITION_WORDS,
 ] as const
 
 export const SPECIAL_NOUN_WORDS = [
@@ -65,6 +168,8 @@ export const SPECIAL_NOUN_WORDS = [
   'empty',
   'all',
   'group',
+  'group2',
+  'group3',
   'level',
 ] as const
 
@@ -86,9 +191,17 @@ export type ConditionObjectWord = string & {
 }
 export type RuleWord = SubjectWord | ObjectWord
 
+export type PostfixConditionKind = (typeof POSTFIX_CONDITION_WORDS)[number]
+export type InfixConditionKind = (typeof INFIX_CONDITION_WORDS)[number]
+
+// One union member per postfix kind so `kind === 'x'` narrows cleanly.
+type PostfixCondition = {
+  [K in PostfixConditionKind]: { kind: K; negated?: boolean }
+}[PostfixConditionKind]
+
 export type RuleCondition =
   | {
-      kind: 'on' | 'near'
+      kind: Exclude<InfixConditionKind, 'facing'>
       object: ConditionObjectWord
       negated?: boolean
     }
@@ -102,10 +215,7 @@ export type RuleCondition =
       direction: Direction
       negated?: boolean
     }
-  | {
-      kind: 'lonely'
-      negated?: boolean
-    }
+  | PostfixCondition
 
 export type Rule = {
   subject: SubjectWord
@@ -121,7 +231,6 @@ export type {
   GameStatus,
   Item,
   LevelData,
-  LevelIcon,
   LevelItem,
   LevelMeta,
   StepResult,

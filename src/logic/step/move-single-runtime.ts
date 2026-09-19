@@ -1,6 +1,7 @@
 import {
   getLiveCellItems,
   inBounds,
+  isLockedFor,
   isOpenShutPair,
   moveOne,
   removeOne,
@@ -48,6 +49,7 @@ export const createSingleMoveRuntime = (
 
     const item = context.byId.get(id)
     if (!item) return false
+    if (isLockedFor(item, direction)) return false
 
     const nx = item.x + dx
     const ny = item.y + dy
@@ -78,6 +80,9 @@ export const createSingleMoveRuntime = (
 
     const pushTargets: Item[] = []
     for (const target of targets) {
+      // Phantom units are ghosts for collision purposes — movers pass
+      // through them with no push/pull/stop interaction at all.
+      if (context.phantomIds.has(target.id)) continue
       if (context.weakIds.has(target.id)) continue
 
       const pushable = context.pushIds.has(target.id)
@@ -86,7 +91,11 @@ export const createSingleMoveRuntime = (
         context.stopIds.has(target.id) && !pushable && !swappable
       const blockingPull =
         context.pullIds.has(target.id) && !pushable && !swappable
-      if (blockingStop || blockingPull) {
+      // A `still` unit can't be carried by external forces — it blocks
+      // like a wall unless it is vacating the cell under its own move.
+      const blockingStill =
+        context.stillIds.has(target.id) && !pushable && !swappable
+      if (blockingStop || blockingPull || blockingStill) {
         // A blocker that is itself a mover this phase (e.g. WALL IS YOU
         // plus WALL IS STOP) only blocks if it cannot vacate its cell —
         // the predecessor defers to the blocker's own pending arrow.
