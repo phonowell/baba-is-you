@@ -4,6 +4,8 @@
 
 純粋なロジックコアを持つ Baba Is You 実装です。フロントエンドは単一 HTML Web（`src/web/app.ts`）です。
 
+**オンラインでプレイ: https://auvya.com/baba**
+
 ## クイックスタート
 
 ```bash
@@ -20,7 +22,6 @@ pnpm type-check
 | コマンド | 説明 |
 |---------|------|
 | `pnpm check` | lint + 型チェック + テストを一括実行 |
-| `pnpm simulate` | ヘッドレスでレベルをステップ実行（例 `pnpm simulate 0 rrdl --trace`） |
 | `pnpm build` | 単一 HTML 生成（`release/baba-is-you.html`） |
 | `pnpm watch` | 変更を監視して単一ファイルを再ビルド |
 | `pnpm verify-levels:official` | ローカルの `data/baba/*.(l|ld)` ダンプ（gitignore 済み・非配布）と公式レベルテキストの導入整合性を検証 |
@@ -31,9 +32,11 @@ pnpm type-check
 
 ## 操作
 
-- メニュー: `W/S` または `↑/↓` で選択、`A/D` または `←/→` でページ移動、`Enter/N/Space` で開始、`Q` で終了
-- ゲーム中: `WASD` または矢印で移動、`Space` で待機、`U` で取り消し、`R` でリスタート、勝利後 `N/Enter` で次へ、`Q` でメニューへ戻る
-- ゲームパッド（標準レイアウト）: `十字キー`/左スティックで移動・選択、`A` で待機/決定、`B` で取り消し/ダイアログを閉じる、`X` でリスタート、`Start` でメニューへ戻る
+- 起動すると公式オーバーワールドマップが開く: カーソルが `line` パスとレベルアイコン上を歩き、`Enter`/`Space`/`N` またはタップでカーソル下のレベル/サブマップへ進み、`Q`/`Esc` で親マップへ戻る。レベルクリア後はマップに戻り、カーソルはクリアしたアイコン上に置かれる
+- マップ上: `WASD` または矢印でカーソル移動、`Enter/Space/N` で進入、`U/Z` でカーソル移動を1手取り消し、`R` でマップリセット、`Q/Esc` で戻る
+- ゲーム中: `WASD` または矢印で移動、`Space` で待機、`U/Z` で取り消し、`R` でリスタート、勝利後 `N/Enter` でマップへ戻る、`Q` でマップへ戻る
+- タッチ: マップ上のスワイプでカーソル移動、タップで進入。ゲーム中はスワイプで移動、タップで待機。HUD ボタンで取り消し/リスタート/マップへ戻る。スマホは横向き固定
+- ゲームパッド（標準レイアウト）: `十字キー`/左スティックで移動・カーソル移動、`A` で待機/進入、`B` で取り消し/マップで戻る/ダイアログを閉じる、`X` でリスタート/マップリセット、`Start` で戻る、`Select` で操作説明。`A`/`B` 長押しで待機/取り消し連打
 
 ## ルールシステム（実装済み）
 
@@ -47,7 +50,7 @@ pnpm type-check
 
 - Web: 盤面セルは常に正方形、テキストタイルは全文字表示、ルールと凡例はゲーム内ダイアログで表示
 - Web 3D 描画は単一固定のクレイ質感 preset（実行時切替なし）: ピクセル sprite 付きオブジェクトはボクセル押出しのピクセルモデル、それ以外（テキスト/emoji/グリフラベル）は厚み付きプレートとして描画、向き矢印はオーバーレイ層として表示
-- Web 3D の立体スタック順は固定: `cursor > you > text > move/fall > push/pull > open/shut > else`（`cursor` はオーバーワールドマップのみ）
+- Web 3D の立体スタック順は固定: `you > text > move/fall > push/pull > open/shut > else`
 - 地貼り要素（`tile`、`water`、`belt`、`line`）は平置きで、上記の立体スタック優先度に参加しません
 
 ## 単一 HTML
@@ -63,12 +66,14 @@ pnpm build
 
 - 入口: `src/levels.ts`
 - データパック: `src/levels-data/00-official.ts` … `src/levels-data/04-official.ts`（`src/levels.ts` で集約）
+- オーバーワールドマップ: `src/levels-maps.ts` — 公式 `leveltype=1` マップ（ルート `106level`）。レベルパックと同じく `pnpm import-levels:official` で生成
 
 ## 構成
 
 ```text
 src/
   levels.ts
+  levels-maps.ts
   levels-data/
   logic/
   tools/

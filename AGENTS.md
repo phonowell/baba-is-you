@@ -23,7 +23,6 @@
   - 属性词：以 `src/logic/types.ts` 的 `CORE_PROPERTIES` 为准
 - 修改规则词表时同步：`src/logic/types.ts`、`src/logic/rules*.ts`、`src/view/render-config.ts`、相关测试；若已集中导出语法集合，禁止再手写镜像副本
 - Web 渲染约束：入口在 `src/web/app.ts`；3D 渲染使用 `src/web/board-3d-renderer*.ts` 体系，是唯一场景，不实现 2D/无 WebGL 回退；必须保证可释放（`dispose`）
-- 无头调试输出经 `src/tools/print-board.ts`：双宽格子、文本两字母码；该文件是 simulate 的打印器，不是第二套前端
 
 ## 技术栈
 - Node.js + TypeScript + ESM
@@ -33,9 +32,9 @@
 
 ## 核心命令
 - `pnpm check`：lint + type-check + test 一步验证（改动后默认先跑它）
-- `pnpm simulate`：无头推演关卡，例 `pnpm simulate 0 rrdl --trace`；`pnpm simulate --ascii levels/0-baba-is-you.txt rrr` 推演 ASCII 关卡；大地图（`index.txt`）支持 `e` 进入关卡、`b` 返回上级
-- `pnpm build`：构建单文件 Web（`release/baba-is-you.html`）
-- `pnpm deploy`：构建并部署到 `auvya.com/baba`（流程与坑位见 `docs/deploy.md`）
+- `pnpm build`：构建本地预览单文件（`release-local/baba-is-you.html`，无域名锁）
+- `pnpm build:deploy`：构建部署版（`release/` 下壳 HTML + 受门控 bundle，仅 auvya.com 可运行）
+- `pnpm deploy`：构建部署版并部署到 `auvya.com/baba`（流程与坑位见 `docs/deploy.md`）
 - `pnpm watch`：监听并自动 build
 - `pnpm test`：运行 `src/**/*.test.ts`
 - `pnpm lint`：oxlint + BOM/CRLF 归一
@@ -46,17 +45,15 @@
 ## 目录结构
 - `src/web/app.ts`：Web 应用入口
 - `src/web/pixel-sprites/`：像素 sprite 数据与体素几何（帧派生、blit、voxel 挤出）
-- `src/tools/level-graph.ts`：关卡目录 → 大地图导航图（供 simulate 加载 `index.txt`）
-- `src/tools/print-board.ts`：纯文本棋盘打印器（供 simulate 输出）
-- `src/logic/overworld.ts`：大地图纯逻辑（光标放置/移动、进入/返回、会话栈）
 - `src/logic/`：规则解析、匹配、状态推进；`src/logic/step/` 为推进流水线（`step.ts` 编排、`step/phase-list.ts` 定义阶段序列）
 - `src/view/`：输入映射、HTML 渲染与 Web 共享渲染配置
 - `src/levels.ts`、`src/levels-data/*.ts`：关卡入口与数据包（由 `web/app.ts` 装配，内层不反向依赖）
-- `levels/**/*.txt`：前身 Rust 项目移植的 ASCII 关卡（`src/logic/parse-ascii-level.ts` 解析；`index.txt` 为大地图，含 Level 图标/Cursor/`map N icon` 图例）
+- `src/levels-maps.ts`：官方 `leveltype=1` overworld 地图数据（生成物，`pnpm import-levels:official` 重生成；根图 `106level`）；`src/logic/overworld.ts` 为光标行走/会话栈纯逻辑，`src/logic/map-level.ts` 把地图装配成 `LevelData`
+- `levels/**/*.txt`：前身 Rust 项目移植的关卡夹具（实体列表语法，`src/logic/parse-level.ts` 解析，供 golden 回放装载；支持同格多实体）
 - `src/logic/rules-override.ts`：规则实例源格溯源与被否决规则划分
 - `goldens/**/*.json`：通关回放快照，由 `src/logic/goldens.test.ts` 全量回放断言；`scripts/port-rust-goldens.ts` 可从 `../baba/goldens` 重新生成
 - `src/tools/import-official-levels.ts`：官方关卡导入/校验（独立脚本入口，只依赖 `logic`）
-- `scripts/build-single-html.mjs`：单文件构建脚本
+- `scripts/build-single-html.mjs`：Web 构建脚本（默认本地单文件；`--deploy` 产壳+锁定 bundle）
 - `docs/logic-architecture.md`：逻辑流水线说明
 - `docs/deploy.md`：部署到 `auvya.com/baba` 的流程与边界（`wrangler.toml` + `src/tools/deploy-worker.ts`）
 

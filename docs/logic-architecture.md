@@ -10,7 +10,6 @@ Core turn flow is in `src/logic/step.ts`.
 
 - Each turn runs a fixed stage pipeline in gameplay order:
   - `player-move`
-  - `cursor-move` (overworld rail-hop; no-ops on boards without a cursor)
   - `auto-move`
   - `gravity`
   - `shift`
@@ -50,10 +49,6 @@ Rule evaluation state is centralized in `src/logic/rule-runtime.ts`.
 - `x is x` suppresses every other transform on subject `x`.
 
 `collectRuleRuntime` feeds only active rules into the runtime, so overridden rules have no gameplay effect; `collectTextRuleMarks` / `collectOverriddenTextIds` expose the same partition for struck-through text rendering in the web layer.
-
-## Overworld
-
-`src/logic/overworld.ts` owns map-mode logic: cursor placement/movement (`placeCursor`, `moveCursor`), enter/leave target resolution (`resolveEnterTarget`), and the session stack (`createOverworldSession`, `applyEnter`, `applyLeave`). Enter/leave are session-level inputs handled outside `step()`; `pnpm simulate --ascii levels/index.txt` drives them via `e`/`b`.
 
 ## Rule Vocabulary
 
