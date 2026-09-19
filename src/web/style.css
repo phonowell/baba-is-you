@@ -116,7 +116,8 @@ button,
   box-shadow: var(--focus-ring);
 }
 
-.game-screen {
+.game-screen,
+.menu-screen {
   margin: 0;
   background: transparent;
   border: 0;
@@ -428,6 +429,26 @@ body.game-3d-fullscreen .board.board-3d {
   to { opacity: 1; transform: none; }
 }
 
+/* Menu entrance: soft rise used by the header, each list item (staggered
+   via --row-i), and the footer. Scoped under .menu-enter so selection
+   re-renders never replay it. */
+@keyframes menu-item-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Baba-style idle wiggle: a two-frame squash-stretch flip, same rhythm as
+   the board's sprite wobble. steps(1) holds each pose for half a cycle. */
+@keyframes marker-wiggle {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.14, 0.86); }
+}
+
+@keyframes menu-more-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
 @keyframes toolbar-in {
   from { transform: translateY(100%); }
   to { transform: none; }
@@ -573,6 +594,239 @@ body.game-3d-fullscreen .reference-header .btn {
   border: 1px solid rgb(201 168 106 / 45%);
   background: rgb(248 242 226 / 8%);
   color: var(--cream);
+}
+
+/* ── Menu screen ────────────────────────────────────────────────
+   A single centered column floats on the ink backdrop: hero title,
+   sliding window of parchment pill rows, kbd-chip hints. */
+.menu-screen {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 20px 32px;
+}
+
+/* Faint gold pinstripe + cool glow from the top edge — the same
+   diagonal weave the reference backdrop wears, kept whisper-quiet. */
+.menu-screen::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 75% 45% at 50% 0%, rgb(150 180 220 / 9%), transparent 70%),
+    repeating-linear-gradient(
+      135deg,
+      rgb(211 188 142 / 4%) 0 1px,
+      transparent 1px 11px
+    );
+}
+
+/* margin:auto centers the column on both axes and collapses to 0 when
+   content overflows, so short viewports scroll instead of clipping.
+   position:relative keeps content painted above the fixed ::before. */
+.menu-inner {
+  position: relative;
+  margin: auto;
+  width: min(560px, 100%);
+  text-align: center;
+}
+
+.menu-header {
+  margin-bottom: 26px;
+}
+
+.title {
+  margin: 0;
+  color: #f8f2e2;
+  font-size: clamp(30px, 5.5vw, 46px);
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  text-shadow: 0 2px 10px rgb(15 25 40 / 60%);
+}
+
+.menu-flourish {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 230px;
+  margin: 16px auto 12px;
+  color: var(--accent);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.menu-flourish::before,
+.menu-flourish::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(to right, transparent, rgb(201 168 106 / 75%));
+}
+
+.menu-flourish::after {
+  transform: scaleX(-1);
+}
+
+.menu-count {
+  margin: 0;
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+}
+
+/* Genshin menus float pill rows on the dimmed scene — no containing
+   panel, each row is its own parchment bar. */
+.menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-row {
+  display: grid;
+  grid-template-columns: 18px 40px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  /* Parchment pill rows like the Genshin settings list, with a faint gold
+     keyline inside the edge. */
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--cream), #e2d7bd);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgb(201 168 106 / 32%), var(--shadow-raised-soft);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform var(--motion-duration) ease-out,
+    box-shadow var(--motion-duration) ease-out,
+    color var(--motion-duration) ease-out;
+}
+
+.menu-row:not(.selected):hover {
+  background: linear-gradient(180deg, var(--cream-hi), var(--cream));
+  color: var(--accent-dark);
+  transform: translateY(-1px);
+}
+
+.menu-row.selected {
+  color: var(--accent-dark);
+  background: linear-gradient(180deg, #fbf4df, var(--cream-hi));
+  box-shadow:
+    inset 0 0 0 1.5px var(--accent),
+    var(--shadow-raised-soft),
+    0 0 16px rgb(201 168 106 / 35%);
+}
+
+.menu-row .num {
+  text-align: right;
+  color: var(--muted);
+}
+
+.menu-row.selected .num {
+  color: var(--accent-dark);
+}
+
+.menu-row.selected .marker {
+  color: var(--accent);
+  text-shadow: 0 0 6px rgb(201 168 106 / 70%);
+  /* Selected tile keeps the board's two-frame idle wobble. */
+  animation: marker-wiggle 480ms steps(1) infinite;
+}
+
+/* Edge-of-window marker: the list is a sliding window over all levels. */
+.menu-more {
+  text-align: center;
+  color: #7d8698;
+  font-size: 13px;
+  line-height: 1.2;
+  letter-spacing: 0.2em;
+  animation: menu-more-pulse 1.6s ease-in-out infinite;
+}
+
+.menu-position {
+  margin: 16px 0 0;
+  font-size: 13px;
+  color: #a5aec0;
+  letter-spacing: 0.06em;
+}
+
+.menu-position strong {
+  color: var(--accent);
+  margin-right: 10px;
+}
+
+.menu-hints {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+}
+
+.menu-hint {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  font-size: 12px;
+  color: #98a2b5;
+}
+
+.hint-label {
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+}
+
+/* Entrance cascade — only rendered while .menu-enter is on the section
+   (fresh entry), so per-selection re-renders stay still. */
+.menu-enter .title {
+  animation: menu-item-in 300ms ease-out backwards;
+}
+
+.menu-enter .menu-flourish {
+  animation: menu-item-in 300ms ease-out backwards;
+  animation-delay: 90ms;
+}
+
+.menu-enter .menu-count {
+  animation: menu-item-in 300ms ease-out backwards;
+  animation-delay: 150ms;
+}
+
+.menu-enter .menu-row {
+  animation: menu-item-in 260ms ease-out backwards;
+  animation-delay: calc(200ms + var(--row-i, 0) * 38ms);
+}
+
+/* The ⋮ indicator keeps its idle pulse while riding the same stagger —
+   listing both animations so the pulse isn't overridden for the whole
+   menu visit. */
+.menu-enter .menu-more {
+  animation:
+    menu-item-in 260ms ease-out backwards,
+    menu-more-pulse 1.6s ease-in-out infinite;
+  animation-delay:
+    calc(200ms + var(--row-i, 0) * 38ms),
+    0s;
+}
+
+.menu-enter .menu-position {
+  animation: menu-item-in 260ms ease-out backwards;
+  animation-delay: calc(280ms + var(--rows, 10) * 38ms);
+}
+
+.menu-enter .menu-hints {
+  animation: menu-item-in 260ms ease-out backwards;
+  animation-delay: calc(340ms + var(--rows, 10) * 38ms);
 }
 
 ::selection {

@@ -1,4 +1,4 @@
-import { mapGameKeyboardEvent, mapMapKeyboardEvent } from '../view/input-web.js'
+import { mapGameKeyboardEvent, mapMenuKeyboardEvent } from '../view/input-web.js'
 import { mapGameCommandToAction } from './app-commands.js'
 
 import type { WebAppAction, WebAppSnapshot } from './app-model.js'
@@ -63,8 +63,10 @@ export const createWebAppController = (
     handleGameCommand,
     handleGameKeyboardEvent: (event: KeyboardEvent): boolean =>
       handleGameCommand(mapGameKeyboardEvent(event)),
-    handleMapKeyboardEvent: (event: KeyboardEvent): boolean =>
-      handleGameCommand(mapMapKeyboardEvent(event)),
+    handleMenuKeyboardEvent: (event: KeyboardEvent): boolean =>
+      handleGameCommand(mapMenuKeyboardEvent(event)),
+    enterLevel: (index: number): void =>
+      dispatch({ type: 'enter-game', index }),
     toggleReferenceDialog: (): void =>
       dispatch({ type: 'toggle-reference-dialog' }),
   }

@@ -16,7 +16,7 @@ export type SwipeGesture = {
 }
 
 // Drag distance (px) that separates a swipe from a tap. Below it the
-// gesture is a tap: a wait turn on a level, an enter press on the map.
+// gesture is a tap: a wait turn on a level board.
 export const SWIPE_MIN_PX = 24
 
 const swipeDirection = (gesture: SwipeGesture): GameCommand => {
@@ -35,15 +35,6 @@ export const mapBoardGesture = (gesture: SwipeGesture): GameCommand => {
   return swipeDirection(gesture)
 }
 
-// Map gestures ride the same rail-hop input as keys: a swipe walks the
-// cursor one cell, a tap is the enter press (icon under the cursor).
-export const mapMapGesture = (gesture: SwipeGesture): GameCommand => {
-  const absX = Math.abs(gesture.dx)
-  const absY = Math.abs(gesture.dy)
-  if (Math.max(absX, absY) < SWIPE_MIN_PX) return { type: 'enter' }
-  return swipeDirection(gesture)
-}
-
 export type GameControlEntry = {
   keys: string
   action: string
@@ -55,26 +46,19 @@ export const GAME_CONTROLS: readonly GameControlEntry[] = [
   { keys: 'U/Z', action: 'undo' },
   { keys: 'R', action: 'restart' },
   { keys: 'N/Enter', action: 'next after win' },
-  { keys: 'Q', action: 'map' },
+  { keys: 'Q', action: 'menu' },
 ]
 
-export const MAP_CONTROLS: readonly GameControlEntry[] = [
-  { keys: 'WASD/Arrows/Swipe', action: 'move cursor' },
-  { keys: 'Enter/Space/Tap', action: 'enter' },
-  { keys: 'U/Z', action: 'undo' },
-  { keys: 'R', action: 'reset map' },
-  { keys: 'Q/Esc', action: 'back' },
+export const MENU_CONTROLS: readonly GameControlEntry[] = [
+  { keys: 'W/S or ↑/↓', action: 'select' },
+  { keys: 'A/D or ←/→', action: 'page' },
+  { keys: 'Enter/N or Click', action: 'start' },
 ]
 
 // Touch-first hints: shown instead of the keyboard/gamepad rows when the
 // primary pointer is coarse (see the *-controls media query in style.css).
-export const MAP_TOUCH_CONTROLS: readonly GameControlEntry[] = [
-  { keys: 'Swipe', action: 'move cursor' },
-  { keys: 'Tap', action: 'enter' },
-]
-
 export const GAME_TOUCH_CONTROLS: readonly GameControlEntry[] = [
   { keys: 'Swipe', action: 'move' },
   { keys: 'Tap', action: 'wait' },
-  { keys: 'HUD buttons', action: 'undo / restart / map' },
+  { keys: 'HUD buttons', action: 'undo / restart / menu' },
 ]

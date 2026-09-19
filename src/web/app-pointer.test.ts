@@ -51,7 +51,7 @@ const pointerEvent = (
 })
 
 type ContextOptions = {
-  mode?: 'map' | 'game'
+  mode?: 'menu' | 'game'
   dialogOpen?: boolean
   canHandle?: () => boolean
   handled?: (cmd: GameCommand) => boolean
@@ -86,7 +86,7 @@ const createContext = (options: ContextOptions = {}) => {
   return {
     handlers,
     commands,
-    setMode: (mode: 'map' | 'game') => {
+    setMode: (mode: 'menu' | 'game') => {
       state.mode = mode
     },
     get marks() {
@@ -122,23 +122,16 @@ test('pointer tap on a level plays a wait turn', () => {
   assert.deepEqual(commands, [{ type: 'wait' }])
 })
 
-test('pointer tap on the map presses enter on the icon under the cursor', () => {
-  const { handlers, commands } = createContext({ mode: 'map' })
+test('pointer gestures are inert on the menu — rows enter via click', () => {
+  const { handlers, commands } = createContext({ mode: 'menu' })
 
   handlers.onPointerDown(pointerEvent({ clientX: 60, clientY: 60 }))
   handlers.onPointerUp(pointerEvent({ clientX: 62, clientY: 61 }))
-
-  assert.deepEqual(commands, [{ type: 'enter' }])
-})
-
-test('pointer swipe on the map rail-hops the cursor one cell', () => {
-  const { handlers, commands } = createContext({ mode: 'map' })
-
   handlers.onPointerDown(pointerEvent({ clientX: 50, clientY: 50 }))
   handlers.onPointerMove(pointerEvent({ clientX: 52, clientY: 20 }))
   handlers.onPointerUp(pointerEvent({ clientX: 52, clientY: 20 }))
 
-  assert.deepEqual(commands, [{ type: 'move', direction: 'up' }])
+  assert.deepEqual(commands, [])
 })
 
 test('pointer swipe vertically resolves to up or down', () => {
@@ -227,11 +220,11 @@ test('viewport delta mapping rotates gestures back into app space', () => {
 })
 
 test('a mode change mid-drag invalidates the gesture instead of retargeting it', () => {
-  const ctx = createContext({ mode: 'map' })
+  const ctx = createContext({ mode: 'game' })
   const { handlers, commands } = ctx
 
   handlers.onPointerDown(pointerEvent({ clientX: 100, clientY: 100 }))
-  ctx.setMode('game')
+  ctx.setMode('menu')
   handlers.onPointerMove(pointerEvent({ clientX: 100, clientY: 40 }))
   handlers.onPointerUp(pointerEvent({ clientX: 100, clientY: 40 }))
 

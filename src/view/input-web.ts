@@ -48,9 +48,11 @@ export const mapGameKeyboardEvent = (
   }
 }
 
-// Overworld cursor: directions rail-hop one cell, Enter/Space opens the
-// icon under the cursor, and Q/Escape backs out to the parent map.
-export const mapMapKeyboardEvent = (
+// Menu list navigation: W/S and arrows step the selection, A/D and
+// left/right page a window at a time, Enter/Space starts the highlighted
+// level. The command layer reuses the shared direction verbs — the menu
+// interprets `move` as list navigation.
+export const mapMenuKeyboardEvent = (
   event: BrowserKeyboardEvent,
 ): GameCommand => {
   if (event.ctrlKey || event.metaKey) return { type: 'noop' }
@@ -74,11 +76,6 @@ export const mapMapKeyboardEvent = (
     case 'Space':
     case 'Spacebar':
       return { type: 'enter' }
-    case 'u':
-    case 'z':
-      return { type: 'undo' }
-    case 'r':
-      return { type: 'restart' }
     case 'q':
     case 'Escape':
       return { type: 'back' }

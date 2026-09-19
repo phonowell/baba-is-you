@@ -1,6 +1,4 @@
 import { levels } from '../levels.js'
-import { maps, rootMapFile } from '../levels-maps.js'
-import { levelDataForMap } from '../logic/map-level.js'
 import { parseLevel } from '../logic/parse-level.js'
 import { createDraw } from './app-draw.js'
 import { createWebAppController } from './app-controller.js'
@@ -18,7 +16,6 @@ import { createBoard3dRendererRuntime } from './board-3d-renderer-runtime.js'
 import { resolveHostLockMessage } from './host-gate.js'
 import type { DrawState } from './app-draw.js'
 import type { Board3dRendererRuntime } from './board-3d-renderer-runtime.js'
-import type { LevelData } from '../logic/types.js'
 
 const APP_DISPOSE_KEY = '__baba_is_you_web_dispose__'
 
@@ -43,13 +40,8 @@ if (hostLockMessage) {
 const appGlobal = globalThis as AppGlobal
 appGlobal[APP_DISPOSE_KEY]?.()
 
-const mapData = new Map<string, LevelData>(
-  maps.map((entry) => [entry.file, levelDataForMap(entry)]),
-)
 const appStore = createWebAppStore({
   levels: levelData,
-  rootMapFile,
-  mapFor: (file) => mapData.get(file),
 })
 const appController = createWebAppController({
   store: appStore,
@@ -88,6 +80,7 @@ const ensureBoard3dRenderer = (): Board3dRendererRuntime => {
 
 const draw = createDraw({
   root,
+  menuLevels: levelData,
   drawState,
   getSnapshot: appController.getViewState,
   hasGoldenReplay: () => goldenForCurrentBoard() !== undefined,
@@ -129,6 +122,7 @@ const handleRootClick = createRootClickHandler({
   canHandleGameAction: appController.canHandleGameAction,
   markGameActionHandled: appController.markGameActionHandled,
   handleGameCommand: appController.handleGameCommand,
+  enterLevel: appController.enterLevel,
   playReplay: () => {
     const golden = goldenForCurrentBoard()
     if (golden) appController.startReplay(golden.name, golden.inputs, golden.level)
@@ -153,13 +147,13 @@ const handleWindowKeydown = createWindowKeydownHandler({
   closeReferenceDialog: appController.closeReferenceDialog,
   canHandleGameAction: appController.canHandleGameAction,
   markGameActionHandled: appController.markGameActionHandled,
-  handleMapEvent: appController.handleMapKeyboardEvent,
+  handleMenuEvent: appController.handleMenuKeyboardEvent,
   handleGameEvent: appController.handleGameKeyboardEvent,
 })
 
 // Golden playback driver: while a replay owns the board it consumes one
 // recorded input per tick; it stops the moment the stream ends or the
-// player aborts back to the map.
+// player aborts back to the menu.
 const replayDriver = createReplayDriver({
   isReplaying: appController.isReplaying,
   step: appController.replayStep,

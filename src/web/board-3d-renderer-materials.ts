@@ -449,17 +449,12 @@ export const createBoard3dRendererMaterialStore = (
   }
 
   // Every input cardSpecForItem/voxelVisual reads (isText, name, dir,
-  // facing-affecting props, overridden, map-icon target) is in the key —
+  // facing-affecting props, overridden) is in the key —
   // minContrastRatio is a fixed preset constant. Same key → identical spec
-  // → identical visual, so the per-item sync cost collapses to a map lookup
-  // after first build. levelTarget must be in the key or every map icon
-  // would share the first icon's badge.
+  // → identical visual, so the per-item sync cost collapses to a lookup
+  // after first build.
   const visualKeyForItem = (item: Item, overridden: boolean, tileMask: number): string => {
-    const target = item.levelTarget
-    const targetKey = target
-      ? `${target.kind}:${target.file}:${target.number}:${target.style}:${target.icon ?? ''}`
-      : ''
-    return `${item.isText ? 1 : 0}|${item.name}|${item.dir ?? ''}|${targetKey}|${overridden ? 1 : 0}|${item.props.join(',')}|${tileMask}`
+    return `${item.isText ? 1 : 0}|${item.name}|${item.dir ?? ''}|${overridden ? 1 : 0}|${item.props.join(',')}|${tileMask}`
   }
 
   const getVisual = (item: Item, overridden = false, tileMask = 0): EntityVisual => {

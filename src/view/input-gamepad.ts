@@ -133,10 +133,10 @@ export const mapGamepadGameInput = (
   }
 }
 
-// Overworld pad mapping: directions rail-hop the cursor, A enters the
-// icon under it, X resets the map like R does, B/Start back out to the
-// parent map.
-export const mapGamepadMapInput = (
+// Menu pad mapping: directions drive the selection (up/down step,
+// left/right page), A starts the highlighted level, B/Start do nothing
+// on the top screen — the menu is the root.
+export const mapGamepadMenuInput = (
   input: GamepadLogicalInput,
 ): GameCommand => {
   switch (input) {
@@ -148,10 +148,9 @@ export const mapGamepadMapInput = (
     case 'a':
       return { type: 'enter' }
     case 'b':
-    case 'start':
-      return { type: 'back' }
     case 'x':
-      return { type: 'restart' }
+    case 'start':
+      return { type: 'noop' }
     // The runtime intercepts select for the help overlay — a command
     // mapping only exists to keep the switch exhaustive.
     case 'select':
@@ -164,6 +163,6 @@ export const GAMEPAD_CONTROLS: readonly GameControlEntry[] = [
   { keys: 'A', action: 'wait / enter' },
   { keys: 'B', action: 'undo / back' },
   { keys: 'X', action: 'restart' },
-  { keys: 'Start', action: 'map / back' },
+  { keys: 'Start', action: 'menu / back' },
   { keys: 'Select', action: 'controls' },
 ]

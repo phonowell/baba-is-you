@@ -7,7 +7,7 @@ import {
 } from './app-events.js'
 
 type MutableViewState = {
-  mode: 'map' | 'game'
+  mode: 'menu' | 'game'
   showReferenceDialog: boolean
 }
 
@@ -67,10 +67,13 @@ const noopGameDeps = {
   handleGameCommand: () => {
     throw new Error('should not handle game command')
   },
+  enterLevel: () => {
+    throw new Error('should not enter a level')
+  },
 }
 
 test('createRootClickHandler toggles and closes the reference dialog', () => {
-  const state: MutableViewState = { mode: 'map', showReferenceDialog: false }
+  const state: MutableViewState = { mode: 'menu', showReferenceDialog: false }
   let toggles = 0
   let closes = 0
   const handler = createRootClickHandler({
@@ -146,6 +149,9 @@ test('createRootClickHandler routes game-mode HUD buttons through commands', () 
       // Undo with an empty history is a no-op: it must not count as handled.
       return cmd.type !== 'undo'
     },
+    enterLevel: () => {
+      throw new Error('should not enter a level from game mode')
+    },
   })
 
   handler({
@@ -160,7 +166,7 @@ test('createRootClickHandler routes game-mode HUD buttons through commands', () 
   } as unknown as MouseEvent)
   handler({
     target: createEventTarget({
-      actionElement: createActionElement('game-map'),
+      actionElement: createActionElement('game-menu'),
     }),
   } as unknown as MouseEvent)
 
@@ -168,9 +174,9 @@ test('createRootClickHandler routes game-mode HUD buttons through commands', () 
   assert.equal(marks, 2)
 })
 
-test('createRootClickHandler routes the wait slot to enter on the map', () => {
-  const state: MutableViewState = { mode: 'map', showReferenceDialog: false }
-  const commands: string[] = []
+test('createRootClickHandler enters the clicked menu row directly', () => {
+  const state: MutableViewState = { mode: 'menu', showReferenceDialog: false }
+  const entered: number[] = []
   const handler = createRootClickHandler({
     viewState: createViewState(state),
     toggleReferenceDialog: () => {
@@ -179,25 +185,49 @@ test('createRootClickHandler routes the wait slot to enter on the map', () => {
     closeReferenceDialog: () => {
       throw new Error('should not close dialog')
     },
-    canHandleGameAction: () => true,
-    markGameActionHandled: () => {},
-    handleGameCommand: (cmd) => {
-      commands.push(cmd.type)
-      return true
+    ...noopGameDeps,
+    enterLevel: (index) => {
+      entered.push(index)
     },
   })
 
   handler({
     target: createEventTarget({
-      actionElement: createActionElement('game-wait'),
+      actionElement: createActionElement('start-level', {
+        levelIndex: '7',
+      }),
     }),
   } as unknown as MouseEvent)
 
-  assert.deepEqual(commands, ['enter'])
+  assert.deepEqual(entered, [7])
+})
+
+test('createRootClickHandler ignores start-level clicks outside the menu', () => {
+  const state: MutableViewState = { mode: 'game', showReferenceDialog: false }
+  let entered = 0
+  const handler = createRootClickHandler({
+    viewState: createViewState(state),
+    toggleReferenceDialog: () => {},
+    closeReferenceDialog: () => {},
+    ...noopGameDeps,
+    enterLevel: () => {
+      entered += 1
+    },
+  })
+
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('start-level', {
+        levelIndex: '3',
+      }),
+    }),
+  } as unknown as MouseEvent)
+
+  assert.equal(entered, 0)
 })
 
 test('createRootClickHandler ignores game actions while a dialog is open', () => {
-  const state: MutableViewState = { mode: 'map', showReferenceDialog: true }
+  const state: MutableViewState = { mode: 'game', showReferenceDialog: true }
   const commands: string[] = []
   const handler = createRootClickHandler({
     viewState: createViewState(state),
@@ -211,6 +241,7 @@ test('createRootClickHandler ignores game actions while a dialog is open', () =>
       commands.push(cmd.type)
       return true
     },
+    enterLevel: () => {},
   })
 
   handler({
@@ -251,7 +282,7 @@ test('createWindowKeydownHandler closes open dialogs on Escape only', () => {
   const state: MutableViewState = { mode: 'game', showReferenceDialog: true }
   let closes = 0
   let prevented = 0
-  let mapCalls = 0
+  let menuCalls = 0
   let gameCalls = 0
   const handler = createWindowKeydownHandler({
     viewState: createViewState(state),
@@ -262,8 +293,8 @@ test('createWindowKeydownHandler closes open dialogs on Escape only', () => {
     markGameActionHandled: () => {
       throw new Error('dialog close should not mark game action handled')
     },
-    handleMapEvent: () => {
-      mapCalls += 1
+    handleMenuEvent: () => {
+      menuCalls += 1
       return true
     },
     handleGameEvent: () => {
@@ -287,7 +318,7 @@ test('createWindowKeydownHandler closes open dialogs on Escape only', () => {
 
   assert.equal(closes, 1)
   assert.equal(prevented, 1)
-  assert.equal(mapCalls, 0)
+  assert.equal(menuCalls, 0)
   assert.equal(gameCalls, 0)
 })
 
@@ -306,8 +337,8 @@ test('createWindowKeydownHandler respects cooldown and marks only handled input'
     markGameActionHandled: () => {
       handledMarks += 1
     },
-    handleMapEvent: () => {
-      throw new Error('should not route to map')
+    handleMenuEvent: () => {
+      throw new Error('should not route to menu')
     },
     handleGameEvent: () => {
       gameCalls += 1
@@ -341,26 +372,26 @@ test('createWindowKeydownHandler respects cooldown and marks only handled input'
   assert.equal(prevented, 1)
 })
 
-test('createWindowKeydownHandler routes map-mode keys to the map handler', () => {
-  const state: MutableViewState = { mode: 'map', showReferenceDialog: false }
-  let mapCalls = 0
+test('createWindowKeydownHandler routes menu-mode keys to the menu handler', () => {
+  const state: MutableViewState = { mode: 'menu', showReferenceDialog: false }
+  let menuCalls = 0
   let marks = 0
   let prevented = 0
   const handler = createWindowKeydownHandler({
     viewState: createViewState(state),
     closeReferenceDialog: () => {
-      throw new Error('should not close dialog on map')
+      throw new Error('should not close dialog on menu')
     },
     canHandleGameAction: () => true,
     markGameActionHandled: () => {
       marks += 1
     },
-    handleMapEvent: () => {
-      mapCalls += 1
-      return mapCalls === 1
+    handleMenuEvent: () => {
+      menuCalls += 1
+      return menuCalls === 1
     },
     handleGameEvent: () => {
-      throw new Error('map path should not route to game')
+      throw new Error('menu path should not route to game')
     },
   })
 
@@ -377,7 +408,7 @@ test('createWindowKeydownHandler routes map-mode keys to the map handler', () =>
     },
   } as KeyboardEvent)
 
-  assert.equal(mapCalls, 2)
+  assert.equal(menuCalls, 2)
   assert.equal(marks, 1)
   assert.equal(prevented, 1)
 })

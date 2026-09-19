@@ -8,7 +8,6 @@ import { reduceWebAppState } from './app-model.js'
 import { createReplayDriver } from './app-replay.js'
 import { createWebAppStore } from './app-store.js'
 
-import type { LevelData } from '../logic/types.js'
 import type { WebAppEnvironment } from './app-model.js'
 
 const campaignLevels = [
@@ -22,41 +21,8 @@ const goldenLevel = parseLevel(
   'title Golden; size 3x4; Baba 0,0; Is 1,0; You 2,0; Flag 0,1; Is 1,1; Win 2,1; baba 0,2; flag 0,3',
 )
 
-// Minimal overworld: one level icon beside the selector spawn.
-const rootMap: LevelData = {
-  title: 'root',
-  width: 3,
-  height: 3,
-  items: [
-    { id: 1, name: 'line', x: 0, y: 1, isText: false },
-    {
-      id: 2,
-      name: 'level',
-      x: 0,
-      y: 1,
-      isText: false,
-      levelTarget: {
-        kind: 'level',
-        file: 'first-level',
-        number: 0,
-        style: 0,
-        levelIndex: 0,
-      },
-    },
-  ],
-  meta: {
-    palette: '',
-    backgrounds: [],
-    colorOverrides: {},
-    textColorOverrides: {},
-    map: { selector: [0, 1] },
-  },
-}
-
 const env: WebAppEnvironment = {
   levels: campaignLevels,
-  rootMapFile: 'root',
-  mapFor: (file) => (file === 'root' ? rootMap : undefined),
 }
 
 const startReplay = (
@@ -73,7 +39,7 @@ const startReplay = (
 
 test('start-replay loads the golden level in game mode with playback armed', () => {
   const store = createWebAppStore(env)
-  store.dispatch({ type: 'enter-node' })
+  store.dispatch({ type: 'enter-game', index: 0 })
 
   startReplay(store, 'rr')
 
@@ -154,7 +120,7 @@ test('replay playback is pure spectating: game commands blocked, back aborts', (
   assert.equal(mapGameCommandToAction({ type: 'restart' }, state), null)
   assert.equal(mapGameCommandToAction({ type: 'next' }, state), null)
   assert.deepEqual(mapGameCommandToAction({ type: 'back' }, state), {
-    type: 'leave-node',
+    type: 'return-to-menu',
   })
 
   assert.equal(
@@ -166,7 +132,7 @@ test('replay playback is pure spectating: game commands blocked, back aborts', (
   const aborted = controller.handleGameCommand({ type: 'back' })
   assert.equal(aborted, true)
   const after = store.getState()
-  assert.equal(after.mode, 'map')
+  assert.equal(after.mode, 'menu')
   assert.equal(after.replay, null)
   assert.equal(after.customLevel, null)
 })
@@ -188,20 +154,20 @@ test('finished playback leaves the custom level restartable in place', () => {
   assert.equal(state.state.turn, 0)
   assert.equal(state.customLevel, goldenLevel)
 
-  // Leaving back to the map clears the custom level again.
-  store.dispatch({ type: 'leave-node' })
+  // Leaving back to the menu clears the custom level again.
+  store.dispatch({ type: 'return-to-menu' })
   assert.equal(store.getState().customLevel, null)
-  assert.equal(store.getState().mode, 'map')
+  assert.equal(store.getState().mode, 'menu')
 })
 
 test('reducer ignores replay-step without an active replay', () => {
   const store = createWebAppStore(env)
-  const map = store.getState()
+  const menu = store.getState()
 
-  const stepped = reduceWebAppState(map, { type: 'replay-step' }, env)
-  assert.equal(stepped, map)
+  const stepped = reduceWebAppState(menu, { type: 'replay-step' }, env)
+  assert.equal(stepped, menu)
 
-  store.dispatch({ type: 'enter-node' })
+  store.dispatch({ type: 'enter-game', index: 0 })
   const playing = store.getState()
   const steppedInGame = reduceWebAppState(
     playing,
@@ -246,7 +212,7 @@ test('replay driver ticks only while playback is armed and cleans up on dispose'
   })
 
   // No replay — no timer.
-  store.dispatch({ type: 'enter-node' })
+  store.dispatch({ type: 'enter-game', index: 0 })
   assert.equal(scheduled.length, 0)
 
   startReplay(store, 'rr')

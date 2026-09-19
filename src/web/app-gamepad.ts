@@ -1,7 +1,7 @@
 import {
   GAMEPAD_STICK_THRESHOLD,
   mapGamepadGameInput,
-  mapGamepadMapInput,
+  mapGamepadMenuInput,
   readGamepadInputs,
   toGamepadSnapshot,
 } from '../view/input-gamepad.js'
@@ -44,7 +44,7 @@ const REPEATABLE_INPUTS: readonly GamepadLogicalInput[] = [
 const NO_INPUTS: ReadonlySet<GamepadLogicalInput> = new Set()
 
 type GamepadViewState = {
-  getMode: () => 'map' | 'game'
+  getMode: () => 'menu' | 'game'
   isReferenceDialogOpen: () => boolean
   getStatus: () => GameStatus
 }
@@ -156,12 +156,12 @@ export const createGamepadRuntime = (
 
   const dispatchInput = (
     input: GamepadLogicalInput,
-    mode: 'map' | 'game',
+    mode: 'menu' | 'game',
   ): void => {
     if (!canHandleGameAction()) return
     const cmd =
-      mode === 'map'
-        ? mapGamepadMapInput(input)
+      mode === 'menu'
+        ? mapGamepadMenuInput(input)
         : mapGamepadGameInput(input, viewState.getStatus())
     if (handleGameCommand(cmd)) {
       markGameActionHandled()

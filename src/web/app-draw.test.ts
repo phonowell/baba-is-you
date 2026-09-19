@@ -155,10 +155,11 @@ test('createDraw mounts 3d board after deferred transition callback builds game 
         prevCellSize: null,
         gameView: null,
       },
+      menuLevels: [{ title: 'draw-test' }],
       getSnapshot: () => ({
         mode: 'game',
+        menuSelectedLevelIndex: 0,
         levelIndex: 0,
-        mapFile: 'root',
         state,
         showReferenceDialog: false,
         replay: null,

@@ -4,7 +4,7 @@ import test from 'node:test'
 import {
   GAMEPAD_STICK_THRESHOLD,
   mapGamepadGameInput,
-  mapGamepadMapInput,
+  mapGamepadMenuInput,
   readGamepadInputs,
   toGamepadSnapshot,
 } from './input-gamepad.js'
@@ -80,26 +80,27 @@ test('mapGamepadGameInput turns A into next on the outcome card', () => {
   assert.deepEqual(mapGamepadGameInput('a', 'win'), { type: 'next' })
 })
 
-test('mapGamepadMapInput maps cursor moves, enter, and back', () => {
-  assert.deepEqual(mapGamepadMapInput('up'), {
+test('mapGamepadMenuInput maps selection moves and start; utility keys noop', () => {
+  assert.deepEqual(mapGamepadMenuInput('up'), {
     type: 'move',
     direction: 'up',
   })
-  assert.deepEqual(mapGamepadMapInput('down'), {
+  assert.deepEqual(mapGamepadMenuInput('down'), {
     type: 'move',
     direction: 'down',
   })
-  assert.deepEqual(mapGamepadMapInput('left'), {
+  assert.deepEqual(mapGamepadMenuInput('left'), {
     type: 'move',
     direction: 'left',
   })
-  assert.deepEqual(mapGamepadMapInput('right'), {
+  assert.deepEqual(mapGamepadMenuInput('right'), {
     type: 'move',
     direction: 'right',
   })
-  assert.deepEqual(mapGamepadMapInput('a'), { type: 'enter' })
-  assert.deepEqual(mapGamepadMapInput('b'), { type: 'back' })
-  assert.deepEqual(mapGamepadMapInput('x'), { type: 'restart' })
-  assert.deepEqual(mapGamepadMapInput('start'), { type: 'back' })
-  assert.deepEqual(mapGamepadMapInput('select'), { type: 'noop' })
+  assert.deepEqual(mapGamepadMenuInput('a'), { type: 'enter' })
+  // The menu is the root screen — back/restart have nowhere to go.
+  assert.deepEqual(mapGamepadMenuInput('b'), { type: 'noop' })
+  assert.deepEqual(mapGamepadMenuInput('x'), { type: 'noop' })
+  assert.deepEqual(mapGamepadMenuInput('start'), { type: 'noop' })
+  assert.deepEqual(mapGamepadMenuInput('select'), { type: 'noop' })
 })

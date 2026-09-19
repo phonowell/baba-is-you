@@ -1,26 +1,18 @@
 import type { GameCommand } from '../view/input.js'
 
 type AppEventViewState = {
-  getMode: () => 'map' | 'game'
+  getMode: () => 'menu' | 'game'
   isReferenceDialogOpen: () => boolean
 }
 
 // HUD buttons and the outcome overlay share the keyboard command pipeline:
-// a click produces the same GameCommand a keypress would. On the map the
-// wait slot is the enter press (icon under the cursor).
+// a click produces the same GameCommand a keypress would.
 const GAME_ACTION_COMMANDS: Record<string, GameCommand> = {
   'game-undo': { type: 'undo' },
   'game-wait': { type: 'wait' },
   'game-restart': { type: 'restart' },
-  'game-map': { type: 'back' },
+  'game-menu': { type: 'back' },
   'game-next': { type: 'next' },
-}
-
-const MAP_ACTION_COMMANDS: Record<string, GameCommand> = {
-  'game-undo': { type: 'undo' },
-  'game-wait': { type: 'enter' },
-  'game-restart': { type: 'restart' },
-  'game-map': { type: 'back' },
 }
 
 type RootClickHandlerContext = {
@@ -30,6 +22,9 @@ type RootClickHandlerContext = {
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
   handleGameCommand: (cmd: GameCommand) => boolean
+  // Menu rows carry their own index — the click enters that level
+  // directly instead of going through selection state first.
+  enterLevel: (index: number) => void
   // Golden playback start: a UI action, not a game command — it stays
   // available while a replay owns the board so the button doubles as
   // "watch it again".
@@ -46,6 +41,7 @@ export const createRootClickHandler = (
     canHandleGameAction,
     markGameActionHandled,
     handleGameCommand,
+    enterLevel,
     playReplay,
   } = context
 
@@ -73,10 +69,14 @@ export const createRootClickHandler = (
         return
       }
 
+      if (action === 'start-level' && mode === 'menu') {
+        const index = Number(actionElement.dataset.levelIndex)
+        if (Number.isInteger(index)) enterLevel(index)
+        return
+      }
+
       if (!showReferenceDialog && action) {
-        const commands =
-          mode === 'map' ? MAP_ACTION_COMMANDS : GAME_ACTION_COMMANDS
-        const cmd = commands[action]
+        const cmd = GAME_ACTION_COMMANDS[action]
         if (cmd && canHandleGameAction() && handleGameCommand(cmd)) {
           markGameActionHandled()
         }
@@ -100,7 +100,7 @@ type WindowKeydownHandlerContext = {
   closeReferenceDialog: () => void
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
-  handleMapEvent: (event: KeyboardEvent) => boolean
+  handleMenuEvent: (event: KeyboardEvent) => boolean
   handleGameEvent: (event: KeyboardEvent) => boolean
 }
 
@@ -112,7 +112,7 @@ export const createWindowKeydownHandler = (
     closeReferenceDialog,
     canHandleGameAction,
     markGameActionHandled,
-    handleMapEvent,
+    handleMenuEvent,
     handleGameEvent,
   } = context
 
@@ -129,7 +129,8 @@ export const createWindowKeydownHandler = (
 
     if (!canHandleGameAction()) return
 
-    const handled = mode === 'map' ? handleMapEvent(event) : handleGameEvent(event)
+    const handled =
+      mode === 'menu' ? handleMenuEvent(event) : handleGameEvent(event)
 
     if (!handled) return
 

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { mapGameKeyboardEvent, mapMapKeyboardEvent } from './input-web.js'
+import { mapGameKeyboardEvent, mapMenuKeyboardEvent } from './input-web.js'
 
 test('mapGameKeyboardEvent maps arrows and WASD to move', () => {
   assert.deepEqual(mapGameKeyboardEvent({ key: 'ArrowUp' }), {
@@ -68,57 +68,55 @@ test('mapGameKeyboardEvent keeps ctrl/meta guard', () => {
   })
 })
 
-test('mapMapKeyboardEvent maps cursor moves, enter, utility, and back', () => {
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'ArrowUp' }), {
+test('mapMenuKeyboardEvent maps selection moves, start, and quit', () => {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'ArrowUp' }), {
     type: 'move',
     direction: 'up',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'w' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'w' }), {
     type: 'move',
     direction: 'up',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'ArrowDown' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'ArrowDown' }), {
     type: 'move',
     direction: 'down',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 's' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 's' }), {
     type: 'move',
     direction: 'down',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'ArrowLeft' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'ArrowLeft' }), {
     type: 'move',
     direction: 'left',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'a' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'a' }), {
     type: 'move',
     direction: 'left',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'ArrowRight' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'ArrowRight' }), {
     type: 'move',
     direction: 'right',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'd' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'd' }), {
     type: 'move',
     direction: 'right',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: ' ' }), { type: 'enter' })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'n' }), { type: 'enter' })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'Enter' }), { type: 'enter' })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'u' }), { type: 'undo' })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'z' }), { type: 'undo' })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'r' }), { type: 'restart' })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'q' }), { type: 'back' })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'Escape' }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: ' ' }), { type: 'enter' })
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'n' }), { type: 'enter' })
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'Enter' }), { type: 'enter' })
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'q' }), { type: 'back' })
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'Escape' }), {
     type: 'back',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'x' }), { type: 'noop' })
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'u' }), { type: 'noop' })
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'x' }), { type: 'noop' })
 })
 
-test('mapMapKeyboardEvent keeps ctrl/meta guard', () => {
-  assert.deepEqual(mapMapKeyboardEvent({ key: ' ', ctrlKey: true }), {
+test('mapMenuKeyboardEvent keeps ctrl/meta guard', () => {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: ' ', ctrlKey: true }), {
     type: 'noop',
   })
-  assert.deepEqual(mapMapKeyboardEvent({ key: 'q', metaKey: true }), {
+  assert.deepEqual(mapMenuKeyboardEvent({ key: 'q', metaKey: true }), {
     type: 'noop',
   })
 })

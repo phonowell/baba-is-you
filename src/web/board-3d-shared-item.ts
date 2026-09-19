@@ -16,7 +16,7 @@ import { OBJECT_GLYPHS } from '../view/render-config.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
 import { SYNTAX_WORDS } from '../view/syntax-words.js'
 
-import type { Direction, Item, LevelIcon } from '../logic/types.js'
+import type { Direction, Item } from '../logic/types.js'
 import type { CardSpec } from './board-3d-shared-types.js'
 
 const {
@@ -136,86 +136,6 @@ const objectPalette = (
   return palette
 }
 
-// Map icon badges: the icon's own display number/letter is the card face
-// (sprite cards cannot overlay text), tinted per .ld style — number dots,
-// letter levels, special markers, and a dimmed plate for icons whose
-// target was filtered out of the playable set. World icons (style -1)
-// and map links carry the map/icon sprites instead.
-const ICON_BADGE_STYLES = {
-  number: {
-    background: '#3d3423',
-    backgroundTop: '#5a4b2d',
-    textColor: '#ede285',
-    outlineColor: '#141008',
-    keylineColor: '#8a7434',
-  },
-  letter: {
-    background: '#3a2530',
-    backgroundTop: '#5b3549',
-    textColor: '#f3c6dd',
-    outlineColor: '#150a10',
-    keylineColor: '#a05a80',
-  },
-  special: {
-    background: '#20343c',
-    backgroundTop: '#2f5666',
-    textColor: '#a9d9ea',
-    outlineColor: '#0a1418',
-    keylineColor: '#4a90aa',
-  },
-  unresolved: {
-    background: '#232329',
-    backgroundTop: '#2d2d36',
-    textColor: '#565664',
-    outlineColor: '#101014',
-    keylineColor: '#3c3c48',
-  },
-} as const
-
-const iconBadgeLabel = (target: LevelIcon): string => {
-  if (target.style === 1) return String.fromCharCode(65 + target.number)
-  if (target.style === 2) return `✦${target.number}`
-  return String(target.number)
-}
-
-const iconCardSpec = (target: LevelIcon): CardSpec => {
-  // Any kind can carry a named icon sprite (`icon_${icon}`); map links
-  // fall back to the generic world marker, the rest to the badge plate.
-  const sprite =
-    (target.icon ? spriteForName(`icon_${target.icon}`) : null) ??
-    (target.kind === 'map' ? spriteForName('map') : null)
-  if (sprite) {
-    return {
-      key: `icon:${target.kind}:${target.file}:${target.icon ?? ''}`,
-      label: '',
-      facingDirection: null,
-      sprite,
-      background: '#232329',
-      textColor: '#ede285',
-      outlineColor: '#101014',
-      isText: false,
-    }
-  }
-  const style =
-    target.kind === 'unresolved'
-      ? ICON_BADGE_STYLES.unresolved
-      : target.style === 1
-        ? ICON_BADGE_STYLES.letter
-        : target.style === 2
-          ? ICON_BADGE_STYLES.special
-          : ICON_BADGE_STYLES.number
-  const label =
-    target.style === -1 ? '?' : iconBadgeLabel(target)
-  return {
-    key: `icon:${target.kind}:${target.file}:${target.number}:${target.style}`,
-    label,
-    facingDirection: null,
-    sprite: null,
-    ...style,
-    isText: false,
-  }
-}
-
 export const cardSpecForItem = (
   item: Item,
   minContrastRatio: number,
@@ -223,7 +143,6 @@ export const cardSpecForItem = (
 ): CardSpec => {
   const label = labelForItem(item)
   const facingDirection = facingDirectionForItem(item)
-  if (!item.isText && item.levelTarget) return iconCardSpec(item.levelTarget)
   if (item.isText) {
     if (overridden) {
       return {

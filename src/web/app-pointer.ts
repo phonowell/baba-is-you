@@ -1,9 +1,9 @@
-import { SWIPE_MIN_PX, mapBoardGesture, mapMapGesture } from '../view/input.js'
+import { SWIPE_MIN_PX, mapBoardGesture } from '../view/input.js'
 
 import type { GameCommand } from '../view/input.js'
 
 type AppPointerViewState = {
-  getMode: () => 'map' | 'game'
+  getMode: () => 'menu' | 'game'
   isReferenceDialogOpen: () => boolean
 }
 
@@ -55,9 +55,6 @@ export const createAppPointerHandlers = (
   } = context
 
   let activePointerId: number | null = null
-  // The mode the drag started in; a mid-drag mode change (tap → enter a
-  // level) invalidates the gesture instead of retargeting it.
-  let activeMode: 'map' | 'game' | null = null
   let startX = 0
   let startY = 0
   // One press fires at most one move: the swipe consumes the press at the
@@ -82,19 +79,16 @@ export const createAppPointerHandlers = (
     }
   }
 
-  const gestureForMode = (mode: 'map' | 'game', dx: number, dy: number): GameCommand =>
-    mode === 'map' ? mapMapGesture({ dx, dy }) : mapBoardGesture({ dx, dy })
-
   const resetDrag = (): void => {
     activePointerId = null
-    activeMode = null
     consumed = false
   }
 
   const onPointerDown = (event: AppPointerEvent): void => {
     if (activePointerId !== null) return
-    const mode = viewState.getMode()
-    if (mode !== 'map' && mode !== 'game') return
+    // Gestures only exist on the game board — the menu is a plain list
+    // whose rows enter levels through click handling.
+    if (viewState.getMode() !== 'game') return
     if (!boardReady()) return
     const board = closestFromTarget(event.target, '.board')
     if (!board) return
@@ -104,7 +98,6 @@ export const createAppPointerHandlers = (
     board.setPointerCapture?.(event.pointerId)
     event.preventDefault()
     activePointerId = event.pointerId
-    activeMode = mode
     startX = event.clientX
     startY = event.clientY
     consumed = false
@@ -112,7 +105,7 @@ export const createAppPointerHandlers = (
 
   const onPointerMove = (event: AppPointerEvent): void => {
     if (event.pointerId !== activePointerId || consumed) return
-    if (activeMode !== viewState.getMode() || !boardReady()) {
+    if (viewState.getMode() !== 'game' || !boardReady()) {
       resetDrag()
       return
     }
@@ -122,22 +115,20 @@ export const createAppPointerHandlers = (
     )
     if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_MIN_PX) return
     consumed = true
-    dispatchGameCommand(gestureForMode(viewState.getMode(), dx, dy))
+    dispatchGameCommand(mapBoardGesture({ dx, dy }))
   }
 
   const onPointerUp = (event: AppPointerEvent): void => {
     if (event.pointerId !== activePointerId) return
     const wasConsumed = consumed
-    const mode = activeMode
     resetDrag()
-    // Taps resolve through the same gesture map: a press below the swipe
-    // threshold is a wait on a level and an enter on the map.
-    if (mode !== viewState.getMode() || wasConsumed || !boardReady()) return
+    // A press below the swipe threshold is a tap — a wait turn.
+    if (viewState.getMode() !== 'game' || wasConsumed || !boardReady()) return
     const { dx, dy } = mapViewportDelta(
       event.clientX - startX,
       event.clientY - startY,
     )
-    dispatchGameCommand(gestureForMode(viewState.getMode(), dx, dy))
+    dispatchGameCommand(mapBoardGesture({ dx, dy }))
   }
 
   const onPointerCancel = (event: AppPointerEvent): void => {

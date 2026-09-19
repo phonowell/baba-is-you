@@ -23,7 +23,7 @@ const pad = (
 })
 
 type RuntimeOptions = {
-  mode?: 'map' | 'game'
+  mode?: 'menu' | 'game'
   dialogOpen?: boolean
   status?: GameStatus
   canHandle?: () => boolean
@@ -182,8 +182,8 @@ test('gamepad dialog state ignores all input except B to close', () => {
   assert.equal(ctx.closes, 1)
 })
 
-test('gamepad map mode rail-hops the cursor and A enters the icon', () => {
-  const ctx = createRuntime({ mode: 'map' })
+test('gamepad menu mode moves the selection and A starts the level', () => {
+  const ctx = createRuntime({ mode: 'menu' })
   ctx.step(0)
   ctx.setPads([pad()])
   ctx.connect()
