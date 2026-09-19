@@ -84,6 +84,7 @@ const rebindFrameWithSameRules = (
     runtime.rules,
     runtime.width,
     runtime.height,
+    runtime.overriddenTextIds,
   )
   return {
     items,
@@ -100,6 +101,7 @@ const refreshProperties = (
     runtime.rules,
     runtime.width,
     runtime.height,
+    runtime.overriddenTextIds,
   )
   return {
     items: applyProperties(items, reboundRuntime),
@@ -191,6 +193,7 @@ export const step = (
     frame.items,
     state.width,
     state.height,
+    frame.runtime.context,
   )
   const didWin = checkWin(frame.items, state.width, emptyProps)
   // Maps never lose: the overworld cursor is not a `you` entity, and the
@@ -204,6 +207,7 @@ export const step = (
     ...state,
     items: frame.items,
     rules: frame.runtime.rules,
+    overriddenTextIds: frame.runtime.overriddenTextIds,
     status: didWin ? 'win' : didLose ? 'lose' : 'playing',
     turn: state.turn + 1,
   }

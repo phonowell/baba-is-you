@@ -7,8 +7,10 @@ import {
 } from './rules-override.js'
 import { collectRuleInstances } from './rules.js'
 import { collectRuleRuntime } from './rule-runtime.js'
+import { createInitialState } from './state.js'
+import { step } from './step.js'
 
-import type { LevelItem } from './types.js'
+import type { LevelData, LevelItem } from './types.js'
 
 const createText = (
   id: number,
@@ -140,5 +142,66 @@ test('rule runtime excludes overridden rules from active buckets', () => {
       (r) => `${r.subject}:${r.objectNegated ? '!' : ''}${r.object}`,
     ),
     ['baba:!push'],
+  )
+})
+
+// `step`/`createInitialState` carry the override marks on the state so the
+// renderer never reparses rules; the marks must track the post-step board,
+// including when a push breaks the vetoing phrase mid-turn.
+test('state carries overridden text ids that track the live board', () => {
+  //   x=1 column: not baba is not push   (veto phrase)
+  //   y=1 row x3..5: keke is push        (overridden by the veto)
+  //   y=5 row x2..4: baba is you         (makes the entity move)
+  const level: LevelData = {
+    title: 'override-marks',
+    width: 6,
+    height: 6,
+    items: [
+      createText(1, 'not', 1, 0),
+      createText(2, 'baba', 1, 1),
+      createText(3, 'is', 1, 2),
+      createText(4, 'not', 1, 3),
+      createText(5, 'push', 1, 4),
+      createText(6, 'keke', 3, 1),
+      createText(7, 'is', 4, 1),
+      createText(8, 'push', 5, 1),
+      createText(9, 'baba', 2, 5),
+      createText(10, 'is', 3, 5),
+      createText(11, 'you', 4, 5),
+      { id: 12, name: 'baba', x: 0, y: 4, isText: false },
+    ],
+  }
+
+  const initial = createInitialState(level, 0)
+  assert.deepEqual(
+    [...(initial.overriddenTextIds ?? [])].sort(),
+    [...collectOverriddenTextIds(initial.items, 6, 6)].sort(),
+  )
+  assert.deepEqual([...(initial.overriddenTextIds ?? [])].sort(), [6, 7, 8])
+
+  // Pushing the `push` text out of the veto column dissolves the veto —
+  // the marks on the produced state must reflect the new board, not the
+  // pre-step one, and `keke is push` turns active.
+  const moved = step(initial, 'right')
+  assert.equal(moved.changed, true)
+  assert.deepEqual(
+    [...(moved.state.overriddenTextIds ?? [])].sort(),
+    [...collectOverriddenTextIds(moved.state.items, 6, 6)].sort(),
+  )
+  assert.deepEqual([...(moved.state.overriddenTextIds ?? [])], [])
+  assert.ok(
+    moved.state.rules.some(
+      (rule) => rule.subject === 'keke' && rule.object === 'push',
+    ),
+  )
+
+  // A step that changes nothing keeps the same marks (still equal to a
+  // fresh recompute on the same items). `up` pushes the veto column into
+  // the wall — the whole chain is blocked, so the board does not change.
+  const idle = step(moved.state, 'up')
+  assert.equal(idle.changed, false)
+  assert.deepEqual(
+    [...(idle.state.overriddenTextIds ?? [])].sort(),
+    [...collectOverriddenTextIds(idle.state.items, 6, 6)].sort(),
   )
 })

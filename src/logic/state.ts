@@ -23,13 +23,10 @@ export const createInitialState = (
     height: level.height,
     items,
     rules: runtime.rules,
+    overriddenTextIds: runtime.overriddenTextIds,
     status: 'playing',
     turn: 0,
     ...(level.meta ? { meta: level.meta } : {}),
   }
 }
 
-export const markCampaignComplete = (state: GameState): GameState => ({
-  ...state,
-  status: 'complete',
-})

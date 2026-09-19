@@ -51,7 +51,13 @@ export const moveItems = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { anyMoved: false }
-  const emptyProps = resolveActiveEmptyProps(rules, next, width, height)
+  const emptyProps = resolveActiveEmptyProps(
+    rules,
+    next,
+    width,
+    height,
+    runtime.context,
+  )
   const emptyPush = emptyProps.has('push')
   const emptyStop = emptyProps.has('stop')
   const engine = createSingleMoveRuntime(

@@ -121,9 +121,9 @@ export type {
   GameStatus,
   Item,
   LevelData,
+  LevelIcon,
   LevelItem,
   LevelMeta,
-  LevelName,
   StepResult,
 } from './game-types.js'
 

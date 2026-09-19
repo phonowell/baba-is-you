@@ -78,26 +78,31 @@ export const partitionRuleInstances = (
   return { active, overridden: overriddenList }
 }
 
-// Both marks in one scan: `active` = text ids in any active rule,
-// `overridden` = text ids in overridden rules only.
-export const collectTextRuleMarks = (
-  items: LevelItem[],
-  width: number,
-  height: number,
-): { active: Set<number>; overridden: Set<number> } => {
-  const { active, overridden } = partitionRuleInstances(
-    collectRuleInstances(items, width, height),
-  )
+// Both marks in one scan of a partition: `active` = text ids in any
+// active rule, `overridden` = text ids in overridden rules only.
+export const textRuleMarksFromPartition = (partition: {
+  active: RuleInstance[]
+  overridden: RuleInstance[]
+}): { active: Set<number>; overridden: Set<number> } => {
   const activeIds = new Set<number>()
-  for (const instance of active)
+  for (const instance of partition.active)
     for (const id of instance.cells) activeIds.add(id)
 
   const overriddenIds = new Set<number>()
-  for (const instance of overridden)
+  for (const instance of partition.overridden)
     for (const id of instance.cells)
       if (!activeIds.has(id)) overriddenIds.add(id)
   return { active: activeIds, overridden: overriddenIds }
 }
+
+export const collectTextRuleMarks = (
+  items: LevelItem[],
+  width: number,
+  height: number,
+): { active: Set<number>; overridden: Set<number> } =>
+  textRuleMarksFromPartition(
+    partitionRuleInstances(collectRuleInstances(items, width, height)),
+  )
 
 // Ids of text items forming overridden rules but no active rule — the
 // predecessor renders exactly this set struck-out/dimmed.

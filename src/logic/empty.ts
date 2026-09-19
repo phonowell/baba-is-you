@@ -2,6 +2,8 @@ import { keyFor } from './helpers.js'
 import { createRuleMatchContext, matchesRuleObjectWord } from './rule-match.js'
 import { isPropertyRule } from './types.js'
 
+import type { RuleMatchContext } from './rule-match.js'
+
 import type { Direction, Property, Rule, RuleCondition } from './types.js'
 
 type EmptyMatchItem = {
@@ -180,19 +182,34 @@ export const resolveActiveEmptyProps = (
   items: EmptyMatchItem[],
   width: number,
   height: number,
+  context?: RuleMatchContext,
 ): Set<string> => {
   const active = new Set<string>()
   if (!hasEmptyPropertyRules(rules)) return active
-  if (!hasAnyEmptyCell(items, width, height)) return active
+  // A caller-held match context over the same board saves the O(items)
+  // index rebuild; its byCell size doubles as the empty-cell probe. It must
+  // describe the same positions as `items` — callers pass their stage
+  // runtime context, whose cells predate only prop-only updates.
+  const hasEmpty = context
+    ? context.byCell.size < width * height
+    : hasAnyEmptyCell(items, width, height)
+  if (!hasEmpty) return active
 
-  const context = createEmptyMatchContext(items, rules, width, height)
+  const emptyContext: EmptyMatchContext = context
+    ? {
+        byCell: context.byCell as Map<number, EmptyMatchItem[]>,
+        groupMembers: context.groupMembers,
+        height,
+        width,
+      }
+    : createEmptyMatchContext(items, rules, width, height)
   const emptyRules = emptySubjectRules(rules, 'is-property')
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
-      if (itemsAt(context, x, y).length) continue
+      if (itemsAt(emptyContext, x, y).length) continue
       const targets = resolveEmptyRuleTargetsAt(
         emptyRules,
-        context,
+        emptyContext,
         x,
         y,
         'is-property',

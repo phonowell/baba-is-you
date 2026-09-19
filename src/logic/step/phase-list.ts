@@ -82,7 +82,13 @@ export const buildStepStages = (
     sync: { kind: 'reuse-rules' },
     run: (items, runtime) => {
       if (!direction) return { items, changed: false }
-      return moveCursor(items, direction, runtime.width, runtime.height)
+      return moveCursor(
+        items,
+        direction,
+        runtime.width,
+        runtime.height,
+        runtime.context,
+      )
     },
   },
   {

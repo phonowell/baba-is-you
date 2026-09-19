@@ -1,69 +1,93 @@
-import { levelNameKey } from './parse-ascii-level.js'
+import { keyFor } from './helpers.js'
 
+import type { RuleMatchContext } from './rule-match.js'
 import type {
   Direction,
   Item,
+  LevelIcon,
   LevelItem,
-  LevelName,
 } from './types.js'
 
-// Overworld ("map is a level") mechanics ported from the predecessor:
-// a map file contains `level` icon entities (entries into levels and
-// subworlds), `line` entities paving the walkable graph, and a single
+// Overworld ("map is a level") mechanics on the official map data:
+// a map board carries `level` icon entities (entries into levels and
+// sub-maps), `line` entities paving the walkable graph, and a single
 // `cursor` entity placed at runtime. The cursor is not rule-driven — it
 // moves one cell per directional input onto cells holding a line/level.
 
-export const sameLevelName = (a: LevelName, b: LevelName): boolean =>
-  levelNameKey(a) === levelNameKey(b)
-
-// Graph lookup key: subworld icons live in the parent's legend, so
-// lookups ignore the icon (`map 1 lake` vs directory `1-the-lake`).
-export const levelGraphKey = (target: LevelName): string =>
-  target.kind === 'subworld' ? `s${target.n}` : levelNameKey(target)
-
 const CURSOR_NAME = 'cursor'
-const PARENT_TARGET: LevelName = { kind: 'parent' }
-const FIRST_LEVEL_TARGET: LevelName = { kind: 'number', n: 0 }
 
-const findLevelAt = (
+const findIconAt = (
   items: ReadonlyArray<LevelItem>,
-  target: LevelName,
+  x: number,
+  y: number,
 ): LevelItem | undefined =>
   items.find(
     (item) =>
       !item.isText &&
       item.name === 'level' &&
-      item.levelTarget !== undefined &&
-      sameLevelName(item.levelTarget, target),
+      item.x === x &&
+      item.y === y &&
+      item.levelTarget !== undefined,
   )
 
-// Places the cursor on the level icon matching `target` (or `parent`
-// when entering a map fresh), falling back to level 0 — the
-// predecessor's `place_cursor` chain. Returns items unchanged when no
-// icon matches at all.
+const findIconForFile = (
+  items: ReadonlyArray<LevelItem>,
+  file: string,
+  cell?: { x: number; y: number },
+): LevelItem | undefined => {
+  const matches = (item: LevelItem): boolean =>
+    !item.isText &&
+    item.name === 'level' &&
+    item.levelTarget !== undefined &&
+    item.levelTarget.file === file
+  if (cell) {
+    const exact = items.find(
+      (item) => matches(item) && item.x === cell.x && item.y === cell.y,
+    )
+    if (exact) return exact
+  }
+  return items.find(matches)
+}
+
+const createCursor = (items: Item[], x: number, y: number): Item => ({
+  id: items.reduce((max, item) => Math.max(max, item.id), 0) + 1,
+  name: CURSOR_NAME,
+  x,
+  y,
+  isText: false,
+  dir: 'right',
+  props: [],
+})
+
+// Places the cursor on the icon we came through — a target file (any
+// matching cell) or an exact `IconRef` cell when duplicates exist —
+// falling back to the map's selector spawn and then the first icon.
+// Returns items without a cursor when nothing matches.
 export const placeCursor = (
   items: Item[],
-  target: LevelName | undefined,
+  target: IconRef | string | undefined,
+  selector?: readonly [number, number],
 ): Item[] => {
   const without = items.filter((item) => item.name !== CURSOR_NAME)
-  for (const wanted of [target ?? PARENT_TARGET, FIRST_LEVEL_TARGET]) {
-    const icon = findLevelAt(without, wanted)
-    if (!icon) continue
-    const cursor: Item = {
-      id: without.reduce((max, item) => Math.max(max, item.id), 0) + 1,
-      name: CURSOR_NAME,
-      x: icon.x,
-      y: icon.y,
-      isText: false,
-      dir: 'right',
-      props: [],
-    }
-    return [...without, cursor]
+  if (target !== undefined) {
+    const file = typeof target === 'string' ? target : target.file
+    const cell = typeof target === 'string' ? undefined : target
+    const icon = findIconForFile(without, file, cell)
+    if (icon) return [...without, createCursor(without, icon.x, icon.y)]
   }
+  if (selector) {
+    const [x, y] = selector
+    return [...without, createCursor(without, x, y)]
+  }
+  const first = without.find(
+    (item) =>
+      !item.isText && item.name === 'level' && item.levelTarget !== undefined,
+  )
+  if (first) return [...without, createCursor(without, first.x, first.y)]
   return without
 }
 
-// One rail-hop per directional input: the first cursor moves onto the
+// One rail-hop per directional input: the cursor moves onto the
 // adjacent cell when it holds a `line` or `level` entity. Not affected
 // by stop/push — cursor travel is not object movement.
 export const moveCursor = (
@@ -71,6 +95,7 @@ export const moveCursor = (
   direction: Direction,
   width: number,
   height: number,
+  context?: RuleMatchContext,
 ): { items: Item[]; changed: boolean } => {
   const cursor = items.find((item) => item.name === CURSOR_NAME)
   if (!cursor) return { items, changed: false }
@@ -82,13 +107,14 @@ export const moveCursor = (
   if (nx < 0 || ny < 0 || nx >= width || ny >= height)
     return { items, changed: false }
 
-  const walkable = items.some(
-    (item) =>
-      !item.isText &&
-      item.x === nx &&
-      item.y === ny &&
-      (item.name === 'line' || item.name === 'level'),
-  )
+  const isWalkable = (item: LevelItem): boolean =>
+    !item.isText && (item.name === 'line' || item.name === 'level')
+  // A caller-held match context already indexes the board by cell; without
+  // it the walkable probe scans all items.
+  const cell = context?.byCell.get(keyFor(nx, ny, width))
+  const walkable = cell
+    ? cell.some(isWalkable)
+    : items.some((item) => item.x === nx && item.y === ny && isWalkable(item))
   if (!walkable) return { items, changed: false }
 
   return {
@@ -101,108 +127,161 @@ export const moveCursor = (
   }
 }
 
-// Enter resolves the level icon sharing the cursor's cell; `parent`
-// means "return to the map that led here".
+// Enter resolves the level icon sharing the cursor's cell, keeping the
+// cell itself: official maps occasionally show the same target file at
+// more than one cell, and a return should land on the icon the player
+// actually entered through.
+export type EnterTarget = {
+  icon: LevelIcon
+  x: number
+  y: number
+}
+
 export const resolveEnterTarget = (
   items: ReadonlyArray<LevelItem>,
-): LevelName | undefined => {
+): EnterTarget | undefined => {
   const cursor = items.find((item) => item.name === CURSOR_NAME)
   if (!cursor) return undefined
-  const icon = items.find(
-    (item) =>
-      !item.isText &&
-      item.name === 'level' &&
-      item.x === cursor.x &&
-      item.y === cursor.y &&
-      item.levelTarget !== undefined,
-  )
-  return icon?.levelTarget
+  const item = findIconAt(items, cursor.x, cursor.y)
+  if (!item || !item.levelTarget) return undefined
+  return { icon: item.levelTarget, x: item.x, y: item.y }
 }
 
-// A directory of ASCII levels as a graph: `index.txt` is the map of a
-// node, its children are sibling level files and subdirectories.
-export type OverworldGraph = {
-  // Path (or locator) of this node's own level/map file.
+// A specific icon cell on a map — target file plus position.
+export type IconRef = {
   file: string
-  // levelGraphKey -> child node.
-  children: ReadonlyMap<string, OverworldGraph>
+  x: number
+  y: number
 }
 
-export type OverworldSession = {
-  // Stack of visited maps; the top is the node currently shown.
-  stack: ReadonlyArray<{
-    node: OverworldGraph
-    // When returning to this map, the cursor resumes on this icon.
-    returnTo?: LevelName
-  }>
+// Navigation stack: the top frame is the map currently shown, and each
+// frame records `returnTo` — the icon we entered through — so a return
+// can land the cursor back on that exact cell.
+export type MapFrame = {
+  mapFile: string
+  returnTo?: IconRef
 }
 
-export const createOverworldSession = (
-  root: OverworldGraph,
-): OverworldSession => ({ stack: [{ node: root }] })
+export type MapSession = {
+  stack: ReadonlyArray<MapFrame>
+}
 
-export type OverworldTransition =
-  | { type: 'enter'; node: OverworldGraph; returnTo: undefined }
-  | { type: 'return'; node: OverworldGraph; returnTo: LevelName | undefined }
-  | { type: 'exit-map' }
+export const createMapSession = (rootMapFile: string): MapSession => ({
+  stack: [{ mapFile: rootMapFile }],
+})
 
-// Resolves an Enter press against the current map state: dive into a
-// child node, or pop back to the parent map. `fileFor` loads a node's
-// level data — kept outside so the session stays IO-free.
+export const topMapFrame = (session: MapSession): MapFrame | undefined =>
+  session.stack[session.stack.length - 1]
+
+export type MapTransition =
+  | { type: 'enter-level'; levelIndex: number }
+  | { type: 'enter-map'; mapFile: string; fromMapFile: string }
+  | { type: 'return-map'; mapFile: string; returnTo?: IconRef }
+  | { type: 'stay' }
+
+// A bare leave can only travel between maps — never into a level.
+export type MapLeaveTransition = Exclude<MapTransition, { type: 'enter-level' }>
+
+// Resolves an Enter press against the current map: open a level, dive
+// into a sub-map, or follow a return icon back to an ancestor map.
 export const applyEnter = (
-  session: OverworldSession,
-  target: LevelName | undefined,
-): { session: OverworldSession; transition: OverworldTransition } => {
-  const top = session.stack[session.stack.length - 1]
-  if (!top || !target)
-    return { session, transition: { type: 'exit-map' } }
+  session: MapSession,
+  enter: EnterTarget | undefined,
+): { session: MapSession; transition: MapTransition } => {
+  const top = topMapFrame(session)
+  if (!top || !enter || enter.icon.kind === 'unresolved')
+    return { session, transition: { type: 'stay' } }
+  const { icon } = enter
+  const returnTo: IconRef = { file: icon.file, x: enter.x, y: enter.y }
 
-  if (target.kind === 'parent') {
-    const stack = session.stack.slice(0, -1)
-    const parent = stack[stack.length - 1]
-    if (!parent)
-      return { session, transition: { type: 'exit-map' } }
+  if (icon.kind === 'level' && icon.levelIndex !== undefined) {
     return {
-      session: { stack },
+      session: {
+        stack: [
+          ...session.stack.slice(0, -1),
+          { mapFile: top.mapFile, returnTo },
+        ],
+      },
+      transition: { type: 'enter-level', levelIndex: icon.levelIndex },
+    }
+  }
+
+  if (icon.kind === 'map' && icon.mapFile !== undefined) {
+    const existing = session.stack.findIndex(
+      (frame) => frame.mapFile === icon.mapFile,
+    )
+    if (existing === session.stack.length - 1)
+      return { session, transition: { type: 'stay' } }
+    if (existing >= 0) {
+      const stack = session.stack.slice(0, existing + 1)
+      const parent = stack[stack.length - 1]
+      return {
+        session: { stack },
+        transition: {
+          type: 'return-map',
+          mapFile: parent?.mapFile ?? icon.mapFile,
+          ...(parent?.returnTo !== undefined
+            ? { returnTo: parent.returnTo }
+            : {}),
+        },
+      }
+    }
+    return {
+      session: {
+        stack: [
+          ...session.stack.slice(0, -1),
+          { mapFile: top.mapFile, returnTo },
+          { mapFile: icon.mapFile },
+        ],
+      },
       transition: {
-        type: 'return',
-        node: parent.node,
-        returnTo: parent.returnTo,
+        type: 'enter-map',
+        mapFile: icon.mapFile,
+        fromMapFile: top.mapFile,
       },
     }
   }
 
-  const child = top.node.children.get(levelGraphKey(target))
-  if (!child)
-    return { session, transition: { type: 'exit-map' } }
-
-  return {
-    session: {
-      stack: [
-        ...session.stack.slice(0, -1),
-        { node: top.node, returnTo: target },
-        { node: child },
-      ],
-    },
-    transition: { type: 'enter', node: child, returnTo: undefined },
-  }
+  return { session, transition: { type: 'stay' } }
 }
 
-// Winning or leaving a level pops back to the parent map — the stack
-// entry kept `returnTo` so the cursor lands on the finished icon.
+// A bare leave on a map: pop to the ancestor frame when there is one,
+// otherwise follow the map's declared `customparent` link.
 export const applyLeave = (
-  session: OverworldSession,
-): { session: OverworldSession; transition: OverworldTransition } => {
-  const stack = session.stack.slice(0, -1)
-  const parent = stack[stack.length - 1]
-  if (!parent)
-    return { session, transition: { type: 'exit-map' } }
-  return {
-    session: { stack },
-    transition: {
-      type: 'return',
-      node: parent.node,
-      returnTo: parent.returnTo,
-    },
+  session: MapSession,
+  parentFile: string | undefined,
+): { session: MapSession; transition: MapLeaveTransition } => {
+  const top = topMapFrame(session)
+  if (!top) return { session, transition: { type: 'stay' } }
+
+  if (session.stack.length > 1) {
+    const stack = session.stack.slice(0, -1)
+    const parent = stack[stack.length - 1]
+    return {
+      session: { stack },
+      transition: {
+        type: 'return-map',
+        mapFile: parent?.mapFile ?? top.mapFile,
+        ...(parent?.returnTo !== undefined
+          ? { returnTo: parent.returnTo }
+          : {}),
+      },
+    }
   }
+
+  if (parentFile !== undefined && parentFile !== top.mapFile) {
+    // The declared parent link climbs one direction only — a fresh
+    // single-frame stack. Keeping the child as a breadcrumb would make a
+    // subsequent leave on the parent pop straight back down into it.
+    return {
+      session: { stack: [{ mapFile: parentFile }] },
+      transition: {
+        type: 'enter-map',
+        mapFile: parentFile,
+        fromMapFile: top.mapFile,
+      },
+    }
+  }
+
+  return { session, transition: { type: 'stay' } }
 }

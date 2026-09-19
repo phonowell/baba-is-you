@@ -26,7 +26,7 @@ const runtimeFor = (
   rules: Rule[],
   width: number,
   height: number,
-) => createRuleRuntime(items, rules, width, height)
+) => createRuleRuntime(items, rules, width, height, new Set())
 
 test('applyTransforms returns changed=false for identity transform', () => {
   const items = [createItem(1, 'baba', 1, 1, false)]

@@ -1,6 +1,9 @@
 import { createRuleMatchContext } from './rule-match.js'
 import { collectRuleInstances } from './rules.js'
-import { partitionRuleInstances } from './rules-override.js'
+import {
+  partitionRuleInstances,
+  textRuleMarksFromPartition,
+} from './rules-override.js'
 import { stringifyCondition } from './rules-subjects.js'
 
 import type { Item, LevelItem, Rule } from './types.js'
@@ -29,6 +32,11 @@ export type RuleRuntime = {
   buckets: RuleBuckets
   context: ReturnType<typeof createRuleMatchContext>
   height: number
+  // Text ids in overridden rules and no active one — computed alongside
+  // the instance partition so renderers can strike those cards without
+  // reparsing rules. Rebound runtimes carry the previous value forward;
+  // any position-affecting change re-collects before the step ends.
+  overriddenTextIds: ReadonlySet<number>
   rules: Rule[]
   width: number
 }
@@ -77,10 +85,12 @@ export const createRuleRuntime = (
   rules: Rule[],
   width: number,
   height: number,
+  overriddenTextIds: ReadonlySet<number>,
 ): RuleRuntime => ({
   buckets: createRuleBuckets(rules),
   context: createRuleMatchContext(items, rules, width, height),
   height,
+  overriddenTextIds,
   rules,
   width,
 })
@@ -93,12 +103,12 @@ export const collectRuleRuntime = (
   // Overridden rules (`x is push` vetoed by `not x is push`, or transforms
   // suppressed by `x is x`) never take effect — mirror the predecessor by
   // feeding only active rules into the runtime.
-  const { active } = partitionRuleInstances(
+  const partition = partitionRuleInstances(
     collectRuleInstances(items, width, height),
   )
   const rules: Rule[] = []
   const seen = new Set<string>()
-  for (const { rule } of active) {
+  for (const { rule } of partition.active) {
     const key = `${rule.subjectNegated ? '!' : ''}${rule.subject}:${stringifyCondition(
       rule.condition,
     )}:${rule.kind}:${rule.objectNegated ? '!' : ''}${rule.object}`
@@ -106,5 +116,11 @@ export const collectRuleRuntime = (
     seen.add(key)
     rules.push(rule)
   }
-  return createRuleRuntime(items, rules, width, height)
+  return createRuleRuntime(
+    items,
+    rules,
+    width,
+    height,
+    textRuleMarksFromPartition(partition).overridden,
+  )
 }

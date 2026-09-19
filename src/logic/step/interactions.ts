@@ -2,8 +2,8 @@ import { matchesRuleObjectWord, matchesRuleSubject } from '../rule-match.js'
 
 import {
   appendHasSpawns,
+  buildGrid,
   hasProp,
-  keyFor,
   splitByFloatLayer,
 } from './shared.js'
 
@@ -54,13 +54,13 @@ export const applyInteractions = (
   )
   if (!hasInteractionProps && !eatRules.length) return { items, changed: false }
 
-  const byCell = new Map<number, Item[]>()
-  for (const item of items) {
-    const key = keyFor(item.x, item.y, width)
-    const list = byCell.get(key) ?? []
-    list.push(item)
-    byCell.set(key, list)
-  }
+  // The stage runtime's match context already indexes this exact items
+  // array by cell — reuse it when it is the same array instead of building
+  // an identical map (the cells hold Item objects, only typed MatchItem).
+  const byCell =
+    runtime.context.items === items
+      ? (runtime.context.byCell as Map<number, Item[]>)
+      : buildGrid(items, width)
 
   const removed = new Set<number>()
   let changed = false
