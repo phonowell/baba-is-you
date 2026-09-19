@@ -16,6 +16,7 @@ import { buildCellGridPoints } from './board-3d-ground-shape.js'
 import { buildEntityViews, computeEntityBaseTarget } from './board-3d-shared-layout.js'
 import {
   idleFloatBob,
+  idleFloatDrift,
   idleMicroStretch,
   idleStretchBottomAnchorOffset,
 } from './board-3d-shared-math.js'
@@ -148,7 +149,14 @@ test('board-3d idle stretch covers text cards only', () => {
   assert.equal(idleStretchEnabledForItem(uprightText), true)
 })
 
-const { FLOAT_BOB_CYCLE_MS, FLOAT_BOB_AMP } = BOARD3D_ANIMATION_CONFIG
+const {
+  FLOAT_BOB_CYCLE_MS,
+  FLOAT_BOB_AMP,
+  FLOAT_DRIFT_CYCLE_MS,
+  FLOAT_DRIFT_X_AMP,
+  FLOAT_DRIFT_Y_AMP,
+  FLOAT_ROLL_AMP,
+} = BOARD3D_ANIMATION_CONFIG
 
 test('board-3d float prop enables the idle bob on any card kind', () => {
   const floatingObject: GameState['items'][number] = {
@@ -188,16 +196,42 @@ test('board-3d float bob is a bounded sine over its cycle', () => {
   assert.ok(Math.abs(idleFloatBob(FLOAT_BOB_CYCLE_MS)) < 1e-9)
 })
 
-const createPoseNode = (): { node: EntityNode; zSamples: number[] } => {
-  const zSamples: number[] = []
+test('board-3d float drift is bounded and phases y onto the bob cycle', () => {
+  const out = { x: 0, y: 0, roll: 0 }
+  for (let t = 0; t <= FLOAT_DRIFT_CYCLE_MS; t += 47) {
+    idleFloatDrift(t, out)
+    assert.ok(Math.abs(out.x) <= FLOAT_DRIFT_X_AMP + 1e-9)
+    assert.ok(Math.abs(out.y) <= FLOAT_DRIFT_Y_AMP + 1e-9)
+    assert.ok(Math.abs(out.roll) <= FLOAT_ROLL_AMP + 1e-9)
+  }
+  // y peaks with the bob quarter so the card visibly bobs on screen.
+  idleFloatDrift(FLOAT_BOB_CYCLE_MS / 4, out)
+  assert.ok(Math.abs(out.y - FLOAT_DRIFT_Y_AMP) < 1e-9)
+  // x wanders on its own slower cycle.
+  idleFloatDrift(FLOAT_DRIFT_CYCLE_MS / 4, out)
+  assert.ok(Math.abs(out.x - FLOAT_DRIFT_X_AMP) < 1e-9)
+  assert.ok(Math.abs(out.roll) < 1e-9)
+})
+
+const createPoseNode = (): {
+  node: EntityNode
+  posSamples: { x: number; y: number; z: number }[]
+  rollSamples: number[]
+} => {
+  const posSamples: { x: number; y: number; z: number }[] = []
+  const rollSamples: number[] = []
   const node = {
     mesh: {
       position: {
-        set: (_x: number, _y: number, z: number) => {
-          zSamples.push(z)
+        set: (x: number, y: number, z: number) => {
+          posSamples.push({ x, y, z })
         },
       },
-      rotation: { set: () => undefined },
+      rotation: {
+        set: (_x: number, _y: number, roll: number) => {
+          rollSamples.push(roll)
+        },
+      },
       scale: { set: () => undefined },
     },
     shadow: {
@@ -235,11 +269,11 @@ const createPoseNode = (): { node: EntityNode; zSamples: number[] } => {
     despawnStartMs: null,
     landStartMs: null,
   } as unknown as EntityNode
-  return { node, zSamples }
+  return { node, posSamples, rollSamples }
 }
 
 test('board-3d pose bobs a float-prop card around its base z', () => {
-  const { node, zSamples } = createPoseNode()
+  const { node, posSamples } = createPoseNode()
   node.idleFloat = true
   const camera = new PerspectiveCamera()
 
@@ -247,22 +281,56 @@ test('board-3d pose bobs a float-prop card around its base z', () => {
   applyNodePose(node, FLOAT_BOB_CYCLE_MS / 4, camera)
   applyNodePose(node, (FLOAT_BOB_CYCLE_MS * 3) / 4, camera)
 
-  const [zStart, zPeak, zTrough] = zSamples
-  assert.ok(Math.abs(zStart! - node.toBaseZ) < 1e-9)
-  assert.ok(Math.abs(zPeak! - (node.toBaseZ + FLOAT_BOB_AMP)) < 1e-9)
-  assert.ok(Math.abs(zTrough! - (node.toBaseZ - FLOAT_BOB_AMP)) < 1e-9)
+  const [start, peak, trough] = posSamples
+  assert.ok(Math.abs(start!.z - node.toBaseZ) < 1e-9)
+  assert.ok(Math.abs(peak!.z - (node.toBaseZ + FLOAT_BOB_AMP)) < 1e-9)
+  assert.ok(Math.abs(trough!.z - (node.toBaseZ - FLOAT_BOB_AMP)) < 1e-9)
 })
 
-test('board-3d pose keeps a non-float card at its base z over the bob cycle', () => {
-  const { node, zSamples } = createPoseNode()
+test('board-3d pose drifts a float-prop card inside its cell', () => {
+  const { node, posSamples, rollSamples } = createPoseNode()
+  node.idleFloat = true
   const camera = new PerspectiveCamera()
 
   applyNodePose(node, 0, camera)
   applyNodePose(node, FLOAT_BOB_CYCLE_MS / 4, camera)
+  applyNodePose(node, (FLOAT_BOB_CYCLE_MS * 3) / 4, camera)
+  applyNodePose(node, FLOAT_DRIFT_CYCLE_MS / 4, camera)
 
-  assert.equal(zSamples.length, 2)
-  for (const z of zSamples) {
-    assert.ok(Math.abs(z - node.toBaseZ) < 1e-9)
+  const [start, bobPeak, bobTrough, driftPeak] = posSamples
+  // y rides the bob cycle: it carries the on-screen bob the z-axis loses
+  // to the steep camera pitch.
+  assert.ok(Math.abs(start!.y - node.toY) < 1e-9)
+  assert.ok(Math.abs(bobPeak!.y - (node.toY + FLOAT_DRIFT_Y_AMP)) < 1e-9)
+  assert.ok(Math.abs(bobTrough!.y - (node.toY - FLOAT_DRIFT_Y_AMP)) < 1e-9)
+  // x wanders on its own slower cycle, peaked at its quarter.
+  assert.ok(Math.abs(driftPeak!.x - (node.toX + FLOAT_DRIFT_X_AMP)) < 1e-9)
+  for (const pos of posSamples) {
+    assert.ok(Math.abs(pos.x - node.toX) <= FLOAT_DRIFT_X_AMP + 1e-9)
+    assert.ok(Math.abs(pos.y - node.toY) <= FLOAT_DRIFT_Y_AMP + 1e-9)
+  }
+  for (const roll of rollSamples) {
+    assert.ok(Math.abs(roll) <= FLOAT_ROLL_AMP + 1e-9)
+  }
+  assert.ok(Math.abs(rollSamples[0]! - FLOAT_ROLL_AMP) < 1e-9)
+})
+
+test('board-3d pose keeps a non-float card at its base pose over the bob cycle', () => {
+  const { node, posSamples, rollSamples } = createPoseNode()
+  const camera = new PerspectiveCamera()
+
+  applyNodePose(node, 0, camera)
+  applyNodePose(node, FLOAT_BOB_CYCLE_MS / 4, camera)
+  applyNodePose(node, FLOAT_DRIFT_CYCLE_MS / 4, camera)
+
+  assert.equal(posSamples.length, 3)
+  for (const pos of posSamples) {
+    assert.ok(Math.abs(pos.x - node.toX) < 1e-9)
+    assert.ok(Math.abs(pos.y - node.toY) < 1e-9)
+    assert.ok(Math.abs(pos.z - node.toBaseZ) < 1e-9)
+  }
+  for (const roll of rollSamples) {
+    assert.ok(Math.abs(roll - node.toRoll) < 1e-9)
   }
 })
 

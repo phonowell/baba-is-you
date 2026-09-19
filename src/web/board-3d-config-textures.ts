@@ -12,7 +12,12 @@ export const BOARD3D_CARD_TEXTURE_CONFIG = {
   // that the pair still reads as one word, loose enough that the stroke
   // outlines don't touch.
   CARD_TEXTURE_TEXT_LINE_HEIGHT: 0.95,
-  CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO: 0.05,
+  // The embolden stroke covers part of this ring; the width stays ahead
+  // of it so a visible halo survives around the thickened glyphs.
+  CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO: 0.065,
+  // Faux-bold pass: a label-colour stroke under the fill widens glyph
+  // stems — the label faces top out at bold, so the stroke thickens them.
+  CARD_TEXTURE_TEXT_EMBOLDEN_RATIO: 0.06,
   CARD_TEXTURE_TEXT_FONT_FAMILY:
     '"Trebuchet MS","Arial Rounded MT Bold","Segoe UI Emoji",sans-serif',
   CARD_TEXTURE_DIRECTION_FONT_RATIO: 0.36,

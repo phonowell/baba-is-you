@@ -29,8 +29,21 @@ export const BOARD3D_ANIMATION_CONFIG = {
   IDLE_STRETCH_X_AMP: 0.014,
   // FLOAT prop levitation: a slow sine bob layered on FLOAT_ITEM_LIFT_Z,
   // stepped at the idle timer's cadence like the stretch — no RAF held.
+  // The camera hovers ~75° above the board, so the z bob alone foreshortens
+  // to ~1px on screen; the board-plane drift below carries the visible
+  // motion while the z bob keeps breathing the shadow.
   FLOAT_BOB_CYCLE_MS: 1500,
-  FLOAT_BOB_AMP: 0.04,
+  FLOAT_BOB_AMP: 0.07,
+  // Board-plane drift: y shares the bob cycle so the card visibly bobs
+  // up/down its cell on screen, while x wanders on a slower cycle so the
+  // combined path reads as drifting on air rather than orbiting a point.
+  // ~5% of a cell each way: the card stays over its tile while moving.
+  FLOAT_DRIFT_CYCLE_MS: 2300,
+  FLOAT_DRIFT_X_AMP: 0.04,
+  FLOAT_DRIFT_Y_AMP: 0.055,
+  // Gentle roll banking into the sideways sweep — a leaf on air, not a
+  // sliding tile.
+  FLOAT_ROLL_AMP: 0.05,
   MOVE_STRETCH_FACTOR: 0.17,
   MOVE_SQUASH_FACTOR: 0.14,
   LANDING_PULSE_HEIGHT: 0.04,

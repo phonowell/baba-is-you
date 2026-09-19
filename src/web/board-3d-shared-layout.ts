@@ -38,8 +38,17 @@ export const computeEntityBaseTarget = (
 ): { x: number; y: number; baseZ: number } => {
   const { item, displayStackCount, displayStackIndex, layerPriority } = view
   const spread = stackSpreadOffsets(displayStackCount, displayStackIndex)
-  const x = item.x - (state.width - 1) / 2 + spread.x
-  const y = (state.height - 1) / 2 - item.y + spread.y
+  // `level is you/move/…` scrolls the room (official `MF_scrollroom`):
+  // render positions shift by the accumulated cell offset and wrap at
+  // the edges, so the torus seam lands inside the static board frame.
+  const offsetX = state.levelOffset?.x ?? 0
+  const offsetY = state.levelOffset?.y ?? 0
+  const cellX =
+    (((item.x + offsetX) % state.width) + state.width) % state.width
+  const cellY =
+    (((item.y + offsetY) % state.height) + state.height) % state.height
+  const x = cellX - (state.width - 1) / 2 + spread.x
+  const y = (state.height - 1) / 2 - cellY + spread.y
   const hasStack = displayStackCount > 1
   const floatLift = item.props.includes('float') ? FLOAT_ITEM_LIFT_Z : 0
   const baseZ = isGroundHugItem(item)
@@ -65,36 +74,49 @@ export const buildEntityViews = (state: GameState): EntityView[] => {
 
   const views: EntityView[] = []
   for (const stack of grid.values()) {
-    const sortedUpright = sortUprightStack(stack)
-    const sortedGround = sortGroundStack(stack)
-    const uprightStack = sortedUpright
-    const groundStack = sortedGround
-    const sorted = [...sortedUpright, ...sortedGround]
-    const stackCount = sorted.length
-    const uprightStackIndexById = new Map<number, number>()
-    const groundStackIndexById = new Map<number, number>()
-    for (const [index, item] of sortedUpright.entries()) {
-      uprightStackIndexById.set(item.id, index)
-    }
-    for (const [index, item] of sortedGround.entries()) {
-      groundStackIndexById.set(item.id, index)
-    }
-
-    for (const [stackIndex, item] of sorted.entries()) {
-      const groundHug = isGroundHugItem(item)
-      const displayStackCount = groundHug ? groundStack.length : uprightStack.length
-      const displayStackIndex = groundHug
-        ? groundStackIndexById.get(item.id) ?? 0
-        : uprightStackIndexById.get(item.id) ?? 0
+    // Single-card cells dominate the board — emit the view directly
+    // instead of paying for two filtered sorts and their index maps.
+    if (stack.length === 1) {
+      const item = stack[0]
+      if (!item) continue
       views.push({
         item,
-        stackIndex,
-        stackCount,
-        displayStackIndex,
-        displayStackCount,
-        layerPriority: groundHug
+        stackIndex: 0,
+        stackCount: 1,
+        displayStackIndex: 0,
+        displayStackCount: 1,
+        layerPriority: isGroundHugItem(item)
           ? STACK_LAYER_PRIORITY.other
           : stackLayerPriorityForItem(item),
+      })
+      continue
+    }
+
+    const uprightStack = sortUprightStack(stack)
+    const groundStack = sortGroundStack(stack)
+    const stackCount = uprightStack.length + groundStack.length
+
+    // Upright cards stack above ground-hugging tiles; `displayStackIndex`
+    // counts within the item's own sub-stack.
+    let stackIndex = 0
+    for (const [index, item] of uprightStack.entries()) {
+      views.push({
+        item,
+        stackIndex: stackIndex++,
+        stackCount,
+        displayStackIndex: index,
+        displayStackCount: uprightStack.length,
+        layerPriority: stackLayerPriorityForItem(item),
+      })
+    }
+    for (const [index, item] of groundStack.entries()) {
+      views.push({
+        item,
+        stackIndex: stackIndex++,
+        stackCount,
+        displayStackIndex: index,
+        displayStackCount: groundStack.length,
+        layerPriority: STACK_LAYER_PRIORITY.other,
       })
     }
   }

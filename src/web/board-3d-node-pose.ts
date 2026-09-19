@@ -12,6 +12,7 @@ import {
   easeOutBack,
   easeOutCubic,
   idleFloatBob,
+  idleFloatDrift,
   idleMicroStretch,
   idleStretchBottomAnchorOffset,
   lerp,
@@ -59,6 +60,7 @@ const {
 // Reused per pose call so idle-stretch nodes don't allocate {scaleX,scaleY}
 // every frame (same scratch-object convention as the card-facing vectors).
 const microStretchOut = { scaleX: 1, scaleY: 1 }
+const floatDriftOut = { x: 0, y: 0, roll: 0 }
 
 export const nodeRollAtMs = (node: EntityNode, nowMs: number): number => {
   const animDuration = Math.max(1, node.animDurationMs)
@@ -193,12 +195,23 @@ export const applyNodePose = (
   }
 
   let floatBob = 0
+  let floatX = 0
+  let floatY = 0
   if (node.idleFloat) {
-    floatBob = idleFloatBob(nowMs + node.idlePhaseOffsetMs)
+    const idleNowMs = nowMs + node.idlePhaseOffsetMs
+    floatBob = idleFloatBob(idleNowMs)
     verticalOffset += floatBob
+    const drift = idleFloatDrift(idleNowMs, floatDriftOut)
+    floatX = drift.x
+    floatY = drift.y
+    roll += drift.roll
   }
 
-  node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
+  node.mesh.position.set(
+    x + floatX,
+    y + floatY,
+    baseZ + jump + landing + verticalOffset,
+  )
   let scaleZ = 1
   const yaw = nodeYawAtMs(node, nowMs)
   if (yaw === undefined) {
@@ -224,6 +237,8 @@ export const applyNodePose = (
       (jump + floatBob) * SHADOW_OPACITY_JUMP_MUL +
       landing * SHADOW_OPACITY_LANDING_MUL,
   )
+  // The shadow anchors at the cell (x, y) on purpose — a float card drifts
+  // over a fixed shadow, which is what reads as hovering from ~75° up.
   node.shadow.position.set(x, y, SHADOW_BASE_Z)
   node.shadow.scale.set(shadowScale * scaleFactor, shadowScale * scaleFactor, 1)
   node.shadowMaterial.opacity = shadowOpacity * shadowOpacityMul

@@ -49,6 +49,7 @@ const {
   CARD_TEXTURE_LABEL_OFFSET_Y,
   CARD_TEXTURE_TEXT_LINE_HEIGHT,
   CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO,
+  CARD_TEXTURE_TEXT_EMBOLDEN_RATIO,
   CARD_TEXTURE_TEXT_FONT_FAMILY,
   CARD_TEXTURE_DIRECTION_FONT_RATIO,
   CARD_TEXTURE_DIRECTION_EDGE_INSET_RATIO,
@@ -285,7 +286,7 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
   // line horizontally and the whole line block vertically.
   const lines = cardLabelLines(spec)
   const fit = size * CARD_TEXTURE_TEXT_FILL_RATIO
-  ctx.font = `700 100px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
+  ctx.font = `900 100px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
   const fontSize = Math.min(
     CARD_TEXTURE_TEXT_MAX_FONT_SIZE,
     Math.floor(fit / (lines.length * CARD_TEXTURE_TEXT_LINE_HEIGHT)),
@@ -302,13 +303,18 @@ export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTex
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = spec.textColor
-  ctx.font = `700 ${fontSize}px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
+  ctx.font = `900 ${fontSize}px ${CARD_TEXTURE_TEXT_FONT_FAMILY}`
 
-  ctx.lineWidth = textureSize * CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO
+  const outlineWidth = textureSize * CARD_TEXTURE_TEXT_STROKE_WIDTH_RATIO
+  const emboldenWidth = fontSize * CARD_TEXTURE_TEXT_EMBOLDEN_RATIO
   ctx.lineJoin = 'round'
-  ctx.strokeStyle = spec.outlineColor
   lines.forEach((line, ix) => {
     const y = firstLineY + ix * lineStep
+    ctx.lineWidth = outlineWidth
+    ctx.strokeStyle = spec.outlineColor
+    ctx.strokeText(line, textureSize / 2, y)
+    ctx.lineWidth = emboldenWidth
+    ctx.strokeStyle = spec.textColor
     ctx.strokeText(line, textureSize / 2, y)
     ctx.fillText(line, textureSize / 2, y)
   })

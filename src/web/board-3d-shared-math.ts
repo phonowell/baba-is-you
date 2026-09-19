@@ -13,6 +13,10 @@ const {
   IDLE_STRETCH_X_AMP,
   FLOAT_BOB_CYCLE_MS,
   FLOAT_BOB_AMP,
+  FLOAT_DRIFT_CYCLE_MS,
+  FLOAT_DRIFT_X_AMP,
+  FLOAT_DRIFT_Y_AMP,
+  FLOAT_ROLL_AMP,
 } = BOARD3D_ANIMATION_CONFIG
 
 export const clamp01 = (value: number): number => Math.max(0, Math.min(1, value))
@@ -78,4 +82,23 @@ export const idleFloatBob = (nowMs: number): number => {
   const phase =
     ((nowMs % FLOAT_BOB_CYCLE_MS) / FLOAT_BOB_CYCLE_MS) * Math.PI * 2
   return Math.sin(phase) * FLOAT_BOB_AMP
+}
+
+// Board-plane drift for FLOAT-prop cards. The camera sits ~75° above the
+// board, so the z bob alone foreshortens to ~1px on screen; the y drift
+// shares the bob cycle so the card visibly bobs along the screen's vertical
+// axis, and the x wander runs on a slower cycle so the path reads as
+// drifting on air rather than orbiting. Roll banks into the sideways sweep.
+export const idleFloatDrift = (
+  nowMs: number,
+  out: { x: number; y: number; roll: number } = { x: 0, y: 0, roll: 0 },
+): { x: number; y: number; roll: number } => {
+  const bobPhase =
+    ((nowMs % FLOAT_BOB_CYCLE_MS) / FLOAT_BOB_CYCLE_MS) * Math.PI * 2
+  const driftPhase =
+    ((nowMs % FLOAT_DRIFT_CYCLE_MS) / FLOAT_DRIFT_CYCLE_MS) * Math.PI * 2
+  out.x = Math.sin(driftPhase) * FLOAT_DRIFT_X_AMP
+  out.y = Math.sin(bobPhase) * FLOAT_DRIFT_Y_AMP
+  out.roll = Math.cos(driftPhase) * FLOAT_ROLL_AMP
+  return out
 }
