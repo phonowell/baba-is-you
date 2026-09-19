@@ -6,6 +6,7 @@ import {
   applyVolumeOrientation,
 } from './board-3d-card-facing.js'
 import {
+  angleDelta,
   clamp01,
   easeInCubic,
   easeOutBack,
@@ -17,6 +18,7 @@ import {
 } from './board-3d-shared-math.js'
 
 import type { Camera } from 'three'
+import type { CardFacing } from './board-3d-card-facing.js'
 import type { EntityNode, PoseStepResult } from './board-3d-node-types.js'
 
 const {
@@ -54,6 +56,10 @@ const {
   PULSE_SLUMP_X,
 } = BOARD3D_EFFECTS_CONFIG
 
+// Reused per pose call so idle-stretch nodes don't allocate {scaleX,scaleY}
+// every frame (same scratch-object convention as the card-facing vectors).
+const microStretchOut = { scaleX: 1, scaleY: 1 }
+
 export const nodeRollAtMs = (node: EntityNode, nowMs: number): number => {
   const animDuration = Math.max(1, node.animDurationMs)
   const eased = easeOutCubic(
@@ -62,10 +68,29 @@ export const nodeRollAtMs = (node: EntityNode, nowMs: number): number => {
   return lerp(node.fromRoll, node.toRoll, eased)
 }
 
+// Yaw currently shown on screen: eases fromYaw toward the facingYaw target
+// along the shortest arc. Undefined means the mesh is a flat card, not a
+// turning volume.
+export const nodeYawAtMs = (
+  node: EntityNode,
+  nowMs: number,
+): number | undefined => {
+  if (node.facingYaw === undefined) return undefined
+  const eased = easeOutCubic(
+    clamp01((nowMs - node.yawStartMs) / Math.max(1, node.yawDurationMs)),
+  )
+  return node.fromYaw + angleDelta(node.fromYaw, node.facingYaw) * eased
+}
+
+export const nodeYawAnimating = (node: EntityNode, nowMs: number): boolean =>
+  node.facingYaw !== undefined &&
+  nowMs < node.yawStartMs + Math.max(1, node.yawDurationMs)
+
 export const applyNodePose = (
   node: EntityNode,
   nowMs: number,
   camera: Camera,
+  facing?: CardFacing,
 ): PoseStepResult => {
   const animDuration = Math.max(1, node.animDurationMs)
   const rawProgress = clamp01((nowMs - node.animStartMs) / animDuration)
@@ -158,7 +183,10 @@ export const applyNodePose = (
   let scaleX = baseScaleX
   let scaleY = baseScaleY
   if (node.idleStretch) {
-    const microStretch = idleMicroStretch(nowMs + node.idlePhaseOffsetMs)
+    const microStretch = idleMicroStretch(
+      nowMs + node.idlePhaseOffsetMs,
+      microStretchOut,
+    )
     scaleX *= microStretch.scaleX
     scaleY *= microStretch.scaleY
     verticalOffset += idleStretchBottomAnchorOffset(baseScaleY, scaleY)
@@ -172,14 +200,15 @@ export const applyNodePose = (
 
   node.mesh.position.set(x, y, baseZ + jump + landing + verticalOffset)
   let scaleZ = 1
-  if (node.facingYaw === undefined) {
-    applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
+  const yaw = nodeYawAtMs(node, nowMs)
+  if (yaw === undefined) {
+    applyCardOrientation(node.mesh, roll, camera, node.facesCamera, facing)
   } else {
-    applyVolumeOrientation(node.mesh, roll, node.facingYaw)
+    applyVolumeOrientation(node.mesh, roll, yaw)
     // The mesh is yawed upright: the move stretch has to land on the
     // model-local axis matching the dominant move direction (local X or Z),
     // not always on X like a camera-facing card.
-    const lateralOnX = dominantX === (Math.abs(Math.cos(node.facingYaw)) >= 0.5)
+    const lateralOnX = dominantX === (Math.abs(Math.cos(yaw)) >= 0.5)
     scaleX = scaleFactor * pulseStretchX * (lateralOnX ? moveStretch : moveSquash)
     scaleZ = scaleFactor * pulseStretchX * (lateralOnX ? moveSquash : moveStretch)
   }
@@ -202,6 +231,7 @@ export const applyNodePose = (
   return {
     animating:
       node.moving ||
+      nodeYawAnimating(node, nowMs) ||
       node.landStartMs !== null ||
       node.spawnStartMs !== null ||
       node.despawnStartMs !== null ||

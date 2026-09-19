@@ -1,5 +1,9 @@
 export const BOARD3D_ANIMATION_CONFIG = {
   MOVE_ANIM_MS: 170,
+  // Upright volume models ease to a new facing over this window instead of
+  // snapping; slightly quicker than the move so a turning mover faces its
+  // travel direction before landing.
+  TURN_ANIM_MS: 140,
   SPAWN_ANIM_MS: 230,
   DESPAWN_ANIM_MS: 170,
   SPAWN_SCALE_FROM: 0.0,

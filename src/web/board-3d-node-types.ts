@@ -33,7 +33,13 @@ export type EntityNode = {
   idlePhaseOffsetMs: number
   idleFrameOffset: number
   facesCamera: boolean
+  // Target yaw of a rotating volume model (undefined = billboard/flat card).
+  // Turns tween fromYaw → facingYaw over [yawStartMs, +yawDurationMs]; the
+  // displayed angle is nodeYawAtMs, never this field directly.
   facingYaw: number | undefined
+  fromYaw: number
+  yawStartMs: number
+  yawDurationMs: number
   rotRoll: number
   rollStep: number
   // Card colours cached per sync for particle bursts — nodes outlive the
@@ -71,20 +77,17 @@ export type CreateEntityNodeDeps = {
   entityGroup: Group
   shadowGeometry: PlaneGeometry
   shadowTexture: CanvasTexture
-  getVisual: (item: Item, overridden?: boolean) => EntityVisual
+  getVisual: (item: Item, overridden?: boolean, tileMask?: number) => EntityVisual
 }
 
 export type SyncEntityNodesDeps = {
   nodes: Map<number, EntityNode>
-  getVisual: (item: Item, overridden?: boolean) => EntityVisual
-  createNode: (item: Item, nowMs: number, spawnDelayMs?: number) => EntityNode
+  getVisual: (item: Item, overridden?: boolean, tileMask?: number) => EntityVisual
+  createNode: (item: Item, nowMs: number, spawnDelayMs?: number, tileMask?: number) => EntityNode
   camera: Camera
   // Set when the camera moved since the last pose pass — idle nodes must be
   // re-posed even though their board targets did not change.
   cameraChanged?: boolean
-  // Colours used for spawn/despawn particle bursts; when omitted the node
-  // keeps its previous palette (created nodes fall back to white).
-  fxColorsForItem?: (item: Item, overridden: boolean) => readonly string[]
 }
 
 export type PoseStepResult = {

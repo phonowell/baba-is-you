@@ -7,8 +7,9 @@ import { BOARD3D_EFFECTS_CONFIG } from './board-3d-config-effects.js'
 import {
   applyCardOrientation,
   applyVolumeOrientation,
+  cardFacingForParent,
 } from './board-3d-card-facing.js'
-import { nodeRollAtMs } from './board-3d-node-pose.js'
+import { nodeRollAtMs, nodeYawAtMs } from './board-3d-node-pose.js'
 import {
   cardFacesCamera,
   cardRollForItemStep,
@@ -23,8 +24,10 @@ import {
 } from './board-3d-shared-layout.js'
 import { collectOverriddenTextIds } from '../logic/rules-override.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
+import { autotileMaskForItem, buildAutotileCells } from './board-3d-autotile.js'
 
-import type { Camera, Group } from 'three'
+import type { Camera, Group, Object3D } from 'three'
+import type { CardFacing } from './board-3d-card-facing.js'
 import type { GameState } from '../logic/types.js'
 import type {
   EntityBaseTarget,
@@ -44,6 +47,7 @@ const {
 
 const {
   MOVE_ANIM_MS,
+  TURN_ANIM_MS,
 } = BOARD3D_ANIMATION_CONFIG
 
 const {
@@ -55,12 +59,15 @@ const setNodeIdlePose = (
   target: EntityBaseTarget,
   roll: number,
   camera: Camera,
+  nowMs: number,
+  facing: CardFacing,
 ): void => {
   node.mesh.position.set(target.x, target.y, target.baseZ)
-  if (node.facingYaw === undefined) {
-    applyCardOrientation(node.mesh, roll, camera, node.facesCamera)
+  const yaw = nodeYawAtMs(node, nowMs)
+  if (yaw === undefined) {
+    applyCardOrientation(node.mesh, roll, camera, node.facesCamera, facing)
   } else {
-    applyVolumeOrientation(node.mesh, roll, node.facingYaw)
+    applyVolumeOrientation(node.mesh, roll, yaw)
   }
   node.mesh.scale.set(1, 1, 1)
   node.shadow.position.set(target.x, target.y, SHADOW_BASE_Z)
@@ -82,6 +89,8 @@ const initializeNodeAtTarget = (
   node: EntityNode,
   target: EntityBaseTarget,
   camera: Camera,
+  nowMs: number,
+  facing: CardFacing,
 ): void => {
   setNodeTarget(node, target)
   node.fromX = node.toX
@@ -89,7 +98,7 @@ const initializeNodeAtTarget = (
   node.fromBaseZ = node.toBaseZ
   node.fromRoll = node.rotRoll
   node.toRoll = node.rotRoll
-  setNodeIdlePose(node, target, node.rotRoll, camera)
+  setNodeIdlePose(node, target, node.rotRoll, camera, nowMs, facing)
 }
 
 export const removeEntityNode = (
@@ -110,18 +119,36 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
   const nowMs = performance.now()
   const seen = new Set<number>()
   const views = buildEntityViews(state)
-  const overriddenTextIds = collectOverriddenTextIds(
-    state.items,
-    state.width,
-    state.height,
-  )
+  const autotileCells = buildAutotileCells(state)
+  // `step` already partitions rules and carries the marks on the state;
+  // fixture-built states without them fall back to one reparse.
+  const overriddenTextIds =
+    state.overriddenTextIds ??
+    collectOverriddenTextIds(state.items, state.width, state.height)
   // Board entry (nothing synced yet) staggers each spawn on a diagonal
   // sweep; mid-game appearances pop immediately.
   const boardEntry = nodes.size === 0
+  // Every card shares the camera-facing basis: one per parent per sync.
+  const cardFacings = new Map<Object3D | null, CardFacing>()
+  const cardFacingFor = (node: EntityNode): CardFacing => {
+    const parent = node.mesh.parent
+    let facing = cardFacings.get(parent)
+    if (!facing) {
+      facing = cardFacingForParent(camera, parent)
+      cardFacings.set(parent, facing)
+    }
+    return facing
+  }
 
   for (const view of views) {
     const item = view.item
     seen.add(item.id)
+    const tileMask = autotileMaskForItem(
+      item,
+      autotileCells,
+      state.width,
+      state.height,
+    )
 
     let node = nodes.get(item.id)
     const nodeCreated = !node
@@ -130,6 +157,7 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
         item,
         nowMs,
         boardEntry ? (item.x + item.y) * SPAWN_STAGGER_MS_PER_CELL : 0,
+        tileMask,
       )
       nodes.set(item.id, node)
     } else if (node.despawnStartMs !== null) {
@@ -141,10 +169,9 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
 
     const target = computeEntityBaseTarget(state, view)
     const itemOverridden = item.isText && overriddenTextIds.has(item.id)
-    const visual = getVisual(item, itemOverridden)
-    if (deps.fxColorsForItem) {
-      node.fxColors = deps.fxColorsForItem(item, itemOverridden)
-    }
+    const visual = getVisual(item, itemOverridden, tileMask)
+    // Burst colours ride the cached visual — same spec, same palette.
+    node.fxColors = visual.fxColors
     const visualChanged = node.specKey !== visual.key
     if (visualChanged) {
       node.specKey = visual.key
@@ -165,8 +192,24 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     node.shadow.visible = !groundHug
     const facesCamera = cardFacesCamera(item)
     const facingYaw = visual.facingYaw
+    const facingYawChanged = node.facingYaw !== facingYaw
+    if (facingYawChanged) {
+      // Turning eases through the shortest arc instead of snapping: the
+      // tween starts at the currently displayed yaw so chained turns and
+      // mid-move redirects stay continuous.
+      const displayedYaw = nodeYawAtMs(node, nowMs)
+      if (facingYaw !== undefined && displayedYaw !== undefined) {
+        node.fromYaw = displayedYaw
+        node.yawStartMs = nowMs
+        node.yawDurationMs = TURN_ANIM_MS
+      } else {
+        // Card↔volume swaps share no angle to tween between — align to the
+        // target directly (fromYaw === facingYaw makes the tween a no-op).
+        node.fromYaw = facingYaw ?? 0
+      }
+    }
     const facingChanged =
-      node.facesCamera !== facesCamera || node.facingYaw !== facingYaw
+      node.facesCamera !== facesCamera || facingYawChanged
     node.facesCamera = facesCamera
     node.facingYaw = facingYaw
     const stableRoll = cardRollForItemStep(item, node.rollStep)
@@ -179,7 +222,7 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     }
 
     if (nodeCreated) {
-      initializeNodeAtTarget(node, target, camera)
+      initializeNodeAtTarget(node, target, camera, nowMs, cardFacingFor(node))
       continue
     }
 
@@ -222,7 +265,14 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
         node.pulseStartMs === null &&
         poseStale
       ) {
-        setNodeIdlePose(node, target, node.toRoll, camera)
+        setNodeIdlePose(
+          node,
+          target,
+          node.toRoll,
+          camera,
+          nowMs,
+          cardFacingFor(node),
+        )
       }
     }
   }

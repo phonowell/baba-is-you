@@ -19,6 +19,14 @@ export const clamp01 = (value: number): number => Math.max(0, Math.min(1, value)
 
 export const lerp = (from: number, to: number, t: number): number => from + (to - from) * t
 
+// Signed shortest arc from→to in radians, in (-π, π].
+export const angleDelta = (from: number, to: number): number => {
+  const delta = (to - from) % (Math.PI * 2)
+  if (delta > Math.PI) return delta - Math.PI * 2
+  if (delta <= -Math.PI) return delta + Math.PI * 2
+  return delta
+}
+
 export const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3
 
 export const easeInCubic = (t: number): number => t * t * t
@@ -48,16 +56,16 @@ export const hashSeed01 = (seed: number): number => hash01(seed)
 
 export const idleMicroStretch = (
   nowMs: number,
+  out: { scaleX: number; scaleY: number } = { scaleX: 0, scaleY: 0 },
 ): { scaleX: number; scaleY: number } => {
   const phase =
     ((nowMs % IDLE_STRETCH_CYCLE_MS) / IDLE_STRETCH_CYCLE_MS) *
     Math.PI *
     2
   const wave = Math.sin(phase)
-  return {
-    scaleX: 1 - wave * IDLE_STRETCH_X_AMP,
-    scaleY: 1 + wave * IDLE_STRETCH_Y_AMP,
-  }
+  out.scaleX = 1 - wave * IDLE_STRETCH_X_AMP
+  out.scaleY = 1 + wave * IDLE_STRETCH_Y_AMP
+  return out
 }
 
 export const idleStretchBottomAnchorOffset = (

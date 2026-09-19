@@ -42,10 +42,11 @@ export const createEntityNode = (
   item: Item,
   nowMs: number,
   spawnDelayMs = 0,
+  tileMask = 0,
 ): EntityNode => {
   const { entityGroup, shadowGeometry, shadowTexture, getVisual } = deps
   const rollNoise = cardRollForItemStep(item, 0)
-  const visual = getVisual(item)
+  const visual = getVisual(item, false, tileMask)
   const mesh = new Mesh(visual.geometry, visual.material)
   mesh.castShadow = true
   mesh.receiveShadow = true
@@ -78,6 +79,9 @@ export const createEntityNode = (
     idleFrameOffset: idleFrameOffsetForItem(item),
     facesCamera: cardFacesCamera(item),
     facingYaw: visual.facingYaw,
+    fromYaw: visual.facingYaw ?? 0,
+    yawStartMs: 0,
+    yawDurationMs: MOVE_ANIM_MS,
     rotRoll: rollNoise,
     rollStep: 0,
     fxColors: [],

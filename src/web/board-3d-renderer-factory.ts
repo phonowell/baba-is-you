@@ -4,9 +4,7 @@ import { CLAY_PRESET } from './clay-config.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { createBoard3dEffects } from './board-3d-effects.js'
-import { createCameraParallax } from './board-3d-parallax.js'
 import { updateLightShadowCamera } from './board-3d-ground.js'
-import { cardSpecForItem } from './board-3d-shared-item.js'
 import {
   advanceNodeGeometries,
   createBoard3dRendererMaterialStore,
@@ -64,8 +62,8 @@ export const createBoard3dRendererFactoryDeps = () => {
     textureAnisotropy,
   })
 
-  const getVisual = (item: Item, overridden?: boolean): EntityVisual =>
-    materialStore.getVisual(item, overridden)
+  const getVisual = (item: Item, overridden?: boolean, tileMask?: number): EntityVisual =>
+    materialStore.getVisual(item, overridden, tileMask)
 
   const createNodeDeps: CreateEntityNodeDeps = {
     entityGroup,
@@ -96,21 +94,6 @@ export const createBoard3dRendererFactoryDeps = () => {
     setMood: viewController.setFxMood,
   })
 
-  // Burst colours follow the card itself: sprites poof in their pixel
-  // palette, text/emoji cards in their plate colours.
-  const fxColorsForItem = (item: Item, overridden: boolean): readonly string[] => {
-    const spec = cardSpecForItem(
-      item,
-      preset.readability.minContrastRatio,
-      overridden,
-    )
-    if (spec.sprite) {
-      const spriteColors = [...new Set(Object.values(spec.sprite.palette))]
-      if (spriteColors.length > 0) return spriteColors.slice(0, 4)
-    }
-    return [spec.background, spec.textColor, spec.outlineColor]
-  }
-
   return {
     renderer,
     composer,
@@ -118,12 +101,10 @@ export const createBoard3dRendererFactoryDeps = () => {
     entityGroup,
     nodes,
     getVisual,
-    createNode: (item: Item, nowMs: number, spawnDelayMs?: number): EntityNode =>
-      createEntityNode(createNodeDeps, item, nowMs, spawnDelayMs),
+    createNode: (item: Item, nowMs: number, spawnDelayMs?: number, tileMask?: number): EntityNode =>
+      createEntityNode(createNodeDeps, item, nowMs, spawnDelayMs, tileMask),
     effects,
-    fxColorsForItem,
     camera,
-    cameraParallax: createCameraParallax(),
     // Sprite animation advances along two paths: textured faces swap material
     // maps, voxel meshes swap geometries. The runtime only needs the count.
     advanceSpriteFrames: (frameIx: number): number =>

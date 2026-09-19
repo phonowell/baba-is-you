@@ -2,20 +2,21 @@ import type { Camera, Group, WebGLRenderer } from 'three'
 import type { EffectComposer } from 'postprocessing'
 
 import { rebuildGroundVisuals } from './board-3d-ground.js'
+import { cardFacingForParent } from './board-3d-card-facing.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import { BOARD3D_EFFECTS_CONFIG } from './board-3d-config-effects.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { SPRITE_FRAME_COUNT } from './pixel-sprites/derive.js'
-import { applyNodePose } from './board-3d-node-pose.js'
+import { applyNodePose, nodeYawAnimating } from './board-3d-node-pose.js'
 import {
   removeEntityNode,
   syncEntityNodes,
 } from './board-3d-node-sync.js'
 import type { Board3dRendererViewController } from './board-3d-renderer-view.js'
-import type { CameraParallax } from './board-3d-parallax.js'
 
 import type { GameState, GameStatus, Item } from '../logic/types.js'
 import type { Board3dEffects, BoardFxSpot } from './board-3d-effects.js'
+import type { CardFacing } from './board-3d-card-facing.js'
 import type { GroundVisuals } from './board-3d-ground.js'
 import type { EntityVisual } from './board-3d-renderer-materials.js'
 import type {
@@ -47,8 +48,8 @@ type CreateBoard3dRendererRuntimeArgs = {
   entityGroup: Group
   viewController: Board3dRendererViewController
   nodes: Map<number, EntityNode>
-  getVisual: (item: Item, overridden?: boolean) => EntityVisual
-  createNode: (item: Item, nowMs: number, spawnDelayMs?: number) => EntityNode
+  getVisual: (item: Item, overridden?: boolean, tileMask?: number) => EntityVisual
+  createNode: (item: Item, nowMs: number, spawnDelayMs?: number, tileMask?: number) => EntityNode
   camera: Camera
   disposeResources: (groundVisuals: GroundVisuals) => GroundVisuals
   rebuildGround?: (
@@ -61,12 +62,11 @@ type CreateBoard3dRendererRuntimeArgs = {
     node: EntityNode,
     nowMs: number,
     camera: Camera,
+    facing?: CardFacing,
   ) => PoseStepResult
   syncNodes?: (state: GameState, deps: SyncEntityNodesDeps) => void
   // Pixel-particle + postfx mood layer; optional so tests can run headless.
   effects?: Board3dEffects | null
-  fxColorsForItem?: (item: Item, overridden: boolean) => readonly string[]
-  cameraParallax?: CameraParallax | null
   requestFrame?: RequestFrame | null
   cancelFrame?: CancelFrame | null
   advanceSpriteFrames?: (frameIx: number) => number
@@ -79,7 +79,6 @@ export type Board3dRendererRuntime = {
   sync: (state: GameState) => void
   unmount: () => void
   dispose: () => void
-  setParallaxTarget: (nx: number, ny: number) => void
 }
 
 export const createBoard3dRendererRuntime = (
@@ -100,8 +99,6 @@ export const createBoard3dRendererRuntime = (
     applyNodePoseStep = applyNodePose,
     syncNodes = syncEntityNodes,
     effects = null,
-    fxColorsForItem,
-    cameraParallax = null,
     requestFrame = null,
     cancelFrame = null,
     advanceSpriteFrames = null,
@@ -199,7 +196,7 @@ export const createBoard3dRendererRuntime = (
   const playStatusFx = (state: GameState, nowMs: number): void => {
     if (!effects || state.status === fxStatus) return
     fxStatus = state.status
-    if (state.status === 'win' || state.status === 'complete') {
+    if (state.status === 'win') {
       const spots = celebrationSpots(state)
       startPulseRipple('hop', spots, nowMs)
       effects.playWin(spots)
@@ -229,13 +226,12 @@ export const createBoard3dRendererRuntime = (
       boardWidth,
       boardHeight,
     )
-    if (viewportChanged) cameraParallax?.captureBase(camera)
 
     let hasAnimation = false
-    // Pointer parallax rewrites camera.position while it eases; it renders
-    // through the same on-demand path and hands RAF back once settled.
-    if (cameraParallax?.update(nowMs, camera)) hasAnimation = true
     const leavingDoneIds: number[] = []
+    // One camera-facing basis serves every card this frame — the pose step
+    // receives it lazily so an all-volume board never pays for it.
+    let cardFacing: CardFacing | undefined
 
     for (const [id, node] of nodes) {
       // Settled nodes re-pose only when the camera moved (billboard cards
@@ -243,12 +239,18 @@ export const createBoard3dRendererRuntime = (
       // the frame loop is alive anyway. Everything else is identical writes.
       const settled =
         !node.moving &&
+        !nodeYawAnimating(node, nowMs) &&
         node.landStartMs === null &&
         node.spawnStartMs === null &&
         node.despawnStartMs === null &&
         node.pulseStartMs === null
       if (settled && !node.idleStretch && !node.idleFloat && !viewportChanged) continue
-      const step = applyNodePoseStep(node, nowMs, camera)
+      const step = applyNodePoseStep(
+        node,
+        nowMs,
+        camera,
+        (cardFacing ??= cardFacingForParent(camera, entityGroup)),
+      )
       if (step.animating) hasAnimation = true
       if (step.finishedLeaving) leavingDoneIds.push(id)
 
@@ -302,6 +304,10 @@ export const createBoard3dRendererRuntime = (
   const onSpriteTimer = (): void => {
     if (disposed || !advanceSpriteFrames) return
     if (!container || !container.isConnected) return
+    // Background tabs throttle RAF away but keep intervals at ~1Hz — skip
+    // the scan entirely; the next visible fire re-derives the frame index
+    // from the clock, so nothing visually falls behind.
+    if (container.ownerDocument?.hidden) return
     // Idle-motion cards (text stretch, float bob) ride the same slow clock:
     // a board with no animated sprites still needs them re-posed at this
     // cadence. The check must run before the frame dedupe — their sine needs
@@ -361,7 +367,6 @@ export const createBoard3dRendererRuntime = (
 
     if (viewController.updateViewport(container, boardWidth, boardHeight)) {
       needsRender = true
-      cameraParallax?.captureBase(camera)
     }
     startSpriteTimer()
     ensureFrame()
@@ -374,7 +379,6 @@ export const createBoard3dRendererRuntime = (
     needsRender = true
     stopSpriteTimer()
     effects?.clear()
-    cameraParallax?.setTarget(0, 0)
     // A remount re-syncs the same state object only through the idempotent
     // path, so resetting here keeps a stored win/lose ready to replay.
     fxStatus = 'playing'
@@ -406,7 +410,6 @@ export const createBoard3dRendererRuntime = (
       boardHeight = state.height
       groundVisuals = rebuildGround(world, boardWidth, boardHeight, groundVisuals)
       viewController.updateCamera(container, boardWidth, boardHeight)
-      cameraParallax?.captureBase(camera)
     }
 
     viewController.applyReadabilityGuard(state)
@@ -416,7 +419,6 @@ export const createBoard3dRendererRuntime = (
       createNode,
       camera,
       cameraChanged: dimsChanged,
-      ...(fxColorsForItem ? { fxColorsForItem } : {}),
     })
     playStatusFx(state, performance.now())
     needsRender = true
@@ -432,17 +434,10 @@ export const createBoard3dRendererRuntime = (
     container = null
   }
 
-  const setParallaxTarget = (nx: number, ny: number): void => {
-    if (disposed || !cameraParallax) return
-    cameraParallax.setTarget(nx, ny)
-    ensureFrame()
-  }
-
   return {
     mount,
     sync,
     unmount,
     dispose,
-    setParallaxTarget,
   }
 }

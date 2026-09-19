@@ -59,7 +59,7 @@ test('getVisual keys belt geometry per direction', () => {
 
 test('getVisual lays ground-hug tiles on the ground plane, not at card height', () => {
   const store = createStore()
-  const flats = ['water', 'lava', 'tile', 'tile_5_10'].map((name) =>
+  const flats = ['water', 'lava', 'tile', 'line'].map((name) =>
     store.getVisual(objectItem(name)),
   )
   // A facing belt must not poke direction-arrow relief past the ground

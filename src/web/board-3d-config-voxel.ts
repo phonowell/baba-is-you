@@ -26,11 +26,4 @@ export const BOARD3D_VOXEL_CONFIG = {
   // Flat one-voxel silhouette rim on the frame plane of object sprites (not
   // ground-hug tiles) — keeps pale sprites like baba readable on the board.
   VOXEL_OUTLINE_COLOR: '#141b2a',
-  // Upright models lean back this much (radians) so the camera — pitched
-  // ~75deg down — still reads the face/back instead of only the top. The
-  // yaw then keeps the lean pointing "behind" whatever direction it faces.
-  VOXEL_STAND_LEAN: 0.62,
-  // Extra lift (world units) so the leaning model's lowest point still rests
-  // on the ground instead of clipping through it.
-  VOXEL_STAND_LIFT: 0.06,
 } as const

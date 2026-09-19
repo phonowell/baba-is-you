@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { PerspectiveCamera } from 'three'
+import { Group, PerspectiveCamera } from 'three'
 
 import { createBoard3dRendererRuntime } from './board-3d-renderer-runtime.js'
 
@@ -119,7 +119,6 @@ const createRuntime = (overrides: {
   viewUpdateViewport?: RuntimeArgs['viewController']['updateViewport']
   entityGroup?: RuntimeArgs['entityGroup']
   effects?: RuntimeArgs['effects']
-  cameraParallax?: RuntimeArgs['cameraParallax']
   requestFrame?: RuntimeArgs['requestFrame']
   cancelFrame?: RuntimeArgs['cancelFrame']
   advanceSpriteFrames?: RuntimeArgs['advanceSpriteFrames']
@@ -141,9 +140,7 @@ const createRuntime = (overrides: {
     render: overrides.composerRender ?? (() => undefined),
   } as unknown as Parameters<typeof createBoard3dRendererRuntime>[0]['composer']
   const world = {} as Parameters<typeof createBoard3dRendererRuntime>[0]['world']
-  const entityGroup =
-    overrides.entityGroup ??
-    ({} as Parameters<typeof createBoard3dRendererRuntime>[0]['entityGroup'])
+  const entityGroup = overrides.entityGroup ?? new Group()
   const viewController = {
     updateViewport: overrides.viewUpdateViewport ?? (() => false),
     updateCamera: () => undefined,
@@ -171,7 +168,6 @@ const createRuntime = (overrides: {
     args.applyNodePoseStep = overrides.applyNodePoseStep
   if (overrides.syncNodes) args.syncNodes = overrides.syncNodes
   if (overrides.effects) args.effects = overrides.effects
-  if (overrides.cameraParallax) args.cameraParallax = overrides.cameraParallax
   args.requestFrame =
     overrides.requestFrame ??
     ((callback: FrameRequestCallback) => {
@@ -216,6 +212,46 @@ test('board-3d runtime does not keep RAF alive for idle micro-motion alone', () 
   assert.ok(tick)
   tick(16)
 
+  assert.equal(callbacks.length, 0)
+})
+
+test('board-3d runtime keeps RAF alive while a turn tween runs', () => {
+  const callbacks: FrameRequestCallback[] = []
+  let poseCalls = 0
+  const node = createNode()
+  node.facingYaw = Math.PI / 2
+  node.fromYaw = 0
+  node.yawStartMs = 0
+  node.yawDurationMs = 140
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const runtime = createRuntime({
+    nodes,
+    applyNodePoseStep: () => {
+      poseCalls += 1
+      return { animating: true, finishedLeaving: false }
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  const midTween = callbacks.shift()
+  assert.ok(midTween)
+  midTween(50)
+
+  // Mid-tween the node is not settled: it gets posed and RAF continues.
+  assert.equal(poseCalls, 1)
+  assert.equal(callbacks.length, 1)
+
+  const settledTick = callbacks.shift()
+  assert.ok(settledTick)
+  settledTick(200)
+
+  // Once the turn finishes the node settles: pose skipped, RAF released.
+  assert.equal(poseCalls, 1)
   assert.equal(callbacks.length, 0)
 })
 
@@ -448,12 +484,12 @@ test('board-3d runtime renders the leaving cleanup frame and removes finished no
   const nodes = new Map<number, EntityNode>([[7, node]])
   const runtime = createRuntime({
     nodes,
-    entityGroup: {
+    entityGroup: Object.assign(new Group(), {
       remove: (value: unknown) => {
         if (value === node.mesh) meshRemoved += 1
         if (value === node.shadow) shadowRemoved += 1
       },
-    } as RuntimeArgs['entityGroup'],
+    }) as RuntimeArgs['entityGroup'],
     composerRender: () => {
       renders.push(1)
     },
@@ -883,11 +919,11 @@ test('board-3d runtime fires win/lose effects only on status transitions', () =>
   runtime.sync({ ...playing, status: 'win' })
   assert.equal(calls.playWin, 1)
 
-  runtime.sync({ ...playing, status: 'complete' })
-  assert.equal(calls.playWin, 2)
-
   runtime.sync({ ...playing, status: 'lose' })
   assert.equal(calls.playLose, 1)
+
+  runtime.sync({ ...playing, status: 'win' })
+  assert.equal(calls.playWin, 2)
 
   runtime.sync({ ...playing, status: 'playing' })
   assert.equal(calls.neutralMood, 1)
@@ -1031,109 +1067,4 @@ test('board-3d runtime clears board effects on unmount and disposes with the ren
   runtime.mount(container)
   runtime.dispose()
   assert.equal(calls.dispose, 1)
-})
-
-test('board-3d runtime drives camera parallax through the on-demand frame loop', () => {
-  const callbacks: FrameRequestCallback[] = []
-  const renders: number[] = []
-  let parallaxMoves = true
-  const runtime = createRuntime({
-    composerRender: () => {
-      renders.push(1)
-    },
-    cameraParallax: {
-      setTarget: () => undefined,
-      captureBase: () => undefined,
-      update: () => parallaxMoves,
-    },
-    applyNodePoseStep: () => ({
-      animating: false,
-      finishedLeaving: false,
-    }),
-    requestFrame: (callback) => {
-      callbacks.push(callback)
-      return callbacks.length
-    },
-  })
-  const container = createContainer()
-
-  runtime.mount(container)
-  const tick1 = callbacks.shift()
-  assert.ok(tick1)
-  tick1(16)
-  // Parallax in motion: one more frame is scheduled.
-  assert.equal(callbacks.length, 1)
-
-  parallaxMoves = false
-  const tick2 = callbacks.shift()
-  assert.ok(tick2)
-  tick2(32)
-  // Settled: no render, RAF hands back.
-  assert.equal(callbacks.length, 0)
-  assert.equal(renders.length, 1)
-})
-
-test('board-3d runtime rebases parallax when the viewport or board dims change', () => {
-  const captures: number[] = []
-  let viewportChanges = false
-  const runtime = createRuntime({
-    cameraParallax: {
-      setTarget: () => undefined,
-      captureBase: () => {
-        captures.push(1)
-      },
-      update: () => false,
-    },
-    viewUpdateViewport: () => {
-      const changed = viewportChanges
-      viewportChanges = false
-      return changed
-    },
-    rebuildGround: (_world, _width, _height, visuals) => visuals,
-    syncNodes: () => undefined,
-  })
-  const container = createContainer()
-
-  viewportChanges = true
-  runtime.mount(container)
-  assert.equal(captures.length, 1)
-
-  runtime.sync(createState(3, 2))
-  runtime.sync(createState(3, 2))
-  runtime.sync(createState(4, 2))
-  assert.equal(captures.length, 3)
-})
-
-test('board-3d runtime forwards parallax targets and wakes the frame loop', () => {
-  const callbacks: FrameRequestCallback[] = []
-  const targets: Array<[number, number]> = []
-  const runtime = createRuntime({
-    cameraParallax: {
-      setTarget: (nx, ny) => {
-        targets.push([nx, ny])
-      },
-      captureBase: () => undefined,
-      update: () => false,
-    },
-    requestFrame: (callback) => {
-      callbacks.push(callback)
-      return callbacks.length
-    },
-  })
-  const container = createContainer()
-  runtime.mount(container)
-  const mountTick = callbacks.shift()
-  assert.ok(mountTick)
-  mountTick(16)
-  assert.equal(callbacks.length, 0)
-
-  runtime.setParallaxTarget(0.5, -0.25)
-  assert.deepEqual(targets, [[0.5, -0.25]])
-  assert.equal(callbacks.length, 1)
-
-  runtime.unmount()
-  assert.deepEqual(targets, [
-    [0.5, -0.25],
-    [0, 0],
-  ])
 })

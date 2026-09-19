@@ -12,9 +12,15 @@ import {
 
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
-import { cardSpecForItem, orientedSpriteForSpec } from './board-3d-shared-item.js'
-import { createCardTextures, getToonGradientMap } from './board-3d-textures.js'
 import {
+  cardSpecForItem,
+  fxColorsForSpec,
+  orientedSpriteForSpec,
+} from './board-3d-shared-item.js'
+import { createCardTextures, getToonGradientMap } from './board-3d-textures.js'
+import { autotileAppliesTo, autotileSprite } from './pixel-sprites/autotile.js'
+import {
+  SPRITE_GRID_SIZE,
   spriteContentBounds,
   spriteFrames,
   spriteVolumeBounds,
@@ -57,7 +63,6 @@ const {
   VOXEL_SHADE_BOTTOM,
   VOXEL_SHADE_BACK,
   VOXEL_OUTLINE_COLOR,
-  VOXEL_STAND_LIFT,
 } = BOARD3D_VOXEL_CONFIG
 
 const VOXEL_SHADE = {
@@ -68,17 +73,28 @@ const VOXEL_SHADE = {
   back: VOXEL_SHADE_BACK,
 }
 
+// The whole sprite grid in cell units — the draw rect every ground-hug tile
+// shares so 24px of sprite art always lands on the same world-space spot.
+const FULL_GRID_BOUNDS = {
+  minX: 0,
+  minY: 0,
+  maxX: SPRITE_GRID_SIZE - 1,
+  maxY: SPRITE_GRID_SIZE - 1,
+}
+
 // Everything a node needs to display one spec: shared geometry/material
 // handles plus the per-frame geometry list when the sprite animates.
 // facingYaw is set only for authored voxel models that stand upright on the
 // board and turn with the item's direction; flat visuals leave it undefined
-// and keep the camera-facing card orientation.
+// and keep the camera-facing card orientation. fxColors feeds spawn/despawn
+// particle bursts — fully spec-derived, so it rides the same cache entry.
 export type EntityVisual = {
   key: string
   geometry: BufferGeometry
   material: Material | Material[]
   frameGeometries: BufferGeometry[]
   facingYaw: number | undefined
+  fxColors: readonly string[]
 }
 
 type CreateBoard3dRendererMaterialStoreArgs = {
@@ -128,7 +144,7 @@ export const advanceNodeGeometries = (
 }
 
 export type Board3dRendererMaterialStore = {
-  getVisual: (item: Item, overridden?: boolean) => EntityVisual
+  getVisual: (item: Item, overridden?: boolean, tileMask?: number) => EntityVisual
   // Swaps every animated material to the given frame; returns how many
   // materials actually changed so the runtime can skip idle renders.
   advanceSpriteFrames: (frameIx: number) => number
@@ -317,6 +333,7 @@ export const createBoard3dRendererMaterialStore = (
   const voxelVisual = (
     item: Item,
     spec: ReturnType<typeof cardSpecForItem>,
+    tileMask: number,
   ): EntityVisual => {
     const baseSprite = spec.sprite
     const groundHug = isGroundHugItem(item)
@@ -325,7 +342,11 @@ export const createBoard3dRendererMaterialStore = (
     // board and turn with the item instead of mirroring + billboarding.
     const rotates =
       facing !== null && !groundHug && baseSprite?.volumes?.[0] !== undefined
-    const sprite = rotates ? baseSprite : orientedSpriteForSpec(spec)
+    const oriented = rotates ? baseSprite : orientedSpriteForSpec(spec)
+    // Ground tiles re-sprite by neighbour mask — shoreline edges, bevelled
+    // rims and connected path pieces all live in the swapped variant.
+    const sprite =
+      oriented && groundHug ? autotileSprite(oriented, item.name, tileMask) : oriented
     if (!sprite) throw new Error(`Missing sprite for ${spec.key}.`)
     // Sprites without authored volumes stay flat silhouette slabs — thick
     // enough to read as cards, nothing more.
@@ -336,7 +357,14 @@ export const createBoard3dRendererMaterialStore = (
     if (!bounds) throw new Error(`Empty sprite for ${spec.key}.`)
     // Ground-hug tiles span the whole 1x1 cell — they are the floor, not
     // cards on it — while upright sprites keep the card's inner margin.
-    const rect = voxelDrawRect(bounds, groundHug ? 1 : voxelInnerSize)
+    // Autotiled tiles anchor to the full sprite grid instead of content
+    // bounds: sparse path/edge art sits at absolute grid positions, and
+    // rescaling it to fill the cell would break neighbour alignment. Other
+    // ground tiles (belt) keep content-fit stretching.
+    const rect = voxelDrawRect(
+      groundHug && autotileAppliesTo(item.name) ? FULL_GRID_BOUNDS : bounds,
+      groundHug ? 1 : voxelInnerSize,
+    )
     const outlineColor = groundHug ? undefined : VOXEL_OUTLINE_COLOR
     const frameBounds = spriteContentBounds(sprite) ?? bounds
     // Facing arrows belong to silhouette cards only — a rotating authored
@@ -349,9 +377,7 @@ export const createBoard3dRendererMaterialStore = (
     // around the volume's depth center; billboard cards keep the authored
     // frame plane just in front of the card origin.
     const drawY = rotates
-      ? (bounds.maxY + 1) * rect.texel -
-        (CARD_BASE_Z - GROUND_SURFACE_Z) +
-        VOXEL_STAND_LIFT
+      ? (bounds.maxY + 1) * rect.texel - (CARD_BASE_Z - GROUND_SURFACE_Z)
       : rect.drawY
     const volume0 = volumes[0]
     const frameFrontZ =
@@ -362,7 +388,9 @@ export const createBoard3dRendererMaterialStore = (
         : groundHug
           ? VOXEL_GROUND_HUG_FRAME_Z
           : VOXEL_FRAME_Z
-    const geoKeyPrefix = rotates ? `voxrot:${item.name}` : `vox:${spec.key}`
+    const geoKeyPrefix = rotates
+      ? `voxrot:${item.name}`
+      : `vox:${spec.key}${tileMask ? `:${tileMask}` : ''}`
 
     const frameGeometries = spriteFrames(sprite).map((frame, ix) => {
       const key = `${geoKeyPrefix}:${ix}`
@@ -386,11 +414,12 @@ export const createBoard3dRendererMaterialStore = (
     const geometry = frameGeometries[0]
     if (!geometry) throw new Error(`No voxel geometry for ${spec.key}.`)
     return {
-      key: `vox:${spec.key}`,
+      key: `vox:${spec.key}${tileMask ? `:${tileMask}` : ''}`,
       geometry,
       material: voxelMaterial,
       frameGeometries,
       facingYaw: rotates && facing ? FACING_YAW[facing] : undefined,
+      fxColors: fxColorsForSpec(spec),
     }
   }
 
@@ -415,18 +444,26 @@ export const createBoard3dRendererMaterialStore = (
       material,
       frameGeometries: [],
       facingYaw: undefined,
+      fxColors: fxColorsForSpec(spec),
     }
   }
 
   // Every input cardSpecForItem/voxelVisual reads (isText, name, dir,
-  // facing-affecting props, overridden) is in the key — minContrastRatio is a
-  // fixed preset constant. Same key → identical spec → identical visual, so
-  // the per-item sync cost collapses to a map lookup after first build.
-  const visualKeyForItem = (item: Item, overridden: boolean): string =>
-    `${item.isText ? 1 : 0}|${item.name}|${item.dir ?? ''}|${overridden ? 1 : 0}|${item.props.join(',')}`
+  // facing-affecting props, overridden, map-icon target) is in the key —
+  // minContrastRatio is a fixed preset constant. Same key → identical spec
+  // → identical visual, so the per-item sync cost collapses to a map lookup
+  // after first build. levelTarget must be in the key or every map icon
+  // would share the first icon's badge.
+  const visualKeyForItem = (item: Item, overridden: boolean, tileMask: number): string => {
+    const target = item.levelTarget
+    const targetKey = target
+      ? `${target.kind}:${target.file}:${target.number}:${target.style}:${target.icon ?? ''}`
+      : ''
+    return `${item.isText ? 1 : 0}|${item.name}|${item.dir ?? ''}|${targetKey}|${overridden ? 1 : 0}|${item.props.join(',')}|${tileMask}`
+  }
 
-  const getVisual = (item: Item, overridden = false): EntityVisual => {
-    const key = visualKeyForItem(item, overridden)
+  const getVisual = (item: Item, overridden = false, tileMask = 0): EntityVisual => {
+    const key = visualKeyForItem(item, overridden, tileMask)
     const cached = visualCache.get(key)
     if (cached) return cached
     const spec = cardSpecForItem(
@@ -434,7 +471,7 @@ export const createBoard3dRendererMaterialStore = (
       preset.readability.minContrastRatio,
       overridden,
     )
-    const visual = spec.sprite ? voxelVisual(item, spec) : plateVisual(spec)
+    const visual = spec.sprite ? voxelVisual(item, spec, tileMask) : plateVisual(spec)
     visualCache.set(key, visual)
     return visual
   }

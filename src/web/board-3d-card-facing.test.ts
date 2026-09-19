@@ -15,11 +15,15 @@ import {
 import {
   applyCardOrientation,
   applyVolumeOrientation,
+  cardFacingForParent,
 } from './board-3d-card-facing.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
-import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
 import { createEntityNode } from './board-3d-node-create.js'
-import { applyNodePose, nodeRollAtMs } from './board-3d-node-pose.js'
+import {
+  applyNodePose,
+  nodeRollAtMs,
+  nodeYawAtMs,
+} from './board-3d-node-pose.js'
 import { syncEntityNodes } from './board-3d-node-sync.js'
 import { cardFacesCamera } from './board-3d-shared-item.js'
 
@@ -162,6 +166,33 @@ test('board-3d ground-hug card stays flat facing the sky', () => {
   assertVectorNear(meshWorldNormal(mesh), new Vector3(0, 1, 0))
 })
 
+test('board-3d shared facing basis yields the per-node lookAt orientation', () => {
+  const { entityGroup } = createFacingRig()
+  const camera = createCamera()
+  const hoisted = new Mesh(new PlaneGeometry(0.88, 0.88), new MeshBasicMaterial())
+  const perNode = new Mesh(new PlaneGeometry(0.88, 0.88), new MeshBasicMaterial())
+  entityGroup.add(hoisted)
+  entityGroup.add(perNode)
+  hoisted.position.set(-3, 1, 0.09)
+  perNode.position.set(2, 4, 0.09)
+  const roll = 0.35
+
+  // The hoisted basis (one per parent per frame) must produce the exact
+  // orientation the per-node path derives — position-independence is the
+  // whole premise of the hoist.
+  const facing = cardFacingForParent(camera, entityGroup)
+  applyCardOrientation(hoisted, roll, camera, true, facing)
+  applyCardOrientation(perNode, roll, camera, true)
+
+  assertVectorNear(meshWorldNormal(hoisted), meshWorldNormal(perNode))
+  assert.ok(
+    Math.abs(hoisted.quaternion.x - perNode.quaternion.x) < EPSILON &&
+      Math.abs(hoisted.quaternion.y - perNode.quaternion.y) < EPSILON &&
+      Math.abs(hoisted.quaternion.z - perNode.quaternion.z) < EPSILON &&
+      Math.abs(hoisted.quaternion.w - perNode.quaternion.w) < EPSILON,
+  )
+})
+
 const createState = (items: GameState['items']): GameState => ({
   levelIndex: 0,
   title: 'card-facing-test',
@@ -189,6 +220,7 @@ const createSyncNode = (entityGroup: Group) => {
           material,
           frameGeometries: [],
           facingYaw: undefined,
+          fxColors: [],
         }),
       },
       item,
@@ -213,6 +245,7 @@ test('board-3d sync orients a spawned upright card toward the camera', () => {
         material: new MeshStandardMaterial(),
         frameGeometries: [],
         facingYaw: undefined,
+        fxColors: [],
       }),
       createNode: createSyncNode(entityGroup),
       camera,
@@ -240,6 +273,7 @@ test('board-3d pose keeps a moving card tilted at the camera', () => {
       material: new MeshStandardMaterial(),
       frameGeometries: [],
       facingYaw: undefined,
+      fxColors: [],
     }),
     createNode: createSyncNode(entityGroup),
     camera,
@@ -262,23 +296,91 @@ test('board-3d volume model stands upright and turns to each board direction', (
   const { mesh } = createFacingRig()
   mesh.position.set(0, 0, 0.09)
 
-  // The model leans back by VOXEL_STAND_LEAN so the steep camera reads its
-  // face; yaw then points the lean away from the facing direction.
-  const lean = BOARD3D_VOXEL_CONFIG.VOXEL_STAND_LEAN
-  const sinL = Math.sin(lean)
-  const cosL = Math.cos(lean)
+  // The model stands fully vertical; yaw alone decides which side faces
+  // the board-down direction.
   const cases: [number, Vector3][] = [
-    [0, new Vector3(0, sinL, cosL)],
-    [Math.PI / 2, new Vector3(cosL, sinL, 0)],
-    [Math.PI, new Vector3(0, sinL, -cosL)],
-    [-Math.PI / 2, new Vector3(-cosL, sinL, 0)],
+    [0, new Vector3(0, 0, 1)],
+    [Math.PI / 2, new Vector3(1, 0, 0)],
+    [Math.PI, new Vector3(0, 0, -1)],
+    [-Math.PI / 2, new Vector3(-1, 0, 0)],
   ]
   for (const [yaw, expectedFront] of cases) {
     applyVolumeOrientation(mesh, 0, yaw)
     assertVectorNear(meshWorldNormal(mesh), expectedFront)
-    // The model never lies down: its up axis stays mostly vertical.
-    assert.ok(Math.abs(meshWorldUpAxis(mesh).y - cosL) < EPSILON)
+    // The model never lies down: its up axis stays vertical.
+    assert.ok(Math.abs(meshWorldUpAxis(mesh).y - 1) < EPSILON)
   }
+})
+
+test('board-3d volume model eases into a new facing instead of snapping', () => {
+  const { entityGroup } = createFacingRig()
+  const camera = createCamera()
+  const nodes = new Map<number, EntityNode>()
+  let facingYaw: number | undefined = 0
+  const syncDeps = {
+    nodes,
+    getVisual: () => ({
+      key: 'stub',
+      geometry: new PlaneGeometry(0.88, 0.88),
+      material: new MeshStandardMaterial(),
+      frameGeometries: [],
+      facingYaw,
+      fxColors: [],
+    }),
+    createNode: createSyncNode(entityGroup),
+    camera,
+  }
+  const state = createState([
+    { id: 1, name: 'baba', x: 0, y: 0, isText: false, props: ['you'] },
+  ])
+
+  syncEntityNodes(state, syncDeps)
+  const node = nodes.get(1)
+  assert.ok(node)
+  node.spawnStartMs = null
+
+  const down = new Vector3(0, 0, 1)
+  const right = new Vector3(1, 0, 0)
+
+  facingYaw = Math.PI / 2
+  syncEntityNodes(state, syncDeps)
+
+  // The turn tweens from the old facing: even the sync's own idle re-pose
+  // leaves the mesh at the previous yaw instead of snapping to the target.
+  assertVectorNear(meshWorldNormal(node.mesh), down)
+
+  const midStep = applyNodePose(
+    node,
+    node.yawStartMs + node.yawDurationMs / 2,
+    camera,
+  )
+  assert.equal(midStep.animating, true)
+  const midNormal = meshWorldNormal(node.mesh)
+  assert.ok(midNormal.x > EPSILON && midNormal.z > EPSILON)
+
+  const endStep = applyNodePose(
+    node,
+    node.yawStartMs + node.yawDurationMs,
+    camera,
+  )
+  assert.equal(endStep.animating, false)
+  assertVectorNear(meshWorldNormal(node.mesh), right)
+})
+
+test('board-3d node yaw takes the shortest arc across the ±π seam', () => {
+  const node = {
+    facingYaw: -Math.PI / 2,
+    fromYaw: Math.PI,
+    yawStartMs: 0,
+    yawDurationMs: 200,
+  } as EntityNode
+
+  // Up (π) → left (-π/2): the short way turns +90° through 5π/4, not the
+  // long way back through yaw 0.
+  const mid = nodeYawAtMs(node, 100)
+  assert.ok(mid !== undefined && mid > Math.PI)
+  assert.equal(nodeYawAtMs(node, 0), Math.PI)
+  assert.equal(nodeYawAtMs(node, 200), Math.PI * 1.5)
 })
 
 test('board-3d volume roll rocks around the facing axis without tumbling', () => {

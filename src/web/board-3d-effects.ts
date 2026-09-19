@@ -6,7 +6,10 @@ import {
   PlaneGeometry,
 } from 'three'
 
-import { applyCardOrientation } from './board-3d-card-facing.js'
+import {
+  applyCardOrientation,
+  cardFacingForParent,
+} from './board-3d-card-facing.js'
 import { BOARD3D_EFFECTS_CONFIG } from './board-3d-config-effects.js'
 import {
   clamp01,
@@ -16,6 +19,7 @@ import {
 import { BOARD_FX_MOOD_NEUTRAL } from './board-3d-shared-types.js'
 
 import type { Camera } from 'three'
+import type { CardFacing } from './board-3d-card-facing.js'
 import type { BoardFxMood } from './board-3d-shared-types.js'
 
 const {
@@ -344,6 +348,9 @@ export const createBoard3dEffects = (
 
   const updateParticles = (nowMs: number): boolean => {
     let anyActive = false
+    // All particles share the group parent — one camera-facing basis per
+    // update instead of per particle.
+    let cardFacing: CardFacing | undefined
     for (const particle of particles) {
       if (!particle.active) continue
       const t = (nowMs - particle.startMs) / particle.lifeMs
@@ -376,6 +383,7 @@ export const createBoard3dEffects = (
         particle.roll + particle.rollSpeed * ts,
         camera,
         true,
+        (cardFacing ??= cardFacingForParent(camera, group)),
       )
     }
     return anyActive
