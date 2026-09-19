@@ -50,8 +50,3 @@ export const sortUprightStack = (items: Item[]): Item[] =>
 
 export const sortGroundStack = (items: Item[]): Item[] =>
   items.filter((item) => isGroundHugItem(item)).sort(byStableId)
-
-export const sortRenderStack = (items: Item[]): Item[] => [
-  ...sortUprightStack(items),
-  ...sortGroundStack(items),
-]

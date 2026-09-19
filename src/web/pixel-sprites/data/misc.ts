@@ -1,6 +1,6 @@
 import type { PixelSprite } from '../types.js'
 
-// Animated/interactive/misc nouns + overworld markers (cursor, level).
+// Animated/interactive/misc nouns.
 export const MISC_SPRITES: Record<string, PixelSprite> = {
   fire: {
     palette: {

@@ -3,7 +3,6 @@ import type {
   LevelData,
   LevelItem,
   LevelMeta,
-  LevelName,
 } from './types.js'
 
 // ASCII level format ported from the predecessor Rust project (`../baba`).
@@ -19,12 +18,9 @@ import type {
 //   `b = baba`            object abbreviation
 //   `o = "win" on water`  stacked cell, bottom-to-top after `on` split
 //   `r = rocket up`       object with initial direction
-//   `l = map 1 lake`      overworld entry: Level icon for subworld 1
 //
 // Uppercase glyphs produce the text entity of the legend noun.
-// Bare glyph table covers property/operator text, `line` ground, and
-// level-icon glyphs: `0`-`9`/`𝟎`-`𝟗` number levels, `𝟙`-`𝟞` extras,
-// `𝔸`-`𝔼` letter levels, `•` the parent-map return icon.
+// Bare glyph table covers property and operator text.
 //
 // Metadata lines: `palette = name`, `background = a b`,
 // `+ <glyphs> = cx,cy` object color overrides and
@@ -64,65 +60,10 @@ const OPERATOR_GLYPHS: Record<string, string> = {
   '?': 'empty',
 }
 
-const LINE_GLYPH = '.'
-
-const LEVEL_GLYPHS: Record<string, LevelName> = {
-  '•': { kind: 'parent' },
-  ...Object.fromEntries(
-    Array.from({ length: 10 }, (_, i) => [
-      String(i),
-      { kind: 'number', n: i } as LevelName,
-    ]),
-  ),
-  // monospace digits 𝟎-𝟗 = levels 10-19
-  ...Object.fromEntries(
-    Array.from({ length: 10 }, (_, i) => [
-      String.fromCodePoint(0x1d7ce + i),
-      { kind: 'number', n: i + 10 } as LevelName,
-    ]),
-  ),
-  // double-struck digits 𝟙-𝟞 = extra levels 1-6
-  ...Object.fromEntries(
-    Array.from({ length: 6 }, (_, i) => [
-      String.fromCodePoint(0x1d7d9 + i),
-      { kind: 'extra', n: i + 1 } as LevelName,
-    ]),
-  ),
-  // double-struck letters are not contiguous (ℂ lives in letterlike)
-  ...Object.fromEntries(
-    [0x1d538, 0x1d539, 0x2102, 0x1d53b, 0x1d53c].map((cp, i) => [
-      String.fromCodePoint(cp),
-      { kind: 'letter', c: 'abcde'[i] ?? 'a' } as LevelName,
-    ]),
-  ),
-}
-
-// Stable key for color overrides and map rendering of `level` entities.
-export const levelNameKey = (target: LevelName): string => {
-  switch (target.kind) {
-    case 'number':
-      return `n${target.n}`
-    case 'letter':
-      return `l${target.c}`
-    case 'extra':
-      return `x${target.n}`
-    case 'subworld':
-      return `s${target.n}:${target.icon}`
-    case 'parent':
-      return 'parent'
-  }
-}
-
-export const overrideKeyFor = (
-  name: string,
-  levelTarget?: LevelName,
-): string => (levelTarget ? `level:${levelNameKey(levelTarget)}` : name)
-
 type CellPart = {
   name: string
   isText: boolean
   dir?: Direction
-  levelTarget?: LevelName
 }
 
 type CellSpec =
@@ -135,16 +76,7 @@ const DIRECTION_WORDS = new Set(['up', 'right', 'down', 'left'])
 const parseCellPart = (part: string): CellPart | 'unsupported' => {
   const tokens = part.trim().split(/\s+/)
   const head = tokens[0] ?? ''
-  if (head === 'map') {
-    const n = Number(tokens[1])
-    const icon = tokens[2]
-    if (!Number.isInteger(n) || !icon) return 'unsupported'
-    return {
-      name: 'level',
-      isText: false,
-      levelTarget: { kind: 'subworld', n, icon },
-    }
-  }
+  if (head === 'map') return 'unsupported'
   if (head.startsWith('"') && head.endsWith('"') && head.length > 1) {
     return { name: head.slice(1, -1), isText: true }
   }
@@ -268,7 +200,6 @@ export const parseAsciiLevel = (
       y,
       isText: part.isText,
       ...(part.dir ? { dir: part.dir } : {}),
-      ...(part.levelTarget ? { levelTarget: part.levelTarget } : {}),
     })
     nextId += 1
   }
@@ -296,10 +227,6 @@ export const parseAsciiLevel = (
     if (propertyWord) return [{ name: propertyWord, isText: true }]
     const operatorWord = OPERATOR_GLYPHS[char]
     if (operatorWord) return [{ name: operatorWord, isText: true }]
-    if (char === LINE_GLYPH) return [{ name: 'line', isText: false }]
-    const levelTarget = LEVEL_GLYPHS[char]
-    if (levelTarget)
-      return [{ name: 'level', isText: false, levelTarget }]
     return []
   }
 
@@ -317,8 +244,8 @@ export const parseAsciiLevel = (
 
   // `+ glyphs = cx,cy` object color overrides, `+ "glyphs" = ix,iy ax,ay`
   // text color overrides ([inactive, active] — also written `i,i,a,a` in a
-  // single comma run) — each glyph resolves through cellPartsFor to a
-  // noun/level entity, same as the predecessor.
+  // single comma run) — each glyph resolves through cellPartsFor to a noun
+  // entity, same as the predecessor.
   for (const { key, value } of overrideLines) {
     const quoted = key.includes('"')
     const pairs: number[][] = []
@@ -337,14 +264,13 @@ export const parseAsciiLevel = (
       if (!char) continue
       const part = cellPartsFor(char)[0]
       if (!part || part.isText) continue
-      const overrideKey = overrideKeyFor(part.name, part.levelTarget)
       if (quoted) {
-        meta.textColorOverrides[overrideKey] = [
+        meta.textColorOverrides[part.name] = [
           [pairs[0]?.[0] ?? 0, pairs[0]?.[1] ?? 0],
           [pairs[1]?.[0] ?? 0, pairs[1]?.[1] ?? 0],
         ]
       } else {
-        meta.colorOverrides[overrideKey] = [pairs[0]?.[0] ?? 0, pairs[0]?.[1] ?? 0]
+        meta.colorOverrides[part.name] = [pairs[0]?.[0] ?? 0, pairs[0]?.[1] ?? 0]
       }
     }
   }

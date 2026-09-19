@@ -21,7 +21,6 @@ const cellsOf = (
     list.push({
       name: item.name,
       isText: item.isText,
-      ...(item.levelTarget ? { levelTarget: item.levelTarget } : {}),
     })
     cells.set(key, list)
   }
@@ -79,20 +78,15 @@ o w
   assert.deepEqual(cells.get('2,0'), [{ name: 'water', isText: false }])
 })
 
-test('applies legend direction suffix and dot line glyph', () => {
+test('applies legend direction suffix', () => {
   const level = parseAsciiLevel(
     `r = rocket up
 ---
-r.r
+r r
 `,
   )
   const rocket = level.items.find((item) => item.name === 'rocket')
   assert.equal(rocket?.dir, 'up')
-  const line = level.items.find((item) => item.name === 'line')
-  assert.deepEqual(
-    line && { x: line.x, y: line.y, isText: line.isText },
-    { x: 1, y: 0, isText: false },
-  )
 })
 
 test('merges --- separated layers into shared cells', () => {
@@ -135,33 +129,11 @@ test('derives title from source filename', () => {
   assert.equal(level.title, 'CRAB STORAGE')
 })
 
-test('parses level-icon glyphs into level entities with targets', () => {
-  const level = parseAsciiLevel(`---\n1𝟎𝟙𝔸•\n`, 'index.txt')
-  const targets = level.items.map((item) => item.levelTarget)
-  assert.deepEqual(targets, [
-    { kind: 'number', n: 1 },
-    { kind: 'number', n: 10 },
-    { kind: 'extra', n: 1 },
-    { kind: 'letter', c: 'a' },
-    { kind: 'parent' },
-  ])
-  assert.ok(level.items.every((item) => item.name === 'level' && !item.isText))
-})
-
-test('parses map legend entries into subworld level icons', () => {
-  const level = parseAsciiLevel(`l = map 1 lake\n---\nl.L\n`, 'index.txt')
-  const cells = cellsOf(level.items)
-  assert.deepEqual(cells.get('0,0'), [
-    {
-      name: 'level',
-      isText: false,
-      levelTarget: { kind: 'subworld', n: 1, icon: 'lake' },
-    },
-  ])
-  assert.deepEqual(cells.get('1,0'), [{ name: 'line', isText: false }])
-  // uppercase glyph of a level icon produces `level` text (matches the
-  // predecessor's Text::Object(Noun::Level))
-  assert.deepEqual(cells.get('2,0'), [{ name: 'level', isText: true }])
+test('rejects map legend entries', () => {
+  assert.throws(
+    () => parseAsciiLevel(`l = map 1 lake\n---\nl\n`, 'index.txt'),
+    /Unsupported legend entry 'l = map 1 lake'/,
+  )
 })
 
 test('parses palette, background and color override metadata', () => {
@@ -176,7 +148,7 @@ background = island island_decor
 ---
 wr
 `,
-    'index.txt',
+    '5-brick-wall.txt',
   )
   assert.equal(level.meta?.palette, 'ocean')
   assert.deepEqual(level.meta?.backgrounds, ['island', 'island_decor'])

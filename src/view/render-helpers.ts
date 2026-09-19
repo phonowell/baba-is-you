@@ -2,8 +2,7 @@ import { ruleOperatorForKind } from '../logic/types.js'
 
 import type { Rule } from '../logic/types.js'
 
-// Plain-text rule lines shared by the web reference dialog and the
-// headless board printer (src/tools/print-board.ts).
+// Plain-text rule lines for the web reference dialog.
 export const renderRules = (rules: Rule[]): string[] => {
   if (!rules.length) return ['(no rules)']
 
