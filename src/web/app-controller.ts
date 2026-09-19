@@ -1,11 +1,9 @@
-import { mapGameKeyboardEvent, mapMenuKeyboardEvent } from '../view/input-web.js'
-import {
-  mapGameCommandToAction,
-  mapMenuCommandToAction,
-} from './app-commands.js'
+import { mapGameKeyboardEvent, mapMapKeyboardEvent } from '../view/input-web.js'
+import { mapGameCommandToAction } from './app-commands.js'
 
 import type { WebAppAction, WebAppSnapshot } from './app-model.js'
 import type { createWebAppStore } from './app-store.js'
+import type { LevelData } from '../logic/types.js'
 
 const GAME_INPUT_COOLDOWN_MS = 100
 
@@ -42,19 +40,7 @@ export const createWebAppController = (
     cmd: ReturnType<typeof mapGameKeyboardEvent>,
   ): boolean => {
     const before = store.getState()
-    if (before.mode !== 'game') return false
     const action = mapGameCommandToAction(cmd, before)
-    if (!action) return false
-    dispatch(action)
-    return store.getState() !== before
-  }
-
-  const handleMenuCommand = (
-    cmd: ReturnType<typeof mapMenuKeyboardEvent>,
-  ): boolean => {
-    const before = store.getState()
-    if (before.mode !== 'menu') return false
-    const action = mapMenuCommandToAction(cmd, before)
     if (!action) return false
     dispatch(action)
     return store.getState() !== before
@@ -70,15 +56,15 @@ export const createWebAppController = (
     markGameActionHandled,
     closeReferenceDialog: (): void =>
       dispatch({ type: 'close-reference-dialog' }),
-    enterGame: (index: number): void => dispatch({ type: 'enter-game', index }),
+    startReplay: (name: string, inputs: string, level: LevelData): void =>
+      dispatch({ type: 'start-replay', name, inputs, level }),
+    replayStep: (): void => dispatch({ type: 'replay-step' }),
+    isReplaying: (): boolean => store.getState().replay !== null,
     handleGameCommand,
     handleGameKeyboardEvent: (event: KeyboardEvent): boolean =>
       handleGameCommand(mapGameKeyboardEvent(event)),
-    handleMenuCommand,
-    handleMenuKeyboardEvent: (event: KeyboardEvent): boolean =>
-      handleMenuCommand(mapMenuKeyboardEvent(event)),
-    setMenuSelectedLevelIndex: (index: number): void =>
-      dispatch({ type: 'select-menu-level', index }),
+    handleMapKeyboardEvent: (event: KeyboardEvent): boolean =>
+      handleGameCommand(mapMapKeyboardEvent(event)),
     toggleReferenceDialog: (): void =>
       dispatch({ type: 'toggle-reference-dialog' }),
   }

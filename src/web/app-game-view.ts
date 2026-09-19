@@ -1,20 +1,39 @@
 import { GAMEPAD_CONTROLS } from '../view/input-gamepad.js'
 import {
+  GAME_CONTROLS,
+  GAME_TOUCH_CONTROLS,
+  MAP_CONTROLS,
+  MAP_TOUCH_CONTROLS,
+} from '../view/input.js'
+import {
   renderReferenceControlsHtml,
   renderReferenceRulesHtml,
 } from '../view/render-html.js'
 import { statusLine } from '../view/status-line.js'
 
 import type { GameState } from '../logic/types.js'
+import type { ReplayProgress } from './app-model.js'
+
+export type GameViewUpdate = {
+  showReferenceDialog: boolean
+  replay: ReplayProgress | null
+  canUndo: boolean
+}
 
 type CreateGameViewOptions = {
   document: Document
+  // The view is rebuilt on every mode change, so button labels and the
+  // controls reference can be picked once at creation.
+  mode: 'map' | 'game'
+  // Whether the board on screen has a recorded golden — the toolbar's
+  // Solution button only exists then (never on the map).
+  hasGoldenReplay?: boolean
 }
 
 export type GameView = {
   root: HTMLElement
   boardEl: HTMLElement
-  update: (state: GameState, showReferenceDialog: boolean) => void
+  update: (state: GameState, view: GameViewUpdate) => void
 }
 
 const createElement = <K extends keyof HTMLElementTagNameMap>(
@@ -65,14 +84,12 @@ const createOutcomeButton = (
   return button
 }
 
-const outcomeTitleFor = (status: GameState['status']): string => {
-  if (status === 'win') return 'Level Clear'
-  if (status === 'complete') return 'All Levels Clear'
-  return 'Defeat'
-}
+const outcomeTitleFor = (status: GameState['status']): string =>
+  status === 'win' ? 'Level Clear' : 'Defeat'
 
 export const createGameView = (options: CreateGameViewOptions): GameView => {
-  const { document } = options
+  const { document, mode, hasGoldenReplay = false } = options
+  const onMap = mode === 'map'
 
   const root = createElement(document, 'section', 'game-screen')
   root.setAttribute('aria-label', 'Game')
@@ -82,18 +99,51 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   statusEl.setAttribute('aria-live', 'polite')
 
   const actionsEl = createElement(document, 'div', 'game-actions')
+  const undoBtn = createIconButton(
+    document,
+    'game-undo',
+    'Undo (U)',
+    HUD_ICONS.undo,
+  )
+  const waitBtn = createIconButton(
+    document,
+    'game-wait',
+    onMap ? 'Enter (Space)' : 'Wait (Space)',
+    HUD_ICONS.wait,
+  )
+  const restartBtn = createIconButton(
+    document,
+    'game-restart',
+    onMap ? 'Reset map (R)' : 'Restart (R)',
+    HUD_ICONS.restart,
+  )
   actionsEl.append(
-    createIconButton(document, 'game-undo', 'Undo (U)', HUD_ICONS.undo),
-    createIconButton(document, 'game-wait', 'Wait (Space)', HUD_ICONS.wait),
-    createIconButton(document, 'game-restart', 'Restart (R)', HUD_ICONS.restart),
-    createIconButton(document, 'game-menu', 'Menu (Q)', HUD_ICONS.menu),
+    undoBtn,
+    waitBtn,
+    restartBtn,
+    createIconButton(
+      document,
+      'game-map',
+      onMap ? 'Back (Q)' : 'Map (Q)',
+      HUD_ICONS.menu,
+    ),
   )
 
   const referenceButtonEl = createElement(document, 'button', 'btn reference-btn')
   referenceButtonEl.dataset.action = 'toggle-reference'
   referenceButtonEl.setAttribute('aria-haspopup', 'dialog')
   referenceButtonEl.textContent = 'Controls & Rules'
-  toolbar.append(statusEl, actionsEl, referenceButtonEl)
+  // One-click golden playback for the level on screen — a plain action,
+  // not a dialog: the click starts the recording straight away.
+  const replayButtonEl = createElement(document, 'button', 'btn reference-btn')
+  replayButtonEl.dataset.action = 'play-replay'
+  replayButtonEl.textContent = 'Solution'
+  toolbar.append(
+    statusEl,
+    actionsEl,
+    ...(hasGoldenReplay ? [replayButtonEl] : []),
+    referenceButtonEl,
+  )
 
   const boardWrap = createElement(document, 'div', 'board-wrap')
   const boardEl = createElement(document, 'div', 'board')
@@ -115,10 +165,25 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   closeButton.textContent = 'Close'
   referenceHeader.append(closeButton)
 
+  // Keyboard and touch sections trade places via CSS: coarse-pointer
+  // devices see touch controls instead of the WASD table.
+  const keyControlsEl = createElement(document, 'div', 'key-controls')
   const controlsTitle = createElement(document, 'h3', 'reference-subtitle')
   controlsTitle.textContent = 'Controls'
   const controlsListEl = createElement(document, 'ul', 'controls-list')
-  controlsListEl.innerHTML = renderReferenceControlsHtml()
+  controlsListEl.innerHTML = renderReferenceControlsHtml(
+    onMap ? MAP_CONTROLS : GAME_CONTROLS,
+  )
+  keyControlsEl.append(controlsTitle, controlsListEl)
+
+  const touchControlsEl = createElement(document, 'div', 'touch-controls')
+  const touchTitle = createElement(document, 'h3', 'reference-subtitle')
+  touchTitle.textContent = 'Touch'
+  const touchListEl = createElement(document, 'ul', 'controls-list')
+  touchListEl.innerHTML = renderReferenceControlsHtml(
+    onMap ? MAP_TOUCH_CONTROLS : GAME_TOUCH_CONTROLS,
+  )
+  touchControlsEl.append(touchTitle, touchListEl)
 
   const gamepadTitle = createElement(document, 'h3', 'reference-subtitle')
   gamepadTitle.textContent = 'Gamepad'
@@ -131,8 +196,8 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
 
   referenceDialogEl.append(
     referenceHeader,
-    controlsTitle,
-    controlsListEl,
+    keyControlsEl,
+    touchControlsEl,
     gamepadTitle,
     gamepadListEl,
     rulesTitle,
@@ -151,14 +216,21 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   const outcomeNextBtn = createOutcomeButton(
     document,
     'game-next',
-    'Next Level',
+    'Back to Map',
     true,
   )
+  const outcomeUndoBtn = createOutcomeButton(document, 'game-undo', 'Undo')
+  const outcomeRestartBtn = createOutcomeButton(
+    document,
+    'game-restart',
+    'Restart',
+  )
+  const outcomeMapBtn = createOutcomeButton(document, 'game-map', 'Map')
   outcomeActionsEl.append(
     outcomeNextBtn,
-    createOutcomeButton(document, 'game-undo', 'Undo'),
-    createOutcomeButton(document, 'game-restart', 'Restart'),
-    createOutcomeButton(document, 'game-menu', 'Menu'),
+    outcomeUndoBtn,
+    outcomeRestartBtn,
+    outcomeMapBtn,
   )
   outcomeCardEl.append(outcomeTitleEl, outcomeActionsEl)
   outcomeBackdropEl.append(outcomeCardEl)
@@ -171,21 +243,33 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   return {
     root,
     boardEl,
-    update: (state: GameState, showReferenceDialog: boolean): void => {
-      statusEl.textContent = statusLine(state.status)
+    update: (state: GameState, view: GameViewUpdate): void => {
+      const { showReferenceDialog, replay, canUndo } = view
+      // Verbs the command layer would drop are disabled instead of left
+      // clickable: replay spectating only honours back, a finished board
+      // takes no more turns, and undo needs history behind it.
+      const replayActive = replay !== null
+      undoBtn.disabled = replayActive || !canUndo
+      waitBtn.disabled = replayActive || state.status !== 'playing'
+      restartBtn.disabled = replayActive
+      outcomeNextBtn.disabled = replayActive
+      outcomeUndoBtn.disabled = replayActive || !canUndo
+      outcomeRestartBtn.disabled = replayActive
+
+      statusEl.textContent = replay
+        ? `SOLUTION ${replay.name} — ${replay.cursor}/${replay.total}`
+        : statusLine(state.status, mode)
       statusEl.dataset.status = state.status
 
-      const showOutcome =
-        state.status === 'win' ||
-        state.status === 'lose' ||
-        state.status === 'complete'
+      const showOutcome = state.status === 'win' || state.status === 'lose'
       outcomeBackdropEl.toggleAttribute('hidden', !showOutcome)
       if (showOutcome) {
         outcomeCardEl.dataset.status = state.status
         outcomeTitleEl.textContent = outcomeTitleFor(state.status)
-        // On 'complete' the next command just replays level 0 — the Restart
-        // button already covers it, so the primary stays win-only.
+        // 'Back to Map' and 'Map' both leave to the map — the card shows
+        // only one exit verb at a time.
         outcomeNextBtn.toggleAttribute('hidden', state.status !== 'win')
+        outcomeMapBtn.toggleAttribute('hidden', state.status === 'win')
       }
       referenceButtonEl.setAttribute(
         'aria-expanded',

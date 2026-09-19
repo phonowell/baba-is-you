@@ -2,7 +2,6 @@ import type { GameStatus } from '../logic/types.js'
 import type {
   GameCommand,
   GameControlEntry,
-  MenuCommand,
 } from './input.js'
 
 // W3C "standard" layout indices. Pads reporting another mapping get
@@ -10,6 +9,7 @@ import type {
 const BUTTON_A = 0
 const BUTTON_B = 1
 const BUTTON_X = 2
+const BUTTON_SELECT = 8
 const BUTTON_START = 9
 const BUTTON_DPAD_UP = 12
 const BUTTON_DPAD_DOWN = 13
@@ -27,6 +27,30 @@ export type GamepadSource = {
   mapping?: string
   buttons: readonly { pressed?: boolean }[]
   axes: readonly number[]
+  vibrationActuator?: GamepadVibrationActuator | null
+}
+
+// Structural subset of GamepadHapticActuator (Chrome/Edge dual-rumble).
+// Absent on pads and browsers without haptics — rumble degrades to a no-op.
+// `type` mirrors GamepadHapticEffectType so a real Gamepad still satisfies
+// GamepadSource under strictFunctionTypes.
+export type GamepadVibrationActuator = {
+  playEffect?: (
+    type: 'dual-rumble' | 'trigger-rumble',
+    params?: {
+      duration?: number
+      startDelay?: number
+      strongMagnitude?: number
+      weakMagnitude?: number
+    },
+  ) => unknown
+}
+
+export type GamepadRumble = {
+  durationMs?: number
+  startDelayMs?: number
+  strongMagnitude?: number
+  weakMagnitude?: number
 }
 
 export type GamepadSnapshot = {
@@ -43,6 +67,7 @@ export type GamepadLogicalInput =
   | 'a'
   | 'b'
   | 'x'
+  | 'select'
   | 'start'
 
 export const toGamepadSnapshot = (
@@ -75,6 +100,7 @@ export const readGamepadInputs = (
   if (button(BUTTON_A)) pressed.add('a')
   if (button(BUTTON_B)) pressed.add('b')
   if (button(BUTTON_X)) pressed.add('x')
+  if (button(BUTTON_SELECT)) pressed.add('select')
   if (button(BUTTON_START)) pressed.add('start')
 
   return pressed
@@ -93,43 +119,51 @@ export const mapGamepadGameInput = (
     case 'right':
       return { type: 'move', direction: input }
     case 'a':
-      return status === 'win' || status === 'complete'
-        ? { type: 'next' }
-        : { type: 'wait' }
+      return status === 'win' ? { type: 'next' } : { type: 'wait' }
     case 'b':
       return { type: 'undo' }
     case 'x':
       return { type: 'restart' }
     case 'start':
-      return { type: 'back-menu' }
+      return { type: 'back' }
+    // The runtime intercepts select for the help overlay — a command
+    // mapping only exists to keep the switch exhaustive.
+    case 'select':
+      return { type: 'noop' }
   }
 }
 
-export const mapGamepadMenuInput = (
+// Overworld pad mapping: directions rail-hop the cursor, A enters the
+// icon under it, X resets the map like R does, B/Start back out to the
+// parent map.
+export const mapGamepadMapInput = (
   input: GamepadLogicalInput,
-): MenuCommand => {
+): GameCommand => {
   switch (input) {
     case 'up':
-      return { type: 'up' }
     case 'down':
-      return { type: 'down' }
     case 'left':
-      return { type: 'page-left' }
     case 'right':
-      return { type: 'page-right' }
+      return { type: 'move', direction: input }
     case 'a':
-    case 'start':
-      return { type: 'start' }
+      return { type: 'enter' }
     case 'b':
+    case 'start':
+      return { type: 'back' }
     case 'x':
+      return { type: 'restart' }
+    // The runtime intercepts select for the help overlay — a command
+    // mapping only exists to keep the switch exhaustive.
+    case 'select':
       return { type: 'noop' }
   }
 }
 
 export const GAMEPAD_CONTROLS: readonly GameControlEntry[] = [
-  { keys: 'D-Pad/Stick', action: 'move / select' },
-  { keys: 'A', action: 'wait / confirm' },
-  { keys: 'B', action: 'undo / close' },
+  { keys: 'D-Pad/Stick', action: 'move' },
+  { keys: 'A', action: 'wait / enter' },
+  { keys: 'B', action: 'undo / back' },
   { keys: 'X', action: 'restart' },
-  { keys: 'Start', action: 'menu' },
+  { keys: 'Start', action: 'map / back' },
+  { keys: 'Select', action: 'controls' },
 ]

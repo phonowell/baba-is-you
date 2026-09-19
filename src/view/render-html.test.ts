@@ -23,5 +23,5 @@ test('reference rules list renders active rules', () => {
 test('reference controls list documents undo', () => {
   const output = renderReferenceControlsHtml()
 
-  assert.match(output, /<kbd>U<\/kbd><span>undo<\/span>/)
+  assert.match(output, /<kbd>U\/Z<\/kbd><span>undo<\/span>/)
 })

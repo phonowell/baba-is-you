@@ -4,7 +4,7 @@ import test from 'node:test'
 import { createGamepadRuntime } from './app-gamepad.js'
 
 import type { GamepadSource } from '../view/input-gamepad.js'
-import type { GameCommand, MenuCommand } from '../view/input.js'
+import type { GameCommand } from '../view/input.js'
 import type { GameStatus } from '../logic/types.js'
 
 const pad = (
@@ -23,31 +23,35 @@ const pad = (
 })
 
 type RuntimeOptions = {
-  mode?: 'menu' | 'game'
+  mode?: 'map' | 'game'
   dialogOpen?: boolean
   status?: GameStatus
   canHandle?: () => boolean
-  handled?: (cmd: GameCommand | MenuCommand) => boolean
+  handled?: (cmd: GameCommand) => boolean
 }
 
 const createRuntime = (options: RuntimeOptions = {}) => {
   const frames: Array<(now: number) => void> = []
   const cancelled: number[] = []
-  const listeners = new Map<string, () => void>()
+  const listeners = new Map<string, (event: unknown) => void>()
   const commands: GameCommand[] = []
-  const menuCommands: MenuCommand[] = []
   let pads: (GamepadSource | null)[] = []
   let marks = 0
   let closes = 0
+  let toggles = 0
+  let dialogOpen = options.dialogOpen ?? false
 
   const runtime = createGamepadRuntime({
     viewState: {
       getMode: () => options.mode ?? 'game',
-      isReferenceDialogOpen: () => options.dialogOpen ?? false,
+      isReferenceDialogOpen: () => dialogOpen,
       getStatus: () => options.status ?? 'playing',
     },
     closeReferenceDialog: () => {
       closes += 1
+    },
+    toggleReferenceDialog: () => {
+      toggles += 1
     },
     canHandleGameAction: options.canHandle ?? (() => true),
     markGameActionHandled: () => {
@@ -55,10 +59,6 @@ const createRuntime = (options: RuntimeOptions = {}) => {
     },
     handleGameCommand: (cmd) => {
       commands.push(cmd)
-      return options.handled?.(cmd) ?? true
-    },
-    handleMenuCommand: (cmd) => {
-      menuCommands.push(cmd)
       return options.handled?.(cmd) ?? true
     },
     getGamepads: () => pads,
@@ -85,18 +85,26 @@ const createRuntime = (options: RuntimeOptions = {}) => {
     cancelled,
     listeners,
     commands,
-    menuCommands,
     get marks() {
       return marks
     },
     get closes() {
       return closes
     },
+    get toggles() {
+      return toggles
+    },
+    setDialogOpen: (open: boolean): void => {
+      dialogOpen = open
+    },
     setPads: (next: (GamepadSource | null)[]): void => {
       pads = next
     },
-    connect: (): void => {
-      listeners.get('gamepadconnected')?.()
+    connect: (index = 0): void => {
+      listeners.get('gamepadconnected')?.({ gamepad: { index } })
+    },
+    disconnect: (index = 0): void => {
+      listeners.get('gamepaddisconnected')?.({ gamepad: { index } })
     },
     step: (now: number): void => {
       const callback = frames.shift()
@@ -125,7 +133,7 @@ test('gamepad connect starts polling and a button edge fires one command', () =>
   ctx.step(16) // baseline adopt, no presses yet
   ctx.setPads([pad([0])])
   ctx.step(32)
-  ctx.step(48) // still held: no repeat on buttons
+  ctx.step(48) // held, but still inside the repeat delay
 
   assert.deepEqual(ctx.commands, [{ type: 'wait' }])
   assert.equal(ctx.marks, 1)
@@ -174,8 +182,8 @@ test('gamepad dialog state ignores all input except B to close', () => {
   assert.equal(ctx.closes, 1)
 })
 
-test('gamepad menu mode routes commands without game-side bookkeeping', () => {
-  const ctx = createRuntime({ mode: 'menu' })
+test('gamepad map mode rail-hops the cursor and A enters the icon', () => {
+  const ctx = createRuntime({ mode: 'map' })
   ctx.step(0)
   ctx.setPads([pad()])
   ctx.connect()
@@ -186,8 +194,11 @@ test('gamepad menu mode routes commands without game-side bookkeeping', () => {
   ctx.setPads([pad([0])])
   ctx.step(48)
 
-  assert.deepEqual(ctx.menuCommands, [{ type: 'up' }, { type: 'start' }])
-  assert.equal(ctx.marks, 0)
+  assert.deepEqual(ctx.commands, [
+    { type: 'move', direction: 'up' },
+    { type: 'enter' },
+  ])
+  assert.equal(ctx.marks, 2)
 })
 
 test('gamepad A advances as next on the win card', () => {
@@ -294,4 +305,186 @@ test('gamepad swapping pads does not replay held buttons', () => {
   ctx.step(32)
 
   assert.deepEqual(ctx.commands, [])
+})
+
+test('gamepad held A repeats wait and held B repeats undo on cadence', () => {
+  const ctx = createRuntime()
+  ctx.step(0)
+  ctx.setPads([pad()])
+  ctx.connect()
+  ctx.step(16)
+
+  ctx.setPads([pad([0])])
+  ctx.step(32) // edge wait, arms the repeat slot
+  ctx.step(200) // inside the 300ms delay
+  ctx.step(400) // first repeat
+  ctx.step(560) // +140ms cadence: second repeat
+
+  ctx.setPads([pad([1])])
+  ctx.step(700) // B edge re-arms the slot for undo
+  ctx.step(1100) // first B repeat
+  ctx.step(1240) // second B repeat
+
+  assert.deepEqual(ctx.commands, [
+    { type: 'wait' },
+    { type: 'wait' },
+    { type: 'wait' },
+    { type: 'undo' },
+    { type: 'undo' },
+    { type: 'undo' },
+  ])
+})
+
+test('gamepad B held through a dialog close never bleeds into undo', () => {
+  const ctx = createRuntime({ dialogOpen: true })
+  ctx.step(0)
+  ctx.setPads([pad()])
+  ctx.connect()
+  ctx.step(16)
+
+  ctx.setPads([pad([1])])
+  ctx.step(32) // B edge closes the dialog — no repeat slot was armed
+  ctx.setDialogOpen(false)
+  ctx.step(400) // past the repeat delay while B is still held
+  ctx.step(560)
+
+  assert.deepEqual(ctx.commands, [])
+  assert.equal(ctx.closes, 1)
+})
+
+test('gamepad select toggles the controls reference', () => {
+  const ctx = createRuntime()
+  ctx.step(0)
+  ctx.setPads([pad()])
+  ctx.connect()
+  ctx.step(16)
+
+  ctx.setPads([pad([8])])
+  ctx.step(32) // opens
+  ctx.step(48) // held select must not fire the toggle again
+  ctx.setDialogOpen(true)
+  ctx.setPads([pad()])
+  ctx.step(64)
+  ctx.setPads([pad([8])])
+  ctx.step(80) // a second press toggles the open dialog back off
+
+  assert.equal(ctx.toggles, 2)
+  assert.deepEqual(ctx.commands, [])
+})
+
+test('gamepad rumble plays dual-rumble on the driving pad only', () => {
+  const effects: { type: string; params?: unknown }[] = []
+  const ctx = createRuntime()
+  ctx.step(0)
+  ctx.setPads([
+    pad([], undefined, {
+      vibrationActuator: {
+        playEffect: (type, params) => {
+          effects.push({ type, params })
+          return Promise.resolve()
+        },
+      },
+    }),
+  ])
+  ctx.connect()
+  ctx.step(16)
+
+  ctx.runtime.rumble({ durationMs: 50, startDelayMs: 20 })
+
+  assert.deepEqual(effects, [
+    {
+      type: 'dual-rumble',
+      params: {
+        duration: 50,
+        startDelay: 20,
+        strongMagnitude: 1,
+        weakMagnitude: 1,
+      },
+    },
+  ])
+
+  // Swapping to a rumble-less pad turns rumble into a no-op.
+  ctx.setPads([pad([], undefined, { index: 1 })])
+  ctx.step(32)
+  ctx.runtime.rumble({ durationMs: 50 })
+  assert.equal(effects.length, 1)
+
+  // A rejecting actuator is swallowed — haptics are best-effort.
+  ctx.setPads([
+    pad([], undefined, {
+      index: 2,
+      vibrationActuator: {
+        playEffect: () => Promise.reject(new Error('unsupported')),
+      },
+    }),
+  ])
+  ctx.step(48)
+  ctx.runtime.rumble({ durationMs: 50 })
+
+  ctx.runtime.dispose()
+  ctx.runtime.rumble({ durationMs: 50 })
+})
+
+test('gamepad prefers the most recently connected pad and falls back on disconnect', () => {
+  const ctx = createRuntime()
+  ctx.step(0)
+  ctx.setPads([pad([], undefined, { index: 0 })])
+  ctx.connect(0)
+  ctx.step(16)
+
+  ctx.setPads([
+    pad([], undefined, { index: 0 }),
+    pad([], undefined, { index: 1 }),
+  ])
+  ctx.connect(1)
+  ctx.step(32) // the newer pad wins the pick — baseline adopts its state
+  ctx.setPads([
+    pad([], undefined, { index: 0 }),
+    pad([0], undefined, { index: 1 }),
+  ])
+  ctx.step(48)
+  ctx.setPads([
+    pad([0], undefined, { index: 0 }),
+    pad([], undefined, { index: 1 }),
+  ])
+  ctx.step(64) // pad 0 pressing does nothing while pad 1 drives
+
+  assert.deepEqual(ctx.commands, [{ type: 'wait' }])
+
+  ctx.disconnect(1)
+  ctx.setPads([pad([0], undefined, { index: 0 }), null])
+  ctx.step(80) // pad 0 takes over — held A becomes the new baseline
+  ctx.setPads([pad([], undefined, { index: 0 }), null])
+  ctx.step(96)
+  ctx.setPads([pad([0], undefined, { index: 0 }), null])
+  ctx.step(112)
+
+  assert.deepEqual(ctx.commands, [{ type: 'wait' }, { type: 'wait' }])
+})
+
+test('gamepad stick picks the dominant axis on a diagonal push', () => {
+  const ctx = createRuntime()
+  ctx.step(0)
+  ctx.setPads([pad()])
+  ctx.connect()
+  ctx.step(16)
+
+  ctx.setPads([pad([], [0.6, 0.9, 0, 0])])
+  ctx.step(32) // |y| wins over the fixed order: down, not right
+  ctx.setPads([pad()])
+  ctx.step(48)
+  ctx.setPads([pad([], [0.9, 0.6, 0, 0])])
+  ctx.step(64) // dominant x this time: right
+
+  assert.deepEqual(ctx.commands, [
+    { type: 'move', direction: 'down' },
+    { type: 'move', direction: 'right' },
+  ])
+
+  // A D-Pad diagonal without stick deflection keeps the fixed order.
+  ctx.setPads([pad()])
+  ctx.step(80)
+  ctx.setPads([pad([12, 15])])
+  ctx.step(96)
+  assert.deepEqual(ctx.commands[2], { type: 'move', direction: 'up' })
 })

@@ -148,7 +148,6 @@ test('createDraw mounts 3d board after deferred transition callback builds game 
   try {
     const draw = createDraw({
       root,
-      menuLevels: [{ title: state.title }],
       drawState: {
         prevMode: null,
         prevShowDialog: false,
@@ -159,9 +158,11 @@ test('createDraw mounts 3d board after deferred transition callback builds game 
       getSnapshot: () => ({
         mode: 'game',
         levelIndex: 0,
+        mapFile: 'root',
         state,
         showReferenceDialog: false,
-        menuSelectedLevelIndex: 0,
+        replay: null,
+        canUndo: false,
       }),
       computeCellSize: () => 44,
       applyWithTransition: (fn) => {

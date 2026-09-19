@@ -1,43 +1,52 @@
 import type { GameCommand } from '../view/input.js'
 
 type AppEventViewState = {
-  getMode: () => 'menu' | 'game'
+  getMode: () => 'map' | 'game'
   isReferenceDialogOpen: () => boolean
 }
 
 // HUD buttons and the outcome overlay share the keyboard command pipeline:
-// a click produces the same GameCommand a keypress would.
+// a click produces the same GameCommand a keypress would. On the map the
+// wait slot is the enter press (icon under the cursor).
 const GAME_ACTION_COMMANDS: Record<string, GameCommand> = {
   'game-undo': { type: 'undo' },
   'game-wait': { type: 'wait' },
   'game-restart': { type: 'restart' },
-  'game-menu': { type: 'back-menu' },
+  'game-map': { type: 'back' },
   'game-next': { type: 'next' },
 }
 
+const MAP_ACTION_COMMANDS: Record<string, GameCommand> = {
+  'game-undo': { type: 'undo' },
+  'game-wait': { type: 'enter' },
+  'game-restart': { type: 'restart' },
+  'game-map': { type: 'back' },
+}
+
 type RootClickHandlerContext = {
-  levelCount: number
   viewState: AppEventViewState
-  enterGame: (index: number) => void
   toggleReferenceDialog: () => void
   closeReferenceDialog: () => void
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
   handleGameCommand: (cmd: GameCommand) => boolean
+  // Golden playback start: a UI action, not a game command — it stays
+  // available while a replay owns the board so the button doubles as
+  // "watch it again".
+  playReplay?: () => void
 }
 
 export const createRootClickHandler = (
   context: RootClickHandlerContext,
 ): ((event: MouseEvent) => void) => {
   const {
-    levelCount,
     viewState,
-    enterGame,
     toggleReferenceDialog,
     closeReferenceDialog,
     canHandleGameAction,
     markGameActionHandled,
     handleGameCommand,
+    playReplay,
   } = context
 
   return (event: MouseEvent): void => {
@@ -49,26 +58,25 @@ export const createRootClickHandler = (
     const actionElement = target.closest<HTMLElement>('[data-action]')
     if (actionElement) {
       const action = actionElement.dataset.action
-      if (action === 'start-level' && mode === 'menu') {
-        const idx = parseInt(actionElement.dataset.levelIndex ?? '', 10)
-        if (!isNaN(idx) && idx >= 0 && idx < levelCount) {
-          enterGame(idx)
-        }
-        return
-      }
-
-      if (action === 'toggle-reference' && mode === 'game') {
+      if (action === 'toggle-reference') {
         toggleReferenceDialog()
         return
       }
 
-      if (action === 'close-reference' && mode === 'game') {
+      if (action === 'close-reference') {
         closeReferenceDialog()
         return
       }
 
-      if (mode === 'game' && !showReferenceDialog && action) {
-        const cmd = GAME_ACTION_COMMANDS[action]
+      if (action === 'play-replay') {
+        playReplay?.()
+        return
+      }
+
+      if (!showReferenceDialog && action) {
+        const commands =
+          mode === 'map' ? MAP_ACTION_COMMANDS : GAME_ACTION_COMMANDS
+        const cmd = commands[action]
         if (cmd && canHandleGameAction() && handleGameCommand(cmd)) {
           markGameActionHandled()
         }
@@ -77,7 +85,7 @@ export const createRootClickHandler = (
       return
     }
 
-    if (!showReferenceDialog || mode !== 'game') return
+    if (!showReferenceDialog) return
 
     const backdrop = target.closest<HTMLElement>('[data-role="reference-backdrop"]')
     const dialog = target.closest<HTMLElement>('[data-role="reference-dialog"]')
@@ -92,7 +100,7 @@ type WindowKeydownHandlerContext = {
   closeReferenceDialog: () => void
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
-  handleMenuEvent: (event: KeyboardEvent) => boolean
+  handleMapEvent: (event: KeyboardEvent) => boolean
   handleGameEvent: (event: KeyboardEvent) => boolean
 }
 
@@ -104,15 +112,14 @@ export const createWindowKeydownHandler = (
     closeReferenceDialog,
     canHandleGameAction,
     markGameActionHandled,
-    handleMenuEvent,
+    handleMapEvent,
     handleGameEvent,
   } = context
 
   return (event: KeyboardEvent): void => {
     const mode = viewState.getMode()
-    const showReferenceDialog = viewState.isReferenceDialogOpen()
 
-    if (mode === 'game' && showReferenceDialog) {
+    if (viewState.isReferenceDialogOpen()) {
       if (event.key === 'Escape') {
         closeReferenceDialog()
         event.preventDefault()
@@ -120,13 +127,13 @@ export const createWindowKeydownHandler = (
       return
     }
 
-    if (mode === 'game' && !canHandleGameAction()) return
+    if (!canHandleGameAction()) return
 
-    const handled = mode === 'menu' ? handleMenuEvent(event) : handleGameEvent(event)
+    const handled = mode === 'map' ? handleMapEvent(event) : handleGameEvent(event)
 
     if (!handled) return
 
     event.preventDefault()
-    if (mode === 'game') markGameActionHandled()
+    markGameActionHandled()
   }
 }

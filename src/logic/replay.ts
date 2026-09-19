@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
 
+import { decodeReplayInput } from './replay-input.js'
 import { createInitialState } from './state.js'
 import { step } from './step.js'
 
@@ -8,19 +9,13 @@ import type { Direction, GameState, LevelData } from './types.js'
 // Replay support shared by golden tests and tooling.
 //
 // Input string encoding: `u/d/l/r` moves, `w` waits, `z` undoes one
-// committed move (mirrors the CLI history stack: undo pops the pre-move
-// state and never empties the initial frame).
+// committed move (undo pops the pre-move state and never empties the
+// initial frame) — decoded by `replay-input.ts`, the codec's single
+// source shared with the web playback driver.
 //
 // Inputs are applied unconditionally — matching the predecessor's replay,
 // which keeps simulating MOVE/SHIFT after a loss (there is no dead-state
-// input gate in its `step`). The win/lose input gate lives in the CLI.
-
-const INPUT_DIRS: Record<string, Direction> = {
-  u: 'up',
-  d: 'down',
-  l: 'left',
-  r: 'right',
-}
+// input gate in its `step`). The win/lose input gate lives in the caller.
 
 export const encodeInput = (direction: Direction | null): string =>
   direction === null ? 'w' : direction[0] ?? 'w'
@@ -58,12 +53,12 @@ export const replayLevel = (
   for (const code of inputs) {
     const current = history[history.length - 1]
     if (!current) break
-    if (code === 'z') {
+    const decoded = decodeReplayInput(code)
+    if (decoded.kind === 'skip') continue
+    if (decoded.kind === 'undo') {
       if (history.length > 1) history.pop()
     } else {
-      const direction = code === 'w' ? null : INPUT_DIRS[code]
-      if (direction === undefined) continue
-      const result = step(current, direction)
+      const result = step(current, decoded.direction)
       if (result.changed) history.push(result.state)
     }
     const last = history[history.length - 1]

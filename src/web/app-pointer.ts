@@ -1,74 +1,80 @@
-import { BOARD_SWIPE_MIN_PX, mapBoardGesture } from '../view/input.js'
+import { SWIPE_MIN_PX, mapBoardGesture, mapMapGesture } from '../view/input.js'
 
 import type { GameCommand } from '../view/input.js'
 
 type AppPointerViewState = {
-  getMode: () => 'menu' | 'game'
+  getMode: () => 'map' | 'game'
   isReferenceDialogOpen: () => boolean
 }
 
 // Structural subset of PointerEvent so tests can drive the handlers with
 // plain objects, same trick input-web.ts uses for keyboard events.
-export type BoardPointerEvent = {
+export type AppPointerEvent = {
   pointerId: number
-  pointerType: string
   clientX: number
   clientY: number
   target: EventTarget | null
-  relatedTarget?: EventTarget | null
   preventDefault: () => void
 }
 
-type BoardPointerHandlerContext = {
+type AppPointerHandlerContext = {
   viewState: AppPointerViewState
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
   handleGameCommand: (cmd: GameCommand) => boolean
-  // Camera parallax feed; absent keeps the handlers input-only.
-  setParallaxTarget?: ((nx: number, ny: number) => void) | null
+  // The forced-landscape frame on portrait phones rotates the whole app
+  // (see style.css); client deltas are viewport-space, so they are mapped
+  // back into app space before the gesture is classified.
+  mapViewportDelta?: (dx: number, dy: number) => { dx: number; dy: number }
   // Haptics etc. — fired only when a command actually advanced the game.
   onHandledAction?: () => void
 }
 
-export type BoardPointerHandlers = {
-  onPointerDown: (event: BoardPointerEvent) => void
-  onPointerMove: (event: BoardPointerEvent) => void
-  onPointerUp: (event: BoardPointerEvent) => void
-  onPointerCancel: (event: BoardPointerEvent) => void
-  onPointerOut: (event: BoardPointerEvent) => void
+export type AppPointerHandlers = {
+  onPointerDown: (event: AppPointerEvent) => void
+  onPointerMove: (event: AppPointerEvent) => void
+  onPointerUp: (event: AppPointerEvent) => void
+  onPointerCancel: (event: AppPointerEvent) => void
 }
 
-const clampUnit = (value: number): number =>
-  Math.min(1, Math.max(-1, value))
+const IDENTITY_DELTA = (dx: number, dy: number): { dx: number; dy: number } => ({
+  dx,
+  dy,
+})
 
-export const createBoardPointerHandlers = (
-  context: BoardPointerHandlerContext,
-): BoardPointerHandlers => {
+export const createAppPointerHandlers = (
+  context: AppPointerHandlerContext,
+): AppPointerHandlers => {
   const {
     viewState,
     canHandleGameAction,
     markGameActionHandled,
     handleGameCommand,
-    setParallaxTarget = null,
+    mapViewportDelta = IDENTITY_DELTA,
     onHandledAction,
   } = context
 
   let activePointerId: number | null = null
+  // The mode the drag started in; a mid-drag mode change (tap → enter a
+  // level) invalidates the gesture instead of retargeting it.
+  let activeMode: 'map' | 'game' | null = null
   let startX = 0
   let startY = 0
   // One press fires at most one move: the swipe consumes the press at the
   // distance threshold instead of waiting for release.
   let consumed = false
 
-  const boardFromTarget = (target: EventTarget | null): HTMLElement | null => {
+  const closestFromTarget = (
+    target: EventTarget | null,
+    selector: string,
+  ): HTMLElement | null => {
     if (!(target instanceof Element)) return null
-    return target.closest('.board')
+    return target.closest(selector)
   }
 
-  const canInteract = (): boolean =>
-    viewState.getMode() === 'game' && !viewState.isReferenceDialogOpen()
+  const boardReady = (): boolean => !viewState.isReferenceDialogOpen()
 
-  const dispatchCommand = (cmd: GameCommand): void => {
+  const dispatchGameCommand = (cmd: GameCommand): void => {
     if (!canHandleGameAction()) return
     if (handleGameCommand(cmd)) {
       markGameActionHandled()
@@ -76,81 +82,66 @@ export const createBoardPointerHandlers = (
     }
   }
 
+  const gestureForMode = (mode: 'map' | 'game', dx: number, dy: number): GameCommand =>
+    mode === 'map' ? mapMapGesture({ dx, dy }) : mapBoardGesture({ dx, dy })
+
   const resetDrag = (): void => {
     activePointerId = null
+    activeMode = null
     consumed = false
   }
 
-  const feedParallax = (event: BoardPointerEvent): void => {
-    if (!setParallaxTarget) return
-    if (event.pointerType !== 'mouse' || !canInteract()) {
-      setParallaxTarget(0, 0)
-      return
-    }
-    const board = boardFromTarget(event.target)
-    if (!board) {
-      setParallaxTarget(0, 0)
-      return
-    }
-    const rect = board.getBoundingClientRect()
-    if (rect.width <= 0 || rect.height <= 0) return
-    setParallaxTarget(
-      clampUnit(((event.clientX - rect.left) / rect.width) * 2 - 1),
-      clampUnit(((event.clientY - rect.top) / rect.height) * 2 - 1),
-    )
-  }
-
-  const onPointerDown = (event: BoardPointerEvent): void => {
-    feedParallax(event)
-    if (!canInteract()) return
-    const board = boardFromTarget(event.target)
-    if (!board) return
+  const onPointerDown = (event: AppPointerEvent): void => {
     if (activePointerId !== null) return
+    const mode = viewState.getMode()
+    if (mode !== 'map' && mode !== 'game') return
+    if (!boardReady()) return
+    const board = closestFromTarget(event.target, '.board')
+    if (!board) return
     // Capture on the board so the pointerup lands even when the press is
     // released off-app — a mouse has no implicit capture, and without this
     // the stale drag would fire a phantom swipe on the next hover.
     board.setPointerCapture?.(event.pointerId)
+    event.preventDefault()
     activePointerId = event.pointerId
+    activeMode = mode
     startX = event.clientX
     startY = event.clientY
     consumed = false
-    event.preventDefault()
   }
 
-  const onPointerMove = (event: BoardPointerEvent): void => {
-    feedParallax(event)
+  const onPointerMove = (event: AppPointerEvent): void => {
     if (event.pointerId !== activePointerId || consumed) return
-    if (!canInteract()) {
+    if (activeMode !== viewState.getMode() || !boardReady()) {
       resetDrag()
       return
     }
-    const dx = event.clientX - startX
-    const dy = event.clientY - startY
-    if (Math.max(Math.abs(dx), Math.abs(dy)) < BOARD_SWIPE_MIN_PX) return
+    const { dx, dy } = mapViewportDelta(
+      event.clientX - startX,
+      event.clientY - startY,
+    )
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_MIN_PX) return
     consumed = true
-    dispatchCommand(mapBoardGesture({ dx, dy }))
+    dispatchGameCommand(gestureForMode(viewState.getMode(), dx, dy))
   }
 
-  const onPointerUp = (event: BoardPointerEvent): void => {
+  const onPointerUp = (event: AppPointerEvent): void => {
     if (event.pointerId !== activePointerId) return
     const wasConsumed = consumed
+    const mode = activeMode
     resetDrag()
-    if (wasConsumed || !canInteract()) return
-    dispatchCommand(
-      mapBoardGesture({ dx: event.clientX - startX, dy: event.clientY - startY }),
+    // Taps resolve through the same gesture map: a press below the swipe
+    // threshold is a wait on a level and an enter on the map.
+    if (mode !== viewState.getMode() || wasConsumed || !boardReady()) return
+    const { dx, dy } = mapViewportDelta(
+      event.clientX - startX,
+      event.clientY - startY,
     )
+    dispatchGameCommand(gestureForMode(viewState.getMode(), dx, dy))
   }
 
-  const onPointerCancel = (event: BoardPointerEvent): void => {
+  const onPointerCancel = (event: AppPointerEvent): void => {
     if (event.pointerId === activePointerId) resetDrag()
-  }
-
-  // pointerout catches the pointer leaving the app surface entirely —
-  // pointermove stops firing there, which would freeze the parallax tilt.
-  const onPointerOut = (event: BoardPointerEvent): void => {
-    if (!setParallaxTarget) return
-    if (event.relatedTarget) return
-    setParallaxTarget(0, 0)
   }
 
   return {
@@ -158,6 +149,5 @@ export const createBoardPointerHandlers = (
     onPointerMove,
     onPointerUp,
     onPointerCancel,
-    onPointerOut,
   }
 }

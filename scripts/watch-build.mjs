@@ -10,6 +10,9 @@ const rootDirPath = path.resolve(scriptsDirPath, '..')
 const watchTargets = [
   path.join(rootDirPath, 'src'),
   path.join(rootDirPath, 'scripts', 'build-single-html.mjs'),
+  // The bundle embeds golden replays + their level sources.
+  path.join(rootDirPath, 'goldens'),
+  path.join(rootDirPath, 'levels'),
 ]
 
 let timer = null

@@ -5,25 +5,20 @@ import {
   toWebAppSnapshot,
 } from './app-model.js'
 
-import type { LevelData } from '../logic/types.js'
 import type {
   WebAppAction,
+  WebAppEnvironment,
   WebAppSnapshot,
   WebAppStateData,
 } from './app-model.js'
 
-type CreateWebAppStoreOptions = {
-  levels: LevelData[]
-}
-
-export const createWebAppStore = (options: CreateWebAppStoreOptions) => {
-  const { levels } = options
-  let stateData = createInitialWebAppState(levels)
+export const createWebAppStore = (env: WebAppEnvironment) => {
+  let stateData = createInitialWebAppState(env)
   const listeners = new Set<() => void>()
 
   return {
     dispatch: (action: WebAppAction): void => {
-      const nextStateData = reduceWebAppState(stateData, action, levels)
+      const nextStateData = reduceWebAppState(stateData, action, env)
       const changed = hasViewStateChanged(stateData, nextStateData)
       stateData = nextStateData
       if (!changed) return

@@ -6,274 +6,310 @@ import { mapGameCommandToAction } from './app-commands.js'
 import { createWebAppController } from './app-controller.js'
 import { createWebAppStore } from './app-store.js'
 
-import {
-  reduceWebAppState,
-} from './app-model.js'
+import type { LevelData, LevelIcon, LevelItem } from '../logic/types.js'
+import type { WebAppEnvironment } from './app-model.js'
 
 const levels = [
   parseLevel('title One; size 3x2; Baba 0,0; Baba 0,1; Is 1,1; You 2,1'),
   parseLevel('title Two; size 3x2; Rock 0,0; Baba 0,1; Is 1,1; You 2,1'),
 ]
 
-const winLevels = [
-  parseLevel(
-    'title Win; size 3x4; Baba 0,0; Is 1,0; You 2,0; Flag 0,1; Is 1,1; Win 2,1; baba 0,2; flag 0,3',
-  ),
-  parseLevel('title Next; size 3x1; Rock 0,0; Baba 0,0; Is 1,0; You 2,0'),
-]
+const icon = (
+  id: number,
+  x: number,
+  y: number,
+  levelTarget: LevelIcon,
+): LevelItem => ({ id, name: 'level', x, y, isText: false, levelTarget })
 
-test('reduceWebAppState enters game through explicit action', () => {
-  const store = createWebAppStore({ levels })
-
-  const next = reduceWebAppState(store.getState(), { type: 'enter-game', index: 1 }, levels)
-
-  assert.equal(next.mode, 'game')
-  assert.equal(next.levelIndex, 1)
-  assert.equal(next.state.title, 'Two')
-  assert.deepEqual(next.history, [])
+const line = (id: number, x: number, y: number): LevelItem => ({
+  id,
+  name: 'line',
+  x,
+  y,
+  isText: false,
 })
 
-test('reduceWebAppState returns to menu and keeps current level selected', () => {
-  const entered = reduceWebAppState(
-    createWebAppStore({ levels }).getState(),
-    { type: 'enter-game', index: 1 },
-    levels,
-  )
-
-  const next = reduceWebAppState(entered, { type: 'return-to-menu' }, levels)
-
-  assert.equal(next.mode, 'menu')
-  assert.equal(next.menuSelectedLevelIndex, 1)
-  assert.equal(next.showReferenceDialog, false)
-  assert.deepEqual(next.history, [])
+// A 3x3 cross of line cells with icons in the corners — every icon is a
+// two-step rail-hop from the (1,1) selector spawn.
+const mapLevel = (
+  file: string,
+  icons: LevelItem[],
+  parentFile?: string,
+): LevelData => ({
+  title: file,
+  width: 3,
+  height: 3,
+  items: [
+    line(1, 1, 0),
+    line(2, 0, 1),
+    line(3, 1, 1),
+    line(4, 2, 1),
+    line(5, 1, 2),
+    ...icons,
+  ],
+  meta: {
+    palette: '',
+    backgrounds: [],
+    colorOverrides: {},
+    textColorOverrides: {},
+    map: {
+      selector: [1, 1],
+      ...(parentFile !== undefined ? { parentFile } : {}),
+    },
+  },
 })
 
-test('reduceWebAppState ignores game-only actions while in menu', () => {
-  const initial = createWebAppStore({ levels }).getState()
+const rootMap = mapLevel('root', [
+  icon(10, 0, 0, {
+    kind: 'level',
+    file: 'first-level',
+    number: 0,
+    style: 0,
+    levelIndex: 0,
+  }),
+  icon(11, 2, 0, {
+    kind: 'map',
+    file: 'child',
+    number: 0,
+    style: -1,
+    mapFile: 'child',
+  }),
+  icon(12, 2, 2, {
+    kind: 'unresolved',
+    file: 'missing-level',
+    number: 0,
+    style: 0,
+  }),
+])
 
-  const moved = reduceWebAppState(initial, { type: 'move', direction: 'right' }, levels)
-  const toggledDialog = reduceWebAppState(initial, { type: 'toggle-reference-dialog' }, levels)
-  const markedHandled = reduceWebAppState(
-    initial,
-    { type: 'mark-game-action-handled', nowMs: 1234 },
-    levels,
-  )
+const childMap = mapLevel(
+  'child',
+  [
+    icon(10, 0, 0, {
+      kind: 'map',
+      file: 'root',
+      number: 0,
+      style: -1,
+      mapFile: 'root',
+    }),
+    icon(11, 2, 2, {
+      kind: 'level',
+      file: 'second-level',
+      number: 0,
+      style: 0,
+      levelIndex: 1,
+    }),
+  ],
+  'root',
+)
 
-  assert.equal(moved, initial)
-  assert.equal(toggledDialog, initial)
-  assert.equal(markedHandled, initial)
+const mapData = new Map([
+  ['root', rootMap],
+  ['child', childMap],
+])
+
+const env: WebAppEnvironment = {
+  levels,
+  rootMapFile: 'root',
+  mapFor: (file) => mapData.get(file),
+}
+
+const cursorAt = (
+  items: readonly { name: string; x: number; y: number }[],
+): { x: number; y: number } | undefined => {
+  const cursor = items.find((item) => item.name === 'cursor')
+  return cursor ? { x: cursor.x, y: cursor.y } : undefined
+}
+
+test('initial state opens on the root map with the cursor at the selector', () => {
+  const state = createWebAppStore(env).getState()
+
+  assert.equal(state.mode, 'map')
+  assert.equal(state.mapFile, 'root')
+  assert.equal(state.state.status, 'playing')
+  assert.deepEqual(cursorAt(state.state.items), { x: 1, y: 1 })
 })
 
-test('reduceWebAppState clamps invalid level indices on enter-game', () => {
-  const initial = createWebAppStore({ levels }).getState()
+test('cursor moves only onto line/level cells and counts real turns', () => {
+  const store = createWebAppStore(env)
+  const initial = store.getState()
 
-  const next = reduceWebAppState(initial, { type: 'enter-game', index: 99 }, levels)
+  store.dispatch({ type: 'move', direction: 'up' })
+  const moved = store.getState()
+  assert.deepEqual(cursorAt(moved.state.items), { x: 1, y: 0 })
+  assert.equal(moved.history.length, 1)
 
-  assert.equal(next.mode, 'game')
-  assert.equal(next.levelIndex, 1)
-  assert.equal(next.state.title, 'Two')
+  // One more step up leaves the board — the reducer returns the same
+  // state object so the press does not count as handled.
+  const blocked = store.getState()
+  store.dispatch({ type: 'move', direction: 'up' })
+  assert.equal(store.getState(), blocked)
+  assert.equal(initial.history.length, 0)
 })
 
-test('reduceWebAppState ignores menu selection changes while in game', () => {
-  const entered = reduceWebAppState(
-    createWebAppStore({ levels }).getState(),
-    { type: 'enter-game', index: 1 },
-    levels,
-  )
-
-  const next = reduceWebAppState(entered, { type: 'select-menu-level', index: 0 }, levels)
-
-  assert.equal(next, entered)
-})
-
-test('reduceWebAppState leaves repeated dialog close unchanged', () => {
-  const store = createWebAppStore({ levels })
-  store.dispatch({ type: 'enter-game', index: 0 })
-  store.dispatch({ type: 'toggle-reference-dialog' })
-  const openState = store.getState()
-
-  const closed = reduceWebAppState(openState, { type: 'close-reference-dialog' }, levels)
-  const closedAgain = reduceWebAppState(closed, { type: 'close-reference-dialog' }, levels)
-
-  assert.equal(closed.showReferenceDialog, false)
-  assert.equal(closedAgain, closed)
-})
-
-test('reduceWebAppState returns completed campaign next action to level zero once only', () => {
-  const store = createWebAppStore({ levels })
-  store.dispatch({ type: 'enter-game', index: 1 })
-  store.dispatch({ type: 'mark-campaign-complete' })
-  const completed = store.getState()
-
-  const restarted = reduceWebAppState(completed, { type: 'reset-level', index: 0 }, levels)
-
-  assert.equal(completed.state.status, 'complete')
-  assert.equal(restarted.levelIndex, 0)
-  assert.equal(restarted.state.status, 'playing')
-  assert.deepEqual(restarted.history, [])
-})
-
-test('createWebAppController handles command flow through store-backed dispatch', () => {
-  const store = createWebAppStore({ levels })
-  const controller = createWebAppController({ store })
-
-  controller.enterGame(0)
-  const moved = controller.handleGameCommand({ type: 'move', direction: 'right' })
-  const snapshot = controller.getViewState()
-  const debugState = store.getState()
-
-  assert.equal(moved, true)
-  assert.equal(snapshot.state.turn, 1)
-  assert.equal(debugState.history.length, 1)
-  assert.equal(debugState.mode, 'game')
-})
-
-test('createWebAppController reports blocked move as unhandled after a prior successful turn', () => {
-  const blockedLevels = [
-    parseLevel(
-      'title Blocked; size 4x1; Baba 0,0; Is 1,0; You 2,0; Wall 1,0; Wall 2,0; Wall 3,0; Is 1,0; Stop 2,0',
-    ),
-  ]
-  const store = createWebAppStore({ levels: blockedLevels })
-  const controller = createWebAppController({ store })
-
-  controller.enterGame(0)
-  const firstMove = controller.handleGameCommand({ type: 'move', direction: 'left' })
-  const blockedMove = controller.handleGameCommand({ type: 'move', direction: 'right' })
+test('enter-node on a level icon opens the level and records the return', () => {
+  const store = createWebAppStore(env)
+  store.dispatch({ type: 'move', direction: 'left' })
+  store.dispatch({ type: 'move', direction: 'up' })
+  store.dispatch({ type: 'enter-node' })
   const state = store.getState()
 
-  assert.equal(firstMove, true)
-  assert.equal(blockedMove, false)
-  assert.equal(state.state.turn, 1)
-  assert.equal(state.history.length, 1)
-})
-
-test('createWebAppController complete next and restart both reset to first level', () => {
-  const store = createWebAppStore({ levels: winLevels })
-  const controller = createWebAppController({ store })
-
-  controller.enterGame(1)
-  store.dispatch({ type: 'mark-campaign-complete' })
-  const completeState = store.getState()
-  const nextFromComplete = controller.handleGameCommand({ type: 'next' })
-  const nextResetState = store.getState()
-
-  assert.equal(completeState.state.status, 'complete')
-  assert.equal(nextFromComplete, true)
-  assert.equal(nextResetState.levelIndex, 0)
-  assert.equal(nextResetState.state.status, 'playing')
-
-  store.dispatch({ type: 'mark-campaign-complete' })
-  const restartFromComplete = controller.handleGameCommand({ type: 'restart' })
-  const restartedState = store.getState()
-
-  assert.equal(restartFromComplete, true)
-  assert.equal(restartedState.levelIndex, 0)
-  assert.equal(restartedState.state.status, 'playing')
-})
-
-test('createWebAppController rejects cross-mode command handlers', () => {
-  const store = createWebAppStore({ levels })
-  const controller = createWebAppController({ store })
-
-  const gameWhileInMenu = controller.handleGameCommand({ type: 'move', direction: 'right' })
-  controller.enterGame(1)
-  const menuWhileInGame = controller.handleMenuCommand({ type: 'down' })
-  const state = store.getState()
-
-  assert.equal(gameWhileInMenu, false)
-  assert.equal(menuWhileInGame, false)
   assert.equal(state.mode, 'game')
-  assert.equal(state.menuSelectedLevelIndex, 0)
-  assert.equal(state.state.title, 'Two')
+  assert.equal(state.levelIndex, 0)
+  assert.equal(state.state.title, 'One')
+  assert.deepEqual(state.history, [])
+  assert.equal(state.session.stack.length, 1)
+  assert.deepEqual(state.session.stack[0]?.returnTo, {
+    file: 'first-level',
+    x: 0,
+    y: 0,
+  })
 })
 
-test('createWebAppController reports menu edge navigation as unhandled', () => {
-  const store = createWebAppStore({ levels })
-  const controller = createWebAppController({ store })
+test('leave-node from a level restores the map cursor on its icon', () => {
+  const store = createWebAppStore(env)
+  store.dispatch({ type: 'move', direction: 'left' })
+  store.dispatch({ type: 'move', direction: 'up' })
+  store.dispatch({ type: 'enter-node' })
+  store.dispatch({ type: 'leave-node' })
+  const state = store.getState()
 
-  const upAtTop = controller.handleMenuCommand({ type: 'up' })
-  const stillAtTop = store.getState()
-
-  controller.handleMenuCommand({ type: 'down' })
-  const downAtBottom = controller.handleMenuCommand({ type: 'down' })
-  const atBottom = store.getState()
-
-  assert.equal(upAtTop, false)
-  assert.equal(stillAtTop.menuSelectedLevelIndex, 0)
-  assert.equal(downAtBottom, false)
-  assert.equal(atBottom.menuSelectedLevelIndex, 1)
+  assert.equal(state.mode, 'map')
+  assert.equal(state.mapFile, 'root')
+  assert.deepEqual(cursorAt(state.state.items), { x: 0, y: 0 })
 })
 
-test('createWebAppController treats return-to-menu command as handled view change', () => {
-  const store = createWebAppStore({ levels })
-  const controller = createWebAppController({ store })
-  controller.enterGame(1)
+test('enter-node on a map icon dives into the sub-map facing back', () => {
+  const store = createWebAppStore(env)
+  store.dispatch({ type: 'move', direction: 'right' })
+  store.dispatch({ type: 'move', direction: 'up' })
+  store.dispatch({ type: 'enter-node' })
+  const state = store.getState()
 
-  const handled = controller.handleGameCommand({ type: 'back-menu' })
-
-  assert.equal(handled, true)
-  assert.equal(store.getState().mode, 'menu')
-  assert.equal(store.getState().menuSelectedLevelIndex, 1)
+  assert.equal(state.mode, 'map')
+  assert.equal(state.mapFile, 'child')
+  assert.equal(state.session.stack.length, 2)
+  // The child map's icon pointing back at 'root' is where the cursor
+  // lands — entering a map always faces the way back.
+  assert.deepEqual(cursorAt(state.state.items), { x: 0, y: 0 })
 })
 
-test('mapGameCommandToAction enforces next and restart status boundaries', () => {
-  const store = createWebAppStore({ levels })
-  store.dispatch({ type: 'enter-game', index: 1 })
+test('leave-node on a sub-map returns to the parent icon', () => {
+  const store = createWebAppStore(env)
+  store.dispatch({ type: 'move', direction: 'right' })
+  store.dispatch({ type: 'move', direction: 'up' })
+  store.dispatch({ type: 'enter-node' })
+  store.dispatch({ type: 'leave-node' })
+  const state = store.getState()
+
+  assert.equal(state.mode, 'map')
+  assert.equal(state.mapFile, 'root')
+  assert.equal(state.session.stack.length, 1)
+  assert.deepEqual(cursorAt(state.state.items), { x: 2, y: 0 })
+})
+
+test('enter-node on an unresolved icon is a no-op', () => {
+  const store = createWebAppStore(env)
+  store.dispatch({ type: 'move', direction: 'down' })
+  store.dispatch({ type: 'move', direction: 'right' })
+  const before = store.getState()
+  store.dispatch({ type: 'enter-node' })
+
+  assert.equal(store.getState(), before)
+})
+
+test('enter-node on a bare line cell is a no-op', () => {
+  const store = createWebAppStore(env)
+  const before = store.getState()
+  store.dispatch({ type: 'enter-node' })
+
+  assert.equal(store.getState(), before)
+})
+
+test('leave-node on the root map stays put', () => {
+  const store = createWebAppStore(env)
+  const before = store.getState()
+  store.dispatch({ type: 'leave-node' })
+
+  assert.equal(store.getState(), before)
+})
+
+test('mapGameCommandToAction routes map-mode commands', () => {
+  const state = createWebAppStore(env).getState()
+
+  assert.deepEqual(mapGameCommandToAction({ type: 'move', direction: 'up' }, state), {
+    type: 'move',
+    direction: 'up',
+  })
+  assert.deepEqual(mapGameCommandToAction({ type: 'enter' }, state), {
+    type: 'enter-node',
+  })
+  assert.deepEqual(mapGameCommandToAction({ type: 'next' }, state), {
+    type: 'enter-node',
+  })
+  assert.deepEqual(mapGameCommandToAction({ type: 'back' }, state), {
+    type: 'leave-node',
+  })
+  assert.equal(mapGameCommandToAction({ type: 'wait' }, state), null)
+  assert.equal(mapGameCommandToAction({ type: 'undo' }, state), null)
+})
+
+test('mapGameCommandToAction routes game-mode commands', () => {
+  const store = createWebAppStore(env)
+  store.dispatch({ type: 'move', direction: 'left' })
+  store.dispatch({ type: 'move', direction: 'up' })
+  store.dispatch({ type: 'enter-node' })
   const playing = store.getState()
   const won = {
     ...playing,
-    state: {
-      ...playing.state,
-      status: 'win' as const,
-    },
-  }
-  const complete = {
-    ...playing,
-    state: {
-      ...playing.state,
-      status: 'complete' as const,
-    },
+    state: { ...playing.state, status: 'win' as const },
   }
 
-  assert.deepEqual(mapGameCommandToAction({ type: 'restart' }, playing), {
-    type: 'reset-level',
-    index: 1,
-  })
-  assert.deepEqual(mapGameCommandToAction({ type: 'restart' }, complete), {
-    type: 'reset-level',
-    index: 0,
-  })
+  assert.equal(mapGameCommandToAction({ type: 'enter' }, playing), null)
   assert.equal(mapGameCommandToAction({ type: 'next' }, playing), null)
   assert.deepEqual(mapGameCommandToAction({ type: 'next' }, won), {
-    type: 'mark-campaign-complete',
+    type: 'leave-node',
   })
-  assert.deepEqual(mapGameCommandToAction({ type: 'next' }, complete), {
-    type: 'reset-level',
-    index: 0,
+  assert.deepEqual(mapGameCommandToAction({ type: 'back' }, playing), {
+    type: 'leave-node',
   })
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'wait' }, playing),
+    { type: 'move', direction: null },
+  )
 })
 
-test('createWebAppStore skips repeated campaign-complete notifications', () => {
-  const store = createWebAppStore({ levels })
+test('createWebAppController reports handled commands by real state change', () => {
+  const store = createWebAppStore(env)
+  const controller = createWebAppController({ store })
+
+  const moved = controller.handleGameCommand({ type: 'move', direction: 'left' })
+  const blockedEnter = controller.handleGameCommand({ type: 'enter' })
+  const cursor = cursorAt(store.getState().state.items)
+
+  assert.equal(moved, true)
+  assert.equal(blockedEnter, false)
+  assert.deepEqual(cursor, { x: 0, y: 1 })
+})
+
+test('createWebAppStore notifies subscribers only on snapshot-visible changes', () => {
+  const store = createWebAppStore(env)
   let calls = 0
   const unsubscribe = store.subscribe(() => {
     calls += 1
   })
 
-  store.dispatch({ type: 'enter-game', index: 0 })
-  store.dispatch({ type: 'mark-campaign-complete' })
-  store.dispatch({ type: 'mark-campaign-complete' })
+  store.dispatch({ type: 'mark-game-action-handled', nowMs: 1234 })
+  store.dispatch({ type: 'enter-node' })
+  store.dispatch({ type: 'move', direction: 'left' })
 
   unsubscribe()
 
-  assert.equal(store.getState().state.status, 'complete')
-  assert.equal(calls, 2)
+  assert.equal(calls, 1)
 })
 
 test('createWebAppStore records game action timestamp through explicit action', () => {
-  const store = createWebAppStore({ levels })
-  store.dispatch({ type: 'enter-game', index: 0 })
+  const store = createWebAppStore(env)
   const before = store.getState().lastGameActionMs
 
   store.dispatch({ type: 'mark-game-action-handled', nowMs: 1234 })
@@ -283,18 +319,19 @@ test('createWebAppStore records game action timestamp through explicit action', 
   assert.equal(after, 1234)
 })
 
-test('createWebAppStore notifies subscribers only when snapshot-visible state changes', () => {
-  const store = createWebAppStore({ levels })
-  let calls = 0
-  const unsubscribe = store.subscribe(() => {
-    calls += 1
-  })
+test('game-mode moves still push history and undo rewinds it', () => {
+  const store = createWebAppStore(env)
+  store.dispatch({ type: 'move', direction: 'left' })
+  store.dispatch({ type: 'move', direction: 'up' })
+  store.dispatch({ type: 'enter-node' })
 
-  store.dispatch({ type: 'mark-game-action-handled', nowMs: 1234 })
-  store.dispatch({ type: 'select-menu-level', index: 1 })
-  store.dispatch({ type: 'select-menu-level', index: 1 })
+  store.dispatch({ type: 'move', direction: 'right' })
+  const moved = store.getState()
+  assert.equal(moved.state.turn, 1)
+  assert.equal(moved.history.length, 1)
 
-  unsubscribe()
-
-  assert.equal(calls, 1)
+  store.dispatch({ type: 'undo' })
+  const undone = store.getState()
+  assert.equal(undone.state.turn, 0)
+  assert.equal(undone.history.length, 0)
 })

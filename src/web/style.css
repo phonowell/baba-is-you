@@ -39,6 +39,15 @@
   box-sizing: border-box;
 }
 
+html {
+  /* No double-tap zoom anywhere (the board opts out entirely below);
+     no pull-to-refresh chaining mid-swipe; no iOS landscape text boost. */
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 html,
 body {
   margin: 0;
@@ -50,6 +59,11 @@ body {
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
   /* Flat ink-navy under the menu chrome — the same role as the dimmed
      backdrop behind Genshin's floating menu rows. The 3D canvas covers it
      in game, so it only shows on the level-select page. */
@@ -75,16 +89,26 @@ button,
   transition: box-shadow var(--motion-duration) ease-out, transform var(--motion-duration) ease-out;
 }
 
-.btn:hover {
-  background: linear-gradient(180deg, #fdf8ea, var(--cream-hi));
-  border-color: var(--accent);
-  color: var(--accent-dark);
+@media (hover: hover) {
+  .btn:hover {
+    background: linear-gradient(180deg, #fdf8ea, var(--cream-hi));
+    border-color: var(--accent);
+    color: var(--accent-dark);
+  }
 }
 
 .btn:active,
 .btn[aria-pressed='true'] {
   box-shadow: var(--shadow-inset-soft);
   transform: translateY(1px);
+}
+
+/* Disabled verbs (e.g. undo with empty history, controls during a
+   replay) stay visible but inert — no hover lift, no click-through. */
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
 }
 
 *:focus-visible {
@@ -118,10 +142,12 @@ body.game-3d-fullscreen .btn {
   color: #e8e4d8;
 }
 
-body.game-3d-fullscreen .btn:hover {
-  background: rgb(255 255 255 / 24%);
-  border-color: rgb(255 255 255 / 34%);
-  color: #f6f1e7;
+@media (hover: hover) {
+  body.game-3d-fullscreen .btn:hover {
+    background: rgb(255 255 255 / 24%);
+    border-color: rgb(255 255 255 / 34%);
+    color: #f6f1e7;
+  }
 }
 
 body.game-3d-fullscreen .reference-backdrop::before {
@@ -144,6 +170,9 @@ body.game-3d-fullscreen .reference-backdrop::before {
   justify-content: space-between;
   gap: 12px;
   padding: 10px 16px;
+  padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(16px + env(safe-area-inset-left, 0px));
   background: rgb(30 42 58 / 70%);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
   backdrop-filter: blur(14px) saturate(1.4);
@@ -163,8 +192,7 @@ body.game-3d-fullscreen .reference-backdrop::before {
 }
 
 /* Outcome states tint the HUD line; the win text keeps a soft gold pulse. */
-.game-toolbar .status[data-status='win'],
-.game-toolbar .status[data-status='complete'] {
+.game-toolbar .status[data-status='win'] {
   color: #f0d68a;
   animation: status-win-glow 1.4s ease-in-out infinite;
 }
@@ -400,26 +428,6 @@ body.game-3d-fullscreen .board.board-3d {
   to { opacity: 1; transform: none; }
 }
 
-/* Menu entrance: soft rise used by the header, each list item (staggered
-   via --row-i), and the footer. Scoped under .menu-enter so selection
-   re-renders never replay it. */
-@keyframes menu-item-in {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: none; }
-}
-
-/* Baba-style idle wiggle: a two-frame squash-stretch flip, same rhythm as
-   the board's sprite wobble. steps(1) holds each pose for half a cycle. */
-@keyframes marker-wiggle {
-  0%, 100% { transform: scale(1, 1); }
-  50% { transform: scale(1.14, 0.86); }
-}
-
-@keyframes menu-more-pulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
-}
-
 @keyframes toolbar-in {
   from { transform: translateY(100%); }
   to { transform: none; }
@@ -467,6 +475,7 @@ body.game-3d-fullscreen .board.board-3d {
   position: relative;
   width: min(560px, 90vw);
   max-height: min(80vh, 760px);
+  max-height: min(80dvh, 760px);
   overflow: auto;
   background: linear-gradient(180deg, var(--cream-hi), var(--panel));
   border: 1px solid rgb(201 168 106 / 65%);
@@ -493,9 +502,11 @@ body.game-3d-fullscreen .reference-header .btn {
   color: var(--cream);
 }
 
-body.game-3d-fullscreen .reference-header .btn:hover {
-  background: var(--navy-soft);
-  color: var(--cream-hi);
+@media (hover: hover) {
+  body.game-3d-fullscreen .reference-header .btn:hover {
+    background: var(--navy-soft);
+    color: var(--cream-hi);
+  }
 }
 
 .reference-subtitle {
@@ -540,196 +551,14 @@ body.game-3d-fullscreen .reference-header .btn:hover {
   white-space: nowrap;
 }
 
-/* ── Menu screen ────────────────────────────────────────────────
-   A single centered column floats on the ink backdrop: hero title,
-   sliding window of parchment pill rows, kbd-chip hints. */
-.menu-screen {
-  position: relative;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 44px 20px 32px;
+/* Touch controls section in the reference dialog — coarse pointers swap
+   it in for the keyboard table (media block below). */
+.touch-controls {
+  display: none;
 }
 
-/* Faint gold pinstripe + cool glow from the top edge — the same
-   diagonal weave the reference backdrop wears, kept whisper-quiet. */
-.menu-screen::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 75% 45% at 50% 0%, rgb(150 180 220 / 9%), transparent 70%),
-    repeating-linear-gradient(
-      135deg,
-      rgb(211 188 142 / 4%) 0 1px,
-      transparent 1px 11px
-    );
-}
-
-/* margin:auto centers the column on both axes and collapses to 0 when
-   content overflows, so short viewports scroll instead of clipping.
-   position:relative keeps content painted above the fixed ::before. */
-.menu-inner {
-  position: relative;
-  margin: auto;
-  width: min(560px, 100%);
-  text-align: center;
-}
-
-.menu-header {
-  margin-bottom: 26px;
-}
-
-.title {
-  margin: 0;
-  color: #f8f2e2;
-  font-size: clamp(30px, 5.5vw, 46px);
-  letter-spacing: 0.24em;
-  text-indent: 0.24em;
-  text-shadow: 0 2px 10px rgb(15 25 40 / 60%);
-}
-
-.menu-flourish {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 230px;
-  margin: 16px auto 12px;
-  color: var(--accent);
-  font-size: 9px;
-  line-height: 1;
-}
-
-.menu-flourish::before,
-.menu-flourish::after {
-  content: '';
-  height: 1px;
-  flex: 1;
-  background: linear-gradient(to right, transparent, rgb(201 168 106 / 75%));
-}
-
-.menu-flourish::after {
-  transform: scaleX(-1);
-}
-
-.menu-count {
-  margin: 0;
-  color: var(--accent);
-  font-size: 12px;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
-}
-
-/* Genshin menus float pill rows on the dimmed scene — no containing
-   panel, each row is its own parchment bar. */
-.menu-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.menu-row {
-  display: grid;
-  grid-template-columns: 18px 40px 1fr;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
-  /* Parchment pill rows like the Genshin settings list, with a faint gold
-     keyline inside the edge. */
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--cream), #e2d7bd);
-  color: var(--text);
-  box-shadow: inset 0 0 0 1px rgb(201 168 106 / 32%), var(--shadow-raised-soft);
-  cursor: pointer;
-  text-align: left;
-  transition:
-    transform var(--motion-duration) ease-out,
-    box-shadow var(--motion-duration) ease-out,
-    color var(--motion-duration) ease-out;
-}
-
-.menu-row:not(.selected):hover {
-  background: linear-gradient(180deg, var(--cream-hi), var(--cream));
-  color: var(--accent-dark);
-  transform: translateY(-1px);
-}
-
-.menu-row.selected {
-  color: var(--accent-dark);
-  background: linear-gradient(180deg, #fbf4df, var(--cream-hi));
-  box-shadow:
-    inset 0 0 0 1.5px var(--accent),
-    var(--shadow-raised-soft),
-    0 0 16px rgb(201 168 106 / 35%);
-}
-
-.menu-row .num {
-  text-align: right;
-  color: var(--muted);
-}
-
-.menu-row.selected .num {
-  color: var(--accent-dark);
-}
-
-.menu-row.selected .marker {
-  color: var(--accent);
-  text-shadow: 0 0 6px rgb(201 168 106 / 70%);
-  /* Selected tile keeps the board's two-frame idle wobble. */
-  animation: marker-wiggle 480ms steps(1) infinite;
-}
-
-/* Edge-of-window marker: the list is a sliding window over all levels. */
-.menu-more {
-  text-align: center;
-  color: #7d8698;
-  font-size: 13px;
-  line-height: 1.2;
-  letter-spacing: 0.2em;
-  animation: menu-more-pulse 1.6s ease-in-out infinite;
-}
-
-.menu-position {
-  margin: 16px 0 0;
-  font-size: 13px;
-  color: #a5aec0;
-  letter-spacing: 0.06em;
-}
-
-.menu-position strong {
-  color: var(--accent);
-  margin-right: 10px;
-}
-
-.menu-hints {
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-}
-
-.menu-hint {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 6px 12px;
-  font-size: 12px;
-  color: #98a2b5;
-}
-
-.hint-label {
-  color: var(--accent);
-  font-size: 10px;
-  letter-spacing: 0.22em;
-}
-
+/* kbd-chip hint items — the reference dialog's control rows wear these,
+   recolored per-context (see .controls-list .hint-item kbd). */
 .hint-item {
   display: inline-flex;
   align-items: center;
@@ -746,49 +575,6 @@ body.game-3d-fullscreen .reference-header .btn:hover {
   color: var(--cream);
 }
 
-/* Entrance cascade — only rendered while .menu-enter is on the section
-   (fresh entry), so per-selection re-renders stay still. */
-.menu-enter .title {
-  animation: menu-item-in 300ms ease-out backwards;
-}
-
-.menu-enter .menu-flourish {
-  animation: menu-item-in 300ms ease-out backwards;
-  animation-delay: 90ms;
-}
-
-.menu-enter .menu-count {
-  animation: menu-item-in 300ms ease-out backwards;
-  animation-delay: 150ms;
-}
-
-.menu-enter .menu-row {
-  animation: menu-item-in 260ms ease-out backwards;
-  animation-delay: calc(200ms + var(--row-i, 0) * 38ms);
-}
-
-/* The ⋮ indicator keeps its idle pulse while riding the same stagger —
-   listing both animations so the pulse isn't overridden for the whole
-   menu visit. */
-.menu-enter .menu-more {
-  animation:
-    menu-item-in 260ms ease-out backwards,
-    menu-more-pulse 1.6s ease-in-out infinite;
-  animation-delay:
-    calc(200ms + var(--row-i, 0) * 38ms),
-    0s;
-}
-
-.menu-enter .menu-position {
-  animation: menu-item-in 260ms ease-out backwards;
-  animation-delay: calc(280ms + var(--rows, 10) * 38ms);
-}
-
-.menu-enter .menu-hints {
-  animation: menu-item-in 260ms ease-out backwards;
-  animation-delay: calc(340ms + var(--rows, 10) * 38ms);
-}
-
 ::selection {
   background: rgb(201 168 106 / 35%);
 }
@@ -796,6 +582,90 @@ body.game-3d-fullscreen .reference-header .btn:hover {
 @media (max-width: 640px) {
   .reference-dialog {
     width: min(420px, 92vw);
+  }
+}
+
+/* ── Coarse pointers (phones/tablets) ─────────────────────────────
+   Bigger tap targets, and the keyboard-centric hints trade places
+   with the touch ones. */
+@media (pointer: coarse) {
+  .icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .icon-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+  }
+
+  .key-controls {
+    display: none;
+  }
+
+  .touch-controls {
+    display: block;
+  }
+}
+
+/* Narrow bars: the status line takes its own row so the HUD buttons
+   keep their 44px targets instead of being squeezed out. */
+@media (max-width: 560px) {
+  .game-toolbar {
+    flex-wrap: wrap;
+    row-gap: 4px;
+    padding-top: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .game-toolbar .status {
+    order: -1;
+    flex-basis: 100%;
+  }
+}
+
+/* ── Forced landscape on portrait phones ──────────────────────────
+   The whole #app frame is rotated 90° so the game only ever presents
+   landscape; the sideways picture is itself the prompt to turn the
+   device. app.ts mirrors this query to un-rotate pointer deltas, and
+   position:fixed descendants (toolbar, dialogs) anchor to the rotated
+   frame because the transform makes #app their containing block. */
+@media (orientation: portrait) and (pointer: coarse) {
+  #app {
+    position: fixed;
+    top: -100vw;
+    top: -100dvw;
+    left: 0;
+    width: 100vh;
+    width: 100dvh;
+    height: 100vw;
+    height: 100dvw;
+    transform: rotate(90deg);
+    transform-origin: bottom left;
+    overflow-y: auto;
+  }
+
+  .reference-dialog {
+    width: min(560px, 90%);
+    max-height: min(80%, 760px);
+  }
+
+  .outcome-card {
+    min-width: min(340px, 90%);
+  }
+
+  /* App edges land on different physical edges once rotated: the
+     toolbar's bottom is the physical left, its right is the physical
+     bottom (home bar), its left is the physical top (notch). */
+  .game-toolbar {
+    padding-top: calc(10px + env(safe-area-inset-right, 0px));
+    padding-right: calc(16px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(10px + env(safe-area-inset-left, 0px));
+    padding-left: calc(16px + env(safe-area-inset-top, 0px));
   }
 }
 

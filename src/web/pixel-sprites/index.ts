@@ -1,4 +1,5 @@
 import { CREATURE_SPRITES } from './data/creatures.js'
+import { MAP_ICON_SPRITES } from './data/map-icons.js'
 import { MISC_SPRITES } from './data/misc.js'
 import { OBJECT_SPRITES } from './data/objects.js'
 import { TERRAIN_SPRITES } from './data/terrain.js'
@@ -10,6 +11,7 @@ export const PIXEL_SPRITES: Record<string, PixelSprite> = {
   ...TERRAIN_SPRITES,
   ...OBJECT_SPRITES,
   ...MISC_SPRITES,
+  ...MAP_ICON_SPRITES,
 }
 
 export const spriteForName = (name: string): PixelSprite | null =>

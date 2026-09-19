@@ -1,10 +1,10 @@
-import type { BoardPointerHandlers } from './app-pointer.js'
+import type { AppPointerHandlers } from './app-pointer.js'
 
 type AppLifecycleDeps = {
   root: HTMLElement
   handleRootClick: (event: MouseEvent) => void
   handleWindowKeydown: (event: KeyboardEvent) => void
-  pointerHandlers?: BoardPointerHandlers | null
+  pointerHandlers?: AppPointerHandlers | null
   draw: () => void
   disposeBoard3d: () => void
   onDispose?: () => void
@@ -39,8 +39,10 @@ export const registerAppLifecycle = (deps: AppLifecycleDeps): (() => void) => {
   const onPointerCancel = (event: Event): void => {
     pointerHandlers?.onPointerCancel(event as PointerEvent)
   }
-  const onPointerOut = (event: Event): void => {
-    pointerHandlers?.onPointerOut(event as PointerEvent)
+  // Long-press would otherwise pop the browser context menu mid-gesture
+  // (Android); nothing on the app surface uses it.
+  const onContextMenu = (event: Event): void => {
+    event.preventDefault()
   }
 
   const disposeApp = (): void => {
@@ -49,7 +51,7 @@ export const registerAppLifecycle = (deps: AppLifecycleDeps): (() => void) => {
     root.removeEventListener('pointermove', onPointerMove)
     root.removeEventListener('pointerup', onPointerUp)
     root.removeEventListener('pointercancel', onPointerCancel)
-    root.removeEventListener('pointerout', onPointerOut)
+    root.removeEventListener('contextmenu', onContextMenu)
     window.removeEventListener('keydown', handleWindowKeydown)
     window.removeEventListener('resize', handleWindowResize)
     window.removeEventListener('beforeunload', disposeApp)
@@ -68,7 +70,7 @@ export const registerAppLifecycle = (deps: AppLifecycleDeps): (() => void) => {
   root.addEventListener('pointermove', onPointerMove)
   root.addEventListener('pointerup', onPointerUp)
   root.addEventListener('pointercancel', onPointerCancel)
-  root.addEventListener('pointerout', onPointerOut)
+  root.addEventListener('contextmenu', onContextMenu)
   window.addEventListener('keydown', handleWindowKeydown)
   window.addEventListener('resize', handleWindowResize)
   window.addEventListener('beforeunload', disposeApp)
