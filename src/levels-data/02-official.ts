@@ -947,6 +947,31 @@ Win 7,2;
 You 5,6;
 `,
   `
+Title METACOGNITION;
+Size 24x18;
+Background transparent;
+And 3,17;
+Baba 6,8;
+baba@down 2,2;
+Defeat 5,5;
+Door 0,17;
+door@right 15,9;
+Flag 16,7;
+flag@right 17,9;
+Is 5,4 17,7 7,8 14,8 6,9 17,11 1,17;
+Key 10,4;
+key@left 12,4 12,6;
+Open 14,10;
+Push 10,6;
+Shut 2,17;
+Stop 18,11 4,17;
+Wall 16,11;
+wall@down 1,1 2,1 3,1 4,1 5,1 6,1 7,1 1,2 3,2 7,2 1,3 1,4 2,4 3,4 4,4 6,4 7,4 4,5 6,5 4,6 5,6 6,6 14,6 15,6 16,6 17,6 18,6 19,6 15,7 19,7 15,8 19,8 19,9 5,10 15,10 19,10 5,11 6,11 15,11 19,11 14,12 15,12 16,12 17,12 18,12 19,12;
+Win 18,7;
+Word 8,8;
+You 6,10;
+`,
+  `
 Title KEKE AND THE STAR;
 Size 24x18;
 Background transparent;
@@ -1455,31 +1480,5 @@ Shift 21,1;
 Stop 21,5;
 Win 13,12;
 You 21,3;
-`,
-  `
-Title GLITCH;
-Size 24x18;
-Background transparent;
-Baba 10,9;
-baba@down 11,6;
-C 11,3;
-E 9,3 14,3;
-Flag 10,12;
-Is 11,9 11,10 11,12 22,17;
-L 10,3;
-Love 9,10;
-love@down 13,10;
-M 13,3;
-O 12,3;
-Stop 23,17;
-tile@down 9,6 10,6 12,6 13,6 8,7 9,7 10,7 11,7 12,7 13,7 14,7;
-tile@right 10,5 11,5 12,5;
-W 8,3;
-Wall 21,17;
-wall@down 8,8 9,8 10,8 11,8 12,8 13,8 14,8 7,11 8,11 9,11 11,11 12,11 13,11 14,11 15,11 8,13 9,13 10,13 11,13 12,13 13,13 14,13;
-wall@right 7,13 15,13;
-wall@up 7,12 15,12;
-Win 12,12;
-You 12,9;
 `,
 ] as const

@@ -1,5 +1,3 @@
-import { VANILLA_OBJECT_TILES } from './import-official-levels-vanilla-tiles.js'
-
 export type Direction = 'up' | 'right' | 'down' | 'left'
 
 export type LdData = {
@@ -81,19 +79,6 @@ export const parseDirection = (
 
 export const toTileKey = (x: number, y: number): string => `${x},${y}`
 
-const TILE_KEY_TO_OBJECT_ID = new Map<string, number>(
-  Object.entries(VANILLA_OBJECT_TILES).map(([id, tileKey]) => [
-    tileKey,
-    Number(id),
-  ]),
-)
-
-export const objectIdToTileKey = (objectId: number): string | undefined =>
-  VANILLA_OBJECT_TILES[objectId]
-
-export const tileKeyToObjectId = (tileKey: string): number | null =>
-  TILE_KEY_TO_OBJECT_ID.get(tileKey) ?? null
-
 export const normalizeRawName = (
   rawName: string,
   isTextHint: boolean,
@@ -112,9 +97,17 @@ export const normalizeRawName = (
   return { name, isText }
 }
 
+const textStatementKey = (name: string): string => {
+  const capitalized = `${name[0]?.toUpperCase() ?? ''}${name.slice(1)}`
+  return capitalized === name ? `${name}!` : capitalized
+}
+
 export const toStatementKey = (desc: TileDescriptor, dir?: Direction): string => {
+  // Text is emitted capitalized (`is` → `Is`); names with no cased letters
+  // (`3d`, digits) get an explicit `!` marker so parse-level still reads
+  // them as text.
   const base = desc.isText
-    ? `${desc.name[0]?.toUpperCase() ?? ''}${desc.name.slice(1)}`
+    ? textStatementKey(desc.name)
     : desc.name
   if (desc.isText || !dir) return base
   return `${base}@${dir}`

@@ -4,6 +4,12 @@ import { levels as levels_02 } from './levels-data/02-official.js'
 import { levels as levels_03 } from './levels-data/03-official.js'
 import { levels as levels_04 } from './levels-data/04-official.js'
 import { levels as levels_05 } from './levels-data/05-official.js'
+import { levels as levels_06 } from './levels-data/06-official.js'
+import { levels as levels_07 } from './levels-data/07-official.js'
+import { levels as levels_08 } from './levels-data/08-official.js'
+import { levels as levels_09 } from './levels-data/09-official.js'
+import { levels as levels_10 } from './levels-data/10-official.js'
+import { levels as levels_11 } from './levels-data/11-official.js'
 
 export const levels = [
   ...levels_00,
@@ -12,4 +18,10 @@ export const levels = [
   ...levels_03,
   ...levels_04,
   ...levels_05,
+  ...levels_06,
+  ...levels_07,
+  ...levels_08,
+  ...levels_09,
+  ...levels_10,
+  ...levels_11,
 ] as const

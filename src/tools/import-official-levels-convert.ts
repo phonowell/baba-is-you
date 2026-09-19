@@ -1,16 +1,14 @@
 import path from 'node:path'
 
-import { DEFAULT_OBJECT_ASSIGNMENTS } from './import-official-levels-default-assignments.js'
 import {
-  normalizeRawName,
   parseDirection,
-  tileKeyToObjectId,
   toStatementKey,
   toTileKey,
 } from './import-official-levels-parse.js'
 import { buildLevelTileMap } from './import-official-levels-tile-map.js'
 
 import type { ParsedLayer } from './import-official-levels-binary.js'
+import type { CanonicalObjectTable } from './import-official-levels-object-table.js'
 import type { LdData, TileDescriptor } from './import-official-levels-parse.js'
 import type { GlobalReference } from './import-official-levels-global-reference.js'
 
@@ -38,6 +36,7 @@ export const convertOneLevel = (
   ld: LdData,
   layers: ParsedLayer[],
   global: GlobalReference,
+  canon: CanonicalObjectTable,
 ): ConvertOneLevelResult => {
   const firstLayer = layers[0]
   if (!firstLayer) throw new Error(`No layer found in ${fileName}`)
@@ -51,7 +50,7 @@ export const convertOneLevel = (
   const maxX = crop ? rawWidth - 2 : rawWidth - 1
   const maxY = crop ? rawHeight - 2 : rawHeight - 1
 
-  const tileMap = buildLevelTileMap(ld, global)
+  const tileMap = buildLevelTileMap(ld, global, canon)
   const grouped = new Map<string, Set<string>>()
   const unknownTiles = new Set<string>()
   let youTextCount = 0
@@ -69,12 +68,6 @@ export const convertOneLevel = (
 
         const tileKey = toTileKey(tileX, tileY)
         let resolved = tileMap.get(tileKey)
-        if (!resolved) {
-          const objectId = tileKeyToObjectId(tileKey)
-          const assignment =
-            objectId !== null ? DEFAULT_OBJECT_ASSIGNMENTS[objectId] : undefined
-          if (assignment) resolved = normalizeRawName(assignment, false)
-        }
         if (!resolved) {
           unknownTiles.add(tileKey)
           resolved = {

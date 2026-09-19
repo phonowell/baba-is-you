@@ -7,16 +7,13 @@ import { createInitialState } from '../logic/state.js'
 import { parseLevelBinary } from './import-official-levels-binary.js'
 import { convertOneLevel } from './import-official-levels-convert.js'
 import { buildGlobalReference } from './import-official-levels-global-reference.js'
-import {
-  convertMap,
-  isMapFile,
-  renderMapsTs,
-} from './import-official-levels-maps.js'
+import { loadCanonicalObjects } from './import-official-levels-object-table.js'
 import { verifyOfficialImportConsistency } from './import-official-levels-verify.js'
 import { parseLd } from './import-official-levels-parse.js'
 
 import type { ParsedLayer } from './import-official-levels-binary.js'
 import type { ConvertedLevel, TextTileCounts } from './import-official-levels-convert.js'
+import type { CanonicalObjectTable } from './import-official-levels-object-table.js'
 import type { VerifyResult } from './import-official-levels-verify.js'
 import type { LdData } from './import-official-levels-parse.js'
 
@@ -43,12 +40,19 @@ type FilteredOutLevel = {
 }
 
 type ParsedOfficialLevel = {
+  world: string
   fileName: string
   ld: LdData
   layers: ParsedLayer[]
 }
 
 const FACING_TEXT_FILTER_THRESHOLD = 5
+
+// `leveltype=1` .ld files are overworld maps — the app selects levels
+// from a flat menu, so maps are parsed for verification but never
+// converted into playable data.
+const isMapFile = (ld: LdData): boolean =>
+  ld.general.get('leveltype') === '1'
 
 const renderLevelsTs = (levels: ConvertedLevel[]): string => {
   const blocks = levels.map((level) => `  \`\n${level.body}\n\`,`).join('\n')
@@ -103,6 +107,7 @@ const checkInitialCapability = (level: ConvertedLevel): InitialCapability => {
 
 const loadParsedOfficialLevels = async (
   sourceDir: string,
+  world: string,
 ): Promise<ParsedOfficialLevel[]> => {
   const entries = await fs.readdir(sourceDir, { withFileTypes: true })
   const lFiles = entries
@@ -119,6 +124,7 @@ const loadParsedOfficialLevels = async (
       fs.readFile(ldPath, 'utf8'),
     ])
     parsed.push({
+      world,
       fileName,
       ld: parseLd(ldSource),
       layers: parseLevelBinary(lBuffer),
@@ -150,6 +156,7 @@ const logVerifyResult = (verify: VerifyResult): void => {
 const collectConvertedLevels = (
   parsed: ParsedOfficialLevel[],
   global: ReturnType<typeof buildGlobalReference>,
+  canon: CanonicalObjectTable,
 ): {
   converted: ConvertedLevel[]
   filteredOut: FilteredOutLevel[]
@@ -169,10 +176,13 @@ const collectConvertedLevels = (
       current.ld,
       current.layers,
       global,
+      canon,
     )
     const { hasYou, hasWin } = checkInitialCapability(level)
     const reasons: ImportFilterReason[] = []
-    if (!hasYou) reasons.push('missing-you')
+    // Levels that never grant a `you` are official too — ending/interlude
+    // rooms the map links into. They stay inert `playing` states, so they
+    // are imported like everything else (hasYou is still logged).
     if (
       meta.textTiles.youTextCount === 0 &&
       meta.textTiles.winTextCount === 0
@@ -236,63 +246,62 @@ const logImportSummary = (
   }
 }
 
+// Official content ships as separate campaigns (worlds). `debug` holds dev
+// test rooms, `levels` is engine metadata — neither is playable content.
+const WORLDS = ['baba', 'new_adv', 'museum'] as const
+
 const main = async (): Promise<void> => {
   const cwd = process.cwd()
-  const sourceDir = path.resolve(cwd, 'data', 'baba')
+  const dataRoot = path.resolve(cwd, 'data', 'Baba Is You', 'Data')
   const verifyOnly = process.argv.includes('--verify')
   const outputFile = path.resolve(cwd, 'src', 'levels.ts')
   const outputDir = path.resolve(cwd, 'src', 'levels-data')
-  const parsed = await loadParsedOfficialLevels(sourceDir)
+  const canon = await loadCanonicalObjects(dataRoot)
+
+  const parsed: ParsedOfficialLevel[] = []
+  for (const world of WORLDS) {
+    parsed.push(
+      ...(await loadParsedOfficialLevels(
+        path.join(dataRoot, 'Worlds', world),
+        world,
+      )),
+    )
+  }
   const global = buildGlobalReference(parsed)
   if (verifyOnly) {
-    const verify = verifyOfficialImportConsistency(parsed, global)
-    logVerifyResult(verify)
-    if (
-      verify.ambiguousCurrobjTiles > 0 ||
-      verify.tileMapMismatches > 0 ||
-      verify.usedTileTruthMismatches > 0 ||
-      verify.unknownTileKeys.length > 0
-    ) {
-      throw new Error('Official import consistency verification failed')
+    for (const world of WORLDS) {
+      const verify = verifyOfficialImportConsistency(
+        parsed.filter((level) => level.world === world),
+        global,
+        canon,
+      )
+      console.log(`[${world}]`)
+      logVerifyResult(verify)
+      if (verify.ambiguousCurrobjTiles > 0 || verify.unknownTileKeys.length > 0) {
+        throw new Error('Official import consistency verification failed')
+      }
     }
     return
   }
 
-  const { converted, filteredOut, filteredReasonCounts } = collectConvertedLevels(
-    parsed,
-    global,
-  )
-
-  const levelIndexByFile = new Map<string, number>()
-  converted.forEach((level, index) => {
-    levelIndexByFile.set(
-      path.basename(level.source, '.l').toLowerCase(),
-      index,
+  const converted: Array<ConvertedLevel & { world: string }> = []
+  const filteredOut: FilteredOutLevel[] = []
+  const filteredReasonCounts = new Map<ImportFilterReason, number>()
+  for (const world of WORLDS) {
+    const result = collectConvertedLevels(
+      parsed.filter((level) => level.world === world),
+      global,
+      canon,
     )
-  })
-  const mapFiles = new Set(
-    parsed
-      .filter((current) => isMapFile(current.ld))
-      .map((current) => path.basename(current.fileName, '.l').toLowerCase()),
-  )
-  const convertedMaps = parsed
-    .filter((current) => isMapFile(current.ld))
-    .map((current) =>
-      convertMap(
-        current.fileName,
-        current.ld,
-        current.layers,
-        global,
-        levelIndexByFile,
-        mapFiles,
-      ),
+    converted.push(
+      ...result.converted.map((level) => ({ ...level, world })),
     )
-  const iconStats = { level: 0, map: 0, unresolved: 0 }
-  for (const map of convertedMaps) {
-    for (const icon of map.icons) {
-      if (icon.mapFile) iconStats.map += 1
-      else if (icon.levelIndex !== undefined) iconStats.level += 1
-      else iconStats.unresolved += 1
+    filteredOut.push(...result.filteredOut)
+    for (const [reason, count] of result.filteredReasonCounts) {
+      filteredReasonCounts.set(
+        reason,
+        (filteredReasonCounts.get(reason) ?? 0) + count,
+      )
     }
   }
 
@@ -314,12 +323,11 @@ const main = async (): Promise<void> => {
   }
 
   await fs.writeFile(outputFile, renderLevelsIndex(chunkSpecs), 'utf8')
-  const mapsFile = path.resolve(cwd, 'src', 'levels-maps.ts')
-  await fs.writeFile(mapsFile, renderMapsTs(convertedMaps, '106level'), 'utf8')
-  logImportSummary(converted, filteredOut, filteredReasonCounts, chunkSpecs.length)
-  console.log(`Imported maps: ${convertedMaps.length}`)
-  console.log(
-    `Map icons: level=${iconStats.level} map=${iconStats.map} unresolved=${iconStats.unresolved}`,
+  logImportSummary(
+    converted,
+    filteredOut,
+    filteredReasonCounts,
+    Math.ceil(converted.length / 50),
   )
 }
 
