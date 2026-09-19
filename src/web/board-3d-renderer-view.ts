@@ -1,4 +1,9 @@
-import type { DirectionalLight, PerspectiveCamera, WebGLRenderer } from 'three'
+import type {
+  DirectionalLight,
+  FogExp2,
+  PerspectiveCamera,
+  WebGLRenderer,
+} from 'three'
 import type {
   BloomEffect,
   EffectComposer,
@@ -25,6 +30,7 @@ type ClayPreset = typeof import('./clay-config.js').CLAY_PRESET
 type Board3dRendererViewDeps = {
   preset: ClayPreset
   camera: PerspectiveCamera
+  fog: FogExp2
   renderer: WebGLRenderer
   composer: EffectComposer
   bloomEffect: BloomEffect
@@ -55,6 +61,7 @@ export const createBoard3dRendererViewController = (
   const {
     preset,
     camera,
+    fog,
     renderer,
     composer,
     bloomEffect,
@@ -104,6 +111,8 @@ export const createBoard3dRendererViewController = (
     if (viewportWidth === 0 || viewportHeight === 0) return
     updateRendererCamera({
       camera,
+      fog,
+      fogBaseDensity: preset.fog.density,
       boardWidth,
       boardHeight,
       viewportWidth,

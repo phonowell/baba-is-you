@@ -1,4 +1,4 @@
-import type { PerspectiveCamera } from 'three'
+import type { FogExp2, PerspectiveCamera } from 'three'
 
 import { selectClayCameraTier } from './clay-config.js'
 import { BOARD3D_CAMERA_CONFIG } from './board-3d-config-camera.js'
@@ -9,10 +9,13 @@ const {
   CAMERA_DISTANCE_MIN,
   CAMERA_LOOK_AT_OFFSET_Y,
   CAMERA_LOOK_AT_DEPTH_BIAS,
+  FOG_REFERENCE_ASPECT,
 } = BOARD3D_CAMERA_CONFIG
 
 type UpdateRendererCameraArgs = {
   camera: PerspectiveCamera
+  fog: FogExp2
+  fogBaseDensity: number
   boardWidth: number
   boardHeight: number
   viewportWidth: number
@@ -25,6 +28,8 @@ export const updateRendererCamera = (
 ): void => {
   const {
     camera,
+    fog,
+    fogBaseDensity,
     boardWidth,
     boardHeight,
     viewportWidth,
@@ -41,10 +46,16 @@ export const updateRendererCamera = (
   camera.fov = cameraTier.fov
   const halfFov = (camera.fov * Math.PI) / 360
   const distByHeight = spanY / (2 * Math.tan(halfFov))
-  const distByWidth = spanX / (2 * Math.tan(halfFov) * aspect)
-  const framingDistance =
-    Math.max(distByWidth, distByHeight) + cameraTier.distancePadding
-  const distance = Math.max(CAMERA_DISTANCE_MIN, framingDistance * CAMERA_DISTANCE_SCALE)
+  const distanceForAspect = (value: number): number => {
+    const distByWidth = spanX / (2 * Math.tan(halfFov) * value)
+    const framingDistance =
+      Math.max(distByWidth, distByHeight) + cameraTier.distancePadding
+    return Math.max(
+      CAMERA_DISTANCE_MIN,
+      framingDistance * CAMERA_DISTANCE_SCALE,
+    )
+  }
+  const distance = distanceForAspect(aspect)
 
   const lookAtY = cameraTier.lookAtY + CAMERA_LOOK_AT_OFFSET_Y
   const lookAtZ = height * CAMERA_LOOK_AT_DEPTH_BIAS
@@ -54,5 +65,16 @@ export const updateRendererCamera = (
   camera.position.set(0, cameraHeight, distance)
   camera.lookAt(0, lookAtY, lookAtZ)
   camera.updateProjectionMatrix()
+
+  // FogExp2 thickens with view depth, so the extra distance narrow
+  // viewports force would haze the whole board. Hold the fog factor at
+  // the look-at point to its value at the tuned reference aspect.
+  const viewDepthFor = (value: number): number =>
+    Math.hypot(value - lookAtZ, Math.tan(CAMERA_PITCH_RAD) * value)
+  fog.density =
+    fogBaseDensity *
+    (viewDepthFor(distanceForAspect(FOG_REFERENCE_ASPECT)) /
+      viewDepthFor(distance))
+
   updateLightRig()
 }

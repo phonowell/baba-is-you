@@ -69,6 +69,7 @@ export type Board3dRendererScene = {
   bloomEffect: BloomEffect
   hueSaturationEffect: HueSaturationEffect
   vignetteEffect: VignetteEffect
+  fog: FogExp2
   leftLight: DirectionalLight
   rightLight: DirectionalLight
   world: Group
@@ -85,7 +86,8 @@ export const createBoard3dRendererScene = (
   // tinted to the horizon so the ground edge dissolves into the haze.
   const skyTexture = createSkyGradientTexture(preset.sky.top, preset.sky.horizon)
   scene.background = skyTexture
-  scene.fog = new FogExp2(preset.sceneBackground, preset.fog.density)
+  const fog = new FogExp2(preset.sceneBackground, preset.fog.density)
+  scene.fog = fog
 
   const camera = new PerspectiveCamera(
     initialCameraTier.fov,
@@ -201,6 +203,7 @@ export const createBoard3dRendererScene = (
     camera,
     renderer,
     composer,
+    fog,
     bloomEffect,
     hueSaturationEffect,
     vignetteEffect,

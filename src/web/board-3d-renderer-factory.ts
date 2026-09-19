@@ -37,6 +37,7 @@ export const createBoard3dRendererFactoryDeps = () => {
     camera,
     renderer,
     composer,
+    fog,
     bloomEffect,
     hueSaturationEffect,
     vignetteEffect,
@@ -75,6 +76,7 @@ export const createBoard3dRendererFactoryDeps = () => {
   const viewController = createBoard3dRendererViewController({
     preset,
     camera,
+    fog,
     renderer,
     composer,
     bloomEffect,
