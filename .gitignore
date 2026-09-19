@@ -10,6 +10,7 @@
 /stats.html
 __generated__
 junit.xml
+/tools-out
 
 # Environment & Config
 !.env.example
@@ -30,7 +31,7 @@ test-report.md
 /.trae
 
 # Game data
-/data/baba
+/data
 release/baba-is-you.html
 release/baba-is-you.js
 /release-local

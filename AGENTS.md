@@ -16,10 +16,10 @@
 - 3D 相关改动必须可注入、可验证：优先为 runtime/资源生命周期暴露测试缝，而不是只测试 shared 纯函数
 - 配置拆分只按稳定职责分组：布局/相机/灯光/阴影/后处理/纹理/动效；禁止把行为逻辑继续外溢到巨型 config
 - 规则系统以当前实现为准：
-  - 操作符：`IS/HAS/MAKE/EAT/WRITE`
+  - 操作符：`IS/HAS/MAKE/EAT/WRITE/FEAR/FOLLOW/MIMIC/PLAY/BECOME`
   - 连接与否定：`AND/NOT`
-  - 条件：`ON/NEAR/FACING/LONELY`
-  - 特殊名词：`TEXT/EMPTY/ALL/GROUP/LEVEL`
+  - 条件：`ON/NEAR/FACING/NEXTTO/FACEDBY/SEEING/WITHOUT/ABOVE/BELOW/BESIDELEFT/BESIDERIGHT/FEELING` + 前缀位 `LONELY/IDLE/OFTEN/SELDOM/POWERED(2/3)`
+  - 特殊名词：`TEXT/EMPTY/ALL/GROUP(2/3)/LEVEL`；字母数字词 `a-z/0-9/sharp/flat` 按普通名词走
   - 属性词：以 `src/logic/types.ts` 的 `CORE_PROPERTIES` 为准
 - 修改规则词表时同步：`src/logic/types.ts`、`src/logic/rules*.ts`、`src/view/render-config.ts`、相关测试；若已集中导出语法集合，禁止再手写镜像副本
 - Web 渲染约束：入口在 `src/web/app.ts`；3D 渲染使用 `src/web/board-3d-renderer*.ts` 体系，是唯一场景，不实现 2D/无 WebGL 回退；必须保证可释放（`dispose`）
@@ -48,13 +48,14 @@
 - `src/logic/`：规则解析、匹配、状态推进；`src/logic/step/` 为推进流水线（`step.ts` 编排、`step/phase-list.ts` 定义阶段序列）
 - `src/view/`：输入映射、HTML 渲染与 Web 共享渲染配置
 - `src/levels.ts`、`src/levels-data/*.ts`：关卡入口与数据包（由 `web/app.ts` 装配，内层不反向依赖）
-- `src/levels-maps.ts`：官方 `leveltype=1` overworld 地图数据（生成物，`pnpm import-levels:official` 重生成；根图 `106level`）；`src/logic/overworld.ts` 为光标行走/会话栈纯逻辑，`src/logic/map-level.ts` 把地图装配成 `LevelData`
+- Web 端为扁平菜单选关（`menu`/`game` 两态，`src/web/app-model.ts`）；官方 `leveltype=1` overworld 地图只参与导入校验，不再生成可玩数据
 - `levels/**/*.txt`：前身 Rust 项目移植的关卡夹具（实体列表语法，`src/logic/parse-level.ts` 解析，供 golden 回放装载；支持同格多实体）
 - `src/logic/rules-override.ts`：规则实例源格溯源与被否决规则划分
 - `goldens/**/*.json`：通关回放快照，由 `src/logic/goldens.test.ts` 全量回放断言；`scripts/port-rust-goldens.ts` 可从 `../baba/goldens` 重新生成
 - `src/tools/import-official-levels.ts`：官方关卡导入/校验（独立脚本入口，只依赖 `logic`）
 - `scripts/build-single-html.mjs`：Web 构建脚本（默认本地单文件；`--deploy` 产壳+锁定 bundle）
 - `docs/logic-architecture.md`：逻辑流水线说明
+- `docs/solver-handoff.md`：关卡求解器现状与待办（`src/logic/solve.ts` + `src/tools/solve-levels.ts`）
 - `docs/deploy.md`：部署到 `auvya.com/baba` 的流程与边界（`wrangler.toml` + `src/tools/deploy-worker.ts`）
 
 ## 工作流
