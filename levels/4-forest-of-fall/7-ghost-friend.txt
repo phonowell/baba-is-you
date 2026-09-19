@@ -1,25 +1,24 @@
-f = flag
-m = fungi
-n = fungus
-h = hedge
-s = skull down
-b = baba
-g = ghost down
-palette = autumn
----
-      F=✥             m
-  hhhhhhhhhhh     n        m
-  h f      sh    n    sssss
-hhhhhhhhhhhhhS=⩍     sssssss
- =✓hB=B&✥hhhhhhhh    ss   ss
-           hhhhhhhhhhhh Fhh
-    b      hhhh           h
-      g                   h
-    G=↣                   h
-    =      hhhh           h
-     →     hhhhhhhhhhhhhhhh
-           hhG=G&_         m
-hhhhhhhhhhhhhh
-  H=⊘hh  hhhh            n
- m         hh        m n
-   n        h             m
+Title GHOST FRIEND;
+Size 28x16;
+Background transparent;
+And 7,4 16,11;
+baba 4,6;
+Baba 4,4 6,4;
+Defeat 15,3;
+flag 4,2;
+Flag 6,0 24,5;
+fungi 22,0 27,1 27,11 1,14 21,14 26,15;
+fungus 18,1 17,2 25,13 23,14 3,15;
+Ghost 4,8 13,11 15,11;
+ghost@down 6,7;
+hedge 2,1 3,1 4,1 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 2,2 12,2 0,3 1,3 2,3 3,3 4,3 5,3 6,3 7,3 8,3 9,3 10,3 11,3 12,3 3,4 9,4 10,4 11,4 12,4 13,4 14,4 15,4 16,4 11,5 12,5 13,5 14,5 15,5 16,5 17,5 18,5 19,5 20,5 21,5 22,5 25,5 26,5 11,6 12,6 13,6 14,6 26,6 26,7 26,8 11,9 12,9 13,9 14,9 26,9 11,10 12,10 13,10 14,10 15,10 16,10 17,10 18,10 19,10 20,10 21,10 22,10 23,10 24,10 25,10 26,10 11,11 12,11 0,12 1,12 2,12 3,12 4,12 5,12 6,12 7,12 8,12 9,12 10,12 11,12 12,12 13,12 5,13 6,13 9,13 10,13 11,13 12,13 11,14 12,14 12,15;
+Hedge 2,13;
+Is 7,0 14,3 1,4 5,4 5,8 4,9 14,11 3,13;
+Move 5,10;
+Pull 6,8;
+Skull 13,3;
+skull@down 11,2 22,2 23,2 24,2 25,2 26,2 21,3 22,3 23,3 24,3 25,3 26,3 27,3 21,4 22,4 26,4 27,4;
+Stop 4,13;
+Weak 17,11;
+Win 2,4;
+You 8,0 8,4;

@@ -1,26 +1,22 @@
-w = wall
-a = water
-t = tree
-b = box
-f = flag
-k = keke
-palette = autumn
----
-                         w
-                         w
-                         w  = a
-      www                w
-      wtw                w    ✓
-      www                w
-               B @ F     wwwwwwww
-      www  a         www
-      wtw        b f wtw
-      www  k         www
-
-      www      K=✥
-      wtw
-      www
-
-wwww
-A=*w                       wwwwww
-@=⚲w                       wW&B=⊘
+Title BROKEN PLAYGROUND;
+Size 33x18;
+Background transparent;
+And 29,17;
+box 17,8;
+Box 15,6 30,17;
+flag 19,8;
+Flag 19,6;
+Float 2,17;
+Is 28,2 16,11 1,16 1,17 31,17;
+keke 11,9;
+Keke 15,11;
+Stop 32,17;
+Tele 2,16;
+Text 17,6 0,17;
+tree 7,4 7,8 22,8 7,12;
+wall 25,0 25,1 25,2 6,3 7,3 8,3 25,3 6,4 8,4 25,4 6,5 7,5 8,5 25,5 25,6 26,6 27,6 28,6 29,6 30,6 31,6 32,6 6,7 7,7 8,7 21,7 22,7 23,7 6,8 8,8 21,8 23,8 6,9 7,9 8,9 21,9 22,9 23,9 6,11 7,11 8,11 6,12 8,12 6,13 7,13 8,13 0,15 1,15 2,15 3,15 3,16 27,16 28,16 29,16 30,16 31,16 32,16 3,17 27,17;
+Wall 28,17;
+water 30,2 11,7;
+Water 0,16;
+Win 30,4;
+You 17,11;

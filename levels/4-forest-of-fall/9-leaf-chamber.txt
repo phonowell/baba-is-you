@@ -1,27 +1,29 @@
-k = key
-h = hedge
-u = husk
-m = fungus
-f = flag
-l = leaf up
-b = baba up
-o = foliage
-palette = autumn
-right pad = 1
----
-K=⧜          H=⊘hhh   u
-      u    hhhhhhmhhhh
-M=⨶&↣      h    ooo  h
-~         hh    ooo  h
-F=✓      hh     ooo  h
-       u h      h h  hh  u
-         h            h
-     u hhh       h    hhL=L
-       hk              h&
-       h h      L=→    hO
-       h h             h=
- u    hh hhhh   K=↦  hhh⩍
-  u   h   hl         h
-     Bh   h      ↣  hh    u
-     =h b   l      hhh   u
-     ✥h   hhhhhhhhhh
+Title LEAF CHAMBER;
+Size 28x16;
+Background transparent;
+And 3,2 24,8;
+Baba 5,13;
+baba@up 8,14;
+Defeat 24,11;
+Flag 0,4;
+foliage 16,2 17,2 18,2 16,3 17,3 18,3 16,4 17,4 18,4;
+Foliage 24,9;
+fungus 17,1;
+Fungus 0,2;
+Has 0,3;
+hedge 16,0 17,0 18,0 11,1 12,1 13,1 14,1 15,1 16,1 18,1 19,1 20,1 21,1 11,2 21,2 10,3 11,3 21,3 9,4 10,4 21,4 9,5 16,5 18,5 21,5 22,5 9,6 22,6 7,7 8,7 9,7 17,7 22,7 23,7 7,8 23,8 7,9 9,9 23,9 7,10 9,10 23,10 6,11 7,11 9,11 10,11 11,11 12,11 21,11 22,11 23,11 6,12 10,12 21,12 6,13 10,13 20,13 21,13 6,14 19,14 20,14 21,14 6,15 10,15 11,15 12,15 13,15 14,15 15,15 16,15 17,15 18,15 19,15;
+Hedge 13,0;
+husk 22,0 6,1 7,5 25,5 5,7 1,11 2,12 26,13 25,14;
+Is 1,0 14,0 1,2 1,4 25,7 17,9 24,10 17,11 5,14;
+key 8,8;
+Key 0,0 16,11;
+Leaf 24,7 26,7 16,9;
+leaf@up 11,12 12,14;
+Move 18,9;
+Open 2,0;
+Pull 4,2 17,13;
+Push 18,11;
+Shut 2,2;
+Stop 15,0;
+Win 2,4;
+You 5,15;

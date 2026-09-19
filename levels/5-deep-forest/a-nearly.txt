@@ -1,13 +1,12 @@
-g = grass
-f = flag
-b = baba
-palette = ruins
----
-gg           gg
-g      F      g
-      B=✥
-       ✓
-
-g             g
-gg    b f    gg
-B=↔g       gggg
+Title NEARLY;
+Size 15x8;
+Background transparent;
+baba 6,6;
+Baba 6,2 0,7;
+flag 8,6;
+Flag 7,1;
+grass 0,0 1,0 13,0 14,0 0,1 14,1 0,5 14,5 0,6 1,6 13,6 14,6 3,7 11,7 12,7 13,7 14,7;
+Is 7,2 1,7;
+Swap 2,7;
+Win 7,3;
+You 8,2;

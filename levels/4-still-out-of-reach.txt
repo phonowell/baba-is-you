@@ -1,20 +1,16 @@
-f = flag
-b = baba
-s = skull down
-r = rock
-right pad = 2
----
-F=✓
-B=✥
-
-             sssssssss
-             s       s
-  R=↦        s S     s
-             s =     s
-     s s     s ⩍     s
-     srs     s       s
-   sssrsss   s    f  s
-   s  r  s   s       s
-   s     s   sssssssss
-   s  b  s
-   s     s
+Title STILL OUT OF REACH;
+Size 24x14;
+Background transparent;
+baba 6,12;
+Baba 0,1;
+Defeat 15,7;
+flag 18,9;
+Flag 0,0;
+Is 1,0 1,1 3,5 15,6;
+Push 4,5;
+rock 6,8 6,9 6,10;
+Rock 2,5;
+Skull 15,5;
+skull@down 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 21,3 13,4 21,4 13,5 21,5 13,6 21,6 5,7 7,7 13,7 21,7 5,8 7,8 13,8 21,8 3,9 4,9 5,9 7,9 8,9 9,9 13,9 21,9 3,10 9,10 13,10 21,10 3,11 9,11 13,11 14,11 15,11 16,11 17,11 18,11 19,11 20,11 21,11 3,12 9,12 3,13 9,13;
+Win 2,0;
+You 2,1;

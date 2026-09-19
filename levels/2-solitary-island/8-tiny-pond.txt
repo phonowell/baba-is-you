@@ -1,23 +1,21 @@
-g = grass
-c = cog
-b = baba
-w = water
-f = flag
-k = key
-palette = factory
-+ g = 3,0
----
-gggggg           gg gggg
-gggg         c        gg
-g                      g
-g          b           g
-        B       
-        =wwwww        c
-  c     ✥ww  w 
- c      &w ✓ w         g
-        ⧜w www         g
-  F K                 gg
-  f k           c    ggg
-               c     ggg
-          c       wwwwww
-                  wW=⊘&⨶
+Title TINY POND;
+Size 24x14;
+Background transparent;
+And 8,7 22,13;
+baba 11,3;
+Baba 8,4;
+cog 13,1 22,5 2,6 1,7 16,10 15,11 10,12;
+flag 2,10;
+Flag 2,9;
+grass 0,0 1,0 2,0 3,0 4,0 5,0 17,0 18,0 20,0 21,0 22,0 23,0 0,1 1,1 2,1 3,1 22,1 23,1 0,2 23,2 0,3 23,3 23,7 23,8 22,9 23,9 21,10 22,10 23,10 21,11 22,11 23,11;
+Is 8,5 20,13;
+key 4,10;
+Key 4,9;
+Open 8,8;
+Shut 23,13;
+Stop 21,13;
+tile 8,3 9,3 14,3 9,4 12,4 13,4 14,4 15,4 14,5 15,5 11,6 12,6 14,6 10,7 12,7 7,8 8,9 9,9 8,10;
+water 9,5 10,5 11,5 12,5 13,5 9,6 10,6 13,6 9,7 13,7 9,8 11,8 12,8 13,8 18,12 19,12 20,12 21,12 22,12 23,12 18,13;
+Water 19,13;
+Win 11,7;
+You 8,6;

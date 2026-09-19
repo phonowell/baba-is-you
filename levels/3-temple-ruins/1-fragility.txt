@@ -1,27 +1,21 @@
-w = wall
-s = skull down
-g = grass
-b = baba
-r = rock
-f = flag
-palette = ruins
-right pad = 3
----
-        w
-        w
-        wW=⊘
-        wwwwwwwwwwwww
-                 S=⩍w
-         g          w
-         g  B=✥     w
-      b  g  =     r w
-         g  _       w
-wwwwwwwwwww     wsssw
-          wwwwwwwsssw
-            wR=↦    w
-            w       w
-      F=✓   w       w
-          w r       w
-       f    w       w
-            wwwwwwwww
-            w
+Title FRAGILITY;
+Size 24x18;
+Background transparent;
+baba 6,7;
+Baba 12,6;
+Defeat 19,4;
+flag 7,15;
+Flag 6,13;
+grass 9,5 9,6 9,7 9,8;
+Is 10,2 18,4 13,6 12,7 14,11 7,13;
+Push 15,11;
+rock 18,7 12,14;
+Rock 13,11;
+Skull 17,4;
+skull@down 17,9 18,9 19,9 17,10 18,10 19,10;
+Stop 11,2;
+wall 8,0 8,1 8,2 8,3 9,3 10,3 11,3 12,3 13,3 14,3 15,3 16,3 17,3 18,3 19,3 20,3 20,4 20,5 20,6 20,7 20,8 0,9 1,9 2,9 3,9 4,9 5,9 6,9 7,9 8,9 9,9 10,9 16,9 20,9 10,10 11,10 12,10 13,10 14,10 15,10 16,10 20,10 12,11 20,11 12,12 20,12 12,13 20,13 10,14 20,14 12,15 20,15 12,16 13,16 14,16 15,16 16,16 17,16 18,16 19,16 20,16 12,17;
+Wall 9,2;
+Weak 12,8;
+Win 8,13;
+You 14,6;

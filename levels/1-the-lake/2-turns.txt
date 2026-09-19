@@ -1,28 +1,29 @@
-a = algae
-x = skull
-j = jelly
-c = crab down
-s = seastar
-b = baba
-f = flag
-w = wall
-r = rock
-right pad = 1
-palette = ocean
----
- a                   aa
-a                        a
-     X=⩍wwwwwwwwwwwww     a
-    wwwww           w   j
-    w   w           w
-    w   www  S=≉    wW=⊘
-  c w C x s         wwwwww
-    w   www  R=↦     r w w
-    w   w           ww b w
-    wwBww    r &    ww w w
-     w=ww           wwwwww
-   f w✥ww           w
-a    wwwwwwwwwwwwwwww  j
-  F=✓                    a
-a                  j  aaa
-aa     a                 a
+Title TURNS;
+Size 28x16;
+Background transparent;
+algae 1,0 21,0 22,0 0,1 25,1 26,2 0,12 25,13 0,14 22,14 23,14 24,14 0,15 1,15 7,15 25,15;
+And 15,9;
+baba 23,8;
+Baba 6,9;
+Crab 6,6;
+crab@down 2,6;
+Defeat 7,2;
+flag 3,11;
+Flag 2,13;
+Is 6,2 14,5 22,5 14,7 6,10 3,13;
+jelly 24,3 23,12 19,14;
+Push 15,7;
+rock 21,7 13,9;
+Rock 13,7;
+seastar 10,6;
+Seastar 13,5;
+Sink 15,5;
+skull 8,6;
+Skull 5,2;
+Stop 23,5;
+tile 5,4 6,4 7,4 5,5 7,5 5,7 7,7 22,7 24,7 5,8 6,8 7,8 22,8 23,8 24,8 22,9 24,9;
+tile@down 7,9 7,10 7,11;
+wall 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 4,3 5,3 6,3 7,3 8,3 20,3 4,4 8,4 20,4 4,5 8,5 9,5 10,5 20,5 4,6 20,6 21,6 22,6 23,6 24,6 25,6 4,7 8,7 9,7 10,7 23,7 25,7 4,8 8,8 20,8 21,8 25,8 4,9 5,9 7,9 8,9 20,9 21,9 23,9 25,9 5,10 7,10 8,10 20,10 21,10 22,10 23,10 24,10 25,10 5,11 7,11 8,11 20,11 5,12 6,12 7,12 8,12 9,12 10,12 11,12 12,12 13,12 14,12 15,12 16,12 17,12 18,12 19,12 20,12;
+Wall 21,5;
+Win 4,13;
+You 6,11;

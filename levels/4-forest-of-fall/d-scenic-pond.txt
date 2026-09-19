@@ -1,31 +1,30 @@
-g = grass
-s = skull left
-h = husk
-f = fence
-l = flag
-b = baba
-w = wall
-a = water
-o = foliage
-e = leaf
-k = keke
-palette = autumn
----
-ggg      f  f   h   gggg
-gg    S=≉f  f      h  gg
-g    fffff Lfffff
-  A=≉faaa s   =✓fS~W
-   wwwaaawwwwwwwwwwwww
-  @w                 w h
-  =w                 w
-  ⩍w       K         w
-   w  B=✥  ~         w
-   w       @   fffffff
-   w           f     f
-h  w             w  af
-   w   b   l   f    =f
-   w           f    ⚲ffo
- h w           f      f
-   wwwwwwwwwwwwffffffff
-g           F&W=⊘     e
-gg                 o
+Title SCENIC POND;
+Size 24x18;
+Background transparent;
+And 13,16;
+baba 7,12;
+Baba 6,8;
+Defeat 2,7;
+fence 9,0 12,0 9,1 12,1 5,2 6,2 7,2 8,2 9,2 12,2 13,2 14,2 15,2 16,2 5,3 16,3 15,9 16,9 17,9 18,9 19,9 20,9 21,9 15,10 21,10 21,11 15,12 21,12 15,13 21,13 22,13 15,14 22,14 15,15 16,15 17,15 18,15 19,15 20,15 21,15 22,15;
+Fence 12,16;
+flag 11,12;
+Flag 11,2;
+Float 20,13;
+foliage 23,13 19,17;
+grass 0,0 1,0 2,0 20,0 21,0 22,0 23,0 0,1 1,1 22,1 23,1 0,2 0,16 0,17 1,17;
+Has 18,3 11,8;
+husk 16,0 19,1 23,5 0,11 1,14;
+Is 7,1 3,3 14,3 2,6 7,8 20,12 15,16;
+Keke 11,7;
+leaf 22,16;
+Sink 8,1 4,3;
+Skull 6,1 17,3;
+skull@left 10,3;
+Stop 16,16;
+Text 2,5 11,9;
+wall 3,4 4,4 5,4 9,4 10,4 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 20,4 21,4 3,5 21,5 3,6 21,6 3,7 21,7 3,8 21,8 3,9 3,10 3,11 17,11 3,12 3,13 3,14 3,15 4,15 5,15 6,15 7,15 8,15 9,15 10,15 11,15 12,15 13,15 14,15;
+Wall 19,3 14,16;
+water 6,3 7,3 8,3 6,4 7,4 8,4 20,11;
+Water 2,3;
+Win 15,3;
+You 8,8;

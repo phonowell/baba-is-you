@@ -1,23 +1,20 @@
-a = algae
-k = keke
-u = keke up
-d = keke down
-c = brick
-l = love
-b = baba
-palette = ocean
----
-A=⩍
-
-
-      k
-              c
-         K=→  aaaaa
-    c         a   a
-   cc  u      acl a
-             caccca
-   b     L=↦ccaaaaac
-      cc    dccc
-L    ccc
-=
-✓                    B=✥
+Title AFFECTION;
+Size 24x14;
+Background transparent;
+algae 14,5 15,5 16,5 17,5 18,5 14,6 18,6 14,7 18,7 14,8 18,8 14,9 15,9 16,9 17,9 18,9;
+Algae 0,0;
+baba 3,9;
+Baba 21,13;
+brick 14,4 4,6 3,7 4,7 15,7 13,8 15,8 16,8 17,8 12,9 13,9 19,9 6,10 7,10 13,10 14,10 15,10 5,11 6,11 7,11;
+Defeat 2,0;
+Is 1,0 10,5 10,9 0,12 22,13;
+keke 6,3;
+Keke 9,5;
+keke@down 12,10;
+keke@up 7,7;
+love 16,7;
+Love 9,9 0,11;
+Move 11,5;
+Push 11,9;
+Win 0,13;
+You 23,13;

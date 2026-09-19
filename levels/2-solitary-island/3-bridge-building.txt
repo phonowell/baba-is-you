@@ -1,26 +1,21 @@
-h = hedge
-r = rock
-w = water
-f = flag
-b = baba
-palette = ocean
-right pad = 5
----
-
-
-          hhhhhhhhh
-    @=⚲  hh  ww   h
-         hr  ww F h
-         h   ww = h
-      hhhh   ww ✓ h
-      h      ww   h
-      h b    ww f h
-     hh   r  ww   h
-     hh      ww   h
-     hh R=↦  hhhhhh
-     hh      hhhhhh
-     hB=✥    hhW=≉h
-     hh     hhhH=⊘h
-      hhhhhhhhhhhhh
-
-
+Title BRIDGE BUILDING;
+Size 24x18;
+Background transparent;
+baba 8,8;
+Baba 6,13;
+flag 16,8;
+Flag 16,4;
+Float 6,3;
+hedge 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 9,3 10,3 18,3 9,4 18,4 9,5 18,5 6,6 7,6 8,6 9,6 18,6 6,7 18,7 6,8 18,8 5,9 6,9 18,9 5,10 6,10 18,10 5,11 6,11 13,11 14,11 15,11 16,11 17,11 18,11 5,12 6,12 13,12 14,12 15,12 16,12 17,12 18,12 5,13 13,13 14,13 18,13 5,14 6,14 12,14 13,14 14,14 18,14 6,15 7,15 8,15 9,15 10,15 11,15 12,15 13,15 14,15 15,15 16,15 17,15 18,15;
+Hedge 15,14;
+Is 5,3 16,5 9,11 7,13 16,13 16,14;
+Push 10,11;
+rock 10,4 10,9;
+Rock 8,11;
+Sink 17,13;
+Stop 17,14;
+Text 4,3;
+water 13,3 14,3 13,4 14,4 13,5 14,5 13,6 14,6 13,7 14,7 13,8 14,8 13,9 14,9 13,10 14,10;
+Water 15,13;
+Win 16,6;
+You 8,13;

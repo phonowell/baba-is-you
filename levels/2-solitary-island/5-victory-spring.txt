@@ -1,14 +1,16 @@
-w = water
-o = "win" on water
-b = baba left
-c = cog
-palette = factory
----
-W=≉   B=✥   C=↦
-
-
-      www    c
- @=⚲  wow  b
-      www   c
-
-
+Title VICTORY SPRING;
+Size 15x8;
+Background transparent;
+Baba 6,0;
+baba@left 11,4;
+cog 13,3 12,5;
+Cog 12,0;
+Float 3,4;
+Is 1,0 7,0 13,0 2,4;
+Push 14,0;
+Sink 2,0;
+Text 1,4;
+water 6,3 7,3 8,3 6,4 7,4 8,4 6,5 7,5 8,5;
+Water 0,0;
+Win 7,4;
+You 8,0;

@@ -2,15 +2,15 @@
 // Ports golden replays from the predecessor Rust project (`../baba`):
 // decodes each `goldens/*.ron.br` (brotli'd RON tuple of screens+inputs),
 // extracts the input sequence, replays it on this engine over the matching
-// ASCII level file, and records our own `goldens/*.json` snapshots for the
-// sequences that still reach a win.
+// entity-list level file, and records our own `goldens/*.json` snapshots for
+// the sequences that still reach a win.
 //
 // Usage: tsx scripts/port-rust-goldens.ts [--src ../baba] [--out goldens]
 
 import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 
-import { parseAsciiLevel } from '../src/logic/parse-ascii-level.js'
+import { parseLevel } from '../src/logic/parse-level.js'
 import { replayLevel } from '../src/logic/replay.js'
 import { levelFromScreen, loadRustGolden } from './lib-rust-golden.js'
 
@@ -78,7 +78,7 @@ for (const path of walk(join(SRC, 'goldens')).sort()) {
   let usedRecordedLayout = false
   try {
     golden_ = loadRustGolden(path)
-    levelData = parseAsciiLevel(readFileSync(levelPath, 'utf8'), levelPath)
+    levelData = parseLevel(readFileSync(levelPath, 'utf8'))
     const firstScreen = golden_.screens[0]
     if (!firstScreen) throw new Error('golden has no screens')
     const recorded = levelFromScreen(firstScreen, levelData.title)

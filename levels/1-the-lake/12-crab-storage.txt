@@ -1,27 +1,24 @@
-h = hedge
-a = algae
-s = seastar
-b = baba
-c = crab down
-f = flag
-d = door
-palette = ocean
----
-H=⊘                    a
-
-          hhhhh    s
- s        h =✓h
-        hhh =⩍h  s  s
-        hB= hhh   s
-    hhhhh h hhhh
-  s h          h
-    h          h
-    hF=↦    B  hhhhh
-    h       =  h   h
-    h       ⧜  d C h
-    h f b c    h   h
-    h          hhhhh
-  a hhhhhhhhhhhh
-           s
-                       a
-B=✥       D=⨶&⊘       aa
+Title CRAB STORAGE;
+Size 24x18;
+Background transparent;
+algae 23,0 2,14 23,16 22,17 23,17;
+And 13,17;
+baba 8,12;
+Baba 9,5 12,9 0,17;
+Crab 17,11;
+crab@down 10,12;
+Defeat 13,4;
+door 15,11;
+Door 10,17;
+flag 6,12;
+Flag 5,9;
+hedge 10,2 11,2 12,2 13,2 14,2 10,3 14,3 8,4 9,4 10,4 14,4 8,5 12,5 13,5 14,5 4,6 5,6 6,6 7,6 8,6 10,6 12,6 13,6 14,6 15,6 4,7 15,7 4,8 15,8 4,9 15,9 16,9 17,9 18,9 19,9 4,10 15,10 19,10 4,11 19,11 4,12 15,12 19,12 4,13 15,13 16,13 17,13 18,13 19,13 4,14 5,14 6,14 7,14 8,14 9,14 10,14 11,14 12,14 13,14 14,14 15,14;
+Hedge 0,0;
+Is 1,0 12,3 12,4 10,5 6,9 12,10 1,17 11,17;
+Open 12,11;
+Push 7,9;
+seastar 19,2 1,3 17,4 20,4 18,5 2,7 11,15;
+Shut 12,17;
+Stop 2,0 14,17;
+Win 13,3;
+You 2,17;

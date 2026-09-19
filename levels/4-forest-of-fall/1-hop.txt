@@ -1,21 +1,20 @@
-w = water
-i = fence
-b = baba
-l = love
-f = flag
-palette = autumn
----
-W=⩍i        w     i
-iiii        w     i
-            w     ii
-            w      iiiii
-            w
-     b ↦    w
-          l w l
-            w
-            w   L=*
-iiiiiii     w
-  iF=✓i     w     www ii
-  iiiii     w     wfw iI
-    i       w     iiiii=
-    i       w     iB=✥i⊘
+Title HOP;
+Size 24x14;
+Background transparent;
+baba 5,5;
+Baba 19,13;
+Defeat 2,0;
+fence 3,0 18,0 0,1 1,1 2,1 3,1 18,1 18,2 19,2 19,3 20,3 21,3 22,3 23,3 0,9 1,9 2,9 3,9 4,9 5,9 6,9 2,10 6,10 22,10 23,10 2,11 3,11 4,11 5,11 6,11 22,11 4,12 18,12 19,12 20,12 21,12 22,12 4,13 18,13 22,13;
+Fence 23,11;
+flag 19,11;
+Flag 3,10;
+Is 1,0 17,8 4,10 23,12 20,13;
+love 10,6 14,6;
+Love 16,8;
+Push 7,5;
+Stop 23,13;
+Tele 18,8;
+water 12,0 12,1 12,2 12,3 12,4 12,5 12,6 12,7 12,8 12,9 12,10 18,10 19,10 20,10 12,11 18,11 20,11 12,12 12,13;
+Water 0,0;
+Win 5,10;
+You 21,13;

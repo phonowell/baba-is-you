@@ -1,27 +1,26 @@
-b = baba down
-g = bug left
-n = fungus
-v = flower
-l = love
-t = tree
-u = belt up
-h = hedge
-palette = ruins
-+ u = 1,1
----
-              hh v  h   hG=G
-h             h v l ht  hhhh
-h             h h   h   hU=U
-h          b   nh v h  thhhh
-hh           Ghhh  vh   h@=⚲
- h           =hhhhhhh   hhhh
- h           ↦hhhhhhh t
-th      U=^     g hh       t
- hh           hh hhhhh    t
-  hhh          h h  hhhhh
-t  hhhB         u   hH=⊘h
-     h=             hhhhht
-   t h✥              NL h
-     hh              h==h  t
- t  hh               h⩍✓h
-   hhh               hhhhh
+Title LOCK THE DOOR;
+Size 28x16;
+Background transparent;
+Baba 6,10;
+baba@down 11,3;
+Belt 25,2 27,2 8,7;
+belt@up 16,10;
+Bug 25,0 27,0 13,4;
+bug@left 16,7;
+Defeat 22,14;
+Float 27,4;
+flower 17,0 16,1 18,3 19,4;
+fungus 15,3;
+Fungus 21,12;
+hedge 14,0 15,0 20,0 24,0 0,1 14,1 20,1 24,1 25,1 26,1 27,1 0,2 14,2 16,2 20,2 24,2 0,3 16,3 20,3 24,3 25,3 26,3 27,3 0,4 1,4 14,4 15,4 16,4 20,4 24,4 1,5 14,5 15,5 16,5 17,5 18,5 19,5 20,5 24,5 25,5 26,5 27,5 1,6 14,6 15,6 16,6 17,6 18,6 19,6 20,6 1,7 18,7 19,7 1,8 2,8 14,8 15,8 17,8 18,8 19,8 20,8 21,8 2,9 3,9 4,9 15,9 17,9 20,9 21,9 22,9 23,9 24,9 3,10 4,10 5,10 20,10 24,10 5,11 20,11 21,11 22,11 23,11 24,11 5,12 24,12 5,13 6,13 21,13 24,13 4,14 5,14 21,14 24,14 3,15 4,15 5,15 21,15 22,15 23,15 24,15 25,15;
+Hedge 21,10;
+Is 26,0 26,2 26,4 13,5 9,7 22,10 6,11 22,13 23,13;
+love 18,1;
+Love 22,12;
+Push 13,6;
+Shift 10,7;
+Stop 23,10;
+Text 25,4;
+tree 21,1 23,3 22,6 0,7 27,7 26,8 0,10 25,11 3,12 27,13 1,14;
+Win 23,14;
+You 6,12;

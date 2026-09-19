@@ -1,24 +1,19 @@
-w = wall
-l = leaf
-o = foliage
-f = flag
-r = rock
-m = me down
-palette = autumn
----
- www              l o   oo o
- wFw                      o
- w=w    f     wwwwwwww
- w✓w          w      w  l  o
- www          w @    w   l o
-       wwwwwwww      w
-       wW=Ww  wwww w w
- l     wwwww   r     w
-       w       wwwwwww
-       w   m   w
-o      w       w
-       w  M=✥  w
-       w       w
-o  l   wwwwwwwww
-oo                R=↦
-  o  o    l              W=⩍
+Title LITERACY;
+Size 28x16;
+Background transparent;
+Defeat 27,15;
+flag 8,2;
+Flag 2,1;
+foliage 20,0 24,0 25,0 27,0 26,1 27,3 27,4 0,10 0,13 0,14 1,14 2,15 5,15;
+Is 2,2 9,6 11,11 19,14 26,15;
+leaf 18,0 24,3 25,4 1,7 3,13 10,15;
+Me 10,11;
+me@down 11,9;
+Push 20,14;
+rock 15,7;
+Rock 18,14;
+Text 16,4;
+wall 1,0 2,0 3,0 1,1 3,1 1,2 3,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 21,2 1,3 3,3 14,3 21,3 1,4 2,4 3,4 14,4 21,4 7,5 8,5 9,5 10,5 11,5 12,5 13,5 14,5 21,5 7,6 11,6 14,6 15,6 16,6 17,6 19,6 21,6 7,7 8,7 9,7 10,7 11,7 21,7 7,8 15,8 16,8 17,8 18,8 19,8 20,8 21,8 7,9 15,9 7,10 15,10 7,11 15,11 7,12 15,12 7,13 8,13 9,13 10,13 11,13 12,13 13,13 14,13 15,13;
+Wall 8,6 10,6 25,15;
+Win 2,3;
+You 12,11;

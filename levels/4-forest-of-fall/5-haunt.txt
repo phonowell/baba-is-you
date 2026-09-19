@@ -1,23 +1,20 @@
-f = foliage
-l = leaf
-g = ghost left
-b = baba
-o = love
-palette = autumn
----
-F=⊘f         f         f f f
-fff      fffffff        f
-f   f   ff  L=⩍ f       f
-   f    f       ffff
-        f   G     f
-        f  B=✥    f       f
- f      f   *      ff
-        l           f
-        f     ↦ g   f    f
-        ff          f   f
-    o    ff        ff
-          ff b  g  Of      f
-     f     f        f
-      f    f      f✓f  f  f
-            ffffffff     f
-    f           f       f f
+Title HAUNT;
+Size 28x16;
+Background transparent;
+baba 13,11;
+Baba 11,5;
+Defeat 14,2;
+foliage 3,0 13,0 23,0 25,0 27,0 0,1 1,1 2,1 9,1 10,1 11,1 12,1 13,1 14,1 15,1 24,1 0,2 4,2 8,2 9,2 16,2 24,2 3,3 8,3 16,3 17,3 18,3 19,3 8,4 18,4 8,5 18,5 26,5 1,6 8,6 19,6 20,6 20,7 8,8 20,8 25,8 8,9 9,9 20,9 24,9 9,10 10,10 19,10 20,10 10,11 11,11 20,11 27,11 5,12 11,12 20,12 6,13 11,13 18,13 20,13 23,13 26,13 12,14 13,14 14,14 15,14 16,14 17,14 18,14 19,14 25,14 4,15 16,15 24,15 26,15;
+Foliage 0,0;
+Ghost 12,4;
+ghost@left 16,8 16,11;
+Is 1,0 13,2 12,5;
+leaf 8,7;
+Leaf 12,2;
+love 4,10;
+Love 19,11;
+Push 14,8;
+Stop 2,0;
+Tele 12,6;
+Win 19,13;
+You 13,5;

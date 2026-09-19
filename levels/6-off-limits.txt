@@ -1,23 +1,22 @@
-r = rock
-s = skull down
-f = flag
-g = grass
-p = flower
-b = baba
-c = brick
-w = wall
----
-R=⊘ rggggg  s        ggg
-    r ggp wwswwwwwww  gg
-S=⩍ r    cw s  w   w   g
-    r   ccw s    f w
-F=✓ r wwwww s  w   w
-    r w   w s  wwwww  p
-rrrrr w b   swwwcc
-   p  w   w ssssssssssss
-      wwwww    wcc
-  g       w W=⊘wc    p
- ggg    B w    w   p
-  gg    = wwwwww
-        ✥        p   gg
-                   ggggg
+Title OFF LIMITS;
+Size 24x14;
+Background transparent;
+baba 8,6;
+Baba 8,10;
+brick 9,2 8,3 9,3 16,6 17,6 16,8 17,8 16,9;
+Defeat 2,2;
+flag 17,3;
+Flag 0,4;
+flower 8,1 22,5 3,7 21,9 19,10 17,12;
+grass 5,0 6,0 7,0 8,0 9,0 21,0 22,0 23,0 6,1 7,1 22,1 23,1 23,2 2,9 1,10 2,10 3,10 2,11 3,11 21,12 22,12 19,13 20,13 21,13 22,13 23,13;
+Is 1,0 1,2 1,4 13,9 8,11;
+rock 4,0 4,1 4,2 4,3 4,4 4,5 0,6 1,6 2,6 3,6 4,6;
+Rock 0,0;
+Skull 0,2;
+skull@down 12,0 12,1 12,2 12,3 12,4 12,5 12,6 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 21,7 22,7 23,7;
+Stop 2,0 14,9;
+tile 16,2 17,2 18,2 16,3 18,3 16,4 17,4 18,4 7,5 8,5 9,5 7,6 9,6 7,7 8,7 9,7;
+wall 10,1 11,1 13,1 14,1 15,1 16,1 17,1 18,1 19,1 10,2 15,2 19,2 10,3 19,3 6,4 7,4 8,4 9,4 10,4 15,4 19,4 6,5 10,5 15,5 16,5 17,5 18,5 19,5 6,6 13,6 14,6 15,6 6,7 10,7 6,8 7,8 8,8 9,8 10,8 15,8 10,9 15,9 10,10 15,10 10,11 11,11 12,11 13,11 14,11 15,11;
+Wall 12,9;
+Win 2,4;
+You 8,12;

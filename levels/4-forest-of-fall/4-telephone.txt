@@ -1,27 +1,28 @@
-t = tree
-w = wall
-b = baba
-d = door
-f = flag
-i = ice
-k = key
-palette = autumn
----
-T=⊘wt                           t
-wwww       tttttwwwwwwwwwwwww
-@=⚲w      t             w   w
-wwww      t b   B=✥     d f w
-tt        t             w   w
-t         t     I =*    wwwww
-          w             t
-          wwwwtttttttttt
-
-
-    wwwwwwwwww         k
-    wF      Ww
-    w= b  i =w         i
-    w✓      ⊘w
-    wwwwwwwwww        K=↦
-
-K=⧜                             t
-D=⨶&⊘                          tt
+Title TELEPHONE;
+Size 33x18;
+Background transparent;
+And 3,17;
+baba 12,3 7,12;
+Baba 16,3;
+door 24,3;
+Door 0,17;
+flag 26,3;
+Flag 5,11;
+Float 2,2;
+ice 10,12 23,12;
+Ice 16,5;
+Is 1,0 1,2 17,3 18,5 5,12 12,12 23,14 1,16 1,17;
+key 23,10;
+Key 22,14 0,16;
+Open 2,16;
+Push 24,14;
+Shut 2,17;
+Stop 2,0 12,13 4,17;
+Tele 19,5;
+Text 0,2;
+tree 4,0 32,0 11,1 12,1 13,1 14,1 15,1 10,2 10,3 0,4 1,4 10,4 0,5 10,5 24,6 14,7 15,7 16,7 17,7 18,7 19,7 20,7 21,7 22,7 23,7 32,16 31,17 32,17;
+Tree 0,0;
+wall 3,0 0,1 1,1 2,1 3,1 16,1 17,1 18,1 19,1 20,1 21,1 22,1 23,1 24,1 25,1 26,1 27,1 28,1 3,2 24,2 28,2 0,3 1,3 2,3 3,3 28,3 24,4 28,4 24,5 25,5 26,5 27,5 28,5 10,6 10,7 11,7 12,7 13,7 4,10 5,10 6,10 7,10 8,10 9,10 10,10 11,10 12,10 13,10 4,11 13,11 4,12 13,12 4,13 13,13 4,14 5,14 6,14 7,14 8,14 9,14 10,14 11,14 12,14 13,14;
+Wall 12,11;
+Win 5,13;
+You 18,3;

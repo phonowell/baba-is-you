@@ -1,27 +1,32 @@
-t = tree
-h = hedge
-g = ghost
-f = flag
-r = rock
-l = leaf
-i = foliage
-b = baba
-k = key
-palette = autumn
----
-  t h      h t  G~F       t
-t   hR=↦   h   G=⨶&↦    t  t
-    h      h   hhhhhh
-    h  l = hhhhh    hhhhh
-    h      hF=✓h        h t
-    hL=*   hhhhh g  h h h
- t  h      hI=≉h    h   h
-    hhhhhhhhhhhhhhhhhihhh
-          @h     h     h
-t         =h   k    l  h
-          ⚲h b   h     h   t
-           h   r h     h
-          Bh     hhhhhhh   t
-          =h     hK=⧜
-t         ✥hhhhhhh        t
-tt            H=⊘        t
+Title GHOST GUARD;
+Size 28x16;
+Background transparent;
+And 18,1;
+baba 13,10;
+Baba 10,12;
+Flag 18,0 12,4;
+Float 10,10;
+foliage 21,7;
+Foliage 12,6;
+ghost 17,5;
+Ghost 16,0 15,1;
+Has 17,0;
+hedge 4,0 11,0 4,1 11,1 4,2 11,2 15,2 16,2 17,2 18,2 19,2 20,2 4,3 11,3 12,3 13,3 14,3 15,3 20,3 21,3 22,3 23,3 24,3 4,4 11,4 15,4 24,4 4,5 11,5 12,5 13,5 14,5 15,5 20,5 22,5 24,5 4,6 11,6 15,6 20,6 24,6 4,7 5,7 6,7 7,7 8,7 9,7 10,7 11,7 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 22,7 23,7 24,7 11,8 17,8 23,8 11,9 23,9 11,10 17,10 23,10 11,11 17,11 23,11 11,12 17,12 18,12 19,12 20,12 21,12 22,12 23,12 11,13 17,13 11,14 12,14 13,14 14,14 15,14 16,14 17,14;
+Hedge 14,15;
+Is 6,1 16,1 9,3 13,4 6,5 13,6 10,9 10,13 19,13 15,15;
+key 15,9;
+Key 18,13;
+leaf 7,3 20,9;
+Leaf 5,5;
+Open 20,13;
+Push 7,1 19,1;
+rock 15,11;
+Rock 5,1;
+Shut 17,1;
+Sink 14,6;
+Stop 16,15;
+Tele 7,5;
+Text 10,8;
+tree 2,0 13,0 26,0 0,1 24,1 27,1 26,4 1,6 0,9 27,10 27,12 0,14 26,14 0,15 1,15 25,15;
+Win 14,4;
+You 10,14;

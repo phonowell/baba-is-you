@@ -1,15 +1,19 @@
-w = wall
-b = baba
-r = rock
-c = crab left
-f = flag
-palette = ocean
----
-        wwwwwww
-   b    r  CF w
-  B=✥   w  w==w
-        w  w⩍✓w
-    wwwww  wwww
-    w   w     w
-    ccf w R=↦ w
-W=⊘ww   w     w
+Title SUBMERGED RUINS;
+Size 15x8;
+Background transparent;
+baba 3,1;
+Baba 2,2;
+Crab 11,1;
+crab@left 4,6 5,6;
+Defeat 12,3;
+flag 6,6;
+Flag 12,1;
+Is 3,2 12,2 13,2 11,6 1,7;
+Push 12,6;
+rock 8,1;
+Rock 10,6;
+Stop 2,7;
+wall 8,0 9,0 10,0 11,0 12,0 13,0 14,0 14,1 8,2 11,2 14,2 8,3 11,3 14,3 4,4 5,4 6,4 7,4 8,4 11,4 12,4 13,4 14,4 4,5 8,5 14,5 8,6 14,6 3,7 4,7 8,7 14,7;
+Wall 0,7;
+Win 13,3;
+You 4,2;

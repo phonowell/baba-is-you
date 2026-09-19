@@ -1,28 +1,28 @@
-g = grass
-h = hedge
-n = fungus
-f = flag
-u = bug down
-b = belt
-r = reed
-t = tree
-k = keke
-palette = ruins
-+ b = 1,1
----
-gghghN~FhU=⩍hhh N      hghgg
-gghghhhhhhhhhhh =      hghhh
-hhhgh  B=^h hhh ⌢ n   Hhgggg
-gggghuuuuuh h         =hhhhg
-ggggh       h h       ⊘h  hg
-ghhhh       h hhhhh hhhh  hg
-gh      k   b       h     hg
-gh          hhhhhhhhh r   hg
-hh  r                     hh
-                         r
- r            T=↣       r
-      r
-hh             t        hhhh
-gh                      hThF
-hhhh r                  h=h=
-K=✥h                    h⌇h✓
+Title KEEP OUT;
+Size 28x16;
+Background transparent;
+belt 12,6;
+Belt 7,2;
+Bug 9,0;
+bug@down 5,3 6,3 7,3 8,3 9,3;
+Defeat 11,0;
+Flag 7,0 27,13;
+fungus 18,2;
+Fungus 5,0 16,0;
+grass 0,0 1,0 3,0 24,0 26,0 27,0 0,1 1,1 3,1 24,1 3,2 24,2 25,2 26,2 27,2 0,3 1,3 2,3 3,3 27,3 0,4 1,4 2,4 3,4 27,4 0,5 27,5 0,6 27,6 0,7 27,7 0,13;
+Has 6,0;
+hedge 2,0 4,0 8,0 12,0 13,0 14,0 23,0 25,0 2,1 4,1 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 14,1 23,1 25,1 26,1 27,1 0,2 1,2 2,2 4,2 10,2 12,2 13,2 14,2 23,2 4,3 10,3 12,3 23,3 24,3 25,3 26,3 4,4 12,4 14,4 23,4 26,4 1,5 2,5 3,5 4,5 12,5 14,5 15,5 16,5 17,5 18,5 20,5 21,5 22,5 23,5 26,5 1,6 20,6 26,6 1,7 12,7 13,7 14,7 15,7 16,7 17,7 18,7 19,7 20,7 26,7 0,8 1,8 26,8 27,8 0,12 1,12 24,12 25,12 26,12 27,12 1,13 24,13 26,13 0,14 1,14 2,14 3,14 24,14 26,14 3,15 24,15 26,15;
+Hedge 22,2;
+Hot 25,15;
+Is 10,0 16,1 8,2 22,3 15,10 25,14 27,14 1,15;
+keke 8,6;
+Keke 0,15;
+Melt 16,2;
+Pull 16,10;
+reed 22,7 4,8 25,9 1,10 24,10 6,11 5,14;
+Shift 9,2;
+Stop 22,4;
+tree 15,12;
+Tree 14,10 25,13;
+Win 27,15;
+You 2,15;

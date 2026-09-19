@@ -3,7 +3,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import test from 'node:test'
 
-import { parseAsciiLevel } from './parse-ascii-level.js'
+import { parseLevel } from './parse-level.js'
 import { replayLevel } from './replay.js'
 
 import type { LevelData } from './types.js'
@@ -45,10 +45,7 @@ for (const path of goldenFiles) {
     // layout it was actually recorded against (`levelData`).
     const level =
       golden.levelData ??
-      parseAsciiLevel(
-        readFileSync(join(GOLDENS_DIR, '..', golden.level), 'utf8'),
-        golden.level,
-      )
+      parseLevel(readFileSync(join(GOLDENS_DIR, '..', golden.level), 'utf8'))
     const result = replayLevel(level, golden.inputs)
 
     assert.equal(result.initial, golden.initial, 'initial state diverged')
@@ -59,7 +56,7 @@ for (const path of goldenFiles) {
           `step ${i + 1} (input '${golden.inputs[i]}') diverged\n` +
             `expected hash: ${golden.hashes[i]}\n` +
             `actual state:  ${result.snapshots[i]}\n` +
-            `inspect: pnpm simulate --ascii ${golden.level} ${golden.inputs.slice(0, i + 1)} --trace`,
+            `level: ${golden.level}, inputs up to step: ${golden.inputs.slice(0, i + 1)}`,
         )
       }
     }

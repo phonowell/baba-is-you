@@ -1,27 +1,26 @@
-k = key
-w = wall
-t = tree
-g = grass
-f = flag
-c = brick
-b = baba down
-x = box
-d = door
-palette = ruins
----
-K=⧜w        t              g
-wwww     g     gg wwwwwww
-                  w F=✓ w
-    gg            w     w gg
- t ggg            w  f  w  g
-t   g      X=_    w     w
-                  w     w
- g         ccc X  wwwdwww t
-ggg      & cbc ~
- gg        ccc K         gg
-      g                g gg
-     gg    B=✥
-      gg           g
-                  g   t wwww
-wwwwww               t  wW=⊘
-D=⨶&⊘w   t              wB=B
+Title BUT WHERES THE KEY;
+Size 28x16;
+Background transparent;
+And 9,8 3,15;
+Baba 11,11 25,15 27,15;
+baba@down 12,8;
+Box 11,5 15,7;
+brick 11,7 12,7 13,7 11,8 13,8 11,9 12,9 13,9;
+door 21,7;
+Door 0,15;
+flag 21,4;
+Flag 20,2;
+grass 27,0 9,1 15,1 16,1 4,3 5,3 26,3 27,3 3,4 4,4 5,4 27,4 4,5 1,7 0,8 1,8 2,8 1,9 2,9 25,9 26,9 6,10 23,10 25,10 26,10 5,11 6,11 6,12 7,12 19,12 18,13;
+Has 15,8;
+Is 1,0 21,2 12,5 12,11 26,14 1,15 26,15;
+Key 0,0 15,9;
+Open 2,0;
+Shut 2,15;
+Stop 27,14 4,15;
+tile 19,2 23,2 19,3 20,3 21,3 22,3 23,3 19,4 20,4 22,4 23,4 19,5 20,5 21,5 22,5 23,5 19,6 20,6 21,6 22,6 23,6;
+tree 12,0 1,4 0,5 26,7 22,13 21,14 9,15;
+wall 3,0 0,1 1,1 2,1 3,1 18,1 19,1 20,1 21,1 22,1 23,1 24,1 18,2 24,2 18,3 24,3 18,4 24,4 18,5 24,5 18,6 24,6 18,7 19,7 20,7 22,7 23,7 24,7 24,13 25,13 26,13 27,13 0,14 1,14 2,14 3,14 4,14 5,14 24,14 5,15 24,15;
+Wall 25,14;
+Weak 13,5;
+Win 22,2;
+You 13,11;

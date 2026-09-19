@@ -1,29 +1,23 @@
-g = grass
-f = fence
-l = flag
-o = foliage
-t = tree
-e = leaf
-w = wall
-s = skull left
-b = baba
-palette = autumn
----
-ggggf         o              fggg
-ggggf  t         o         e ffff
-fffff     wwwwwwwwwwwww  e
-     o    wW=⊘wS=⩍wL=✓w
-  t       wwwwwwwwwwwww
-   t      w           w       o
-          w   B=✥     w   o
- t        w          s      o
-    o t   w          s
-   o      w    b     s     l
-          w          s        o
-          w          s   o   o
-ff  t  o  w   @ ↦     w    o   ff
-gf t      w           w        fg
-gf        wwwwwwwwwwwww  e     fg
-fffff                          fg
-ggggf  t         o        fffffff
-ggggf   t          o      fgggggg
+Title SKELETAL DOOR;
+Size 33x18;
+Background transparent;
+baba 15,9;
+Baba 14,6;
+Defeat 17,3;
+fence 4,0 29,0 4,1 29,1 30,1 31,1 32,1 0,2 1,2 2,2 3,2 4,2 0,12 1,12 31,12 32,12 1,13 31,13 1,14 31,14 0,15 1,15 2,15 3,15 4,15 31,15 4,16 26,16 27,16 28,16 29,16 30,16 31,16 32,16 4,17 26,17;
+flag 27,9;
+Flag 19,3;
+foliage 14,0 17,1 5,3 30,5 26,6 28,7 4,8 3,9 30,10 25,11 29,11 7,12 27,12 17,16 19,17;
+grass 0,0 1,0 2,0 3,0 30,0 31,0 32,0 0,1 1,1 2,1 3,1 0,13 32,13 0,14 32,14 32,15 0,16 1,16 2,16 3,16 0,17 1,17 2,17 3,17 27,17 28,17 29,17 30,17 31,17 32,17;
+Is 12,3 16,3 20,3 15,6;
+leaf 27,1 25,2 25,14;
+Push 16,12;
+Skull 15,3;
+skull@left 21,7 21,8 21,9 21,10 21,11;
+Stop 13,3;
+Text 14,12;
+tree 7,1 2,4 3,5 1,7 6,8 4,12 3,13 7,16 8,17;
+wall 10,2 11,2 12,2 13,2 14,2 15,2 16,2 17,2 18,2 19,2 20,2 21,2 22,2 10,3 14,3 18,3 22,3 10,4 11,4 12,4 13,4 14,4 15,4 16,4 17,4 18,4 19,4 20,4 21,4 22,4 10,5 22,5 10,6 22,6 10,7 10,8 10,9 10,10 10,11 10,12 22,12 10,13 22,13 10,14 11,14 12,14 13,14 14,14 15,14 16,14 17,14 18,14 19,14 20,14 21,14 22,14;
+Wall 11,3;
+Win 21,3;
+You 16,6;

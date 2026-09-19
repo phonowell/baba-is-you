@@ -1,15 +1,15 @@
-w = wall
-a = algae
-r = rock
-b = baba
-f = flag
-palette = ocean
----
-     wwwww   a
-      R=R     a
- a
-   b   f      W
-              =
-      F=R     ⊘
-wwww       wwww
-B=✥w       wF=✓
+Title CHANGELESS;
+Size 15x8;
+Background transparent;
+algae 13,0 14,1 1,2;
+baba 3,3;
+Baba 0,7;
+flag 7,3;
+Flag 6,5 12,7;
+Is 7,1 14,4 7,5 1,7 13,7;
+Rock 6,1 8,1 8,5;
+Stop 14,5;
+wall 5,0 6,0 7,0 8,0 9,0 0,6 1,6 2,6 3,6 11,6 12,6 13,6 14,6 3,7 11,7;
+Wall 14,3;
+Win 14,7;
+You 2,7;

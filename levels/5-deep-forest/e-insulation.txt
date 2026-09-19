@@ -1,24 +1,27 @@
-b = baba
-f = flag
-k = keke down
-u = keke up
-s = skull
-w = wall
-g = grass
-v = flower
-palette = ruins
----
-Bwggggg g        S=S&→&↔
-=wgg                  w
-✥wwwwwwwwwwwwwwww     w
-www            ww v   wu
-www            ww    vww
-www  b        Kww
-www           =ww   F
-www           ↦ww f =
-www    k S     ww   ✓
-www            ww
-ww            ⇧ww     v
- W wwwwwwwwwwwwww    v g
-== wwg            v   gg
-⊘⌇ wwgggg g  gg   B&@=⌢g
+Title INSULATION;
+Size 24x14;
+Background transparent;
+And 20,0 22,0 19,13;
+baba 5,5;
+Baba 0,0 18,13;
+flag 18,7;
+Flag 20,6;
+flower 18,3 21,4 22,10 21,11 18,12;
+grass 2,0 3,0 4,0 5,0 6,0 8,0 2,1 3,1 23,11 5,12 22,12 23,12 5,13 6,13 7,13 8,13 10,13 13,13 14,13 23,13;
+Hot 1,13;
+Is 18,0 0,1 14,6 20,7 0,12 1,12 21,13;
+Keke 14,5;
+keke@down 7,8;
+keke@up 23,3;
+Melt 22,13;
+Move 21,0;
+Push 14,7;
+Skull 17,0 19,0 9,8;
+Stop 0,13;
+Swap 23,0;
+Text 20,13;
+Up 14,10;
+wall 1,0 1,1 22,1 1,2 2,2 3,2 4,2 5,2 6,2 7,2 8,2 9,2 10,2 11,2 12,2 13,2 14,2 15,2 16,2 22,2 0,3 1,3 2,3 15,3 16,3 22,3 0,4 1,4 2,4 15,4 16,4 22,4 23,4 0,5 1,5 2,5 15,5 16,5 0,6 1,6 2,6 15,6 16,6 0,7 1,7 2,7 15,7 16,7 0,8 1,8 2,8 15,8 16,8 0,9 1,9 2,9 15,9 16,9 0,10 1,10 15,10 16,10 3,11 4,11 5,11 6,11 7,11 8,11 9,11 10,11 11,11 12,11 13,11 14,11 15,11 16,11 3,12 4,12 3,13 4,13;
+Wall 1,11;
+Win 20,8;
+You 0,2;

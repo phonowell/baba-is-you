@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 // Diffs our engine against a recorded Rust golden, step by step.
 // Decodes the `.ron.br` replay (screens + inputs), replays the inputs on
-// our engine over the matching ASCII level (or the recording's own initial
+// our engine over the matching entity-list level (or the recording's own initial
 // layout when the level file was edited afterwards), and prints the first
 // screen where the two engines diverge plus the cells that differ.
 //
@@ -10,7 +10,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { parseAsciiLevel } from '../src/logic/parse-ascii-level.js'
+import { parseLevel } from '../src/logic/parse-level.js'
 import { createInitialState } from '../src/logic/state.js'
 import { step } from '../src/logic/step.js'
 import {
@@ -103,7 +103,7 @@ const rel = goldenPath.replace(/.*goldens\//, '')
 const levelPath = findLevelFile(rel)
 const { screens, inputs } = loadRustGolden(goldenPath)
 
-const parsed = parseAsciiLevel(readFileSync(levelPath, 'utf8'), levelPath)
+const parsed = parseLevel(readFileSync(levelPath, 'utf8'))
 const firstScreen = screens[0]
 if (!firstScreen) throw new Error('golden has no screens')
 const recorded = levelFromScreen(firstScreen, parsed.title)

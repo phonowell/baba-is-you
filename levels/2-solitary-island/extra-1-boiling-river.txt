@@ -1,15 +1,20 @@
-w = water
-s = skull left
-d = skull down
-f = flag
-b = baba
-palette = factory
----
-        w  sF=✓
-    B   w  s f
-W   =   w  s
-=   ✥ b w   ddd
-W   &   w
-&   ⚲   w
-⌇       w
-B=⌢     w S=⩍&⚲
+Title BOILING RIVER;
+Size 15x8;
+Background transparent;
+And 4,4 0,5 13,7;
+baba 6,3;
+Baba 4,1 0,7;
+Defeat 12,7;
+flag 13,1;
+Flag 12,0;
+Float 4,5 14,7;
+Hot 0,6;
+Is 13,0 4,2 0,3 1,7 11,7;
+Melt 2,7;
+Skull 10,7;
+skull@down 12,3 13,3 14,3;
+skull@left 11,0 11,1 11,2;
+water 8,0 8,1 8,2 8,3 8,4 8,5 8,6 8,7;
+Water 0,2 0,4;
+Win 14,0;
+You 4,3;

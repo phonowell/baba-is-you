@@ -1,25 +1,28 @@
-v = flower
-h = hedge
-b = baba left
-l = belt
-g = ghost down
-f = flag
-palette = ruins
-+ l = 1,1
----
-  v                       v
-     hhhhhhhhh    hhhhhh   v
- v  hh  B=✥  h hhhh    hh
-v   h        hHh        h
-    h        h=h        h
-    h        h⊘h   L=^  h
- v  h b   ⇧  hhh        h
-    h         l         h
-    h        hhh        h
-    h        h h    hhhhh
-    h        h h    h
-    hhhhhhh hhhhh h h  V   v
-v    G=↦&⌇h   g   hvh  =
-          hhhhhhhhhvhF ⩍
-  v          @=⚲  hfh= &
-                  hvh✓ ⌢ v
+Title CANYON;
+Size 28x16;
+Background transparent;
+And 8,12 23,14;
+Baba 8,2;
+baba@left 6,6;
+belt 14,7;
+Belt 19,5;
+Defeat 23,13;
+flag 19,14;
+Flag 21,13;
+Float 15,14;
+flower 2,0 26,0 27,1 1,2 0,3 1,6 27,11 0,12 19,12 19,13 2,14 19,15 25,15;
+Flower 23,11;
+Ghost 5,12;
+ghost@down 14,12;
+hedge 5,1 6,1 7,1 8,1 9,1 10,1 11,1 12,1 13,1 18,1 19,1 20,1 21,1 22,1 23,1 4,2 5,2 13,2 15,2 16,2 17,2 18,2 23,2 24,2 4,3 13,3 15,3 24,3 4,4 13,4 15,4 24,4 4,5 13,5 15,5 24,5 4,6 13,6 14,6 15,6 24,6 4,7 24,7 4,8 13,8 14,8 15,8 24,8 4,9 13,9 15,9 20,9 21,9 22,9 23,9 24,9 4,10 13,10 15,10 20,10 4,11 5,11 6,11 7,11 8,11 9,11 10,11 12,11 13,11 14,11 15,11 16,11 18,11 20,11 10,12 18,12 20,12 10,13 11,13 12,13 13,13 14,13 15,13 16,13 17,13 18,13 20,13 18,14 20,14 18,15 20,15;
+Hedge 14,3;
+Hot 9,12;
+Is 9,2 14,4 20,5 6,12 23,12 14,14 21,14;
+Melt 23,15;
+Push 7,12;
+Shift 21,5;
+Stop 14,5;
+Text 13,14;
+Up 10,6;
+Win 21,15;
+You 10,2;

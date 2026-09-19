@@ -1,1852 +1,340 @@
 {
  "level": "levels/2-solitary-island/extra-4-dim-signal.txt",
- "levelData": {
-  "title": "DIM SIGNAL",
-  "width": 28,
-  "height": 16,
-  "items": [
-   {
-    "id": 1,
-    "x": 0,
-    "y": 0,
-    "name": "pipe",
-    "isText": true
-   },
-   {
-    "id": 2,
-    "x": 1,
-    "y": 0,
-    "name": "is",
-    "isText": true
-   },
-   {
-    "id": 3,
-    "x": 2,
-    "y": 0,
-    "name": "stop",
-    "isText": true
-   },
-   {
-    "id": 4,
-    "x": 3,
-    "y": 0,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 5,
-    "x": 4,
-    "y": 0,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 6,
-    "x": 5,
-    "y": 0,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 7,
-    "x": 12,
-    "y": 0,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 8,
-    "x": 15,
-    "y": 0,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 9,
-    "x": 16,
-    "y": 0,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 10,
-    "x": 25,
-    "y": 0,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 11,
-    "x": 26,
-    "y": 0,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 12,
-    "x": 27,
-    "y": 0,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 13,
-    "x": 0,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 14,
-    "x": 1,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 15,
-    "x": 2,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 16,
-    "x": 3,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 17,
-    "x": 4,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 18,
-    "x": 5,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 19,
-    "x": 15,
-    "y": 1,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 20,
-    "x": 16,
-    "y": 1,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 21,
-    "x": 18,
-    "y": 1,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 22,
-    "x": 21,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 23,
-    "x": 22,
-    "y": 1,
-    "name": "flag",
-    "isText": true
-   },
-   {
-    "id": 24,
-    "x": 23,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 25,
-    "x": 24,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 26,
-    "x": 25,
-    "y": 1,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 27,
-    "x": 26,
-    "y": 1,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 28,
-    "x": 27,
-    "y": 1,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 29,
-    "x": 0,
-    "y": 2,
-    "name": "baba",
-    "isText": true
-   },
-   {
-    "id": 30,
-    "x": 1,
-    "y": 2,
-    "name": "is",
-    "isText": true
-   },
-   {
-    "id": 31,
-    "x": 2,
-    "y": 2,
-    "name": "you",
-    "isText": true
-   },
-   {
-    "id": 32,
-    "x": 3,
-    "y": 2,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 33,
-    "x": 14,
-    "y": 2,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 34,
-    "x": 15,
-    "y": 2,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 35,
-    "x": 16,
-    "y": 2,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 36,
-    "x": 25,
-    "y": 2,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 37,
-    "x": 26,
-    "y": 2,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 38,
-    "x": 27,
-    "y": 2,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 39,
-    "x": 0,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 40,
-    "x": 1,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 41,
-    "x": 2,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 42,
-    "x": 3,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 43,
-    "x": 6,
-    "y": 3,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 44,
-    "x": 6,
-    "y": 3,
-    "name": "cog",
-    "isText": true
-   },
-   {
-    "id": 45,
-    "x": 7,
-    "y": 3,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 46,
-    "x": 7,
-    "y": 3,
-    "name": "is",
-    "isText": true
-   },
-   {
-    "id": 47,
-    "x": 8,
-    "y": 3,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 48,
-    "x": 8,
-    "y": 3,
-    "name": "stop",
-    "isText": true
-   },
-   {
-    "id": 49,
-    "x": 15,
-    "y": 3,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 50,
-    "x": 16,
-    "y": 3,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 51,
-    "x": 21,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 52,
-    "x": 22,
-    "y": 3,
-    "name": "rock",
-    "isText": true
-   },
-   {
-    "id": 53,
-    "x": 23,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 54,
-    "x": 24,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 55,
-    "x": 25,
-    "y": 3,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 56,
-    "x": 26,
-    "y": 3,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 57,
-    "x": 27,
-    "y": 3,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 58,
-    "x": 0,
-    "y": 4,
-    "name": "flag",
-    "isText": true
-   },
-   {
-    "id": 59,
-    "x": 1,
-    "y": 4,
-    "name": "is",
-    "isText": true
-   },
-   {
-    "id": 60,
-    "x": 2,
-    "y": 4,
-    "name": "flag",
-    "isText": true
-   },
-   {
-    "id": 61,
-    "x": 3,
-    "y": 4,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 62,
-    "x": 6,
-    "y": 4,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 63,
-    "x": 7,
-    "y": 4,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 64,
-    "x": 8,
-    "y": 4,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 65,
-    "x": 15,
-    "y": 4,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 66,
-    "x": 16,
-    "y": 4,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 67,
-    "x": 17,
-    "y": 4,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 68,
-    "x": 25,
-    "y": 4,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 69,
-    "x": 26,
-    "y": 4,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 70,
-    "x": 27,
-    "y": 4,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 71,
-    "x": 0,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 72,
-    "x": 1,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 73,
-    "x": 2,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 74,
-    "x": 3,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 75,
-    "x": 6,
-    "y": 5,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 76,
-    "x": 6,
-    "y": 5,
-    "name": "flag",
-    "isText": false
-   },
-   {
-    "id": 77,
-    "x": 7,
-    "y": 5,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 78,
-    "x": 8,
-    "y": 5,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 79,
-    "x": 8,
-    "y": 5,
-    "name": "cog",
-    "isText": false
-   },
-   {
-    "id": 80,
-    "x": 9,
-    "y": 5,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 81,
-    "x": 10,
-    "y": 5,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 82,
-    "x": 10,
-    "y": 5,
-    "name": "move",
-    "isText": true
-   },
-   {
-    "id": 83,
-    "x": 13,
-    "y": 5,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 84,
-    "x": 15,
-    "y": 5,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 85,
-    "x": 16,
-    "y": 5,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 86,
-    "x": 21,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 87,
-    "x": 22,
-    "y": 5,
-    "name": "ice",
-    "isText": true
-   },
-   {
-    "id": 88,
-    "x": 23,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 89,
-    "x": 24,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 90,
-    "x": 25,
-    "y": 5,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 91,
-    "x": 26,
-    "y": 5,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 92,
-    "x": 27,
-    "y": 5,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 93,
-    "x": 0,
-    "y": 6,
-    "name": "bog",
-    "isText": true
-   },
-   {
-    "id": 94,
-    "x": 1,
-    "y": 6,
-    "name": "is",
-    "isText": true
-   },
-   {
-    "id": 95,
-    "x": 2,
-    "y": 6,
-    "name": "defeat",
-    "isText": true
-   },
-   {
-    "id": 96,
-    "x": 3,
-    "y": 6,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 97,
-    "x": 6,
-    "y": 6,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 98,
-    "x": 7,
-    "y": 6,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 99,
-    "x": 8,
-    "y": 6,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 100,
-    "x": 9,
-    "y": 6,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 101,
-    "x": 10,
-    "y": 6,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 102,
-    "x": 12,
-    "y": 6,
-    "name": "and",
-    "isText": true
-   },
-   {
-    "id": 103,
-    "x": 15,
-    "y": 6,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 104,
-    "x": 16,
-    "y": 6,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 105,
-    "x": 25,
-    "y": 6,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 106,
-    "x": 26,
-    "y": 6,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 107,
-    "x": 27,
-    "y": 6,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 108,
-    "x": 0,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 109,
-    "x": 1,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 110,
-    "x": 2,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 111,
-    "x": 3,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 112,
-    "x": 6,
-    "y": 7,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 113,
-    "x": 6,
-    "y": 7,
-    "name": "baba",
-    "isText": false
-   },
-   {
-    "id": 114,
-    "x": 7,
-    "y": 7,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 115,
-    "x": 8,
-    "y": 7,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 116,
-    "x": 8,
-    "y": 7,
-    "name": "robot",
-    "isText": false
-   },
-   {
-    "id": 117,
-    "x": 9,
-    "y": 7,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 118,
-    "x": 10,
-    "y": 7,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 119,
-    "x": 10,
-    "y": 7,
-    "name": "and",
-    "isText": true
-   },
-   {
-    "id": 120,
-    "x": 15,
-    "y": 7,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 121,
-    "x": 16,
-    "y": 7,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 122,
-    "x": 21,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 123,
-    "x": 22,
-    "y": 7,
-    "name": "win",
-    "isText": true
-   },
-   {
-    "id": 124,
-    "x": 23,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 125,
-    "x": 24,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 126,
-    "x": 25,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 127,
-    "x": 26,
-    "y": 7,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 128,
-    "x": 27,
-    "y": 7,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 129,
-    "x": 6,
-    "y": 8,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 130,
-    "x": 7,
-    "y": 8,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 131,
-    "x": 8,
-    "y": 8,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 132,
-    "x": 14,
-    "y": 8,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 133,
-    "x": 15,
-    "y": 8,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 134,
-    "x": 16,
-    "y": 8,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 135,
-    "x": 26,
-    "y": 8,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 136,
-    "x": 27,
-    "y": 8,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 137,
-    "x": 6,
-    "y": 9,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 138,
-    "x": 6,
-    "y": 9,
-    "name": "robot",
-    "isText": true
-   },
-   {
-    "id": 139,
-    "x": 7,
-    "y": 9,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 140,
-    "x": 7,
-    "y": 9,
-    "name": "is",
-    "isText": true
-   },
-   {
-    "id": 141,
-    "x": 8,
-    "y": 9,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 142,
-    "x": 8,
-    "y": 9,
-    "name": "push",
-    "isText": true
-   },
-   {
-    "id": 143,
-    "x": 15,
-    "y": 9,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 144,
-    "x": 16,
-    "y": 9,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 145,
-    "x": 26,
-    "y": 9,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 146,
-    "x": 27,
-    "y": 9,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 147,
-    "x": 15,
-    "y": 10,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 148,
-    "x": 16,
-    "y": 10,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 149,
-    "x": 26,
-    "y": 10,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 150,
-    "x": 27,
-    "y": 10,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 151,
-    "x": 0,
-    "y": 11,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 152,
-    "x": 15,
-    "y": 11,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 153,
-    "x": 16,
-    "y": 11,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 154,
-    "x": 17,
-    "y": 11,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 155,
-    "x": 0,
-    "y": 12,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 156,
-    "x": 1,
-    "y": 12,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 157,
-    "x": 5,
-    "y": 12,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 158,
-    "x": 6,
-    "y": 12,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 159,
-    "x": 7,
-    "y": 12,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 160,
-    "x": 8,
-    "y": 12,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 161,
-    "x": 9,
-    "y": 12,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 162,
-    "x": 13,
-    "y": 12,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 163,
-    "x": 15,
-    "y": 12,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 164,
-    "x": 16,
-    "y": 12,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 165,
-    "x": 26,
-    "y": 12,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 166,
-    "x": 27,
-    "y": 12,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 167,
-    "x": 0,
-    "y": 13,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 168,
-    "x": 1,
-    "y": 13,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 169,
-    "x": 5,
-    "y": 13,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 170,
-    "x": 6,
-    "y": 13,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 171,
-    "x": 7,
-    "y": 13,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 172,
-    "x": 8,
-    "y": 13,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 173,
-    "x": 9,
-    "y": 13,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 174,
-    "x": 15,
-    "y": 13,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 175,
-    "x": 16,
-    "y": 13,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 176,
-    "x": 25,
-    "y": 13,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 177,
-    "x": 26,
-    "y": 13,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 178,
-    "x": 27,
-    "y": 13,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 179,
-    "x": 0,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 180,
-    "x": 1,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 181,
-    "x": 2,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 182,
-    "x": 5,
-    "y": 14,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 183,
-    "x": 6,
-    "y": 14,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 184,
-    "x": 7,
-    "y": 14,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 185,
-    "x": 8,
-    "y": 14,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 186,
-    "x": 9,
-    "y": 14,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 187,
-    "x": 10,
-    "y": 14,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 188,
-    "x": 11,
-    "y": 14,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 189,
-    "x": 12,
-    "y": 14,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 190,
-    "x": 13,
-    "y": 14,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 191,
-    "x": 15,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 192,
-    "x": 16,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 193,
-    "x": 18,
-    "y": 14,
-    "name": "reed",
-    "isText": false
-   },
-   {
-    "id": 194,
-    "x": 23,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 195,
-    "x": 24,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 196,
-    "x": 25,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 197,
-    "x": 26,
-    "y": 14,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 198,
-    "x": 0,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 199,
-    "x": 1,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 200,
-    "x": 2,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 201,
-    "x": 5,
-    "y": 15,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 202,
-    "x": 6,
-    "y": 15,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 203,
-    "x": 7,
-    "y": 15,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 204,
-    "x": 8,
-    "y": 15,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 205,
-    "x": 9,
-    "y": 15,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 206,
-    "x": 10,
-    "y": 15,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 207,
-    "x": 11,
-    "y": 15,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 208,
-    "x": 12,
-    "y": 15,
-    "name": "tile",
-    "isText": false
-   },
-   {
-    "id": 209,
-    "x": 13,
-    "y": 15,
-    "name": "pipe",
-    "isText": false
-   },
-   {
-    "id": 210,
-    "x": 15,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 211,
-    "x": 16,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 212,
-    "x": 22,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 213,
-    "x": 23,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 214,
-    "x": 24,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   },
-   {
-    "id": 215,
-    "x": 25,
-    "y": 15,
-    "name": "bog",
-    "isText": false
-   }
-  ]
- },
  "inputs": "ldddruuuuulurrdrdrrululuddllurdrurrrrrrrzzzdrlluuulllddrlddrdlllulddrrrrdlrrrrruuuuuuulllddlllllrrrruuulldzzlldrrrrddllllulurrrrrddrdddruuurulldluldddluuudllluuurrrllddddddrruuluurdldruurrrdlllulddddrdddlwwwwwwwwwwwwwwwwwwwwwurrrrruuuruullllllulluurrrrrurddldrdddrrululldrlldrrrdruuulllluuullldrrrrudduurddddldrrdrullllllduuulwwwww",
- "initial": "playing|pipe!@0,0(push);is!@1,0(push);stop!@2,0(push);pipe@3,0(stop);tile@4,0();pipe@5,0(stop);reed@12,0();bog@15,0(defeat);bog@16,0(defeat);pipe@25,0(stop);tile@26,0();tile@27,0();pipe@0,1(stop);pipe@1,1(stop);pipe@2,1(stop);pipe@3,1(stop);pipe@4,1(stop);pipe@5,1(stop);bog@15,1(defeat);bog@16,1(defeat);reed@18,1();pipe@21,1(stop);flag!@22,1(push);pipe@23,1(stop);pipe@24,1(stop);pipe@25,1(stop);tile@26,1();tile@27,1();baba!@0,2(push);is!@1,2(push);you!@2,2(push);pipe@3,2(stop);reed@14,2();bog@15,2(defeat);bog@16,2(defeat);pipe@25,2(stop);tile@26,2();tile@27,2();pipe@0,3(stop);pipe@1,3(stop);pipe@2,3(stop);pipe@3,3(stop);tile@6,3();cog!@6,3(push);tile@7,3();is!@7,3(push);tile@8,3();stop!@8,3(push);bog@15,3(defeat);bog@16,3(defeat);pipe@21,3(stop);rock!@22,3(push);pipe@23,3(stop);pipe@24,3(stop);pipe@25,3(stop);tile@26,3();tile@27,3();flag!@0,4(push);is!@1,4(push);flag!@2,4(push);pipe@3,4(stop);tile@6,4();tile@7,4();tile@8,4();bog@15,4(defeat);bog@16,4(defeat);reed@17,4();pipe@25,4(stop);tile@26,4();tile@27,4();pipe@0,5(stop);pipe@1,5(stop);pipe@2,5(stop);pipe@3,5(stop);tile@6,5();flag@6,5();tile@7,5();tile@8,5();cog@8,5(stop);tile@9,5();tile@10,5();move!@10,5(push);reed@13,5();bog@15,5(defeat);bog@16,5(defeat);pipe@21,5(stop);ice!@22,5(push);pipe@23,5(stop);pipe@24,5(stop);pipe@25,5(stop);tile@26,5();tile@27,5();bog!@0,6(push);is!@1,6(push);defeat!@2,6(push);pipe@3,6(stop);tile@6,6();tile@7,6();tile@8,6();tile@9,6();tile@10,6();and!@12,6(push);bog@15,6(defeat);bog@16,6(defeat);pipe@25,6(stop);tile@26,6();tile@27,6();pipe@0,7(stop);pipe@1,7(stop);pipe@2,7(stop);pipe@3,7(stop);tile@6,7();baba@6,7(you);tile@7,7();tile@8,7();robot@8,7(push);tile@9,7();tile@10,7();and!@10,7(push);bog@15,7(defeat);bog@16,7(defeat);pipe@21,7(stop);win!@22,7(push);pipe@23,7(stop);pipe@24,7(stop);pipe@25,7(stop);pipe@26,7(stop);tile@27,7();tile@6,8();tile@7,8();tile@8,8();reed@14,8();bog@15,8(defeat);bog@16,8(defeat);pipe@26,8(stop);tile@27,8();tile@6,9();robot!@6,9(push);tile@7,9();is!@7,9(push);tile@8,9();push!@8,9(push);bog@15,9(defeat);bog@16,9(defeat);pipe@26,9(stop);tile@27,9();bog@15,10(defeat);bog@16,10(defeat);pipe@26,10(stop);pipe@27,10(stop);bog@0,11(defeat);bog@15,11(defeat);bog@16,11(defeat);reed@17,11();bog@0,12(defeat);bog@1,12(defeat);pipe@5,12(stop);pipe@6,12(stop);pipe@7,12(stop);pipe@8,12(stop);pipe@9,12(stop);reed@13,12();bog@15,12(defeat);bog@16,12(defeat);bog@26,12(defeat);bog@27,12(defeat);bog@0,13(defeat);bog@1,13(defeat);pipe@5,13(stop);tile@6,13();tile@7,13();tile@8,13();pipe@9,13(stop);bog@15,13(defeat);bog@16,13(defeat);bog@25,13(defeat);bog@26,13(defeat);bog@27,13(defeat);bog@0,14(defeat);bog@1,14(defeat);bog@2,14(defeat);pipe@5,14(stop);tile@6,14();tile@7,14();tile@8,14();pipe@9,14(stop);pipe@10,14(stop);pipe@11,14(stop);pipe@12,14(stop);pipe@13,14(stop);bog@15,14(defeat);bog@16,14(defeat);reed@18,14();bog@23,14(defeat);bog@24,14(defeat);bog@25,14(defeat);bog@26,14(defeat);bog@0,15(defeat);bog@1,15(defeat);bog@2,15(defeat);pipe@5,15(stop);tile@6,15();tile@7,15();tile@8,15();pipe@9,15(stop);tile@10,15();tile@11,15();tile@12,15();pipe@13,15(stop);bog@15,15(defeat);bog@16,15(defeat);bog@22,15(defeat);bog@23,15(defeat);bog@24,15(defeat);bog@25,15(defeat)",
+ "initial": "playing|and!@12,6(push);and!@10,7(push);baba!@0,2(push);baba@down@6,7(you);bog@15,0(defeat);bog@16,0(defeat);bog@15,1(defeat);bog@16,1(defeat);bog@15,2(defeat);bog@16,2(defeat);bog@15,3(defeat);bog@16,3(defeat);bog@15,4(defeat);bog@16,4(defeat);bog@15,5(defeat);bog@16,5(defeat);bog@15,6(defeat);bog@16,6(defeat);bog@15,7(defeat);bog@16,7(defeat);bog@15,8(defeat);bog@16,8(defeat);bog@15,9(defeat);bog@16,9(defeat);bog@15,10(defeat);bog@16,10(defeat);bog@0,11(defeat);bog@15,11(defeat);bog@16,11(defeat);bog@0,12(defeat);bog@1,12(defeat);bog@15,12(defeat);bog@16,12(defeat);bog@26,12(defeat);bog@27,12(defeat);bog@0,13(defeat);bog@1,13(defeat);bog@15,13(defeat);bog@16,13(defeat);bog@25,13(defeat);bog@26,13(defeat);bog@27,13(defeat);bog@0,14(defeat);bog@1,14(defeat);bog@2,14(defeat);bog@15,14(defeat);bog@16,14(defeat);bog@23,14(defeat);bog@24,14(defeat);bog@25,14(defeat);bog@26,14(defeat);bog@0,15(defeat);bog@1,15(defeat);bog@2,15(defeat);bog@15,15(defeat);bog@16,15(defeat);bog@22,15(defeat);bog@23,15(defeat);bog@24,15(defeat);bog@25,15(defeat);bog!@0,6(push);cog@8,5(stop);cog!@6,3(push);defeat!@2,6(push);flag@6,5();flag!@22,1(push);flag!@0,4(push);flag!@2,4(push);ice!@22,5(push);is!@1,0(push);is!@1,2(push);is!@7,3(push);is!@1,4(push);is!@1,6(push);is!@7,9(push);move!@10,5(push);pipe@3,0(stop);pipe@5,0(stop);pipe@25,0(stop);pipe@0,1(stop);pipe@1,1(stop);pipe@2,1(stop);pipe@3,1(stop);pipe@4,1(stop);pipe@5,1(stop);pipe@21,1(stop);pipe@23,1(stop);pipe@24,1(stop);pipe@25,1(stop);pipe@3,2(stop);pipe@25,2(stop);pipe@0,3(stop);pipe@1,3(stop);pipe@2,3(stop);pipe@3,3(stop);pipe@21,3(stop);pipe@23,3(stop);pipe@24,3(stop);pipe@25,3(stop);pipe@3,4(stop);pipe@25,4(stop);pipe@0,5(stop);pipe@1,5(stop);pipe@2,5(stop);pipe@3,5(stop);pipe@21,5(stop);pipe@23,5(stop);pipe@24,5(stop);pipe@25,5(stop);pipe@3,6(stop);pipe@25,6(stop);pipe@0,7(stop);pipe@1,7(stop);pipe@2,7(stop);pipe@3,7(stop);pipe@21,7(stop);pipe@23,7(stop);pipe@24,7(stop);pipe@25,7(stop);pipe@26,7(stop);pipe@26,8(stop);pipe@26,9(stop);pipe@26,10(stop);pipe@27,10(stop);pipe@5,12(stop);pipe@6,12(stop);pipe@7,12(stop);pipe@8,12(stop);pipe@9,12(stop);pipe@5,13(stop);pipe@9,13(stop);pipe@5,14(stop);pipe@9,14(stop);pipe@10,14(stop);pipe@11,14(stop);pipe@12,14(stop);pipe@13,14(stop);pipe@5,15(stop);pipe@9,15(stop);pipe@13,15(stop);pipe!@0,0(push);push!@8,9(push);reed@12,0();reed@18,1();reed@14,2();reed@17,4();reed@13,5();reed@14,8();reed@17,11();reed@13,12();reed@18,14();robot!@6,9(push);robot@down@8,7(push);rock!@22,3(push);stop!@2,0(push);stop!@8,3(push);tile@4,0();tile@26,0();tile@27,0();tile@26,1();tile@27,1();tile@26,2();tile@27,2();tile@6,3();tile@7,3();tile@8,3();tile@26,3();tile@27,3();tile@6,4();tile@7,4();tile@8,4();tile@26,4();tile@27,4();tile@6,5();tile@7,5();tile@8,5();tile@9,5();tile@10,5();tile@26,5();tile@27,5();tile@6,6();tile@7,6();tile@8,6();tile@9,6();tile@10,6();tile@26,6();tile@27,6();tile@6,7();tile@7,7();tile@8,7();tile@9,7();tile@10,7();tile@27,7();tile@6,8();tile@7,8();tile@8,8();tile@27,8();tile@6,9();tile@7,9();tile@8,9();tile@27,9();tile@6,13();tile@7,13();tile@8,13();tile@6,14();tile@7,14();tile@8,14();tile@6,15();tile@7,15();tile@8,15();tile@10,15();tile@11,15();tile@12,15();win!@22,7(push);you!@2,2(push)",
  "hashes": [
-  "d5bfc1949ff01e4b",
-  "1f6082fc153313bf",
-  "9eec30db30b8a276",
-  "c75ad865189d699d",
-  "01d82d572c994cae",
-  "880b17ec3be1ae63",
-  "71e2d53a5282799f",
-  "69c1aaeef99272f7",
-  "a6979e9ae586c5b1",
-  "d4ca551a94b4c8cc",
-  "9a1e376c7792646d",
-  "9cc95fec50e1babb",
-  "7b3320a9a4537440",
-  "9b0a96f51ced737e",
-  "8e822da064662d12",
-  "8e822da064662d12",
-  "23d4bae9ff98e4fa",
-  "457533c1e9342175",
-  "754eeacb11f4193d",
-  "015222786e7ef098",
-  "015222786e7ef098",
-  "1f6e2ec4b9fe0ce2",
-  "a2289c4d7e36662b",
-  "584406857ecca5b5",
-  "3667aba55f2185c3",
-  "b9ac7e98b0f00eb2",
-  "ee4a3c50cc406774",
-  "65ef3daeca4c3ac3",
-  "02bf0ebe46890e3c",
-  "e14b499a311439a0",
-  "ef724b1d485325b0",
-  "66371e034589d553",
-  "9982c9c2b2bcf250",
-  "9893156404189e2a",
-  "5a3eca01d5c28c43",
-  "3ecfdc30327222d5",
-  "09740f4891dd126a",
-  "f8f3e54bb15b4ec2",
-  "535597377d70c67c",
-  "37adc5f40bfb60aa",
-  "535597377d70c67c",
-  "f8f3e54bb15b4ec2",
-  "09740f4891dd126a",
-  "ca984ee4e71333fd",
-  "4312fe753bdc287d",
-  "218fcdfb8b400668",
-  "e896d016ed77541a",
-  "87e329fe47ed3668",
-  "86d13254286813cf",
-  "a0e7bf217d964c2b",
-  "e026b0a46ef91413",
-  "5d0b1d897e29ad7b",
-  "0184ea6f760417c5",
-  "1c86d710baabc257",
-  "118649982ddf74d5",
-  "c4e54d8b1a7c0389",
-  "dddf5c2ac96948ca",
-  "2ef2e1ba25269d45",
-  "139d16c10a7b225f",
-  "f8e13c4855e034ae",
-  "d90331f335767536",
-  "2b56d43ee551390d",
-  "5b20f41d6201c176",
-  "744ab10cd8ed1c69",
-  "70465a9d8765d520",
-  "32bfd5bbac9cc12e",
-  "3d17301307e05ccc",
-  "3fb5e2287960a4bb",
-  "279c5b10d2afa23a",
-  "ff92f3b646e5c0c1",
-  "1d5c6591574d7a3e",
-  "7cfaefb8c53bcefc",
-  "56fa2fb317b74582",
-  "51184b37f179eb0d",
-  "188adc459863ade5",
-  "c56ff2ca1f86c1f9",
-  "c3e75ba764f877c3",
-  "fcba8ffaf735fbc7",
-  "b95f2452d2a6d09f",
-  "8e040fe33f6e827e",
-  "cf196b7815e3f1f9",
-  "75b3bb080641d5b7",
-  "6e8ece463dab49ea",
-  "e223095b861ac4f9",
-  "aa13508deadb6617",
-  "e49dfa907dd32838",
-  "8636c6f85d829b95",
-  "f447d349c659ebd5",
-  "6fd31c5778bfba14",
-  "9f7512567926dfdc",
-  "d8c4cb6733d62abb",
-  "ae56b8d045b457a0",
-  "e312dd84d471eef1",
-  "c50a8d7f00f9561b",
-  "d029c372a8f96ffe",
-  "b8df06550608a74b",
-  "cd12dcd862aa0230",
-  "4490d0927769b5cc",
-  "a50223786a668048",
-  "b1acd4c08acc5eef",
-  "49578c12b762d798",
-  "9ba02509644a3033",
-  "18970222d497cefb",
-  "8c4fbdf6e00fe956",
-  "b82356ecc91af91b",
-  "213a8e85dbd79d57",
-  "b82356ecc91af91b",
-  "8c4fbdf6e00fe956",
-  "b82356ecc91af91b",
-  "72814088d863f98c",
-  "9d1bc8e9e70ae79e",
-  "16216ba4764c0fc4",
-  "c8a386ddb2f328ec",
-  "cb060e43fd79269e",
-  "b6384d65b6fef636",
-  "0fd316bdf90e8d5d",
-  "d8425a6a3b9d6c36",
-  "5d90532693eba3b7",
-  "97bdf02fe800fd5f",
-  "fc128a0845d94c5c",
-  "40bcb0a110f6edcb",
-  "f672f78366cd46ec",
-  "6101cabdfe1e280b",
-  "fe07dbe526509fb2",
-  "d119c870060b183d",
-  "ad84dbd0987a76e0",
-  "e4b16d3022ca91cc",
-  "c191fdf83ee138b7",
-  "5ff910cc2cf64411",
-  "1c20d3762427ae90",
-  "0fb33208f4283274",
-  "493a1a9520eb30ab",
-  "e84e0b5fc288c378",
-  "2c289decf3b40c21",
-  "9adce93e27b90f85",
-  "b4496edb74daec3c",
-  "3761585a58a224a5",
-  "032b75d473cc53ba",
-  "4042e2b31c478685",
-  "91e527e38b94a13b",
-  "d8494c54996f1fd4",
-  "15db8a93a26e0336",
-  "ea334db72d50c829",
-  "b4816d026e09a869",
-  "f9bc687297fe365f",
-  "241b36288eb1a107",
-  "1dd631fded53ade5",
-  "1ad2dc97cc0dd002",
-  "d4ecc95dc830ad6a",
-  "c34cf4929e39b8be",
-  "7cacf407119644de",
-  "1e2ba724a58ac77a",
-  "97b5aeb0ca265a40",
-  "9f83baaff2eaf3a2",
-  "0d3ebb9c9628f00d",
-  "950167a6c46bee15",
-  "fdebc42b687de401",
-  "f9b70fa0407eeee6",
-  "993bf06fea35e82c",
-  "d39b24aff44c64b6",
-  "d39b24aff44c64b6",
-  "77abb67dfaf15567",
-  "56974b6852515003",
-  "2df980a9691cb1d5",
-  "37849e9d9adc33fa",
-  "c28a38fc11573de2",
-  "afa7b9802b4e8de7",
-  "a3e0d568a45da7f7",
-  "151f59c6f4bf587c",
-  "a01539147eb18041",
-  "3d7fa0f1a489e228",
-  "fa5ed314e8d7fe1a",
-  "b5beda7b694ab762",
-  "e91433f9fee6e38c",
-  "aa8b93e13f73fd83",
-  "0da9a0b6bf43fb86",
-  "018bc82cb9c3e001",
-  "ebe1adf9026984a4",
-  "99ffc8cfd8cafc11",
-  "ddecf1524f7e611b",
-  "d94170fbcaff6ee4",
-  "d9c03709063ffb2b",
-  "a872110350a76fe4",
-  "b44eac80961e42f3",
-  "feab4bc78ae6ec70",
-  "220aeb5a1337ae94",
-  "ca42604c87f0a6bc",
-  "ab2141bd6a480e20",
-  "9eb0dd173bca3306",
-  "b9e92d8b023dbe3e",
-  "2cd1224a28389309",
-  "953284fac354cf15",
-  "f4ce9caf951d8d4f",
-  "ad287c26ca9a8d0a",
-  "e8c7719804027223",
-  "466dc67d2776449d",
-  "ab8ca7f5d0e21c23",
-  "054f0d0127f08962",
-  "2e090c6b3f163c23",
-  "bf938b657ba5527c",
-  "84fb131e42a0c670",
-  "f91d18039c2b310a",
-  "00d1fb5c95c5ac82",
-  "a29d5200e5a095d6",
-  "b6b44d19dd31a668",
-  "b585e8e0b2f9e121",
-  "0d491c03402b77c1",
-  "45f15079f3770aff",
-  "56edca2eb338757e",
-  "62af090c3277a677",
-  "cdc30c95700476f8",
-  "f55253ecb03f9c77",
-  "180bd16f7117aa60",
-  "5e1adbc9c579beae",
-  "a5ae04b895848ffa",
-  "7bb95e0687d8bb0c",
-  "f4d3ebd66d902dbe",
-  "1b6cee7b4865b497",
-  "7419f4936c46ccf9",
-  "12cc1f8fb5ef333f",
-  "5289767e75558607",
-  "a75bde82a11d4fc0",
-  "f84fb26521453fab",
-  "f32427768dec08f5",
-  "79967f89d20c7c18",
-  "c34e4a5092c2d4c8",
-  "c275e6028b58fea8",
-  "a9759f30c04bf605",
-  "48cde1d79d2b90af",
-  "664da551e0b6b30c",
-  "29cd79096f632d7f",
-  "f829d37ad9f40165",
-  "33151aff3b9b8400",
-  "9dc2502d76d6af6b",
-  "ee7b5c4b6ab05319",
-  "43dc18ea7ec2005d",
-  "74d1d1a85c7e0b22",
-  "3470fe65dc088a4a",
-  "e331c911627ce79f",
-  "985642b3e0ea0376",
-  "198400bcac73a7da",
-  "c34e03dceb31acc5",
-  "373656f1401bbd3a",
-  "4384bafbb3a9134d",
-  "7822595af5d83e72",
-  "e5c077cc425ba341",
-  "f43d37ba26ff2e87",
-  "63520f46e34dff45",
-  "337b459218653bfa",
-  "301e2a35e62b22d1",
-  "27c3875f0e85b9c2",
-  "143031fee4c2062e",
-  "8a85fa730a84b778",
-  "cc0fdd4e15cbb6bb",
-  "7256ed2bcd0d9ffd",
-  "ca381e0d12266a2f",
-  "15fed4052294aac6",
-  "a3bd05e811d81668",
-  "5edf19093a33ccfa",
-  "932494a022a460f6",
-  "2c61f1830e89b327",
-  "46c28298fd3bd8ac",
-  "62e1c1d70524134a",
-  "07d7cdf43fdd959d",
-  "3de5e15fc7a028d8",
-  "4b58e22b0bfdb01c",
-  "53e6b728d91edf67",
-  "a00f5a6231ced458",
-  "2077f7f2c93109ab",
-  "dca8593d269afe5d",
-  "2cb1abc8afbb4d2a",
-  "d91cbc965e4c0688",
-  "c5fca5ead559ebcd",
-  "0d44b3d03d58e774",
-  "134a21d05a38016e",
-  "50af48795abea072",
-  "a934f8b4266174f6",
-  "966654bab4cbefa2",
-  "7cd43f1e703595ae",
-  "ba1b98fbfc0f4e5c",
-  "82de744b6a3dd1c5",
-  "7c2f57b6eafb754b",
-  "830918228dd90684",
-  "5ac64ea872f612ba",
-  "e353a81e8e71b808",
-  "6cc7abea52907aa4",
-  "36c0d8531d082333",
-  "7bc5316f22476f68",
-  "3e8f70b5811d7df7",
-  "a3f67f904e4b4f08",
-  "81e40917517dfa40",
-  "5dc2fefb16e7621b",
-  "8287334492fcd092",
-  "5d2f1a292fa242e5",
-  "27efd8884149544c",
-  "472e85b064ad18ef",
-  "1cdc2744145b6d02",
-  "d4103dd353466710",
-  "34b169dc92647efd",
-  "1d5d94e1ca06d67a",
-  "a80fe4aafe62698a",
-  "ecf86fcd8459a4bb",
-  "34b169dc92647efd",
-  "47c2aeb83dc00056",
-  "c1d5fa771607baf3",
-  "cefdef150bd2db1a",
-  "14971ae8a29d3761",
-  "423e096f4f4b24ce",
-  "299aece4a9097034",
-  "e02ba6c4456308b7",
-  "9e0b3feb7d952074",
-  "c1685068ece37e20",
-  "f0137307434c4ce1",
-  "05cbed330d2ae8c8",
-  "022632199988b97b",
-  "7abae8cf92682462",
-  "14c60b5d007781f4",
-  "a29ca4e822346a37",
-  "0dae08b3311e9b8e",
-  "65ce996e4209e460",
-  "f0852ed000fd4d83",
-  "ebb8bb6a3d1cf8f3",
-  "e187bd70aff9df69",
-  "9fe83e85fa4d3464",
-  "57c21d5e8f18aae4",
-  "8d30014682ca1dcc",
-  "d6689e41bd655cd1",
-  "16b5e2fe153f46c2",
-  "c74bf551936a3f8d",
-  "9c36a93887eefec2",
-  "0841263fbcd62202"
+  "459ef8574c6c88fa",
+  "ca010ea2b3da68ff",
+  "c730699a041192ac",
+  "a2a0a78cf516cfb9",
+  "493b30aaaefecae0",
+  "f3accea9216e8680",
+  "5ffe2c3d9132d085",
+  "d791d166151a7685",
+  "f28c20ef6f891bb4",
+  "546f609aae02cf82",
+  "58b661825a61eba8",
+  "58e15ca88fb4b481",
+  "630c8a5822aa74fc",
+  "39f6e17deee3aa62",
+  "f53e127a2a9fa8f3",
+  "f53e127a2a9fa8f3",
+  "9f49b12d1c1c7362",
+  "34135ddae9d56c7f",
+  "a50578709dbe3cf4",
+  "5775cac244a1ab4e",
+  "5775cac244a1ab4e",
+  "0e7574f188b815ce",
+  "7bc9642bc4e8ce92",
+  "b765568ec74156a5",
+  "1370986067c2b893",
+  "aa3d5d3a133e32c6",
+  "a796bf41f4c9f33e",
+  "0e66707b294a0758",
+  "1398b9f18e7e9510",
+  "ffc5430760ff5525",
+  "202f4b5d855942be",
+  "fcd247d206b24052",
+  "c0679aed13ed4e35",
+  "2d6cde6921027dc1",
+  "7e16e7eea6ffd2b2",
+  "a9c396c3add17bb7",
+  "eec906ed677410a7",
+  "3eea20632a3f3812",
+  "1f11722b08ba249b",
+  "e98611033d0fb216",
+  "1f11722b08ba249b",
+  "3eea20632a3f3812",
+  "eec906ed677410a7",
+  "98e1efcd57ce5819",
+  "c800a2e2a376d802",
+  "f8e051f04621e882",
+  "c09490f29ab4c399",
+  "5cc56b85dd77b426",
+  "c15abdea7be515ed",
+  "90e727d5ba712134",
+  "387e6676983a350e",
+  "b1012b27ee0bad06",
+  "cc47062b2b615565",
+  "481b78311e470fd6",
+  "5e651fb275cba282",
+  "c2f03cb31eccf58c",
+  "a2e9dfaa17f3b27e",
+  "787cabf4141f6936",
+  "a279c45dd47b127a",
+  "5a75e4842e0a3a20",
+  "007aaa95c52ac8a3",
+  "26236d05b2e6c2e4",
+  "e87f21eeaf658914",
+  "e944a025bbecc5aa",
+  "5bd1b105c6310a81",
+  "b831ab8c66bfabe6",
+  "44ea235c0406e473",
+  "b3ac2e6cd01d5c8d",
+  "4900d84dc77247b7",
+  "326729b791a08cd5",
+  "48a675c1a59f8504",
+  "22f33c946c98733d",
+  "c158af067cda508e",
+  "ba9ecc482384434e",
+  "92f305516820561d",
+  "0d38ea644152f770",
+  "3263ec40666ae88d",
+  "56050d0d77db3a78",
+  "4a61c5812e8a4611",
+  "b805c40250130b19",
+  "e527779bdfe27f56",
+  "01dfaa6f880014a5",
+  "f710ff0c7c5340c1",
+  "69da947b373e51c2",
+  "1041b3669aacbd1c",
+  "47799b96e99b25ce",
+  "c8354a969dd57f47",
+  "4bc2e33622d48aa6",
+  "fd63bcc85060e92b",
+  "091e7e4dbede58cf",
+  "024c4d18851065db",
+  "b11b6a86e7a6bbc8",
+  "77b0cf1418486611",
+  "a01831d35b47ec8e",
+  "f4fd59d69c768097",
+  "7b8539234125db15",
+  "c8edc90698d35b5f",
+  "39c2f54ca689b601",
+  "4ccbda2e69223249",
+  "c3701af06a509a08",
+  "d706365702db82e4",
+  "ab7661fe2e3f2b6c",
+  "ea3a6ffc4e10f3e4",
+  "ccb22052f0542491",
+  "ed6ed27be6cedea9",
+  "069998aaf55cf79b",
+  "ed6ed27be6cedea9",
+  "ccb22052f0542491",
+  "ed6ed27be6cedea9",
+  "0f70502d842a718d",
+  "b66b7e8bf9a9a876",
+  "30574acd06ca9d9e",
+  "635b4ff8f9b2ce89",
+  "7e2e03d6a450eca0",
+  "7b2514c589eef262",
+  "1c42cde5bae5ffd7",
+  "502c257f55860bb8",
+  "3177f326d600c83c",
+  "b7672d77dac4d8c1",
+  "640fb4e6282346e7",
+  "0a5b3bc2fb84964d",
+  "9982b39d75605bdb",
+  "8abd3d30cb996f0b",
+  "523169887acd15c9",
+  "248d0202d50337ac",
+  "4167f779153b7ec3",
+  "4edbcd8bb1b605cf",
+  "ee0d0008708f5499",
+  "86ae9b189221d42c",
+  "07499130ff70575b",
+  "d4502c20787f212d",
+  "556afeb55d112053",
+  "e761f5b7141ceb5c",
+  "1e52eb9ad6397c18",
+  "e2393af16c4f1fcc",
+  "e51af615a54832ff",
+  "6a55c2eba376d186",
+  "3f22438abf38737c",
+  "156620d272c486fd",
+  "1f49a9ca61e29746",
+  "18d2ada4ed2d27dc",
+  "ebb19c279bfbcf6c",
+  "1f3ac74a8e077d01",
+  "e9c2940a59a3a76d",
+  "7b0b78135d1b4c1f",
+  "af7a0172ebff50b5",
+  "a92d65826792a54a",
+  "49f7871ca82c8ca0",
+  "8d3581098d4d1bf2",
+  "54cbd4ebc478a96b",
+  "ba5341b926d71957",
+  "47d562db65be632f",
+  "bcdb2663b32e513d",
+  "2ffa7f1afd49ef8e",
+  "c1d93866f41ae7f6",
+  "43d8796d62c728f5",
+  "ab2e4c7e8f0b3b68",
+  "b1b6213bbdf4cecd",
+  "d6f4b1a63f0cf26a",
+  "10b7e52fd23fa342",
+  "10b7e52fd23fa342",
+  "a5a07305328a5d4c",
+  "569b61e55d9425e3",
+  "c9c93f27202ced94",
+  "c9d5559bd0acfc97",
+  "e1d1e45b9654b773",
+  "4e56b6e480f614d9",
+  "cc06a659da683e34",
+  "edaa121583baf958",
+  "5b3a03ab6e3c4785",
+  "c343f86047ed15ab",
+  "3475338c53913e74",
+  "8c9f362e99ef8289",
+  "36a06a8ec9bc471e",
+  "c97cfb72096fa397",
+  "53d0224eb7039177",
+  "c74a1edec3711663",
+  "db47a70e9f5a0099",
+  "badac6d0f14b4e24",
+  "ced41067130c35ae",
+  "709611b768ca2cdd",
+  "50d6baec904815dc",
+  "07c22514bf75c90d",
+  "95ce54f80bcb5635",
+  "32a81203fe16e032",
+  "8b4e760e0b39ab8c",
+  "860fe98ed16c4f73",
+  "f94c907d396067aa",
+  "ade64e854a817ed8",
+  "92136d5a41b669ef",
+  "8c1b03fceb2144ef",
+  "9568f614429be80b",
+  "e400b8300e220ce4",
+  "199ce2a0940ca72c",
+  "cccc90d7ccb8f044",
+  "a4dc2ebdc363398e",
+  "127cc92af627b337",
+  "6f9de424844760f4",
+  "ff7cb318d781c85c",
+  "12dcf273685875f8",
+  "539deaf537f4a1c4",
+  "c729bd39a589898a",
+  "7a5db9267be48a6b",
+  "919783580c195307",
+  "47e18564b8e09c09",
+  "3e164d3214d816a5",
+  "b82c176fa0ef3717",
+  "69a0dbc79e6670f7",
+  "743d94a029f5ad84",
+  "9903dbcd40845415",
+  "b643eafe39fdec03",
+  "be827d0e6d455944",
+  "ec9d17bdbe1a3356",
+  "38601a28a60f1d15",
+  "16fa6cfb0a7cfc8f",
+  "92a1ec3492286fd7",
+  "665dcae650606466",
+  "781206dc584210aa",
+  "73247ae15845b0ca",
+  "a2147a49afebc354",
+  "6cd3d3ff6a69e410",
+  "f053de3a6d7cccb0",
+  "88da261b970af65e",
+  "52f52d4843138b26",
+  "de7ccda556171e37",
+  "db7ac325f0432e47",
+  "fdcffe18907c25cd",
+  "3c49ffbda46d00a4",
+  "b09791cde630c1fd",
+  "3b5ae153ad89ecaa",
+  "7a21a0bd15554cfa",
+  "38295d5a82f39847",
+  "269df02942536553",
+  "76a42d82e4b672b3",
+  "f27b6fcdb01cde03",
+  "60ca325e91838299",
+  "4f29329ad0d0bb4d",
+  "0c89d5f0155d89e5",
+  "1a47de8eae4e10d8",
+  "0d52d24d33a64246",
+  "5c780f9a6f5a2be6",
+  "154855e8dcbcc219",
+  "e9f4a45df8accbc9",
+  "1d19b9a0e5e93665",
+  "be52d33e93c49be6",
+  "b6a281cd2b1bb35a",
+  "3c83f45e1aa1af3b",
+  "a27098cc4416a0b6",
+  "61226491e8dfb045",
+  "dbb976c896322e62",
+  "153365c00d31bc32",
+  "c59da8f71348f980",
+  "841460c8cf59bf8b",
+  "e058966d41fa1237",
+  "fffed99e0887ef06",
+  "d417d8d877fd0c77",
+  "21d92f99904aa324",
+  "596ed7428ae06ecf",
+  "7de7f5fe323d42aa",
+  "c77c08de0782b854",
+  "b6270ac9d05cc86d",
+  "bb9671bbe623d391",
+  "f503c0dfe66e74b1",
+  "f83db81457e72f5e",
+  "e05e213751170ea3",
+  "07fb81c2ecf25ac1",
+  "e70184e5407f9b6d",
+  "13bce3a33d4b0e17",
+  "68099a3a7fbd4655",
+  "8a72a26682dac0d3",
+  "0471599c80798cbe",
+  "46030f2c070fa9fd",
+  "c7a6deec066692cf",
+  "0a26c51f7ad5615c",
+  "8213f8d0edbefa97",
+  "092c8a8070f63956",
+  "466581828c0439a8",
+  "352b2e32a33d7a6c",
+  "bdb9c2436f4a7135",
+  "cd97e740ab859c11",
+  "69e272bcec74315f",
+  "b67f8efb507846c8",
+  "dd3a06fbf2fbdb48",
+  "1da64f4ff0d17a65",
+  "fdae9b07751fd068",
+  "9f442188ba07c42b",
+  "4fe89e0a4d699da9",
+  "5289be29b13c989e",
+  "2dc777afbc66ccdd",
+  "e62606dd6da459eb",
+  "651422a9c0668148",
+  "46f9cd7574e4718f",
+  "2c3d020e90861d1b",
+  "06e966c604c140e3",
+  "48564fe67f5f0c8b",
+  "6bbfc521d8e599d0",
+  "f0308f626cb42046",
+  "a4f08991fa3f8b8a",
+  "6c1879d7beb539e7",
+  "edfda9b5c5387c87",
+  "29386228076cad3f",
+  "fefe478aa8a97507",
+  "6c1879d7beb539e7",
+  "d0888a71bb45644b",
+  "c4a81dab30e4c082",
+  "fb1acf4fe897fe74",
+  "638ce50fff820d11",
+  "a601c12dde1034ab",
+  "5c0ca73d83c540cf",
+  "265af6fea90c6f88",
+  "069438e9e94e1b5f",
+  "88803f08ee2cb7e9",
+  "e87f1cfacf586223",
+  "e6b5282e4ed841b4",
+  "94e85eac7fc90a9c",
+  "e55f676e421257b3",
+  "bec37a43d7bd3fbf",
+  "ffbd52e0b1b14a9c",
+  "5f2f9a6bb489ff52",
+  "b85371c90a0319e2",
+  "f27418a08b065d19",
+  "1b5329843a33f448",
+  "22331261e4b9e55a",
+  "313281495bbabb2c",
+  "d8241ea2907a2535",
+  "fb4fc76f0a79da06",
+  "7bf6d64ef7608cd8",
+  "bd587a09c2c7d067",
+  "6f3f906aa34ad7fb",
+  "5281d4a2d1e53a34",
+  "175d788a49d354aa"
  ],
- "final": "win|pipe!@0,0(push);is!@1,0(push);stop!@2,0(push);pipe@3,0(stop);tile@4,0();pipe@5,0(stop);reed@12,0();bog@15,0(defeat);bog@16,0(defeat);pipe@25,0(stop);tile@26,0();tile@27,0();pipe@0,1(stop);pipe@1,1(stop);pipe@2,1(stop);pipe@3,1(stop);pipe@4,1(stop);pipe@5,1(stop);bog@15,1(defeat);bog@16,1(defeat);reed@18,1();pipe@21,1(stop);flag!@22,1(push);pipe@23,1(stop);pipe@24,1(stop);pipe@25,1(stop);tile@26,1();tile@27,1();baba!@0,2(push);is!@1,2(push);you!@2,2(push);pipe@3,2(stop);reed@14,2();bog@15,2(defeat);bog@16,2(defeat);pipe@25,2(stop);tile@26,2();tile@27,2();pipe@0,3(stop);pipe@1,3(stop);pipe@2,3(stop);pipe@3,3(stop);tile@6,3();cog@right!@23,2(push);tile@7,3();is@right!@22,6(push);tile@8,3();stop@right!@24,2(push);bog@15,3(defeat);bog@16,3(defeat);pipe@21,3(stop);rock!@22,3(push);pipe@23,3(stop);pipe@24,3(stop);pipe@25,3(stop);tile@26,3();tile@27,3();flag!@0,4(push);is!@1,4(push);flag!@2,4(push);pipe@3,4(stop);tile@6,4();tile@7,4();tile@8,4();bog@15,4(defeat);bog@16,4(defeat);reed@17,4();pipe@25,4(stop);tile@26,4();tile@27,4();pipe@0,5(stop);pipe@1,5(stop);pipe@2,5(stop);pipe@3,5(stop);tile@6,5();flag@6,5(win);tile@7,5();tile@8,5();robot@right@21,4(move);tile@9,5();tile@10,5();move@down!@7,9(push);reed@13,5();bog@15,5(defeat);bog@16,5(defeat);pipe@21,5(stop);ice!@22,5(push);pipe@23,5(stop);pipe@24,5(stop);pipe@25,5(stop);tile@26,5();tile@27,5();bog!@0,6(push);is!@1,6(push);defeat!@2,6(push);pipe@3,6(stop);tile@6,6();tile@7,6();tile@8,6();tile@9,6();tile@10,6();and@right!@22,2(push);bog@15,6(defeat);bog@16,6(defeat);pipe@25,6(stop);tile@26,6();tile@27,6();pipe@0,7(stop);pipe@1,7(stop);pipe@2,7(stop);pipe@3,7(stop);tile@6,7();baba@left@6,5(you);tile@7,7();tile@8,7();robot@right@21,6(move);tile@9,7();tile@10,7();and@right!@22,4(push);bog@15,7(defeat);bog@16,7(defeat);pipe@21,7(stop);win!@22,7(push);pipe@23,7(stop);pipe@24,7(stop);pipe@25,7(stop);pipe@26,7(stop);tile@27,7();tile@6,8();tile@7,8();tile@8,8();reed@14,8();bog@15,8(defeat);bog@16,8(defeat);pipe@26,8(stop);tile@27,8();tile@6,9();robot@down!@5,9(push);tile@7,9();is@left!@6,9(push);tile@8,9();push@down!@7,10(push);bog@15,9(defeat);bog@16,9(defeat);pipe@26,9(stop);tile@27,9();bog@15,10(defeat);bog@16,10(defeat);pipe@26,10(stop);pipe@27,10(stop);bog@0,11(defeat);bog@15,11(defeat);bog@16,11(defeat);reed@17,11();bog@0,12(defeat);bog@1,12(defeat);pipe@5,12(stop);pipe@6,12(stop);pipe@7,12(stop);pipe@8,12(stop);pipe@9,12(stop);reed@13,12();bog@15,12(defeat);bog@16,12(defeat);bog@26,12(defeat);bog@27,12(defeat);bog@0,13(defeat);bog@1,13(defeat);pipe@5,13(stop);tile@6,13();tile@7,13();tile@8,13();pipe@9,13(stop);bog@15,13(defeat);bog@16,13(defeat);bog@25,13(defeat);bog@26,13(defeat);bog@27,13(defeat);bog@0,14(defeat);bog@1,14(defeat);bog@2,14(defeat);pipe@5,14(stop);tile@6,14();tile@7,14();tile@8,14();pipe@9,14(stop);pipe@10,14(stop);pipe@11,14(stop);pipe@12,14(stop);pipe@13,14(stop);bog@15,14(defeat);bog@16,14(defeat);reed@18,14();bog@23,14(defeat);bog@24,14(defeat);bog@25,14(defeat);bog@26,14(defeat);bog@0,15(defeat);bog@1,15(defeat);bog@2,15(defeat);pipe@5,15(stop);tile@6,15();tile@7,15();tile@8,15();pipe@9,15(stop);tile@10,15();tile@11,15();tile@12,15();pipe@13,15(stop);bog@15,15(defeat);bog@16,15(defeat);bog@22,15(defeat);bog@23,15(defeat);bog@24,15(defeat);bog@25,15(defeat)",
+ "final": "win|and@right!@22,2(push);and@right!@22,4(push);baba!@0,2(push);baba@left@6,5(you);bog@15,0(defeat);bog@16,0(defeat);bog@15,1(defeat);bog@16,1(defeat);bog@15,2(defeat);bog@16,2(defeat);bog@15,3(defeat);bog@16,3(defeat);bog@15,4(defeat);bog@16,4(defeat);bog@15,5(defeat);bog@16,5(defeat);bog@15,6(defeat);bog@16,6(defeat);bog@15,7(defeat);bog@16,7(defeat);bog@15,8(defeat);bog@16,8(defeat);bog@15,9(defeat);bog@16,9(defeat);bog@15,10(defeat);bog@16,10(defeat);bog@0,11(defeat);bog@15,11(defeat);bog@16,11(defeat);bog@0,12(defeat);bog@1,12(defeat);bog@15,12(defeat);bog@16,12(defeat);bog@26,12(defeat);bog@27,12(defeat);bog@0,13(defeat);bog@1,13(defeat);bog@15,13(defeat);bog@16,13(defeat);bog@25,13(defeat);bog@26,13(defeat);bog@27,13(defeat);bog@0,14(defeat);bog@1,14(defeat);bog@2,14(defeat);bog@15,14(defeat);bog@16,14(defeat);bog@23,14(defeat);bog@24,14(defeat);bog@25,14(defeat);bog@26,14(defeat);bog@0,15(defeat);bog@1,15(defeat);bog@2,15(defeat);bog@15,15(defeat);bog@16,15(defeat);bog@22,15(defeat);bog@23,15(defeat);bog@24,15(defeat);bog@25,15(defeat);bog!@0,6(push);robot@right@21,4(move);cog@right!@23,2(push);defeat!@2,6(push);flag@6,5(win);flag!@22,1(push);flag!@0,4(push);flag!@2,4(push);ice!@22,5(push);is!@1,0(push);is!@1,2(push);is@right!@22,6(push);is!@1,4(push);is!@1,6(push);is@left!@6,9(push);move@down!@7,9(push);pipe@3,0(stop);pipe@5,0(stop);pipe@25,0(stop);pipe@0,1(stop);pipe@1,1(stop);pipe@2,1(stop);pipe@3,1(stop);pipe@4,1(stop);pipe@5,1(stop);pipe@21,1(stop);pipe@23,1(stop);pipe@24,1(stop);pipe@25,1(stop);pipe@3,2(stop);pipe@25,2(stop);pipe@0,3(stop);pipe@1,3(stop);pipe@2,3(stop);pipe@3,3(stop);pipe@21,3(stop);pipe@23,3(stop);pipe@24,3(stop);pipe@25,3(stop);pipe@3,4(stop);pipe@25,4(stop);pipe@0,5(stop);pipe@1,5(stop);pipe@2,5(stop);pipe@3,5(stop);pipe@21,5(stop);pipe@23,5(stop);pipe@24,5(stop);pipe@25,5(stop);pipe@3,6(stop);pipe@25,6(stop);pipe@0,7(stop);pipe@1,7(stop);pipe@2,7(stop);pipe@3,7(stop);pipe@21,7(stop);pipe@23,7(stop);pipe@24,7(stop);pipe@25,7(stop);pipe@26,7(stop);pipe@26,8(stop);pipe@26,9(stop);pipe@26,10(stop);pipe@27,10(stop);pipe@5,12(stop);pipe@6,12(stop);pipe@7,12(stop);pipe@8,12(stop);pipe@9,12(stop);pipe@5,13(stop);pipe@9,13(stop);pipe@5,14(stop);pipe@9,14(stop);pipe@10,14(stop);pipe@11,14(stop);pipe@12,14(stop);pipe@13,14(stop);pipe@5,15(stop);pipe@9,15(stop);pipe@13,15(stop);pipe!@0,0(push);push@down!@7,10(push);reed@12,0();reed@18,1();reed@14,2();reed@17,4();reed@13,5();reed@14,8();reed@17,11();reed@13,12();reed@18,14();robot@down!@5,9(push);robot@right@21,6(move);rock!@22,3(push);stop!@2,0(push);stop@right!@24,2(push);tile@4,0();tile@26,0();tile@27,0();tile@26,1();tile@27,1();tile@26,2();tile@27,2();tile@6,3();tile@7,3();tile@8,3();tile@26,3();tile@27,3();tile@6,4();tile@7,4();tile@8,4();tile@26,4();tile@27,4();tile@6,5();tile@7,5();tile@8,5();tile@9,5();tile@10,5();tile@26,5();tile@27,5();tile@6,6();tile@7,6();tile@8,6();tile@9,6();tile@10,6();tile@26,6();tile@27,6();tile@6,7();tile@7,7();tile@8,7();tile@9,7();tile@10,7();tile@27,7();tile@6,8();tile@7,8();tile@8,8();tile@27,8();tile@6,9();tile@7,9();tile@8,9();tile@27,9();tile@6,13();tile@7,13();tile@8,13();tile@6,14();tile@7,14();tile@8,14();tile@6,15();tile@7,15();tile@8,15();tile@10,15();tile@11,15();tile@12,15();win!@22,7(push);you!@2,2(push)",
  "status": "win"
 }
