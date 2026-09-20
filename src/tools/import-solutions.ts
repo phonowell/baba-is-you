@@ -119,6 +119,24 @@ const main = async (): Promise<void> => {
     byTitle.set(key, list)
   })
 
+  // `level-code-map.json` (rebuild: build-level-code-map.ts) pins a
+  // filename's `Level <code>` ref to the exact campaign index, resolving
+  // same-title variants across worlds (`Secret Garden` exists twice).
+  const codeIndex = new Map<string, number>()
+  try {
+    const codeMap = JSON.parse(
+      await fs.readFile(
+        path.join(import.meta.dirname, 'level-code-map.json'),
+        'utf8',
+      ),
+    ) as Record<string, { index: number | null }>
+    for (const [code, entry] of Object.entries(codeMap)) {
+      if (entry.index !== null) codeIndex.set(code.toLowerCase(), entry.index)
+    }
+  } catch {
+    // Map missing — fall back to title-only matching.
+  }
+
   // Levels a recorded golden already binds — importing over them would
   // redo work the corpus already covers. With --prefer-better the
   // incumbent's input length is kept so a shorter community path can
@@ -195,7 +213,18 @@ const main = async (): Promise<void> => {
     if (entry === undefined) continue
     if (only !== undefined && !normTitle(entry.title).includes(only)) continue
 
-    const candidates = byTitle.get(normTitle(entry.title)) ?? []
+    // A `Level <code>` ref pins the board; the code is authoritative so
+    // a failing replay means an engine gap on that exact level — never
+    // retried against same-title siblings (that could bind the wrong
+    // variant). Entries without a code keep title matching.
+    const refCode = entry.levelRef
+      .replace(/^Level\s+/i, '')
+      .replaceAll('(q)', '?')
+    const pinned = codeIndex.get(refCode.toLowerCase())
+    const candidates =
+      pinned !== undefined
+        ? [pinned]
+        : (byTitle.get(normTitle(entry.title)) ?? [])
     if (candidates.length === 0) {
       tally.unmatched += 1
       unmatched.push(`${entry.levelRef} ${entry.title}`)
@@ -213,6 +242,14 @@ const main = async (): Promise<void> => {
       tally.skipped += 1
       continue
     }
+
+    // Variant solutions (`LEVEL IS BABA`, `FLAG IS END`) beat the board
+    // by rewriting the level itself — officially that exits to the map
+    // rather than ending in `win`, so they can never verify under our
+    // flat-level engine. Report them apart from real engine gaps.
+    const variantSkip =
+      entry.variant !== '' &&
+      /\b(?:level|flag|all|empty|text) is /i.test(entry.variant)
 
     const inputs =
       named.levelRef === 'harbor'
@@ -284,13 +321,19 @@ const main = async (): Promise<void> => {
       // name collision, not an engine gap — the oracle was recorded on
       // the already-covered sibling. Flag those separately so the
       // failure list stays a clean gap-hunting signal.
-      const coveredSibling = candidates.some((index) => covered.has(index))
+      const coveredSibling =
+        pinned === undefined &&
+        candidates.some((index) => covered.has(index))
       const dupes = ` tried=${pending.join('/')}`
-      const tag = coveredSibling ? 'VARIANT' : 'FAILED'
-      if (!coveredSibling) tally.failed += 1
-      else tally.skipped += 1
+      const tag = variantSkip
+        ? 'MAP'
+        : coveredSibling
+          ? 'VARIANT'
+          : 'FAILED'
+      if (variantSkip || coveredSibling) tally.skipped += 1
+      else tally.failed += 1
       failed.push(
-        `${tag === 'VARIANT' ? 'VARIANT ' : ''}${entry.levelRef} ` +
+        `${tag === 'FAILED' ? '' : `${tag} `}${entry.levelRef} ` +
           `${entry.title} [${inputs.length}i ${closest}${dupes}]`,
       )
     }

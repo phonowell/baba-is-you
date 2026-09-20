@@ -39,7 +39,7 @@ type FilteredOutLevel = {
   unknownTileCount: number
 }
 
-type ParsedOfficialLevel = {
+export type ParsedOfficialLevel = {
   world: string
   fileName: string
   ld: LdData
@@ -51,7 +51,7 @@ const FACING_TEXT_FILTER_THRESHOLD = 5
 // `leveltype=1` .ld files are overworld maps — the app selects levels
 // from a flat menu, so maps are parsed for verification but never
 // converted into playable data.
-const isMapFile = (ld: LdData): boolean =>
+export const isMapFile = (ld: LdData): boolean =>
   ld.general.get('leveltype') === '1'
 
 const renderLevelsTs = (levels: ConvertedLevel[]): string => {
@@ -105,7 +105,7 @@ const checkInitialCapability = (level: ConvertedLevel): InitialCapability => {
   }
 }
 
-const loadParsedOfficialLevels = async (
+export const loadParsedOfficialLevels = async (
   sourceDir: string,
   world: string,
 ): Promise<ParsedOfficialLevel[]> => {
@@ -153,7 +153,7 @@ const logVerifyResult = (verify: VerifyResult): void => {
   }
 }
 
-const collectConvertedLevels = (
+export const collectConvertedLevels = (
   parsed: ParsedOfficialLevel[],
   global: ReturnType<typeof buildGlobalReference>,
   canon: CanonicalObjectTable,
@@ -248,7 +248,7 @@ const logImportSummary = (
 
 // Official content ships as separate campaigns (worlds). `debug` holds dev
 // test rooms, `levels` is engine metadata — neither is playable content.
-const WORLDS = ['baba', 'new_adv', 'museum'] as const
+export const WORLDS = ['baba', 'new_adv', 'museum'] as const
 
 const main = async (): Promise<void> => {
   const cwd = process.cwd()
