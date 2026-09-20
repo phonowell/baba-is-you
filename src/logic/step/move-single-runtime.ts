@@ -85,6 +85,18 @@ export const createSingleMoveRuntime = (
     )
 
   let waveDepth = 0
+  // Official `addaction` resolves pulled units breadth-first: every pull
+  // target in the vacated cell updates before any of them drags the cell
+  // behind IT. Queue pulls and drain them at the root so a pulled unit's
+  // own pull never runs ahead of its siblings' moves.
+  const pullQueue: number[] = []
+  const queuePulls = (targets: Item[]): void => {
+    for (const target of targets) {
+      if (context.moved.has(target.id) || context.removed.has(target.id))
+        continue
+      pullQueue.push(target.id)
+    }
+  }
 
   // Root-level `canMove` checks each want a fresh visiting set; one scratch
   // set cleared per call replaces the per-call allocation (the recursion
@@ -198,12 +210,15 @@ export const createSingleMoveRuntime = (
       const cantMove =
         context.stillIds.has(target.id) ||
         isLockedFor(target, direction)
-      const pushable =
-        context.pushIds.has(target.id) && !cantMove
-      const pullable =
-        context.pullIds.has(target.id) && !cantMove
       const swappable =
         context.swapIds.has(target.id) && !cantMove
+      const pullable =
+        context.pullIds.has(target.id) && !cantMove && !swappable
+      // Official gates the push branch on `isswap == nil`: a swap-prop
+      // target is never pushed — it trades into the mover's origin cell
+      // instead (the `swaps` list in check()).
+      const pushable =
+        context.pushIds.has(target.id) && !cantMove && !swappable
       const stopLike =
         context.stopIds.has(target.id) ||
         (cantMove &&
@@ -328,15 +343,7 @@ export const createSingleMoveRuntime = (
       if (lockHit && removeOne(context, item)) {
         context.moved.add(item.id)
         context.status.anyMoved = true
-        for (const target of pullTargets) {
-          if (
-            context.moved.has(target.id) ||
-            context.removed.has(target.id)
-          )
-            continue
-          if (!canMoveRoot(target.id)) continue
-          doMove(target.id)
-        }
+        queuePulls(pullTargets)
         return
       }
     }
@@ -361,12 +368,7 @@ export const createSingleMoveRuntime = (
       for (const target of openShutTargets)
         if (removeOne(context, target)) context.status.anyMoved = true
 
-      for (const target of pullTargets) {
-        if (context.moved.has(target.id) || context.removed.has(target.id))
-          continue
-        if (!canMoveRoot(target.id)) continue
-        doMove(target.id)
-      }
+      queuePulls(pullTargets)
 
       return
     }
@@ -402,23 +404,29 @@ export const createSingleMoveRuntime = (
       }
     }
 
-    for (const target of pullTargets) {
-      if (context.moved.has(target.id) || context.removed.has(target.id))
-        continue
-      if (!canMoveRoot(target.id)) continue
-      doMove(target.id)
-    }
+    queuePulls(pullTargets)
   }
 
   // The wave tag spans one whole root push (nested pushes, pulls and
   // swaps included) — matching the official frozen-board resolution.
   const doMove = (id: number): void => {
-    if (waveDepth === 0) context.moveWave++
+    const root = waveDepth === 0
+    if (root) context.moveWave++
     waveDepth++
     try {
       doMoveInner(id)
+      if (!root) return
+      // Breadth-first drain: each pulled unit's own pull chain enqueues
+      // behind its siblings, matching the official addaction queue.
+      for (let i = 0; i < pullQueue.length; i++) {
+        const pid = pullQueue[i]!
+        if (context.moved.has(pid) || context.removed.has(pid)) continue
+        if (!canMoveRoot(pid)) continue
+        doMoveInner(pid)
+      }
     } finally {
       waveDepth--
+      if (root) pullQueue.length = 0
     }
   }
 

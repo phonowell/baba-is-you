@@ -172,6 +172,14 @@ export const resolveBatchArrows = (
           if (!throughEmptyPush && isLockCollision(context, item, target))
             continue
           if (!context.pushIds.has(target.id)) continue
+          // Official gates the push branch on `isswap == nil`: a swap-prop
+          // target is displaced into the mover's origin, never pushed.
+          if (
+            context.swapIds.has(target.id) &&
+            !context.stillIds.has(target.id) &&
+            !isLockedFor(target, arrow.dir)
+          )
+            continue
           if (arrows.has(target.id)) continue
           addArrow(target.id, arrow.dir, false)
           pushed = true
@@ -215,12 +223,17 @@ export const resolveBatchArrows = (
         const cantMove =
           context.stillIds.has(target.id) ||
           isLockedFor(target, arrow.dir)
+        const swap =
+          context.swapIds.has(target.id) && !cantMove
+        // `isswap` cancels the block/push/pull verdicts alike — a
+        // swap-prop target only ever trades places with the mover.
         const stop =
-          context.stopIds.has(target.id) ||
-          (cantMove &&
-            (hasProp(target, 'push') || hasProp(target, 'pull')))
-        const push = context.pushIds.has(target.id) && !cantMove
-        const pull = context.pullIds.has(target.id) && !cantMove
+          !swap &&
+          (context.stopIds.has(target.id) ||
+            (cantMove &&
+              (hasProp(target, 'push') || hasProp(target, 'pull'))))
+        const push = context.pushIds.has(target.id) && !cantMove && !swap
+        const pull = context.pullIds.has(target.id) && !cantMove && !swap
         if (weak || blocked || (!push && !stop && !pull)) continue
 
         const targetArrow = arrows.get(target.id)

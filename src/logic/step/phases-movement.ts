@@ -769,8 +769,34 @@ export const applyShift = (
   if (!movers.length) return { items, moved: facingChanged }
 
   const shiftedResult = moveItemsBatch(shiftedItems, runtime, movers)
+  // Official `moveblock` runs again at the end of the turn: every unit
+  // resting on a `shift` belt adopts that belt's facing — which is what
+  // steers a `x is move` unit riding a conveyor, not the belt that
+  // delivered it there.
+  const steered = shiftedResult.items.map((item) => ({ ...item }))
+  const steeredIds = new Set<number>()
+  const restByCell = buildGrid(steered, width)
+  const restById = new Map<number, Item>()
+  for (const item of steered) restById.set(item.id, item)
+  for (const cellItems of restByCell.values()) {
+    for (const layer of splitByFloatLayer(cellItems)) {
+      const belt = layer.find((item) => hasProp(item, 'shift'))
+      if (!belt) continue
+      const beltLive = restById.get(belt.id)
+      if (!beltLive || hasProp(beltLive, 'sleep')) continue
+      const direction = beltLive.dir ?? 'right'
+      for (const item of layer) {
+        if (item.id === belt.id || steeredIds.has(item.id)) continue
+        const live = restById.get(item.id)
+        if (!live || live.dir === direction) continue
+        live.dir = direction
+        steeredIds.add(item.id)
+        facingChanged = true
+      }
+    }
+  }
   return {
-    items: shiftedResult.items,
+    items: steered,
     moved: shiftedResult.moved || facingChanged,
   }
 }

@@ -218,36 +218,60 @@ export const moveItems = (
   const before = new Map<number, { x: number; y: number }>()
   for (const item of next) before.set(item.id, { x: item.x, y: item.y })
 
-  for (const mover of movers) {
-    const id = mover.id
-    if (moved.has(id) || removed.has(id)) continue
-    // `cantmove` (still / level-hold pin / locked dir) blocks the move but
-    // not the turn: official `updatedir` still aims the unit at the input.
-    const moverItem = byId.get(id)
-    if (
-      pinnedIds.has(id) ||
-      stillIds.has(id) ||
-      (moverItem && isLockedFor(moverItem, direction))
-    ) {
-      if (moverItem && moverItem.dir !== direction) {
-        moverItem.dir = direction
-        status.anyMoved = true
+  // Official movement is a multi-pass state machine: a mover whose check
+  // fails retires for the pass but retries after later movers resolve —
+  // e.g. a fruit held by a shut door advances once a trailing mover's
+  // push annihilates the door. Loop to a fixpoint; a `weak` mover that
+  // still cannot move after the dust settles shatters on contact.
+  let weakCrash: number[] = []
+  let progress = true
+  while (progress) {
+    progress = false
+    for (const mover of movers) {
+      const id = mover.id
+      if (moved.has(id) || removed.has(id)) continue
+      // `cantmove` (still / level-hold pin / locked dir) blocks the move
+      // but not the turn: official `updatedir` still aims the unit at the
+      // input.
+      const moverItem = byId.get(id)
+      if (
+        pinnedIds.has(id) ||
+        stillIds.has(id) ||
+        (moverItem && isLockedFor(moverItem, direction))
+      ) {
+        if (moverItem && moverItem.dir !== direction) {
+          moverItem.dir = direction
+          status.anyMoved = true
+        }
+        continue
       }
-      continue
+      if (!engine.canMoveRoot(id)) {
+        const item = byId.get(id)
+        // A blocked `weak` mover shatters — deferred until a pass makes
+        // no progress so a freed cell still admits it first.
+        if (item && weakIds.has(id) && !isMovePhase && !fallMode)
+          weakCrash.push(id)
+        continue
+      }
+
+      engine.doMove(id)
+      progress = true
     }
-    if (!engine.canMoveRoot(id)) {
-      const item = byId.get(id)
-      // A blocked `weak` mover shatters on contact — but a blocked faller
-      // simply lands (official `fallblock` has no weak-mover crash).
-      if (item && weakIds.has(id) && !isMovePhase && !fallMode) {
-        removed.add(item.id)
+
+    if (!progress && weakCrash.length) {
+      for (const id of weakCrash) {
+        if (moved.has(id) || removed.has(id)) continue
+        const item = byId.get(id)
+        if (!item) continue
+        removed.add(id)
         removedItems.push(item)
         status.anyMoved = true
       }
-      continue
+      // The removals may have freed cells for other movers — run the
+      // pass once more before declaring the fixpoint.
+      progress = weakCrash.length > 0
     }
-
-    engine.doMove(id)
+    weakCrash = []
   }
 
   for (const swap of emptySwaps) {
