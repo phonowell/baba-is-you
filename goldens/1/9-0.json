@@ -1,7 +1,7 @@
 {
  "level": "levels/1-the-lake/9-changeless.txt",
  "inputs": "rrrdrrrddlurulluldlddrrdrurruululllrrurullddllluuddrrr",
- "initial": "playing|algae@13,0();algae@14,1();algae@1,2();baba@3,3(you);baba!@0,7(push);rock@7,3();flag!@6,5(push);flag!@12,7(push);is!@7,1(push);is!@14,4(push);is!@7,5(push);is!@1,7(push);is!@13,7(push);rock!@6,1(push);rock!@8,1(push);rock!@8,5(push);stop!@14,5(push);wall@5,0(stop);wall@6,0(stop);wall@7,0(stop);wall@8,0(stop);wall@9,0(stop);wall@0,6(stop);wall@1,6(stop);wall@2,6(stop);wall@3,6(stop);wall@11,6(stop);wall@12,6(stop);wall@13,6(stop);wall@14,6(stop);wall@3,7(stop);wall@11,7(stop);wall!@14,3(push);win!@14,7(push);you!@2,7(push)",
+ "initial": "playing|algae@13,0();algae@14,1();algae@1,2();baba@3,3(you);baba!@0,7(push);flag@7,3(win);flag!@6,5(push);flag!@12,7(push);is!@7,1(push);is!@14,4(push);is!@7,5(push);is!@1,7(push);is!@13,7(push);rock!@6,1(push);rock!@8,1(push);rock!@8,5(push);stop!@14,5(push);wall@5,0(stop);wall@6,0(stop);wall@7,0(stop);wall@8,0(stop);wall@9,0(stop);wall@0,6(stop);wall@1,6(stop);wall@2,6(stop);wall@3,6(stop);wall@11,6(stop);wall@12,6(stop);wall@13,6(stop);wall@14,6(stop);wall@3,7(stop);wall@11,7(stop);wall!@14,3(push);win!@14,7(push);you!@2,7(push)",
  "hashes": [
   "6997c311d0c9b794",
   "fb3611fea022d7da",
