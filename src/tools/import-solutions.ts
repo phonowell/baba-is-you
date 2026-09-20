@@ -141,15 +141,19 @@ const main = async (): Promise<void> => {
   // redo work the corpus already covers. With --prefer-better the
   // incumbent's input length is kept so a shorter community path can
   // still replace it; multiple goldens on one index keep the shortest.
+  // The emit dir is scanned too: emitting without an explicit skip set
+  // must still respect incumbents, or every equal/longer community
+  // replay would churn (or regress) an already-good golden.
+  const coverageDir = skipDir ?? emitDir
   const covered = new Map<number, { file: string; inputs: number }>()
-  if (skipDir !== undefined) {
+  if (coverageDir !== undefined) {
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
         entry.isDirectory()
           ? walk(path.join(dir, entry.name))
           : [path.join(dir, entry.name)],
       )
-    for (const file of walk(skipDir)) {
+    for (const file of walk(coverageDir)) {
       try {
         const record = JSON.parse(await fs.readFile(file, 'utf8')) as {
           levelIndex?: number
