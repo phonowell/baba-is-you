@@ -25,6 +25,13 @@ import type { LevelData } from '../logic/types.js'
 // Usage:
 //   pnpm tsx src/tools/import-solutions.ts --solutions <dir>
 //     [--emit-goldens <dir>] [--skip-goldens <dir>] [--only <substr>]
+//     [--prefer-better]
+//
+// With --prefer-better, solutions are also replayed against levels a
+// golden already covers; when the community path wins AND is shorter
+// than the recorded inputs, the golden is emitted under the existing
+// filename so merging the emit dir replaces it. Equal/longer paths and
+// paths that lose keep the incumbent golden untouched.
 
 const argValue = (flag: string): string | undefined => {
   const index = process.argv.indexOf(`--${flag}`)
@@ -101,6 +108,7 @@ const main = async (): Promise<void> => {
   const emitDir = argValue('emit-goldens')
   const skipDir = argValue('skip-goldens')
   const only = argValue('only')?.toLowerCase()
+  const preferBetter = process.argv.includes('--prefer-better')
 
   const campaign: LevelData[] = levels.map((source) => parseLevel(source))
   const byTitle = new Map<string, number[]>()
@@ -112,8 +120,10 @@ const main = async (): Promise<void> => {
   })
 
   // Levels a recorded golden already binds — importing over them would
-  // redo work the corpus already covers.
-  const covered = new Set<number>()
+  // redo work the corpus already covers. With --prefer-better the
+  // incumbent's input length is kept so a shorter community path can
+  // still replace it; multiple goldens on one index keep the shortest.
+  const covered = new Map<number, { file: string; inputs: number }>()
   if (skipDir !== undefined) {
     const walk = (dir: string): string[] =>
       readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
@@ -125,8 +135,13 @@ const main = async (): Promise<void> => {
       try {
         const record = JSON.parse(await fs.readFile(file, 'utf8')) as {
           levelIndex?: number
+          inputs?: string
         }
-        if (record.levelIndex !== undefined) covered.add(record.levelIndex)
+        if (record.levelIndex === undefined) continue
+        const inputs = record.inputs?.length ?? Number.MAX_SAFE_INTEGER
+        const prior = covered.get(record.levelIndex)
+        if (prior === undefined || inputs < prior.inputs)
+          covered.set(record.levelIndex, { file, inputs })
       } catch {
         // Unreadable records can't prove coverage — keep them out of the
         // skip set rather than silently trusting them.
@@ -155,9 +170,16 @@ const main = async (): Promise<void> => {
       : readdirSync(solutionsDir ?? '')
           .filter((f) => f.endsWith('.txt'))
           .map((file) => ({ file, levelRef: '', title: '', body: '' }))
-  const tally = { verified: 0, failed: 0, unmatched: 0, skipped: 0 }
+  const tally = {
+    verified: 0,
+    improved: 0,
+    failed: 0,
+    unmatched: 0,
+    skipped: 0,
+  }
   const failed: string[] = []
   const unmatched: string[] = []
+  const improved: string[] = []
 
   for (const named of entries.sort((a, b) => a.file.localeCompare(b.file))) {
     const entry =
@@ -174,12 +196,19 @@ const main = async (): Promise<void> => {
     if (only !== undefined && !normTitle(entry.title).includes(only)) continue
 
     const candidates = byTitle.get(normTitle(entry.title)) ?? []
-    const pending = candidates.filter((index) => !covered.has(index))
     if (candidates.length === 0) {
       tally.unmatched += 1
       unmatched.push(`${entry.levelRef} ${entry.title}`)
       continue
     }
+    // New coverage beats an improvement — uncovered boards are tried
+    // first so a same-title duplicate binds there when it can.
+    const pending = [
+      ...candidates.filter((index) => !covered.has(index)),
+      ...(preferBetter
+        ? candidates.filter((index) => covered.has(index))
+        : []),
+    ]
     if (pending.length === 0) {
       tally.skipped += 1
       continue
@@ -195,6 +224,7 @@ const main = async (): Promise<void> => {
             ),
           )
     let bound = -1
+    let replaces: { file: string; inputs: number } | undefined
     let closest = ''
     for (const index of pending) {
       const board = campaign[index]
@@ -202,8 +232,18 @@ const main = async (): Promise<void> => {
       const replay = replayLevel(board, inputs)
       if (replay.finalStatus === 'win') {
         bound = index
-        if (emitDir !== undefined) {
-          const name = `${String(index).padStart(3, '0')}-${slugify(entry.title)}`
+        const incumbent = covered.get(index)
+        replaces =
+          incumbent !== undefined && inputs.length < incumbent.inputs
+            ? incumbent
+            : undefined
+        if (emitDir !== undefined && (incumbent === undefined || replaces)) {
+          // Improvements reuse the incumbent's filename so merging the
+          // emit dir overwrites in place rather than adding a sibling.
+          const name =
+            replaces !== undefined
+              ? path.basename(replaces.file, '.json')
+              : `${String(index).padStart(3, '0')}-${slugify(entry.title)}`
           await fs.mkdir(emitDir, { recursive: true })
           await fs.writeFile(
             path.join(emitDir, `${name}.json`),
@@ -221,10 +261,24 @@ const main = async (): Promise<void> => {
       if (closest === '' || steps > Number(closest.split('@')[1])) closest = tag
     }
     if (bound >= 0) {
-      tally.verified += 1
-      console.log(
-        `✓ [${bound}] ${entry.title} — ${inputs.length} inputs (${named.file})`,
-      )
+      const incumbent = covered.get(bound)
+      if (incumbent === undefined) {
+        tally.verified += 1
+        console.log(
+          `✓ [${bound}] ${entry.title} — ${inputs.length} inputs (${named.file})`,
+        )
+      } else if (replaces !== undefined) {
+        tally.improved += 1
+        improved.push(
+          `[${bound}] ${entry.title}: ${replaces.inputs} → ${inputs.length} inputs`,
+        )
+        console.log(
+          `↑ [${bound}] ${entry.title} — ${replaces.inputs} → ` +
+            `${inputs.length} inputs (${named.file})`,
+        )
+      } else {
+        tally.skipped += 1
+      }
     } else {
       // A path that fails only on uncovered same-title variants is a
       // name collision, not an engine gap — the oracle was recorded on
@@ -243,9 +297,12 @@ const main = async (): Promise<void> => {
   }
 
   console.log(
-    `\nverified=${tally.verified} failed=${tally.failed} ` +
-      `unmatched=${tally.unmatched} skipped=${tally.skipped}`,
+    `\nverified=${tally.verified} improved=${tally.improved} ` +
+      `failed=${tally.failed} unmatched=${tally.unmatched} ` +
+      `skipped=${tally.skipped}`,
   )
+  if (improved.length)
+    console.log(`IMPROVED (shorter community path):\n  ${improved.join('\n  ')}`)
   if (failed.length)
     console.log(`FAILED (engine-gap suspects):\n  ${failed.join('\n  ')}`)
   if (unmatched.length)
