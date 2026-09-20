@@ -38,7 +38,7 @@ const toRuleKeys = (
             ? `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}]`
             : 'direction' in rule.condition
               ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
-              : `[${rule.condition.kind}:${rule.condition.negated ? '!' : ''}${rule.condition.object}]`
+              : `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}:${'objectNegated' in rule.condition && rule.condition.objectNegated ? '!' : ''}${rule.condition.object}]`
         return (
         `${rule.subjectNegated ? '!' : ''}${rule.subject}:${kind}:${
           rule.objectNegated ? '!' : ''
@@ -186,4 +186,40 @@ test('collectRules does not carry predicate list into following IS subject', () 
     'keke:transform:wall',
     'wall:transform:door',
   ])
+})
+
+// `x not on y`: the `not` directly ahead of the condition word negates
+// the condition itself — "fire that is not on a skull" (official TUNNEL
+// rule), not "anything-but-fire on a skull".
+test('collectRules binds NOT before a condition word to the condition', () => {
+  const items = [
+    createText(1, 'fire', 0, 0),
+    createText(2, 'not', 1, 0),
+    createText(3, 'on', 2, 0),
+    createText(4, 'skull', 3, 0),
+    createText(5, 'is', 4, 0),
+    createText(6, 'defeat', 5, 0),
+  ]
+
+  const keys = toRuleKeys(items, 6, 1)
+
+  assert.deepEqual(keys, ['fire:property:defeat[!on:skull]'])
+})
+
+// `x on not y`: `not` after the condition word negates the object —
+// the unit must stand on a non-skull thing, which differs from "not on
+// skull" (true while standing on nothing at all).
+test('collectRules binds NOT after a condition word to its object', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'on', 1, 0),
+    createText(3, 'not', 2, 0),
+    createText(4, 'skull', 3, 0),
+    createText(5, 'is', 4, 0),
+    createText(6, 'win', 5, 0),
+  ]
+
+  const keys = toRuleKeys(items, 6, 1)
+
+  assert.deepEqual(keys, ['baba:property:win[on:!skull]'])
 })

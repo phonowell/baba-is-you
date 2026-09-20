@@ -335,7 +335,12 @@ export const applyMoveAdjective = (
 }
 
 // `fall` slides downward; `fallup`/`fallleft`/`fallright` are the
-// directional variants the official prop set adds.
+// directional variants the official prop set adds. The official
+// `fallblock` resolves each cell of a fall through the regular move
+// `check` — fallers pass through walk-over units, push pushables and
+// stop only on real blockers — and re-runs the whole set until settled.
+// Reuse `moveItemsBatch` for one cell per iteration; `isMove:false`
+// keeps a blocked faller in place instead of bouncing like `move`.
 const FALL_PROPS: Record<string, Direction> = {
   fall: 'down',
   fallup: 'up',
@@ -343,81 +348,32 @@ const FALL_PROPS: Record<string, Direction> = {
   fallright: 'right',
 }
 
+const MAX_FALL_ITERATIONS = 64
+
 export const applyFall = (
   items: Item[],
-  width: number,
-  height: number,
-  _rules: Rule[],
+  runtime: RuleRuntime,
 ): { items: Item[]; moved: boolean } => {
-  const fallers = items.filter(
-    (item) =>
-      !hasProp(item, 'sleep') &&
-      !hasProp(item, 'broken') &&
-      item.props.some((prop) => prop in FALL_PROPS),
-  )
-  if (!fallers.length) return { items, moved: false }
-
-  const next = items.map((item) => ({ ...item }))
-  const byId = new Map<number, Item>()
-  const byCell = new Map<number, Item[]>()
-  const addCell = (item: Item): void => {
-    const key = keyFor(item.x, item.y, width)
-    const list = byCell.get(key) ?? []
-    list.push(item)
-    byCell.set(key, list)
-  }
-  const removeCell = (item: Item): void => {
-    const key = keyFor(item.x, item.y, width)
-    const list = byCell.get(key) ?? []
-    byCell.set(
-      key,
-      list.filter((candidate) => candidate.id !== item.id),
-    )
-  }
-
-  for (const item of next) {
-    byId.set(item.id, item)
-    addCell(item)
-  }
-
+  let current = items
   let moved = false
-  const sortedFallers = [...fallers].sort((a, b) =>
-    a.y === b.y ? a.id - b.id : b.y - a.y,
-  )
 
-  for (const source of sortedFallers) {
-    const live = byId.get(source.id)
-    if (!live) continue
-
-    const direction =
-      FALL_PROPS[
-        live.props.find((prop) => prop in FALL_PROPS) ?? 'fall'
-      ] ?? 'down'
-    const [dx, dy] =
-      direction === 'up'
-        ? [0, -1]
-        : direction === 'down'
-          ? [0, 1]
-          : direction === 'left'
-            ? [-1, 0]
-            : [1, 0]
-
-    while (true) {
-      const nx = live.x + dx
-      const ny = live.y + dy
-      if (nx < 0 || ny < 0 || nx >= width || ny >= height) break
-      const blocking = byCell.get(keyFor(nx, ny, width)) ?? []
-      if (blocking.length) break
-
-      removeCell(live)
-      live.x = nx
-      live.y = ny
-      addCell(live)
-      moved = true
+  for (let iteration = 0; iteration < MAX_FALL_ITERATIONS; iteration += 1) {
+    const movers: Array<{ id: number; dir: Direction; isMove: boolean }> = []
+    for (const item of current) {
+      if (hasProp(item, 'sleep') || hasProp(item, 'broken')) continue
+      const fallProp = item.props.find((prop) => prop in FALL_PROPS)
+      if (fallProp === undefined) continue
+      movers.push({ id: item.id, dir: FALL_PROPS[fallProp] ?? 'down', isMove: false })
     }
+    if (!movers.length) break
+
+    const step = moveItemsBatch(current, runtime, movers)
+    if (!step.moved) break
+    current = step.items
+    moved = true
   }
 
-  return { items: next, moved }
+  return { items: current, moved }
 }
 
 // `x is back` restores the entity's pre-step position — the official

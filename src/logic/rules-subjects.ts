@@ -59,7 +59,9 @@ export const stringifyCondition = (condition?: RuleCondition): string => {
     return `if:${condition.negated ? '!' : ''}${condition.kind}`
   if ('direction' in condition)
     return `if:facing:${condition.negated ? '!' : ''}${condition.direction}`
-  return `if:${condition.kind}:${condition.negated ? '!' : ''}${condition.object}`
+  return `if:${condition.kind}:${condition.negated ? '!' : ''}${
+    'objectNegated' in condition && condition.objectNegated ? '!' : ''
+  }${condition.object}`
 }
 
 export const collectSubjectPatterns = (
@@ -132,9 +134,17 @@ export const collectSubjectPatterns = (
     if (conditionTerm) {
       const conditionKind =
         conditionTerm.word as (typeof INFIX_CONDITION_WORDS)[number]
-      const subjectChains = parseTermChainsWithNext(
+      // `x not on y`: `not` directly ahead of the condition word negates
+      // the condition itself; `x on not y` negates the condition's
+      // object instead (handled via `term.negated` below).
+      const nots = countConsecutiveNot(
         readTermsAt,
         chain.next + conditionTerm.span,
+      )
+      const conditionNegated = nots.count % 2 === 1
+      const subjectChains = parseTermChainsWithNext(
+        readTermsAt,
+        chain.next + conditionTerm.span + nots.offset,
         isSubjectWord,
         0,
         maxDepth,
@@ -148,7 +158,7 @@ export const collectSubjectPatterns = (
         continue
       }
       const spanEnd = Math.max(
-        chain.next + conditionTerm.span,
+        chain.next + conditionTerm.span + nots.offset,
         ...subjectChains.chains.map((subjectChain) => subjectChain.next),
       )
 
@@ -159,18 +169,22 @@ export const collectSubjectPatterns = (
               ? {
                   kind: 'facing',
                   direction: term.word,
-                  ...(term.negated ? { negated: true } : {}),
+                  ...(term.negated !== conditionNegated
+                    ? { negated: true }
+                    : {}),
                 }
               : conditionKind === 'facing'
                 ? {
                     kind: 'facing',
                     object: asConditionObjectWord(term.word),
-                    ...(term.negated ? { negated: true } : {}),
+                    ...(conditionNegated ? { negated: true } : {}),
+                    ...(term.negated ? { objectNegated: true } : {}),
                   }
                 : {
                     kind: conditionKind,
                     object: asConditionObjectWord(term.word),
-                    ...(term.negated ? { negated: true } : {}),
+                    ...(conditionNegated ? { negated: true } : {}),
+                    ...(term.negated ? { objectNegated: true } : {}),
                   }
           addPattern({
             subject: asSubjectWord(subject.word),

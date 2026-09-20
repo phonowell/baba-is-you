@@ -1,0 +1,149 @@
+{
+ "level": "",
+ "levelIndex": 446,
+ "levelData": {
+  "title": "COMPACT",
+  "width": 7,
+  "height": 4,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 2,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 4,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 3,
+    "name": "bonus",
+    "x": 1,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "is",
+    "x": 1,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "is",
+    "x": 3,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 6,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "orb",
+    "x": 2,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "orb",
+    "x": 3,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "orb",
+    "x": 4,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "stop",
+    "x": 6,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "wall",
+    "x": 6,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "wall",
+    "x": 5,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "wall",
+    "x": 5,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "win",
+    "x": 4,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 15,
+    "name": "you",
+    "x": 4,
+    "y": 1,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "llldlddruulurrldddruur",
+ "initial": "playing|baba!@2,1(push);baba@down@4,0(you);bonus!@1,2(push);is!@1,1(push);is!@3,1(push);is!@6,1(push);orb!@2,2(push);orb@down@3,3();orb@down@4,3();stop!@6,2(push);wall!@6,0(push);wall@down@5,0(stop);wall@down@5,1(stop);win!@4,2(push);you!@4,1(push)",
+ "hashes": [
+  "945f5ded253f302c",
+  "584c9bcd0fb11193",
+  "2da811468ac13811",
+  "e0d24fcbf0e247dc",
+  "eea54d53ee11d4a0",
+  "9bd01a4ef8f3f72d",
+  "1a7fa085c672a119",
+  "939a18c3970637e7",
+  "4c5252c051de43dc",
+  "0175a1b061729a3f",
+  "06b854cc9a9babc4",
+  "409eb1758f9a0987",
+  "78e5bbf2b4188863",
+  "b9bd9b430d54dd7f",
+  "0b11085eeba04e9f",
+  "a4d38ff8308e5eba",
+  "4c92a2bc8692e64b",
+  "01c980754b56b1c1",
+  "a3dae4d00a9a555a",
+  "70d197316c052467",
+  "43c8391fc3c8d10d",
+  "f22e07245b720d0b"
+ ],
+ "final": "win|baba@up!@2,0(push);baba@right@3,2(you);bonus@right!@3,3(push);is@right!@3,0(push);is!@3,1(push);is!@6,1(push);orb@up!@2,1(push);orb@up@3,2(win);orb@up@4,2(win);stop!@6,2(push);wall!@6,0(push);wall@down@5,0(stop);wall@down@5,1(stop);win@up!@4,1(push);you@up!@4,0(push)",
+ "status": "win"
+}

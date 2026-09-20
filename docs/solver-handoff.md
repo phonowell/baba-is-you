@@ -122,8 +122,12 @@ record stays valid only because replay uses the embedded board).
 
 ## Current state
 
-- **207 golden files; ~167 campaign levels covered (167/566)** after the
-  letter-unit fix landed six more (`155`/`198`/`219`/`239`/`397`/`532`/`564`)
+- **211 golden files; ~170 campaign levels covered (170/566)** after the
+  letter-unit fix landed `155`/`198`/`219`/`239`/`397`/`532`/`564` and the
+  condition/fall fixes added `104`/`124`/`248`/`220`/`533`
+- Stale goldens deleted after semantics fixes (re-solve pending):
+  `069`/`094`/`095`/`112`/`207`/`211`/`228`/`230` (old fall stopped on any
+  unit) + `297` (old `x not on y` misparsed as subject negation)
 - Legacy re-solve done: 89 wired / ~78 shortened (e.g. 385→284, 198→8) /
   2 unwired (stale fixtures stay fixture-bound) / 1 fallback
 - External import: 246 Discord + 55 harbor solutions parsed → 169 + 45
@@ -165,8 +169,24 @@ record stays valid only because replay uses the embedded board).
 
 ## Engine gaps found via solution replay (fixed)
 
-Replaying community solutions is a conformance suite — three official-
-semantics bugs found and fixed so far:
+Replaying community solutions is a conformance suite. The `rules/` oracle
+directory in baba-is-optimized (expected active rules per level) gives a
+zero-cost parse check — `tools-out/rule-oracle.mts` diffs our initial
+rules against it. Official-semantics bugs found and fixed so far:
+
+0. **`x not on y` negated the subject, `x on not y` was unsupported** —
+   `rules-subjects.ts` bound the infix-position `not` to the subject
+   instead of the condition, and `not` after a condition word had no
+   representation. `RuleCondition.objectNegated` added; `FIRE NOT ON
+   SKULL IS DEFEAT` (official TUNNEL) now parses as fire + `!on skull`.
+   Also: `x on not empty` = occupied cell, `x seeing not skull` = first
+   non-skull in the ray, `feeling not P` = own `X IS NOT P` rule.
+
+0. **`fall` stopped on ANY unit** — `applyFall` broke on any occupied
+   cell. Official `fallblock` resolves each cell through the movement
+   `check`: fallers pass through walk-over units, push pushables, and
+   iterate until settled. Rewritten as a `moveItemsBatch` loop
+   (`isMove:false` so blocked fallers rest instead of bouncing).
 
 1. **Mover-side SWAP missing in the single-move engine** —
    `move-single-runtime.ts` only swapped when the *target* had swap.

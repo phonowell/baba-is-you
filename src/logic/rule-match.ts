@@ -125,6 +125,7 @@ const scanLine = (
   context: RuleMatchContext,
   item: MatchItem,
   object: string,
+  objectNegated: boolean,
   dx: number,
   dy: number,
 ): boolean => {
@@ -133,12 +134,13 @@ const scanLine = (
   while (inBounds(context, x, y)) {
     const cell = cellItems(context, x, y)
     if (object === 'empty') {
-      if (!cell.length) return true
+      if (!cell.length !== objectNegated) return true
     } else if (
       cell.some(
         (candidate) =>
           candidate.id !== item.id &&
-          matchesRuleObjectWord(candidate, object, context.groupMembers),
+          matchesRuleObjectWord(candidate, object, context.groupMembers) !==
+            objectNegated,
       )
     )
       return true
@@ -154,9 +156,11 @@ const scanLine = (
 const matchesSeeing = (
   item: MatchItem,
   object: string,
+  objectNegated: boolean,
   context: RuleMatchContext,
 ): boolean => {
-  if (object === 'empty' || object === 'level') return false
+  if ((object === 'empty' || object === 'level') && !objectNegated)
+    return false
   const direction = item.dir ?? 'right'
   const [dx, dy] = DIRECTION_DELTAS[direction]
   let x = item.x
@@ -169,7 +173,10 @@ const matchesSeeing = (
     const visible = cell.filter((candidate) => !itemHasProp(candidate, 'hide'))
     for (const candidate of visible) {
       if (candidate.id === item.id) continue
-      if (matchesRuleObjectWord(candidate, object, context.groupMembers))
+      if (
+        matchesRuleObjectWord(candidate, object, context.groupMembers) !==
+        objectNegated
+      )
         return true
     }
     const sightBlocked = visible.some(
@@ -188,6 +195,7 @@ const matchesSeeing = (
 const matchesFacedBy = (
   item: MatchItem,
   object: string,
+  objectNegated: boolean,
   context: RuleMatchContext,
 ): boolean => {
   for (const [dx, dy] of ORTHOGONAL_DELTAS) {
@@ -199,7 +207,10 @@ const matchesFacedBy = (
       const dir = candidate.dir ?? 'right'
       const [cdx, cdy] = DIRECTION_DELTAS[dir]
       if (cdx !== -dx || cdy !== -dy) continue
-      if (matchesRuleObjectWord(candidate, object, context.groupMembers))
+      if (
+        matchesRuleObjectWord(candidate, object, context.groupMembers) !==
+        objectNegated
+      )
         return true
     }
   }
@@ -212,14 +223,18 @@ const matchesFacedBy = (
 const matchesWithout = (
   item: MatchItem,
   object: string,
+  objectNegated: boolean,
   context: RuleMatchContext,
 ): boolean => {
   if (object === 'empty')
-    return context.byCell.size >= context.width * context.height
+    return objectNegated
+      ? context.byCell.size === 0
+      : context.byCell.size >= context.width * context.height
   return !context.items.some(
     (candidate) =>
       candidate.id !== item.id &&
-      matchesRuleObjectWord(candidate, object, context.groupMembers),
+      matchesRuleObjectWord(candidate, object, context.groupMembers) !==
+        objectNegated,
   )
 }
 
@@ -230,13 +245,15 @@ const matchesWithout = (
 const matchesFeeling = (
   item: MatchItem,
   object: string,
+  objectNegated: boolean,
   context: RuleMatchContext,
   depth: number,
 ): boolean => {
   if (depth > 3) return false
   for (const rule of context.rules) {
     if (rule.kind !== 'is-property') continue
-    if (rule.object !== object || rule.objectNegated) continue
+    if (rule.object !== object || (rule.objectNegated ?? false) !== objectNegated)
+      continue
     if (matchesRuleSubject(item, rule, context, depth + 1)) return true
   }
   return false
@@ -291,10 +308,20 @@ const matchesCondition = (
   const { condition } = rule
   if (!condition) return true
 
+  // `x <cond> not y`: `objectNegated` inverts the object test — `on not
+  // skull` needs a non-skull under the unit, `on not empty` needs any
+  // occupied cell. `negated` still inverts the whole condition.
+  const objectNegated =
+    'object' in condition && (condition.objectNegated ?? false)
   const termMatches = (candidate: MatchItem): boolean =>
     'object' in condition
-      ? matchesRuleObjectWord(candidate, condition.object, context.groupMembers)
+      ? matchesRuleObjectWord(
+          candidate,
+          condition.object,
+          context.groupMembers,
+        ) !== objectNegated
       : false
+  const emptyMatches = (isEmpty: boolean): boolean => isEmpty !== objectNegated
 
   // Postfix conditions carry neither `object` nor `direction` — `lonely`
   // keeps its dedicated cell check below.
@@ -341,7 +368,7 @@ const matchesCondition = (
 
     const matched =
       condition.object === 'empty'
-        ? !cell.some((candidate) => candidate.id !== item.id)
+        ? emptyMatches(!cell.some((candidate) => candidate.id !== item.id))
         : cell.some(
             (candidate) =>
               candidate.id !== item.id && termMatches(candidate),
@@ -358,7 +385,7 @@ const matchesCondition = (
       if (!inBounds(context, x, y)) continue
       const cell = cellItems(context, x, y)
       if (condition.object === 'empty') {
-        if (!cell.length) matched = true
+        if (emptyMatches(!cell.length)) matched = true
       } else if (cell.some((candidate) => termMatches(candidate)))
         matched = true
     }
@@ -380,7 +407,7 @@ const matchesCondition = (
           const occupied = self
             ? neighbors.some((candidate) => candidate.id !== item.id)
             : neighbors.length > 0
-          if (!occupied) matched = true
+          if (emptyMatches(!occupied)) matched = true
         } else if (
           neighbors.some(
             (candidate) =>
@@ -394,36 +421,42 @@ const matchesCondition = (
   }
 
   if (condition.kind === 'without') {
-    const matched = matchesWithout(item, condition.object, context)
+    const matched = matchesWithout(item, condition.object, objectNegated, context)
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'above' || condition.kind === 'below') {
     // `X ABOVE Y` means X sits above Y, so the scan runs downward.
     const dy = condition.kind === 'above' ? 1 : -1
-    const matched = scanLine(context, item, condition.object, 0, dy)
+    const matched = scanLine(context, item, condition.object, objectNegated, 0, dy)
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'besideleft' || condition.kind === 'besideright') {
     // `X BESIDELEFT Y` means X sits left of Y — scan the row rightward.
     const dx = condition.kind === 'besideleft' ? 1 : -1
-    const matched = scanLine(context, item, condition.object, dx, 0)
+    const matched = scanLine(context, item, condition.object, objectNegated, dx, 0)
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'facedby') {
-    const matched = matchesFacedBy(item, condition.object, context)
+    const matched = matchesFacedBy(item, condition.object, objectNegated, context)
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'seeing') {
-    const matched = matchesSeeing(item, condition.object, context)
+    const matched = matchesSeeing(item, condition.object, objectNegated, context)
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'feeling') {
-    const matched = matchesFeeling(item, condition.object, context, depth)
+    const matched = matchesFeeling(
+      item,
+      condition.object,
+      objectNegated,
+      context,
+      depth,
+    )
     return condition.negated ? !matched : matched
   }
 
@@ -441,7 +474,7 @@ const matchesCondition = (
   const inFront = cellItems(context, x, y)
   const matched =
     condition.object === 'empty'
-      ? inFront.length === 0
+      ? emptyMatches(inFront.length === 0)
       : inFront.some((candidate) => termMatches(candidate))
   return condition.negated ? !matched : matched
 }

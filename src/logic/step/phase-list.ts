@@ -115,12 +115,7 @@ export const STEP_STAGES: StepStage[] = [
     name: 'gravity',
     sync: { kind: 'reapply-properties' },
     run: (items, runtime) => {
-      const moved = applyFall(
-        items,
-        runtime.width,
-        runtime.height,
-        runtime.rules,
-      )
+      const moved = applyFall(items, runtime)
       return { items: moved.items, changed: moved.moved }
     },
   },

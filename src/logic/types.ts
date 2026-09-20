@@ -204,11 +204,16 @@ export type RuleCondition =
       kind: Exclude<InfixConditionKind, 'facing'>
       object: ConditionObjectWord
       negated?: boolean
+      // `x on not y` (not after the condition word) negates the object:
+      // the unit must be on a non-y thing — distinct from `x not on y`,
+      // which negates the whole condition.
+      objectNegated?: boolean
     }
   | {
       kind: 'facing'
       object: ConditionObjectWord
       negated?: boolean
+      objectNegated?: boolean
     }
   | {
       kind: 'facing'
