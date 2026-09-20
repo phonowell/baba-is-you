@@ -1,6 +1,6 @@
 import { resolveEmptyPropsByCell } from '../empty.js'
 
-import { isLockedFor } from './move-core.js'
+import { createEatsPredicates, isLockedFor } from './move-core.js'
 import { createSingleMoveRuntime } from './move-single-runtime.js'
 import { appendHasSpawns, buildGrid, carryHeldRiders, hasProp, MOVE_DELTAS, resolveLevelProps } from './shared.js'
 import { keyFor } from '../helpers.js'
@@ -136,9 +136,16 @@ export const moveItems = (
   const removedItems: Item[] = []
   const status = { anyMoved: false }
   const grid = buildGrid(next, width)
+  const { eats, eatsEmpty } = createEatsPredicates(
+    runtime.buckets.eat,
+    runtime.context,
+    emptyPropsAt,
+  )
   const engine = createSingleMoveRuntime(
     {
       byId,
+      eats,
+      eatsEmpty,
       emptyPropsAt,
       grid,
       height,

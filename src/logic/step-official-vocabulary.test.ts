@@ -1339,3 +1339,240 @@ test('step LEVEL IS SHIFT moves every unit along levelDir', () => {
   assert.equal(findObject(result.state, 'baba')?.y, 4)
   assert.equal(findObject(result.state, 'rock')?.y, 5)
 })
+
+test('step bare STILL unit is walkable — cantmove only nils push/pull/swap', () => {
+  // Officially `still` prevents the unit from being displaced, but does
+  // not wall off its cell: with no push/pull/swap to cancel, a mover
+  // simply stacks onto it (canmove contributes result 0).
+  const level: LevelData = {
+    title: 'still-walkable',
+    width: 6,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['rock', 'is', 'still']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  const rock = findObject(result.state, 'rock')
+  assert.equal(baba?.x, 1)
+  assert.equal(rock?.x, 1)
+})
+
+test('step STILL+SWAP target is enterable without swapping', () => {
+  // `cantmove` nils the swap (no stop is added — unlike push/pull, swap
+  // does not decay into stop), so the unit is a plain walkable tile.
+  const level: LevelData = {
+    title: 'still-swap-walkable',
+    width: 6,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['rock', 'is', 'swap', 'and', 'still']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  const rock = findObject(result.state, 'rock')
+  assert.equal(baba?.x, 1)
+  assert.equal(rock?.x, 1)
+})
+
+test('step SWAP mover passes a STILL target without displacing it', () => {
+  // A swap mover ignores every obstacle verdict (official result 0);
+  // `still` targets just aren't carried back to the mover's cell.
+  const level: LevelData = {
+    title: 'swap-through-still',
+    width: 6,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 1, ['baba', 'is', 'swap']),
+      ...ruleRow(20, 2, ['rock', 'is', 'still']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  const rock = findObject(result.state, 'rock')
+  assert.equal(baba?.x, 1)
+  assert.equal(rock?.x, 1)
+})
+
+test('step target-side SWAP applies in batch movement too', () => {
+  // `rock is swap` trades places with a `move`-driven keke walking in —
+  // the exchange does not need the mover to carry swap itself.
+  const level: LevelData = {
+    title: 'batch-target-swap',
+    width: 6,
+    height: 3,
+    items: [
+      createItem(1, 'keke', 0, 0, false, 'right'),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['keke', 'is', 'move']),
+      ...ruleRow(10, 2, ['rock', 'is', 'swap']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), null)
+  const keke = findObject(result.state, 'keke')
+  const rock = findObject(result.state, 'rock')
+  assert.equal(keke?.x, 1)
+  assert.equal(rock?.x, 0)
+})
+
+
+test('step EAT consumes a STOP target on entry', () => {
+  // `x eat y` is a move-time special: the eaten unit sets `valid=false`
+  // and never blocks — not even with `stop`.
+  const level: LevelData = {
+    title: 'eat-through-stop',
+    width: 6,
+    height: 5,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['baba', 'eat', 'rock']),
+      ...ruleRow(20, 3, ['rock', 'is', 'stop']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  assert.equal(baba?.x, 1)
+  assert.equal(findObject(result.state, 'rock'), undefined)
+})
+
+test('step EAT consumes a PUSH target instead of pushing it', () => {
+  // The eaten obstacle contributes result 0 — it is consumed where it
+  // stands rather than pushed onward.
+  const level: LevelData = {
+    title: 'eat-over-push',
+    width: 6,
+    height: 5,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['baba', 'eat', 'rock']),
+      ...ruleRow(20, 3, ['rock', 'is', 'push']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  assert.equal(baba?.x, 1)
+  assert.equal(findObject(result.state, 'rock'), undefined)
+})
+
+test('step EAT cannot consume a SAFE target', () => {
+  // `issafe` gates the eat special — a safe stop unit still blocks.
+  const level: LevelData = {
+    title: 'eat-safe-blocked',
+    width: 6,
+    height: 5,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['baba', 'eat', 'rock']),
+      ...ruleRow(20, 3, ['rock', 'is', 'stop', 'and', 'safe']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  const rock = findObject(result.state, 'rock')
+  assert.equal(baba?.x, 0)
+  assert.equal(rock?.x, 1)
+})
+
+test('step EAT does not cross float layers', () => {
+  // `floating(id,unitid)` must hold — a float eater ignores grounded prey.
+  const level: LevelData = {
+    title: 'eat-float-mismatch',
+    width: 6,
+    height: 6,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['baba', 'eat', 'rock']),
+      ...ruleRow(20, 3, ['baba', 'is', 'float']),
+      ...ruleRow(30, 4, ['rock', 'is', 'stop']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  const rock = findObject(result.state, 'rock')
+  assert.equal(baba?.x, 0)
+  assert.equal(rock?.x, 1)
+})
+
+test('step MOVE-driven eater consumes targets in batch movement', () => {
+  // `keke is move` resolves through the batch engine — the same `eat`
+  // special lets it enter and consume a `stop` target.
+  const level: LevelData = {
+    title: 'batch-eat-stop',
+    width: 6,
+    height: 5,
+    items: [
+      createItem(1, 'keke', 0, 0, false, 'right'),
+      createItem(2, 'rock', 1, 0, false),
+      ...ruleRow(3, 1, ['keke', 'is', 'move']),
+      ...ruleRow(10, 2, ['keke', 'eat', 'rock']),
+      ...ruleRow(20, 3, ['rock', 'is', 'stop']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), null)
+  const keke = findObject(result.state, 'keke')
+  assert.equal(keke?.x, 1)
+  assert.equal(findObject(result.state, 'rock'), undefined)
+})
+
+test('step EAT EMPTY frees a stop empty cell', () => {
+  // `empty is stop` walls off bare cells, but `x eat empty` sets the
+  // empty pseudo-unit's `valid=false` — the eater walks straight in.
+  const level: LevelData = {
+    title: 'eat-empty-stop',
+    width: 6,
+    height: 5,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['baba', 'eat', 'empty']),
+      ...ruleRow(20, 3, ['empty', 'is', 'stop']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  assert.equal(baba?.x, 1)
+})
+
+test('step EAT NOT X spares the named object', () => {
+  // `baba eat not rock`: the flag is consumed while the rock still
+  // blocks with `stop`.
+  const level: LevelData = {
+    title: 'eat-not-rock',
+    width: 6,
+    height: 5,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'flag', 1, 0, false),
+      createItem(3, 'rock', 2, 0, false),
+      ...ruleRow(10, 1, ['baba', 'is', 'you']),
+      ...ruleRow(20, 2, ['baba', 'eat', 'not', 'rock']),
+      ...ruleRow(30, 3, ['rock', 'is', 'stop']),
+    ],
+  }
+  let result = step(createInitialState(level, 0), 'right')
+  assert.equal(findObject(result.state, 'flag'), undefined)
+  result = step(result.state, 'right')
+  const baba = findObject(result.state, 'baba')
+  const rock = findObject(result.state, 'rock')
+  assert.equal(baba?.x, 1)
+  assert.equal(rock?.x, 2)
+})

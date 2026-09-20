@@ -1,9 +1,21 @@
+import { matchesRuleObjectWord, matchesRuleSubject } from '../rule-match.js'
 import { hasProp, keyFor } from './shared.js'
 
-import type { Direction, Item } from '../types.js'
+import type { RuleMatchContext } from '../rule-match.js'
+import type { Direction, Item, Rule } from '../types.js'
 
 export type MoveCoreContext = {
   byId: Map<number, Item>
+  // `x eat y` resolves at move time (official `eat` specials): the
+  // mover consumes a same-float-layer, non-`safe` target on entry —
+  // even a `stop` target never blocks an eater. Absent eat rules make
+  // this a constant false.
+  eats: (mover: Item, target: Item) => boolean
+  // `x eat empty` frees the empty cell for the mover — the official
+  // empty branch skips the whole estop check once `valid` is false.
+  // The empty pseudo-unit's float/safe come from that cell's `empty is
+  // float`/`empty is safe` props, so the check is per-cell.
+  eatsEmpty: (mover: Item, x: number, y: number) => boolean
   grid: Map<number, Item[]>
   height: number
   openIds: Set<number>
@@ -30,6 +42,53 @@ export const LOCKED_PROPS: Record<Direction, Item['props'][number]> = {
 export const isLockedFor = (item: Item, direction: Direction): boolean =>
   hasProp(item, LOCKED_PROPS[direction])
 
+// `x eat y` is evaluated at move time in the official engine: the eater
+// consumes each same-float-layer, non-`safe` target it steps onto, and an
+// eaten obstacle never blocks (the official `eat` special sets
+// `valid=false`, skipping the whole stop/push/pull verdict).
+export const createEatsPredicates = (
+  eatRules: Rule[],
+  context: RuleMatchContext,
+  emptyPropsAt: (x: number, y: number) => ReadonlySet<string>,
+): Pick<MoveCoreContext, 'eats' | 'eatsEmpty'> => {
+  if (!eatRules.length) return { eats: () => false, eatsEmpty: () => false }
+  const eats = (mover: Item, target: Item): boolean => {
+    // Official gates: `issafe` on the target protects it, and `floating`
+    // requires matching float layers.
+    if (hasProp(target, 'safe')) return false
+    if (hasProp(mover, 'float') !== hasProp(target, 'float')) return false
+    // `hasfeature` evaluates the rule's conditions at the destination
+    // cell (`x+ox,y+oy`), not the mover's current position.
+    const atTarget = { ...mover, x: target.x, y: target.y }
+    for (const rule of eatRules) {
+      if (rule.subjectNegated) continue
+      if (!matchesRuleSubject(atTarget, rule, context)) continue
+      const matched = matchesRuleObjectWord(
+        target,
+        rule.object,
+        context.groupMembers,
+      )
+      if (rule.objectNegated ? !matched : matched) return true
+    }
+    return false
+  }
+  const eatsEmpty = (mover: Item, x: number, y: number): boolean => {
+    const props = emptyPropsAt(x, y)
+    // `issafe(2)`/`floating(unitid,2)`: the cell's own `empty is safe`
+    // protects it and `empty is float` sets the pseudo-unit's layer.
+    if (props.has('safe')) return false
+    if (hasProp(mover, 'float') !== props.has('float')) return false
+    const atCell = { ...mover, x, y }
+    for (const rule of eatRules) {
+      if (rule.subjectNegated || rule.objectNegated) continue
+      if (rule.object !== 'empty') continue
+      if (matchesRuleSubject(atCell, rule, context)) return true
+    }
+    return false
+  }
+  return { eats, eatsEmpty }
+}
+
 export const inBounds = (
   context: MoveCoreContext,
   x: number,
@@ -43,6 +102,18 @@ export const isOpenShutPair = (
 ): boolean =>
   (context.openIds.has(a.id) && context.shutIds.has(b.id)) ||
   (context.shutIds.has(a.id) && context.openIds.has(b.id))
+
+// Official `lock` special: an `open`/`shut` contact annihilates on
+// entry only when the pair shares a float layer and at least one side
+// is not `safe` — each side then dies only if it is itself unsafe.
+export const isLockCollision = (
+  context: MoveCoreContext,
+  mover: Item,
+  target: Item,
+): boolean =>
+  isOpenShutPair(context, mover, target) &&
+  hasProp(mover, 'float') === hasProp(target, 'float') &&
+  (!hasProp(mover, 'safe') || !hasProp(target, 'safe'))
 
 export const removeOne = (context: MoveCoreContext, item: Item): boolean => {
   if (context.removed.has(item.id)) return false

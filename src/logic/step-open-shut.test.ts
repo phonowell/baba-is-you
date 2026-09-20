@@ -94,7 +94,10 @@ test('step movement-phase OPEN/SHUT destruction still drops HAS targets', () => 
   )
 })
 
-test('step OPEN/SHUT destruction does not force blocked PUSH target to move', () => {
+test('step blocked PUSH prevents OPEN/SHUT unlock entirely', () => {
+  // Official specials only execute when the mover actually lands: with
+  // the push target walled in, the move fails and the lock never fires
+  // — baba, door and rock all survive in place.
   const level: LevelData = {
     title: 'open-shut-do-not-force-push',
     width: 8,
@@ -132,7 +135,15 @@ test('step OPEN/SHUT destruction does not force blocked PUSH target to move', ()
   assert.equal(rock?.x, 1)
   assert.equal(rock?.y, 0)
   assert.equal(
-    result.state.items.some((item) => !item.isText && item.name === 'baba'),
-    false,
+    result.state.items.find(
+      (item) => !item.isText && item.name === 'baba',
+    )?.x,
+    0,
+  )
+  assert.equal(
+    result.state.items.find(
+      (item) => !item.isText && item.name === 'door',
+    )?.x,
+    1,
   )
 })

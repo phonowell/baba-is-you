@@ -1,6 +1,7 @@
 import { resolveEmptyPropsByCell } from '../empty.js'
 
 import { keyFor } from '../helpers.js'
+import { createEatsPredicates } from './move-core.js'
 
 import { applyBatchMovement } from './move-batch-apply.js'
 import { resolveBatchArrows } from './move-batch-runtime.js'
@@ -100,8 +101,16 @@ export const moveItemsBatch = (
     runtime.context,
   )
   const EMPTY_PROPS: ReadonlySet<string> = new Set()
+  const { eats, eatsEmpty } = createEatsPredicates(
+    runtime.buckets.eat,
+    runtime.context,
+    (x: number, y: number): ReadonlySet<string> =>
+      emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS,
+  )
   const context = {
     byId,
+    eats,
+    eatsEmpty,
     emptyPropsAt: (x: number, y: number): ReadonlySet<string> =>
       emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS,
     grid: buildGrid(next, width),

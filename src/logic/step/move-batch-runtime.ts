@@ -2,11 +2,11 @@ import {
   getLiveCellItems,
   inBounds,
   isLockedFor,
-  isOpenShutPair,
+  isLockCollision,
   LOCKED_PROPS,
   removeOne,
 } from './move-core.js'
-import { MOVE_DELTAS, reverseDirection } from './shared.js'
+import { hasProp, MOVE_DELTAS, reverseDirection } from './shared.js'
 
 import type { MoveCoreContext } from './move-core.js'
 import type { Direction } from '../types.js'
@@ -111,10 +111,14 @@ export const resolveBatchArrows = (
 
     if (!blocked) {
       if (!targets.length) {
-        // Swapping with an empty is a plain step in; a pushable empty
-        // forwards the push until the chain lands somewhere.
+        // `x eat empty` frees the cell outright (official `valid=false`
+        // skips the whole empty-block verdict); swapping with an empty
+        // is a plain step in; a pushable empty forwards the push until
+        // the chain lands somewhere.
         const firstProps = context.emptyPropsAt(nx, ny)
-        if (
+        if (context.eatsEmpty(item, nx, ny)) {
+          // free entry
+        } else if (
           firstProps.has('swap') &&
           !emptyBlocked(nx, ny, arrow.dir)
         ) {
@@ -144,16 +148,21 @@ export const resolveBatchArrows = (
         }
       }
 
-      // `x is swap` movers trade places with whatever they enter — no
-      // push propagation, no stop/pull block; only `still`/`pinned`
-      // units (which can't be displaced) hold the cell. Officially swap
-      // outranks every other collision prop on the target.
+      // `x is swap` movers trade places with whatever they enter —
+      // officially every obstacle contributes result 0 for a swap
+      // mover: nothing blocks it, and `still`/`pinned` targets simply
+      // stay behind (no swap, no block).
       const swapMove = !throughEmptyPush && context.swapIds.has(id)
 
       if (!blocked && !swapMove) {
         let pushed = false
         for (const target of targets) {
           if (context.phantomIds.has(target.id)) continue
+          // Eaten/unlocked targets are consumed where they stand —
+          // officially result 0, never pushed onward.
+          if (context.eats(item, target)) continue
+          if (!throughEmptyPush && isLockCollision(context, item, target))
+            continue
           if (!context.pushIds.has(target.id)) continue
           if (arrows.has(target.id)) continue
           addArrow(target.id, arrow.dir, false)
@@ -167,11 +176,12 @@ export const resolveBatchArrows = (
 
       for (const target of targets) {
         if (context.phantomIds.has(target.id)) continue
-        if (!throughEmptyPush && isOpenShutPair(context, item, target)) {
-          if (removeOne(context, item)) context.status.changed = true
-          if (removeOne(context, target)) context.status.changed = true
+        // Official special order: `lock` (open/shut) then `eat` — both
+        // set `valid=false`, so a consumed target never blocks. The
+        // removals run at apply time, only when the mover lands.
+        if (!throughEmptyPush && isLockCollision(context, item, target))
           continue
-        }
+        if (context.eats(item, target)) continue
 
         if (swapMove) {
           // Weak units are left in place (they die in the interaction
@@ -183,20 +193,27 @@ export const resolveBatchArrows = (
             defer = true
             continue
           }
-          if (
-            context.stillIds.has(target.id) ||
-            context.pinnedIds.has(target.id)
-          )
-            blocked = true
           continue
         }
 
-        const stop = context.stopIds.has(target.id)
-        const push = context.pushIds.has(target.id)
-        const pull = context.pullIds.has(target.id)
-        const weak = context.weakIds.has(target.id)
-        const still = context.stillIds.has(target.id)
-        if (weak || blocked || (!push && !stop && !pull && !still)) continue
+        // `weak` targets on the same float layer die on contact instead
+        // of blocking; a cross-layer weak unit stays solid.
+        const weak =
+          context.weakIds.has(target.id) &&
+          hasProp(item, 'float') === hasProp(target, 'float')
+        // Official `cantmove` on the target (still / level-hold pin /
+        // locked<dir>) nils `push` and `pull` into `stop` and cancels
+        // `swap` — a bare `still` unit does not block entry at all.
+        const cantMove =
+          context.stillIds.has(target.id) ||
+          isLockedFor(target, arrow.dir)
+        const stop =
+          context.stopIds.has(target.id) ||
+          (cantMove &&
+            (hasProp(target, 'push') || hasProp(target, 'pull')))
+        const push = context.pushIds.has(target.id) && !cantMove
+        const pull = context.pullIds.has(target.id) && !cantMove
+        if (weak || blocked || (!push && !stop && !pull)) continue
 
         const targetArrow = arrows.get(target.id)
         if (targetArrow?.dir === arrow.dir) {
@@ -209,7 +226,7 @@ export const resolveBatchArrows = (
           continue
         }
 
-        if (stop || pull || still) blocked = true
+        if (stop || pull) blocked = true
       }
     }
 

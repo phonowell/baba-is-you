@@ -1,4 +1,9 @@
-import { getLiveCellItems, moveOne } from './move-core.js'
+import {
+  getLiveCellItems,
+  isLockCollision,
+  moveOne,
+  removeOne,
+} from './move-core.js'
 import { MOVE_DELTAS } from './shared.js'
 
 import type { Arrow, BatchMoveContext } from './move-batch-runtime.js'
@@ -50,7 +55,46 @@ export const applyBatchMovement = (
     if (!moveOne(context, item, nx, ny)) continue
     context.status.changed = true
 
-    if (!swapIds.has(id)) continue
+    // Move-time specials (official `eat`/`lock` fire when the move
+    // lands): the destination cell's eaten targets and open/shut
+    // partners die before any swap displaces the remaining occupants.
+    let locked = false
+    for (const target of getLiveCellItems(context, nx, ny)) {
+      if (target.id === id) continue
+      if (context.eats(item, target)) {
+        if (removeOne(context, target)) context.status.changed = true
+        continue
+      }
+      if (isLockCollision(context, item, target)) {
+        locked = true
+        if (removeOne(context, target)) context.status.changed = true
+      }
+    }
+    // An unsafe `open`/`shut` mover dies unlocking — officially `gone`
+    // skips the rest of its move.
+    if (locked && removeOne(context, item)) {
+      context.status.changed = true
+      continue
+    }
+
+    if (!swapIds.has(id)) {
+      // Target-side swap (official `findfeatureat` at the destination):
+      // a `x is swap` unit trades places with whatever walks in — the
+      // mover doesn't need swap itself.
+      const swappees = getLiveCellItems(context, nx, ny).filter(
+        (target): target is Item =>
+          target.id !== id &&
+          context.swapIds.has(target.id) &&
+          !context.phantomIds.has(target.id) &&
+          !context.weakIds.has(target.id) &&
+          arrows.get(target.id)?.status !== 'moving',
+      )
+      for (const target of swappees) {
+        if (moveOne(context, target, oldX, oldY))
+          context.status.changed = true
+      }
+      continue
+    }
     // Swap: every unit still sharing the destination cell (that isn't
     // moving itself this batch, and can be displaced at all) is carried
     // back to the mover's origin.

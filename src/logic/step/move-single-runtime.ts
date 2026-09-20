@@ -2,12 +2,12 @@ import {
   getLiveCellItems,
   inBounds,
   isLockedFor,
-  isOpenShutPair,
+  isLockCollision,
   LOCKED_PROPS,
   moveOne,
   removeOne,
 } from './move-core.js'
-import { MOVE_DELTAS } from './shared.js'
+import { hasProp, MOVE_DELTAS } from './shared.js'
 
 import type { MoveCoreContext } from './move-core.js'
 import type { Direction, Item } from '../types.js'
@@ -87,6 +87,9 @@ export const createSingleMoveRuntime = (
     let throughEmptyPush = false
     let targets = getLiveCellItems(context, nx, ny)
     if (!targets.length) {
+      // `x eat empty` frees the cell outright (official `valid=false`
+      // skips the whole empty-block verdict).
+      if (context.eatsEmpty(item, nx, ny)) return true
       // Swapping with an empty is a plain step in; a pushable empty
       // forwards the push until the chain lands somewhere.
       if (context.emptyPropsAt(nx, ny).has('swap') && !emptyBlocked(nx, ny))
@@ -108,46 +111,57 @@ export const createSingleMoveRuntime = (
       }
     }
 
-    if (
-      !throughEmptyPush &&
-      targets.some((target) => isOpenShutPair(context, item, target))
-    )
-      return true
-
     const pushTargets: Item[] = []
     // `x is swap` works both ways: the mover itself carrying swap trades
-    // places with whatever it walks into, ignoring the target's
-    // push/pull/stop entirely (but `still` units can't be displaced, so
-    // the swap — and the move — fails against them).
+    // places with whatever it walks into. Officially every obstacle
+    // contributes result 0 for a swap mover — nothing blocks it; `still`
+    // targets simply stay behind (no swap, no block).
     const moverSwap = !throughEmptyPush && context.swapIds.has(item.id)
     for (const target of targets) {
       // Phantom units are ghosts for collision purposes — movers pass
       // through them with no push/pull/stop interaction at all.
       if (context.phantomIds.has(target.id)) continue
-      if (context.weakIds.has(target.id)) continue
+      const sameLayer =
+        hasProp(item, 'float') === hasProp(target, 'float')
+      // Official special order: `lock` (open/shut) then `eat` — both set
+      // `valid=false`, so a consumed target never blocks, not even with
+      // `stop`/`pull`/`still`. Removal happens in `doMove` on success.
+      if (
+        !throughEmptyPush &&
+        isLockCollision(context, item, target)
+      )
+        continue
+      if (context.eats(item, target)) continue
 
-      if (moverSwap) {
-        if (!context.stillIds.has(target.id)) continue
-        if (context.moverIds.has(target.id)) {
-          if (!canMove(target.id, visiting)) return false
-          continue
-        }
-        return false
-      }
+      if (moverSwap) continue
 
-      // A swap target trades places instead of being pushed — swap
-      // outranks push on the same object.
-      const pushable = context.pushIds.has(target.id)
-      const swappable = context.swapIds.has(target.id)
-      const blockingStop =
-        context.stopIds.has(target.id) && !pushable && !swappable
-      const blockingPull =
-        context.pullIds.has(target.id) && !pushable && !swappable
-      // A `still` unit can't be carried by external forces — it blocks
-      // like a wall unless it is vacating the cell under its own move.
-      const blockingStill =
-        context.stillIds.has(target.id) && !pushable && !swappable
-      if (blockingStop || blockingPull || blockingStill) {
+      // `weak` on the same float layer never counts as a solid blocker
+      // (it dies on contact instead), but `weak`+`push` still pushes —
+      // the official guard only skips the result-1 branch.
+      const weakShatters = context.weakIds.has(target.id) && sameLayer
+
+      // Official `cantmove` on the target (still / level-hold pin /
+      // locked<dir>) nils `push` and `pull` into `stop` and cancels
+      // `swap` — a bare `still` unit does not block entry at all.
+      const cantMove =
+        context.stillIds.has(target.id) ||
+        isLockedFor(target, direction)
+      const pushable =
+        context.pushIds.has(target.id) && !cantMove
+      const pullable =
+        context.pullIds.has(target.id) && !cantMove
+      const swappable =
+        context.swapIds.has(target.id) && !cantMove
+      const stopLike =
+        context.stopIds.has(target.id) ||
+        (cantMove &&
+          (hasProp(target, 'push') || hasProp(target, 'pull')))
+      if (
+        !swappable &&
+        !pushable &&
+        (stopLike || pullable) &&
+        !weakShatters
+      ) {
         // A blocker that is itself a mover this phase (e.g. WALL IS YOU
         // plus WALL IS STOP) only blocks if it cannot vacate its cell —
         // the predecessor defers to the blocker's own pending arrow.
@@ -157,7 +171,7 @@ export const createSingleMoveRuntime = (
         }
         return false
       }
-      if (pushable && !swappable) pushTargets.push(target)
+      if (pushable) pushTargets.push(target)
     }
 
     for (const target of pushTargets) {
@@ -198,12 +212,16 @@ export const createSingleMoveRuntime = (
     }
 
     const moverSwap = !throughEmptyPush && context.swapIds.has(item.id)
+    // Eaten and unlocked targets contribute result 0 — they are consumed
+    // where they stand, never pushed onward.
     const pushTargets = moverSwap
       ? []
       : frontTargets.filter(
           (target) =>
             context.pushIds.has(target.id) &&
-            !context.swapIds.has(target.id),
+            !context.swapIds.has(target.id) &&
+            !context.eats(item, target) &&
+            !isLockCollision(context, item, target),
         )
     const swapTargets = throughEmptyPush
       ? []
@@ -211,6 +229,8 @@ export const createSingleMoveRuntime = (
           (target) =>
             !context.phantomIds.has(target.id) &&
             !context.weakIds.has(target.id) &&
+            !context.eats(item, target) &&
+            !isLockCollision(context, item, target) &&
             (moverSwap
               ? !context.stillIds.has(target.id)
               : context.swapIds.has(target.id)),
@@ -237,11 +257,16 @@ export const createSingleMoveRuntime = (
     const openShutTargets = throughEmptyPush
       ? []
       : getLiveCellItems(context, nx, ny).filter((target) =>
-          isOpenShutPair(context, item, target),
+          isLockCollision(context, item, target),
         )
 
     if (openShutTargets.length) {
+      // Official lock: an unsafe mover dies at its origin (`gone` skips
+      // the position update); a `safe` mover survives and still lands.
       if (removeOne(context, item)) {
+        context.moved.add(item.id)
+        context.status.anyMoved = true
+      } else if (moveOne(context, item, nx, ny)) {
         context.moved.add(item.id)
         context.status.anyMoved = true
       }
@@ -263,6 +288,12 @@ export const createSingleMoveRuntime = (
     if (moveOne(context, item, nx, ny)) {
       context.moved.add(item.id)
       context.status.anyMoved = true
+
+      // `x eat y` specials: whatever the mover stepped onto is consumed.
+      for (const target of getLiveCellItems(context, nx, ny)) {
+        if (target.id === item.id || !context.eats(item, target)) continue
+        if (removeOne(context, target)) context.status.anyMoved = true
+      }
     }
 
     for (const target of swapTargets) {

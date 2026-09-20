@@ -185,10 +185,48 @@ per-cell. Now:
 - `checkWin` empty half is per-cell — `empty is you`+`empty is win` wins
   only when ONE cell carries both (conditional variants on disjoint
   cells no longer fuse into a false win).
-- Residual gaps (rare): `empty is pull` being pulled, `x eat empty` /
+- Residual gaps (rare): `empty is pull` being pulled,
   `empty is weak`/`open`/`shut` specials (verdict equal, destruction VFX
   unmodelled), empty-you pushing THROUGH a pushable empty (needs a
   virtual empty mover).
+
+## Move-time specials: EAT / lock / weak (this session — fixed)
+
+Official `check()` in `movement.lua` evaluates per-obstacle specials
+BEFORE the solidity verdict; they only execute when the mover actually
+lands (`movelist` insertion is gated on `result == 0`). Aligned:
+
+- **`x eat y`**: eater enters the target cell and consumes it — eaten
+  units never block, even with `stop`/`pull`/`still`/`push`. Gates:
+  target `!safe`, matching float layer (`floating()`), rule conditions
+  evaluated at the DESTINATION cell (`hasfeature(name,"eat",obj,unit,
+  x+ox,y+oy)`). `x eat empty` frees empty cells per-cell (`empty is
+  safe`/`empty is float` of that cell apply). Eaten targets are excluded
+  from push/swap collection. Both engines + `move-batch-apply` sweep the
+  destination after landing — a target that moved away dodges the eat
+  (official `dodge` check).
+- **`open`/`shut` lock**: requires same float layer AND at least one
+  side `!safe`; each side dies only if itself unsafe. No longer
+  speculative — a mover blocked by a co-cell obstacle no longer unlocks
+  (the old `return true`/`removeOne`-during-resolution path did).
+- **`weak` same-layer targets**: never a stop/pull blocker but still
+  `push`-able (official skips only the result-1 branch). Cross-layer
+  weak without stop/pull is enterable. Weak entity death stays in the
+  interaction phase (official entity `{id,"weak"}` specials are no-ops;
+  the empty-pseudo-unit weak special just frees the cell).
+- **`empty is pull`** blocks plain entry (estop), and `empty is weak`
+  frees it — both now in `emptyBlocked`'s three-branch verdict.
+- `x has y` drops spawn at `delete()` time (official `inside()`), so a
+  unit eaten mid-move drops its cargo BEFORE interactions run —
+  verified against `tools.lua`.
+
+Regression cost: 7 goldens recorded under the old speculative ordering
+were deleted (`031`+`4/9-0` leaf-chamber, `062`+`3/8-0` double-moat,
+`309`/`310` courses, `495` secure-cottage) — replays diverged because
+the recorded paths relied on non-official unlock/eat timing (e.g. MAIN
+COURSE `rr` survived only because eat resolved after `has`-drops).
+Re-verified community solutions immediately re-covered `031`,
+`101`, `257`; the rest are queued for the sweep to re-solve.
 
 ## Open tasks (in order)
 
