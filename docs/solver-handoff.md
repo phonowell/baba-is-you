@@ -122,20 +122,21 @@ record stays valid only because replay uses the embedded board).
 
 ## Current state
 
-- **268 golden files; 192 distinct campaign levels covered (192/566)**
+- **207 golden files; ~167 campaign levels covered (167/566)** after the
+  letter-unit fix landed six more (`155`/`198`/`219`/`239`/`397`/`532`/`564`)
 - Legacy re-solve done: 89 wired / ~78 shortened (e.g. 385→284, 198→8) /
   2 unwired (stale fixtures stay fixture-bound) / 1 fallback
-- External import: 246 Discord + 55 harbor solutions parsed → ~74
-  verified-and-emitted (rest: already covered, remix-only attempts, or
-  engine-gap suspects — see below)
+- External import: 246 Discord + 55 harbor solutions parsed → 169 + 45
+  replay-verified in dry run (rest: already covered, remix-only attempts,
+  or engine-gap suspects — see below)
 - Sweep status (single worker chain `tools-out/solve/run-shards.sh`):
   - shard 0 done (old semantics): solved=4 exhausted=4 cutoff=52
   - shard 1 done (old semantics): solved=1 exhausted=4 cutoff=51
   - shard 2 done (new semantics): solved=5 exhausted=2 cutoff=52
   - shard 3 **crashed** — Node heap OOM mid-shard (`[155] ERROR` …
     `heap out of memory`); rerun after the chain
-  - shard 4 running; 5–7 queued
-- `pnpm check` green (723 tests), `pnpm build` green
+  - shard 4 done; shard 5 running; 6–7 queued
+- `pnpm check` green (740 tests), `pnpm build` green
 
 ## Open tasks (in order)
 
@@ -186,6 +187,22 @@ semantics bugs found and fixed so far:
    rule completes the level outright, even the turn the last `you` dies
    (`[239] JUST NO`'s `level is not not win` forms on the fatal push).
    `checkWin` now returns true on the prop alone.
+5. **Letter units (???, ABC, LEVEL 9 worlds)** — `letter-words.ts`
+   mirrors `letterunits.lua`: `a-z`/`0-9`/`sharp`/`flat` text tiles are
+   letter units, never standalone words; contiguous runs of ≥2 cells
+   enumerate every dictionary-word substring (`SPELLABLE_WORDS` = the
+   official `unitreference` names — in the base world the palette check
+   is bypassed so any official word is spellable, including `is`/`not`/
+   conditions). Spelled words act as multi-cell text units that can fill
+   any phrase position; the term parser is span-aware
+   (`ScannedTerm{word,span}` in `rules-parse-terms.ts`). Play levels
+   switch to the note dictionary and allow single-cell note words
+   (`text_play`'s `customobjects` list). Verified `[155] ERROR`,
+   `[192] TURN THE CORNER`, `[266] WRITE THE RULES`, `[198] LUNAR
+   GALLERY`, `[219] WALL` against community solutions; the official game
+   dump at `data/Baba Is You/Data/` (gitignored) is the ground truth for
+   further semantics questions (`rules.lua`, `letterunits.lua`,
+   `blocks.lua`).
 
 ## Known limits
 

@@ -14,6 +14,7 @@ import {
   PROPERTY_WORDS,
 } from './types.js'
 
+import type { ReadTermsAt, ScannedTerm } from './rules-parse-terms.js'
 import type { PostfixConditionKind, RuleCondition } from './types.js'
 
 type SubjectPattern = {
@@ -31,13 +32,25 @@ const CONDITION_OPERATOR_WORDS = INFIX_CONDITION_WORDS
 // same slot `lonely` occupies: `BABA IDLE IS YOU`.
 const POSTFIX_CONDITION_WORD_SET = new Set<string>(POSTFIX_CONDITION_WORDS)
 
+const findTerm = (
+  terms: readonly ScannedTerm[],
+  word: string,
+): ScannedTerm | undefined => terms.find((term) => term.word === word)
+
+// Consecutive `not` terms from `position`, each consuming its own span.
 const countConsecutiveNot = (
-  readWordsAt: (position: number) => string[],
+  readTermsAt: ReadTermsAt,
   position: number,
-): number => {
+): { count: number; offset: number } => {
   let count = 0
-  while (readWordsAt(position + count).includes('not')) count += 1
-  return count
+  let offset = 0
+  for (;;) {
+    const notTerm = findTerm(readTermsAt(position + offset), 'not')
+    if (!notTerm) break
+    offset += notTerm.span
+    count += 1
+  }
+  return { count, offset }
 }
 
 export const stringifyCondition = (condition?: RuleCondition): string => {
@@ -50,7 +63,7 @@ export const stringifyCondition = (condition?: RuleCondition): string => {
 }
 
 export const collectSubjectPatterns = (
-  readWordsAt: (position: number) => string[],
+  readTermsAt: ReadTermsAt,
   maxDepth: number,
 ): SubjectPattern[] => {
   const result: SubjectPattern[] = []
@@ -82,7 +95,7 @@ export const collectSubjectPatterns = (
   }
 
   const subjectOrConditionChains = parseTermChainsWithNext(
-    readWordsAt,
+    readTermsAt,
     1,
     isSubjectWord,
     0,
@@ -92,31 +105,36 @@ export const collectSubjectPatterns = (
   )
 
   for (const chain of subjectOrConditionChains.chains) {
-    const nextWords = readWordsAt(chain.next)
+    const nextTerms = readTermsAt(chain.next)
 
-    const postfixKind = nextWords.find((word) =>
-      POSTFIX_CONDITION_WORD_SET.has(word),
+    const postfixTerm = nextTerms.find((term) =>
+      POSTFIX_CONDITION_WORD_SET.has(term.word),
     )
-    if (postfixKind) {
-      const notCount = countConsecutiveNot(readWordsAt, chain.next + 1)
+    if (postfixTerm) {
+      const nots = countConsecutiveNot(
+        readTermsAt,
+        chain.next + postfixTerm.span,
+      )
       addSubjectTerms(
         chain.terms,
-        { start: 1, end: chain.next + 1 + notCount },
+        { start: 1, end: chain.next + postfixTerm.span + nots.offset },
         {
-          kind: postfixKind as PostfixConditionKind,
-          ...(notCount % 2 === 1 ? { negated: true } : {}),
+          kind: postfixTerm.word as PostfixConditionKind,
+          ...(nots.count % 2 === 1 ? { negated: true } : {}),
         },
       )
       continue
     }
 
-    const conditionKind = CONDITION_OPERATOR_WORDS.find((word) =>
-      nextWords.includes(word),
+    const conditionTerm = nextTerms.find((term) =>
+      (CONDITION_OPERATOR_WORDS as readonly string[]).includes(term.word),
     )
-    if (conditionKind) {
+    if (conditionTerm) {
+      const conditionKind =
+        conditionTerm.word as (typeof INFIX_CONDITION_WORDS)[number]
       const subjectChains = parseTermChainsWithNext(
-        readWordsAt,
-        chain.next + 1,
+        readTermsAt,
+        chain.next + conditionTerm.span,
         isSubjectWord,
         0,
         maxDepth,
@@ -130,29 +148,29 @@ export const collectSubjectPatterns = (
         continue
       }
       const spanEnd = Math.max(
-        chain.next + 1,
+        chain.next + conditionTerm.span,
         ...subjectChains.chains.map((subjectChain) => subjectChain.next),
       )
 
-      for (const conditionTerm of conditionTerms) {
+      for (const term of conditionTerms) {
         for (const subject of subjects) {
           const condition: RuleCondition =
-            conditionKind === 'facing' && isDirectionWord(conditionTerm.word)
+            conditionKind === 'facing' && isDirectionWord(term.word)
               ? {
                   kind: 'facing',
-                  direction: conditionTerm.word,
-                  ...(conditionTerm.negated ? { negated: true } : {}),
+                  direction: term.word,
+                  ...(term.negated ? { negated: true } : {}),
                 }
               : conditionKind === 'facing'
                 ? {
                     kind: 'facing',
-                    object: asConditionObjectWord(conditionTerm.word),
-                    ...(conditionTerm.negated ? { negated: true } : {}),
+                    object: asConditionObjectWord(term.word),
+                    ...(term.negated ? { negated: true } : {}),
                   }
                 : {
                     kind: conditionKind,
-                    object: asConditionObjectWord(conditionTerm.word),
-                    ...(conditionTerm.negated ? { negated: true } : {}),
+                    object: asConditionObjectWord(term.word),
+                    ...(term.negated ? { negated: true } : {}),
                   }
           addPattern({
             subject: asSubjectWord(subject.word),
@@ -179,22 +197,31 @@ export const collectSubjectPatterns = (
 // the previous predicate clause to the `is`/`has` that owns it and reuse
 // its subjects.
 export const collectBridgedSubjectPatterns = (
-  readWordsAt: (position: number) => string[],
+  readTermsAt: ReadTermsAt,
   maxDepth: number,
 ): SubjectPattern[] => {
   let pos = 1
-  while (pos <= maxDepth && readWordsAt(pos).includes('not')) pos += 1
-  if (pos > maxDepth || !readWordsAt(pos).includes('and')) return []
-  pos += 1
+  for (;;) {
+    const notTerm =
+      pos <= maxDepth ? findTerm(readTermsAt(pos), 'not') : undefined
+    if (!notTerm) break
+    pos += notTerm.span
+  }
+  const andTerm = pos <= maxDepth ? findTerm(readTermsAt(pos), 'and') : undefined
+  if (!andTerm) return []
+  pos += andTerm.span
 
   const result: SubjectPattern[] = []
   let sawPredicate = false
   while (pos <= maxDepth) {
-    const words = readWordsAt(pos)
-    if (!words.length) break
-    if (sawPredicate && (words.includes('is') || words.includes('has'))) {
-      const bridgedRead = (position: number): string[] =>
-        readWordsAt(position + pos)
+    const terms = readTermsAt(pos)
+    if (!terms.length) break
+    if (
+      sawPredicate &&
+      (findTerm(terms, 'is') !== undefined || findTerm(terms, 'has'))
+    ) {
+      const bridgedRead = (position: number): readonly ScannedTerm[] =>
+        readTermsAt(position + pos)
       for (const pattern of collectSubjectPatterns(
         bridgedRead,
         maxDepth - pos,
@@ -208,15 +235,15 @@ export const collectBridgedSubjectPatterns = (
         })
       }
     }
-    if (
-      words.some(
-        (word) =>
-          word === 'and' || word === 'not' || isPredicateBridgeWord(word),
-      )
-    ) {
-      if (words.some((word) => isPredicateBridgeWord(word)))
-        sawPredicate = true
-      pos += 1
+    const stepTerm = terms.find(
+      (term) =>
+        term.word === 'and' ||
+        term.word === 'not' ||
+        isPredicateBridgeWord(term.word),
+    )
+    if (stepTerm) {
+      if (isPredicateBridgeWord(stepTerm.word)) sawPredicate = true
+      pos += stepTerm.span
       continue
     }
     break

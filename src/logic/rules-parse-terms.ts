@@ -18,12 +18,27 @@ type ParseChainWithNextResult = {
   cutByBoundary: boolean
 }
 
+// A word available at a scan position plus how many cells it occupies along
+// the scan direction. Ordinary text has span 1; letter-spelled words cover
+// their whole run so the parser resumes after the word's far end.
+export type ScannedTerm = {
+  word: string
+  span: number
+}
+
+export type ReadTermsAt = (position: number) => readonly ScannedTerm[]
+
 import { RULE_OPERATOR_WORDS } from './types.js'
 
 const CHAIN_BOUNDARY_WORDS = new Set<string>(RULE_OPERATOR_WORDS)
 
+const findTerm = (
+  terms: readonly ScannedTerm[],
+  word: string,
+): ScannedTerm | undefined => terms.find((term) => term.word === word)
+
 const parseTermOptions = (
-  readWordsAt: (position: number) => string[],
+  readTermsAt: ReadTermsAt,
   position: number,
   isValidWord: (word: string) => boolean,
   allowTrailingNot: boolean,
@@ -39,27 +54,44 @@ const parseTermOptions = (
     })
   }
 
-  const currentWords = readWordsAt(position)
-  const hasTrailingNot =
-    allowTrailingNot && readWordsAt(position + 1).includes('not')
-  if (!hasTrailingNot)
-    for (const word of currentWords) addOption(word, false, position + 1)
+  const currentTerms = readTermsAt(position)
+  for (const term of currentTerms) {
+    const hasTrailingNot =
+      allowTrailingNot &&
+      findTerm(readTermsAt(position + term.span), 'not') !== undefined
+    if (!hasTrailingNot) addOption(term.word, false, position + term.span)
+  }
 
   let leadingOffset = 0
-  while (readWordsAt(position + leadingOffset).includes('not')) {
-    leadingOffset += 1
-    const negated = leadingOffset % 2 === 1
-    for (const word of readWordsAt(position + leadingOffset))
-      addOption(word, negated, position + leadingOffset + 1)
+  let leadingNots = 0
+  for (;;) {
+    const notTerm = findTerm(readTermsAt(position + leadingOffset), 'not')
+    if (!notTerm) break
+    leadingOffset += notTerm.span
+    leadingNots += 1
+    const negated = leadingNots % 2 === 1
+    for (const term of readTermsAt(position + leadingOffset))
+      addOption(term.word, negated, position + leadingOffset + term.span)
   }
 
   if (allowTrailingNot) {
-    let trailingOffset = 1
-    while (readWordsAt(position + trailingOffset).includes('not')) {
-      const negated = trailingOffset % 2 === 1
-      for (const word of currentWords)
-        addOption(word, negated, position + trailingOffset + 1)
-      trailingOffset += 1
+    for (const term of currentTerms) {
+      let trailingOffset = term.span
+      let trailingNots = 0
+      for (;;) {
+        const notTerm = findTerm(
+          readTermsAt(position + trailingOffset),
+          'not',
+        )
+        if (!notTerm) break
+        trailingOffset += notTerm.span
+        trailingNots += 1
+        addOption(
+          term.word,
+          trailingNots % 2 === 1,
+          position + trailingOffset,
+        )
+      }
     }
   }
 
@@ -67,7 +99,7 @@ const parseTermOptions = (
 }
 
 export const parseTermChainsWithNext = (
-  readWordsAt: (position: number) => string[],
+  readTermsAt: ReadTermsAt,
   position: number,
   isValidWord: (word: string) => boolean,
   depth: number,
@@ -78,7 +110,7 @@ export const parseTermChainsWithNext = (
   if (depth > maxDepth) return { chains: [], cutByBoundary: false }
 
   const termOptions = parseTermOptions(
-    readWordsAt,
+    readTermsAt,
     position,
     isValidWord,
     allowTrailingNot,
@@ -88,17 +120,18 @@ export const parseTermChainsWithNext = (
   const chains: ParsedTermChain[] = []
   let cutByBoundary = false
   for (const option of termOptions) {
-    const nextWords = readWordsAt(option.next)
+    const nextTerms = readTermsAt(option.next)
     if (
       stopAtOperatorBoundary &&
       depth > 0 &&
-      nextWords.some((word) => CHAIN_BOUNDARY_WORDS.has(word))
+      nextTerms.some((term) => CHAIN_BOUNDARY_WORDS.has(term.word))
     ) {
       cutByBoundary = true
       continue
     }
 
-    if (!nextWords.includes('and')) {
+    const andTerm = findTerm(nextTerms, 'and')
+    if (!andTerm) {
       chains.push({
         terms: [{ word: option.word, negated: option.negated }],
         next: option.next,
@@ -107,8 +140,8 @@ export const parseTermChainsWithNext = (
     }
 
     const rest = parseTermChainsWithNext(
-      readWordsAt,
-      option.next + 1,
+      readTermsAt,
+      option.next + andTerm.span,
       isValidWord,
       depth + 1,
       maxDepth,
@@ -140,7 +173,7 @@ export const parseTermChainsWithNext = (
 }
 
 export const parseTermChains = (
-  readWordsAt: (position: number) => string[],
+  readTermsAt: ReadTermsAt,
   position: number,
   isValidWord: (word: string) => boolean,
   depth: number,
@@ -149,7 +182,7 @@ export const parseTermChains = (
   stopAtOperatorBoundary: boolean,
 ): ParseChainResult => {
   const parsed = parseTermChainsWithNext(
-    readWordsAt,
+    readTermsAt,
     position,
     isValidWord,
     depth,

@@ -1,4 +1,10 @@
 import {
+  collectLetterCells,
+  collectSpelledWords,
+  isLetterName,
+} from './letter-words.js'
+import type { SpelledWord } from './letter-words.js'
+import {
   inBounds,
   isPredicateWordForHas,
   isPredicateWordForIs,
@@ -13,6 +19,7 @@ import {
 } from './rules-subjects.js'
 import { asObjectWord, PROPERTY_WORDS, RULE_OPERATOR_WORDS } from './types.js'
 
+import type { ScannedTerm } from './rules-parse-terms.js'
 import type { LevelItem, Rule, RuleCondition } from './types.js'
 
 const ruleKindFor = (
@@ -63,6 +70,7 @@ export const collectRuleInstances = (
 ): RuleInstance[] => {
   const grid = new Map<number, string[]>()
   const textAt = new Map<number, LevelItem[]>()
+  const letterCells = collectLetterCells(items, width, height)
   for (const item of items) {
     // `word` objects act as their noun in rule text (they contribute the
     // word but are not text cards, so they stay out of `textAt`'s
@@ -77,9 +85,14 @@ export const collectRuleInstances = (
       continue
 
     const key = keyFor(item.x, item.y, width)
-    const list = grid.get(key) ?? []
-    list.push(item.name)
-    grid.set(key, list)
+    // Letter units never act as standalone words — they only enter rules
+    // through spelled runs collected below.
+    const isLetter = item.isText && isLetterName(item.name)
+    if (!isLetter) {
+      const list = grid.get(key) ?? []
+      list.push(item.name)
+      grid.set(key, list)
+    }
     if (item.isText) {
       const cellItems = textAt.get(key) ?? []
       cellItems.push(item)
@@ -87,45 +100,137 @@ export const collectRuleInstances = (
     }
   }
 
+  // Letter runs spell words that behave like multi-cell text units
+  // (rules.lua `formlettermap`): each substring matching the official
+  // dictionary yields a word anchored between its first and last cell.
+  // Level-local names join the dictionary like `unitreference` does.
+  const spelledWords: SpelledWord[] = []
+  const spelledByStart = new Map<number, SpelledWord[]>()
+  const spelledByEnd = new Map<number, SpelledWord[]>()
+  if (letterCells.size) {
+    const localWords = new Set<string>()
+    for (const item of items) localWords.add(item.name)
+    spelledWords.push(
+      ...collectSpelledWords(
+        letterCells,
+        width,
+        height,
+        localWords,
+        items.some((item) => item.isText && item.name === 'play'),
+      ),
+    )
+    for (const spelled of spelledWords) {
+      const byStart = spelledByStart.get(spelled.startKey) ?? []
+      byStart.push(spelled)
+      spelledByStart.set(spelled.startKey, byStart)
+      const byEnd = spelledByEnd.get(spelled.endKey) ?? []
+      byEnd.push(spelled)
+      spelledByEnd.set(spelled.endKey, byEnd)
+    }
+  }
+
   const maxDepth = width + height
   const instances: RuleInstance[] = []
 
+  // Operator anchors: ordinary operator text (span 1) plus spelled operator
+  // words. A spelled `is` scans subjects left of its first letter and
+  // objects right of its last.
+  type OperatorAnchor = {
+    word: string
+    startKey: number
+    endKey: number
+    cells: number[]
+    // Spelled operators only scan along their own direction; ordinary text
+    // anchors scan both.
+    dir?: number
+  }
+  const anchors: OperatorAnchor[] = []
   for (const item of items) {
-    if (!item.isText || !OPERATOR_WORDS.has(item.name)) continue
+    if (
+      !item.isText ||
+      isLetterName(item.name) ||
+      !OPERATOR_WORDS.has(item.name)
+    )
+      continue
+    if (!inBounds(item.x, item.y, width, height)) continue
+    const key = keyFor(item.x, item.y, width)
+    anchors.push({ word: item.name, startKey: key, endKey: key, cells: [key] })
+  }
+  for (const spelled of spelledWords) {
+    if (!OPERATOR_WORDS.has(spelled.word)) continue
+    const cells: number[] = []
+    const [dx, dy] = RULE_SCAN_DIRS[spelled.dir] ?? [1, 0]
+    const sx = spelled.startKey % width
+    const sy = (spelled.startKey - sx) / width
+    for (let i = 0; i < spelled.span; i += 1)
+      cells.push(keyFor(sx + dx * i, sy + dy * i, width))
+    anchors.push({
+      word: spelled.word,
+      startKey: spelled.startKey,
+      endKey: spelled.endKey,
+      cells,
+      dir: spelled.dir,
+    })
+  }
 
-    for (const [dx, dy] of RULE_SCAN_DIRS) {
+  for (const anchor of anchors) {
+    const anchorX = anchor.startKey % width
+    const anchorY = (anchor.startKey - anchorX) / width
+    const endX = anchor.endKey % width
+    const endY = (anchor.endKey - endX) / width
+
+    for (const [dirIndex, [dx, dy]] of RULE_SCAN_DIRS.entries()) {
+      if (anchor.dir !== undefined && anchor.dir !== dirIndex) continue
+
       const subjectCellAt = (position: number): number | undefined => {
-        const x = item.x - dx * position
-        const y = item.y - dy * position
+        const x = anchorX - dx * position
+        const y = anchorY - dy * position
         if (!inBounds(x, y, width, height)) return undefined
         return keyFor(x, y, width)
       }
       const objectCellAt = (position: number): number | undefined => {
-        const x = item.x + dx * position
-        const y = item.y + dy * position
+        const x = endX + dx * position
+        const y = endY + dy * position
         if (!inBounds(x, y, width, height)) return undefined
         return keyFor(x, y, width)
       }
-      const readSubjectWordsAt = (position: number): string[] => {
+      const readSubjectTermsAt = (position: number): ScannedTerm[] => {
         const key = subjectCellAt(position)
-        return key === undefined ? [] : (grid.get(key) ?? [])
+        if (key === undefined) return []
+        const terms: ScannedTerm[] = []
+        for (const word of grid.get(key) ?? [])
+          terms.push({ word, span: 1 })
+        for (const spelled of spelledByEnd.get(key) ?? [])
+          if (spelled.dir === dirIndex)
+            terms.push({ word: spelled.word, span: spelled.span })
+        return terms
       }
-      const readObjectWordsAt = (position: number): string[] => {
+      const readObjectTermsAt = (position: number): ScannedTerm[] => {
         const key = objectCellAt(position)
-        return key === undefined ? [] : (grid.get(key) ?? [])
+        if (key === undefined) return []
+        const terms: ScannedTerm[] = []
+        for (const word of grid.get(key) ?? [])
+          terms.push({ word, span: 1 })
+        for (const spelled of spelledByStart.get(key) ?? [])
+          if (spelled.dir === dirIndex)
+            terms.push({ word: spelled.word, span: spelled.span })
+        return terms
       }
 
-      const subjectPatterns = collectSubjectPatterns(readSubjectWordsAt, maxDepth)
-      if (item.name === 'is' || item.name === 'has')
+      const subjectPatterns = collectSubjectPatterns(
+        readSubjectTermsAt,
+        maxDepth,
+      )
+      if (anchor.word === 'is' || anchor.word === 'has')
         subjectPatterns.push(
-          ...collectBridgedSubjectPatterns(readSubjectWordsAt, maxDepth),
+          ...collectBridgedSubjectPatterns(readSubjectTermsAt, maxDepth),
         )
       if (!subjectPatterns.length) continue
 
       const objectChains = parseTermChainsWithNext(
-        readObjectWordsAt,
+        readObjectTermsAt,
         1,
-        item.name === 'is' ? isPredicateWordForIs : isPredicateWordForHas,
+        anchor.word === 'is' ? isPredicateWordForIs : isPredicateWordForHas,
         0,
         maxDepth,
         false,
@@ -148,10 +253,7 @@ export const collectRuleInstances = (
       }
 
       for (const subject of subjectPatterns) {
-        const phraseCells = new Set<number>([
-          keyFor(item.x, item.y, width),
-          ...objectCells,
-        ])
+        const phraseCells = new Set<number>([...anchor.cells, ...objectCells])
         for (
           let position = subject.span.start;
           position < subject.span.end;
@@ -168,14 +270,15 @@ export const collectRuleInstances = (
             ...(subject.subjectNegated ? { subjectNegated: true } : {}),
             object: asObjectWord(object.word),
             ...(object.negated ? { objectNegated: true } : {}),
-            kind: ruleKindFor(item.name, object.word),
+            kind: ruleKindFor(anchor.word, object.word),
             ...(subject.condition ? { condition: subject.condition } : {}),
           }
           // `and` belongs to every conjunct's phrase in the predecessor's
-          // index marking; `not` never does.
+          // index marking; `not` never does. Letter tiles inside a covered
+          // phrase cell are the spelled word's own letters.
           const words = new Set<string>([
             rule.subject,
-            item.name,
+            anchor.word,
             object.word,
             'and',
             ...conditionWords(rule.condition),
@@ -183,7 +286,8 @@ export const collectRuleInstances = (
           const cells: number[] = []
           for (const key of phraseCells) {
             for (const textItem of textAt.get(key) ?? []) {
-              if (words.has(textItem.name)) cells.push(textItem.id)
+              if (words.has(textItem.name) || isLetterName(textItem.name))
+                cells.push(textItem.id)
             }
           }
           instances.push({ rule, cells })

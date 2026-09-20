@@ -19,7 +19,7 @@
   - 操作符：`IS/HAS/MAKE/EAT/WRITE/FEAR/FOLLOW/MIMIC/PLAY/BECOME`
   - 连接与否定：`AND/NOT`
   - 条件：`ON/NEAR/FACING/NEXTTO/FACEDBY/SEEING/WITHOUT/ABOVE/BELOW/BESIDELEFT/BESIDERIGHT/FEELING` + 前缀位 `LONELY/IDLE/OFTEN/SELDOM/POWERED(2/3)`
-  - 特殊名词：`TEXT/EMPTY/ALL/GROUP(2/3)/LEVEL`；字母数字词 `a-z/0-9/sharp/flat` 按普通名词走
+  - 特殊名词：`TEXT/EMPTY/ALL/GROUP(2/3)/LEVEL`；字母单位 `a-z/0-9/sharp/flat`（type-5 文字）不单独成词，只在相邻 ≥2 格的字母行/列中拼出词典词参与规则（`letter-words.ts`，对齐官方 `letterunits.lua`）
   - 属性词：以 `src/logic/types.ts` 的 `CORE_PROPERTIES` 为准
 - 修改规则词表时同步：`src/logic/types.ts`、`src/logic/rules*.ts`、`src/view/render-config.ts`、相关测试；若已集中导出语法集合，禁止再手写镜像副本
 - Web 渲染约束：入口在 `src/web/app.ts`；3D 渲染使用 `src/web/board-3d-renderer*.ts` 体系，是唯一场景，不实现 2D/无 WebGL 回退；必须保证可释放（`dispose`）

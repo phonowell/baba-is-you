@@ -1,0 +1,363 @@
+{
+ "level": "",
+ "levelIndex": 239,
+ "levelData": {
+  "title": "JUST NO",
+  "width": 24,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "and",
+    "x": 3,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 17,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 19,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 4,
+    "name": "defeat",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "is",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 7,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 18,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "level",
+    "x": 6,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "not",
+    "x": 4,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "not",
+    "x": 13,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "not",
+    "x": 14,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "not",
+    "x": 15,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 13,
+    "name": "not",
+    "x": 13,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 14,
+    "name": "not",
+    "x": 14,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 15,
+    "name": "not",
+    "x": 15,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 16,
+    "name": "not",
+    "x": 13,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 17,
+    "name": "not",
+    "x": 14,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 18,
+    "name": "not",
+    "x": 15,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 19,
+    "name": "rock",
+    "x": 17,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "rock",
+    "x": 17,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "rock",
+    "x": 19,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "skull",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 23,
+    "name": "skull",
+    "x": 11,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "skull",
+    "x": 11,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "skull",
+    "x": 11,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "skull",
+    "x": 11,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "skull",
+    "x": 11,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "skull",
+    "x": 11,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "skull",
+    "x": 11,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "skull",
+    "x": 11,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "skull",
+    "x": 11,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "skull",
+    "x": 11,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "skull",
+    "x": 11,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "skull",
+    "x": 11,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "skull",
+    "x": 11,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "skull",
+    "x": 11,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "skull",
+    "x": 11,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "skull",
+    "x": 11,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "skull",
+    "x": 11,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "skull",
+    "x": 11,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "win",
+    "x": 17,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 42,
+    "name": "you",
+    "x": 5,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 43,
+    "name": "you",
+    "x": 19,
+    "y": 11,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uulllluldldrurddrdlllll",
+ "initial": "playing|and!@3,0(push);baba!@17,11(push);baba@down@19,7(you);defeat!@2,0(push);is!@1,0(push);is!@7,8(push);is!@18,11(push);level!@6,8(push);not!@4,0(push);not!@13,5(push);not!@14,5(push);not!@15,5(push);not!@13,6(push);not!@14,6(push);not!@15,6(push);not!@13,7(push);not!@14,7(push);not!@15,7(push);rock@down@17,7();rock@down@17,9();rock@down@19,9();skull!@0,0(push);skull@down@11,0(defeat);skull@down@11,1(defeat);skull@down@11,2(defeat);skull@down@11,3(defeat);skull@down@11,4(defeat);skull@down@11,5(defeat);skull@down@11,6(defeat);skull@down@11,7(defeat);skull@down@11,8(defeat);skull@down@11,9(defeat);skull@down@11,10(defeat);skull@down@11,11(defeat);skull@down@11,12(defeat);skull@down@11,13(defeat);skull@down@11,14(defeat);skull@down@11,15(defeat);skull@down@11,16(defeat);skull@down@11,17(defeat);win!@17,5(push);you!@5,0(push);you!@19,11(push)",
+ "hashes": [
+  "2eeb973f9149d416",
+  "8a6eb5b49287ffe1",
+  "8e6cbad8adc5a236",
+  "e71fdea81684ff4c",
+  "5b63e6f45646012c",
+  "cdb99adfa44c3702",
+  "4933664a2a716397",
+  "d0351149b4815262",
+  "43abbc8d53e008eb",
+  "c3e2ccc47a0b47d5",
+  "0e87f7140ed38156",
+  "89be6d196680a0b7",
+  "6301168942b13463",
+  "f5d90eb907bd65e8",
+  "c5b4bf7c24b95c6c",
+  "c349610f7451cecd",
+  "81bd1a5cccbac0b3",
+  "0bd52d506868ec46",
+  "e9a65aa7aa0e0baa",
+  "404bbe69642c767b",
+  "7f97271eedae70f9",
+  "497cbc58984cc539",
+  "6d1a8afb758e4b5c"
+ ],
+ "final": "win|and!@3,0(push);baba!@17,11(push);defeat!@2,0(push);is!@1,0(push);is!@7,8(push);is!@18,11(push);level!@6,8(push);not!@4,0(push);not@left!@10,5(push);not@left!@11,5(push);not@left!@12,5(push);not@down!@13,7(push);not@down!@14,7(push);not@right!@16,6(push);not@left!@8,8(push);not@left!@9,8(push);not@down!@15,9(push);rock@down@17,7();rock@down@17,9();rock@down@19,9();skull!@0,0(push);skull@down@11,0(defeat);skull@down@11,1(defeat);skull@down@11,2(defeat);skull@down@11,3(defeat);skull@down@11,4(defeat);skull@down@11,5(defeat);skull@down@11,6(defeat);skull@down@11,7(defeat);skull@down@11,8(defeat);skull@down@11,9(defeat);skull@down@11,10(defeat);skull@down@11,11(defeat);skull@down@11,12(defeat);skull@down@11,13(defeat);skull@down@11,14(defeat);skull@down@11,15(defeat);skull@down@11,16(defeat);skull@down@11,17(defeat);win@left!@10,8(push);you!@5,0(push);you!@19,11(push)",
+ "status": "win"
+}
