@@ -8,7 +8,14 @@ export const createInitialState = (
   levelIndex: number,
 ): GameState => {
   const baseRuntime = collectRuleRuntime(level.items, level.width, level.height)
-  const transformResult = applyTransforms(level.items, baseRuntime)
+  // `empty is X` spawns at load mark their cells converted — a unit that
+  // later vacates such a cell leaves it permanently inert.
+  const emptyConverted = new Set<number>()
+  const transformResult = applyTransforms(
+    level.items,
+    baseRuntime,
+    emptyConverted,
+  )
   // No transform → the second parse would rescan an identical layout and
   // produce the same rules and cell index as `baseRuntime`.
   const runtime = transformResult.changed
@@ -27,6 +34,7 @@ export const createInitialState = (
     rulesSourceItems: transformResult.items,
     status: 'playing',
     turn: 0,
+    ...(emptyConverted.size > 0 ? { emptyConverted } : {}),
     ...(level.meta ? { meta: level.meta } : {}),
   }
 }

@@ -74,6 +74,11 @@ export type GameState = {
   // `down`) that `level is move`/`auto`/`fall*` scroll along.
   levelOffset?: { x: number; y: number }
   levelDir?: Direction
+  // Official `emptydata[tileid].conv`: a cell converted by `empty is X`
+  // (or vacated via an `x is empty` transform) can never be
+  // empty-converted again for the rest of the level. Keys are
+  // `y * width + x`; absent when no empty conversion has ever fired.
+  emptyConverted?: ReadonlySet<number>
   meta?: LevelMeta
 }
 

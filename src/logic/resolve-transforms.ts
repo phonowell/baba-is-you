@@ -78,6 +78,11 @@ const createFromEmpty = (
 export const applyTransforms = (
   items: LevelItem[],
   runtime: RuleRuntime,
+  // Official `emptydata[tileid].conv` — cells that already fired an
+  // empty conversion never fire again. Callers that persist the set pass
+  // it in; it is read for gating and written when an empty cell spawns
+  // or an entity converts to `empty`.
+  emptyConverted?: Set<number>,
 ): {
   items: LevelItem[]
   changed: boolean
@@ -151,6 +156,18 @@ export const applyTransforms = (
       continue
     }
 
+    // `x is empty` deletes the unit and conv-marks its cell — an
+    // `empty is …` spawn can never fire there again (official
+    // convert.lua marks `emptydata[tileid].conv` on empty targets).
+    if (
+      emptyConverted !== undefined &&
+      [...isTargets, ...becomeTargets].some(
+        (target) => resolveTransformTarget(item, target) === 'empty',
+      )
+    ) {
+      emptyConverted.add(item.y * width + item.x)
+    }
+
     const transformed = Array.from(transformedByKey.values())
     if (!transformed.length) {
       changed = true
@@ -177,6 +194,9 @@ export const applyTransforms = (
       for (let x = 0; x < width; x += 1) {
         const cellKey = y * width + x
         if (occupied.has(cellKey)) continue
+        // One-shot per cell: the official `conv` flag makes a converted
+        // empty cell permanently ineligible, even if it empties again.
+        if (emptyConverted?.has(cellKey)) continue
         const emptyTargets = [
           ...resolveEmptyRuleTargetsAt(
             emptyTransformRules,
@@ -201,6 +221,7 @@ export const applyTransforms = (
           next.push(spawned)
           nextId += 1
           changed = true
+          emptyConverted?.add(cellKey)
         }
       }
     }

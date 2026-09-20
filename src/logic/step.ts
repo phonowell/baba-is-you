@@ -327,6 +327,9 @@ const runStages = (
     direction,
     turn: state.turn + 1,
     levelDir: state.levelDir ?? 'down',
+    // Copy so the predecessor's set stays immutable — undo snapshots and
+    // replayed siblings share the same GameState objects.
+    emptyConverted: new Set(state.emptyConverted),
   }
 
   for (const stage of STEP_STAGES) {
@@ -427,6 +430,9 @@ const runStages = (
     state.levelDir !== undefined ||
     state.levelOffset !== undefined
       ? { levelOffset: roomOffset, levelDir: room.dir }
+      : {}),
+    ...(ctx.emptyConverted.size > 0
+      ? { emptyConverted: ctx.emptyConverted }
       : {}),
   }
 

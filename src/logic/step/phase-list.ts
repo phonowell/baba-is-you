@@ -32,6 +32,9 @@ export type StepStageContext = {
   direction: Direction | null
   turn: number
   levelDir: Direction
+  // Live `emptydata` conv cells for this step — the transform stage adds
+  // newly converted cells; step() writes it back to the next state.
+  emptyConverted: Set<number>
 }
 
 type ReuseRulesStage = {
@@ -138,8 +141,8 @@ export const STEP_STAGES: StepStage[] = [
   {
     name: 'transform',
     sync: { kind: 'recollect-rules' },
-    run: (items, runtime) => {
-      const transformed = applyTransforms(items, runtime)
+    run: (items, runtime, ctx) => {
+      const transformed = applyTransforms(items, runtime, ctx.emptyConverted)
       return { items: transformed.items, changed: transformed.changed }
     },
   },
