@@ -1,0 +1,155 @@
+{
+ "level": "",
+ "levelIndex": 241,
+ "levelData": {
+  "title": "ORB",
+  "width": 12,
+  "height": 6,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 8,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 7,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 3,
+    "name": "bonus",
+    "x": 3,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 11,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 10,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 6,
+    "name": "fungus",
+    "x": 5,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 7,
+    "name": "fungus",
+    "x": 7,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "fungus",
+    "x": 9,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "is",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "is",
+    "x": 9,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "is",
+    "x": 11,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "orb",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 13,
+    "name": "orb",
+    "x": 2,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "pillar",
+    "x": 2,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "pillar",
+    "x": 2,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "pillar",
+    "x": 2,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "win",
+    "x": 11,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 18,
+    "name": "you",
+    "x": 10,
+    "y": 0,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrr",
+ "initial": "playing|baba!@8,0(push);baba@left@7,5(you);bonus!@3,0(push);flag!@11,3(push);flag@left@10,5(win);fungus@down@5,2();fungus@down@7,2();fungus@down@9,2();is!@2,0(push);is!@9,0(push);is!@11,4(push);orb!@1,0(push);orb@down@2,2(bonus);pillar@down@2,3();pillar@down@2,4();pillar@down@2,5();win!@11,5(push);you!@10,0(push)",
+ "hashes": [
+  "89f9a36ce93adea0",
+  "a7c6db73398b308b",
+  "b2b5e0e96310a669"
+ ],
+ "final": "win|baba!@8,0(push);baba@right@10,5(you);bonus!@3,0(push);flag!@11,3(push);flag@left@10,5(win);fungus@down@5,2();fungus@down@7,2();fungus@down@9,2();is!@2,0(push);is!@9,0(push);is!@11,4(push);orb!@1,0(push);orb@down@2,2(bonus);pillar@down@2,3();pillar@down@2,4();pillar@down@2,5();win!@11,5(push);you!@10,0(push)",
+ "status": "win"
+}

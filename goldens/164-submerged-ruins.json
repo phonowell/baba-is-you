@@ -1,0 +1,481 @@
+{
+ "level": "",
+ "levelIndex": 164,
+ "levelData": {
+  "title": "SUBMERGED RUINS",
+  "width": 15,
+  "height": 8,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 2,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 3,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "crab",
+    "x": 11,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "crab",
+    "x": 4,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 5,
+    "name": "crab",
+    "x": 5,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 6,
+    "name": "defeat",
+    "x": 12,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "flag",
+    "x": 12,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "flag",
+    "x": 6,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 9,
+    "name": "is",
+    "x": 3,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "is",
+    "x": 12,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "is",
+    "x": 13,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "is",
+    "x": 11,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 13,
+    "name": "is",
+    "x": 1,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 14,
+    "name": "push",
+    "x": 12,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 15,
+    "name": "rock",
+    "x": 10,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 16,
+    "name": "rock",
+    "x": 8,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "stop",
+    "x": 2,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 18,
+    "name": "wall",
+    "x": 0,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 19,
+    "name": "wall",
+    "x": 8,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "wall",
+    "x": 9,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "wall",
+    "x": 10,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "wall",
+    "x": 14,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "wall",
+    "x": 8,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "wall",
+    "x": 11,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "wall",
+    "x": 14,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "wall",
+    "x": 8,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "wall",
+    "x": 11,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "wall",
+    "x": 14,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "wall",
+    "x": 4,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "wall",
+    "x": 6,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "wall",
+    "x": 7,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "wall",
+    "x": 8,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "wall",
+    "x": 11,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "wall",
+    "x": 12,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "wall",
+    "x": 13,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "wall",
+    "x": 14,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "wall",
+    "x": 14,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "wall",
+    "x": 14,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "wall",
+    "x": 14,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "wall",
+    "x": 5,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 41,
+    "name": "wall",
+    "x": 4,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 42,
+    "name": "wall",
+    "x": 8,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 43,
+    "name": "wall",
+    "x": 8,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 44,
+    "name": "wall",
+    "x": 4,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 45,
+    "name": "wall",
+    "x": 8,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 46,
+    "name": "wall",
+    "x": 11,
+    "y": 0,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 47,
+    "name": "wall",
+    "x": 12,
+    "y": 0,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 48,
+    "name": "wall",
+    "x": 13,
+    "y": 0,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 49,
+    "name": "wall",
+    "x": 14,
+    "y": 0,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 50,
+    "name": "wall",
+    "x": 3,
+    "y": 7,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 51,
+    "name": "win",
+    "x": 13,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 52,
+    "name": "you",
+    "x": 4,
+    "y": 2,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrrrrrddddddrrulrrullddluuuuruulrddlurulllldluruldddluuuldddrrr",
+ "initial": "playing|baba!@2,2(push);baba@right@3,1(you);crab!@11,1(push);crab@left@4,6();crab@left@5,6();defeat!@12,3(push);flag!@12,1(push);flag@left@6,6(defeat);is!@3,2(push);is!@12,2(push);is!@13,2(push);is!@11,6(push);is!@1,7(push);push!@12,6(push);rock!@10,6(push);rock@down@8,1(push);stop!@2,7(push);wall!@0,7(push);wall@down@8,0(stop);wall@down@9,0(stop);wall@down@10,0(stop);wall@down@14,1(stop);wall@down@8,2(stop);wall@down@11,2(stop);wall@down@14,2(stop);wall@down@8,3(stop);wall@down@11,3(stop);wall@down@14,3(stop);wall@down@4,4(stop);wall@down@6,4(stop);wall@down@7,4(stop);wall@down@8,4(stop);wall@down@11,4(stop);wall@down@12,4(stop);wall@down@13,4(stop);wall@down@14,4(stop);wall@down@14,5(stop);wall@down@14,6(stop);wall@down@14,7(stop);wall@left@5,4(stop);wall@left@4,5(stop);wall@left@8,5(stop);wall@left@8,6(stop);wall@left@4,7(stop);wall@left@8,7(stop);wall@right@11,0(stop);wall@right@12,0(stop);wall@right@13,0(stop);wall@right@14,0(stop);wall@right@3,7(stop);win!@13,3(push);you!@4,2(push)",
+ "hashes": [
+  "7fe91da8e6f4afa9",
+  "1eda8114007a5a20",
+  "ed838e21bd1dd31e",
+  "1ed5ec1f6f60cce1",
+  "7eb605250b62f1d3",
+  "aca273e05d5068e1",
+  "4eda00b4a08f227b",
+  "7aa4a00dd19a73a6",
+  "4558398c38287bf0",
+  "fb2d982cf78ad2af",
+  "61d153cdc672aebf",
+  "710de2a8f29e3b27",
+  "95afe032fb5f71ef",
+  "0cd38532f5763fcb",
+  "681b480f850d2a75",
+  "f65d7acf61ef0b41",
+  "fe00b0bf1a3a2324",
+  "446077101f658eec",
+  "5a1d498fa79fc058",
+  "52288fb19d95ca89",
+  "f3853a782059e51f",
+  "297b9696f78e0dcd",
+  "6157dfeaa13206e9",
+  "7c1eebee8696a32c",
+  "589d41fa94d7e27c",
+  "d3bd26b426f677e1",
+  "77a811315f5e1eb1",
+  "c58367dacb58a1d6",
+  "6b89a4d3efe19b2c",
+  "d5edd2a52f47c7a9",
+  "d1ca6e231a5c8592",
+  "eaca2d9ce9e3957e",
+  "4b93381c662d6bd7",
+  "0e2a9298418909b4",
+  "404345675235ecb5",
+  "d7168b3a4c83f769",
+  "da60300a8e8d2029",
+  "79a7e2a3ae9541fd",
+  "3ebf951a301df139",
+  "98bf2d3792763928",
+  "d77b6e05e5165896",
+  "a03f5ac1b232da4c",
+  "3e4eb0a6b403c1de",
+  "6ba3ab2065721e04",
+  "1f1c5890f2821dcb",
+  "76ecbe29daf439bc",
+  "9af8a605e32ee756",
+  "99469842d45303bf",
+  "b486ae2bb5756f7a",
+  "aa58a6c5320f1edc",
+  "4176bdeb08e34cdb",
+  "bb39e06c1d4eca8c",
+  "ab3d7ee6b6956124",
+  "52ab796fd1723ebb",
+  "ed8f50238e833497",
+  "edfd58abf80ab208",
+  "6ee583a2dc2c0426",
+  "76c1dbb2160c93a8",
+  "fec7fa901d53696b",
+  "7a23715b664ab1d9",
+  "8703cbee8b2bb256",
+  "28c03317b664e3b0",
+  "44e86bc853d40c1e"
+ ],
+ "final": "win|baba!@2,2(push);baba@right@6,6(you);crab@right!@12,1(push);crab@left@4,6(defeat);crab@left@5,6(defeat);defeat!@12,3(push);flag@right!@13,1(push);flag@left@6,6(win);is!@3,2(push);is!@12,2(push);is!@13,2(push);is@left!@4,1(push);is!@1,7(push);push@right!@13,6(push);rock@left!@4,0(push);rock@right@11,1(you);stop!@2,7(push);wall!@0,7(push);wall@down@8,0(stop);wall@down@9,0(stop);wall@down@10,0(stop);wall@down@14,1(stop);wall@down@8,2(stop);wall@down@11,2(stop);wall@down@14,2(stop);wall@down@8,3(stop);wall@down@11,3(stop);wall@down@14,3(stop);wall@down@4,4(stop);wall@down@6,4(stop);wall@down@7,4(stop);wall@down@8,4(stop);wall@down@11,4(stop);wall@down@12,4(stop);wall@down@13,4(stop);wall@down@14,4(stop);wall@down@14,5(stop);wall@down@14,6(stop);wall@down@14,7(stop);wall@left@5,4(stop);wall@left@4,5(stop);wall@left@8,5(stop);wall@left@8,6(stop);wall@left@4,7(stop);wall@left@8,7(stop);wall@right@11,0(stop);wall@right@12,0(stop);wall@right@13,0(stop);wall@right@14,0(stop);wall@right@3,7(stop);win!@13,3(push);you!@4,2(push)",
+ "status": "win"
+}

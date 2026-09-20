@@ -41,6 +41,32 @@ export type ReplayResult = {
   states: GameState[]
 }
 
+// Effective-path compression: the recorded inputs may detour through
+// `z` undos and no-op moves — simulating the history stack and keeping
+// the codes whose states survived yields a z-free path that determinism
+// guarantees reaches the same final state.
+export const compressInputs = (level: LevelData, inputs: string): string => {
+  const history: Array<{ state: GameState; code: string }> = [
+    { state: createInitialState(level, 0), code: '' },
+  ]
+  for (const code of inputs) {
+    const decoded = decodeReplayInput(code)
+    if (decoded.kind === 'skip') continue
+    if (decoded.kind === 'undo') {
+      if (history.length > 1) history.pop()
+      continue
+    }
+    const current = history[history.length - 1]
+    if (!current) break
+    const result = step(current.state, decoded.direction)
+    if (result.changed) history.push({ state: result.state, code })
+  }
+  return history
+    .slice(1)
+    .map((entry) => entry.code)
+    .join('')
+}
+
 export const replayLevel = (
   level: LevelData,
   inputs: string,

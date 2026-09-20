@@ -46,28 +46,18 @@ export const checkWin = (
   if (!levelRules.length) return false
   const { context } = runtime
 
-  // `level is win/end/done`: the level entity itself is the goal — any
-  // `you` on a matching float layer completes it, as do `level is you`
-  // or `empty is you`. `level is you` also completes on any `x is
-  // win/end` rule with live units, and on `empty is win/end`.
+  // `level is win/end/done`: the level entity itself is the goal — in the
+  // official engine this wins outright the moment the rule holds, even on
+  // the turn the last `you` died (JUST NO's `level is not not win` relies
+  // on it: the push that completes the sentence is the move that kills).
   const levelProps = resolveLevelPropsGlobal(levelRules, context, width, height)
+  if (WIN_LIKE_PROPS_LIST.some((prop) => levelProps.has(prop))) return true
+
   const levelFloat = levelProps.has('float')
   const levelYou =
     levelProps.has('you') || levelProps.has('you2') || levelProps.has('3d')
-  const emptyYou =
-    (emptyProps.has('you') ||
-      emptyProps.has('you2') ||
-      emptyProps.has('3d')) &&
-    emptyProps.has('float') === levelFloat
   const floatOk = (item: Item): boolean =>
     hasProp(item, 'float') === levelFloat
-  const anyYou = items.some((item) => isYouLike(item) && floatOk(item))
-
-  if (
-    WIN_LIKE_PROPS_LIST.some((prop) => levelProps.has(prop)) &&
-    (anyYou || levelYou || emptyYou)
-  )
-    return true
 
   if (levelYou) {
     for (const rule of runtime.buckets.isProperty) {

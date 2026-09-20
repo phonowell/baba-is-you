@@ -1,0 +1,1351 @@
+{
+ "level": "",
+ "levelIndex": 120,
+ "levelData": {
+  "title": "SCALE",
+  "width": 24,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "and",
+    "x": 5,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "and",
+    "x": 8,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "and",
+    "x": 11,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "and",
+    "x": 16,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "baba",
+    "x": 12,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "baba",
+    "x": 10,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 7,
+    "name": "flag",
+    "x": 17,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "flag",
+    "x": 10,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 9,
+    "name": "float",
+    "x": 11,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "fungi",
+    "x": 20,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "fungi",
+    "x": 14,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "fungi",
+    "x": 22,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "fungi",
+    "x": 0,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "fungi",
+    "x": 23,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "fungi",
+    "x": 6,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 16,
+    "name": "fungi",
+    "x": 0,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 17,
+    "name": "fungus",
+    "x": 0,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "fungus",
+    "x": 4,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "fungus",
+    "x": 3,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "fungus",
+    "x": 23,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "fungus",
+    "x": 21,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "fungus",
+    "x": 2,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "fungus",
+    "x": 22,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 24,
+    "name": "hedge",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 25,
+    "name": "hedge",
+    "x": 12,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 26,
+    "name": "hedge",
+    "x": 1,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "hedge",
+    "x": 13,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "hedge",
+    "x": 16,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "hedge",
+    "x": 17,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "hedge",
+    "x": 18,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "hedge",
+    "x": 1,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "hedge",
+    "x": 2,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "hedge",
+    "x": 3,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "hedge",
+    "x": 4,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "hedge",
+    "x": 5,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "hedge",
+    "x": 6,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "hedge",
+    "x": 7,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "hedge",
+    "x": 8,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "hedge",
+    "x": 9,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "hedge",
+    "x": 10,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "hedge",
+    "x": 11,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 42,
+    "name": "hedge",
+    "x": 12,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 43,
+    "name": "hedge",
+    "x": 13,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 44,
+    "name": "hedge",
+    "x": 16,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "hedge",
+    "x": 18,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "hedge",
+    "x": 16,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 47,
+    "name": "hedge",
+    "x": 16,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "hedge",
+    "x": 18,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 49,
+    "name": "hedge",
+    "x": 4,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 50,
+    "name": "hedge",
+    "x": 5,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 51,
+    "name": "hedge",
+    "x": 6,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 52,
+    "name": "hedge",
+    "x": 7,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "hedge",
+    "x": 8,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 54,
+    "name": "hedge",
+    "x": 10,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 55,
+    "name": "hedge",
+    "x": 12,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 56,
+    "name": "hedge",
+    "x": 13,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 57,
+    "name": "hedge",
+    "x": 14,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 58,
+    "name": "hedge",
+    "x": 15,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 59,
+    "name": "hedge",
+    "x": 16,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 60,
+    "name": "hedge",
+    "x": 4,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 61,
+    "name": "hedge",
+    "x": 8,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 62,
+    "name": "hedge",
+    "x": 19,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 63,
+    "name": "hedge",
+    "x": 0,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 64,
+    "name": "hedge",
+    "x": 1,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 65,
+    "name": "hedge",
+    "x": 2,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 66,
+    "name": "hedge",
+    "x": 3,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 67,
+    "name": "hedge",
+    "x": 4,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 68,
+    "name": "hedge",
+    "x": 5,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 69,
+    "name": "hedge",
+    "x": 6,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 70,
+    "name": "hedge",
+    "x": 7,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 71,
+    "name": "hedge",
+    "x": 9,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 72,
+    "name": "hedge",
+    "x": 13,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 73,
+    "name": "hedge",
+    "x": 14,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 74,
+    "name": "hedge",
+    "x": 15,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 75,
+    "name": "hedge",
+    "x": 16,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 76,
+    "name": "hedge",
+    "x": 18,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 77,
+    "name": "hedge",
+    "x": 19,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 78,
+    "name": "hedge",
+    "x": 19,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 79,
+    "name": "hedge",
+    "x": 19,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 80,
+    "name": "hedge",
+    "x": 0,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 81,
+    "name": "hedge",
+    "x": 1,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 82,
+    "name": "hedge",
+    "x": 2,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 83,
+    "name": "hedge",
+    "x": 3,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 84,
+    "name": "hedge",
+    "x": 4,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 85,
+    "name": "hedge",
+    "x": 5,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 86,
+    "name": "hedge",
+    "x": 6,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 87,
+    "name": "hedge",
+    "x": 7,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 88,
+    "name": "hedge",
+    "x": 8,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 89,
+    "name": "hedge",
+    "x": 4,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 90,
+    "name": "hedge",
+    "x": 4,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 91,
+    "name": "hedge",
+    "x": 5,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 92,
+    "name": "hedge",
+    "x": 6,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 93,
+    "name": "hedge",
+    "x": 7,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 94,
+    "name": "hedge",
+    "x": 8,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 95,
+    "name": "hedge",
+    "x": 12,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 96,
+    "name": "hedge",
+    "x": 19,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 97,
+    "name": "hedge",
+    "x": 18,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 98,
+    "name": "hedge",
+    "x": 9,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 99,
+    "name": "hedge",
+    "x": 11,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 100,
+    "name": "hedge",
+    "x": 18,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 101,
+    "name": "hedge",
+    "x": 19,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 102,
+    "name": "hedge",
+    "x": 8,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 103,
+    "name": "hedge",
+    "x": 10,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 104,
+    "name": "hedge",
+    "x": 11,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 105,
+    "name": "hedge",
+    "x": 12,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 106,
+    "name": "hedge",
+    "x": 17,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 107,
+    "name": "hedge",
+    "x": 19,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 108,
+    "name": "hedge",
+    "x": 19,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 109,
+    "name": "hedge",
+    "x": 19,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 110,
+    "name": "hedge",
+    "x": 19,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 111,
+    "name": "hedge",
+    "x": 19,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 112,
+    "name": "hedge",
+    "x": 9,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 113,
+    "name": "hedge",
+    "x": 10,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 114,
+    "name": "hedge",
+    "x": 11,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 115,
+    "name": "hedge",
+    "x": 12,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 116,
+    "name": "hedge",
+    "x": 13,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 117,
+    "name": "hedge",
+    "x": 14,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 118,
+    "name": "hedge",
+    "x": 15,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 119,
+    "name": "hedge",
+    "x": 16,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 120,
+    "name": "hedge",
+    "x": 19,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 121,
+    "name": "hedge",
+    "x": 8,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 122,
+    "name": "hedge",
+    "x": 19,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 123,
+    "name": "hedge",
+    "x": 8,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 124,
+    "name": "hedge",
+    "x": 9,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 125,
+    "name": "hedge",
+    "x": 10,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 126,
+    "name": "hedge",
+    "x": 11,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 127,
+    "name": "hedge",
+    "x": 12,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 128,
+    "name": "hedge",
+    "x": 13,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 129,
+    "name": "hedge",
+    "x": 14,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 130,
+    "name": "hedge",
+    "x": 15,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 131,
+    "name": "hedge",
+    "x": 16,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 132,
+    "name": "hedge",
+    "x": 17,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 133,
+    "name": "hedge",
+    "x": 18,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 134,
+    "name": "hedge",
+    "x": 19,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 135,
+    "name": "is",
+    "x": 3,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 136,
+    "name": "is",
+    "x": 17,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 137,
+    "name": "is",
+    "x": 6,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 138,
+    "name": "is",
+    "x": 13,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 139,
+    "name": "is",
+    "x": 13,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 140,
+    "name": "is",
+    "x": 6,
+    "y": 15,
+    "isText": true
+   },
+   {
+    "id": 141,
+    "name": "is",
+    "x": 10,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 142,
+    "name": "is",
+    "x": 14,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 143,
+    "name": "lonely",
+    "x": 17,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 144,
+    "name": "not",
+    "x": 6,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 145,
+    "name": "not",
+    "x": 9,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 146,
+    "name": "not",
+    "x": 17,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 147,
+    "name": "not",
+    "x": 13,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 148,
+    "name": "not",
+    "x": 13,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 149,
+    "name": "not",
+    "x": 17,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 150,
+    "name": "push",
+    "x": 10,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 151,
+    "name": "push",
+    "x": 14,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 152,
+    "name": "rock",
+    "x": 12,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 153,
+    "name": "rock",
+    "x": 5,
+    "y": 15,
+    "isText": true
+   },
+   {
+    "id": 154,
+    "name": "rock",
+    "x": 10,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 155,
+    "name": "sink",
+    "x": 15,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 156,
+    "name": "skull",
+    "x": 5,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 157,
+    "name": "skull",
+    "x": 10,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 158,
+    "name": "stop",
+    "x": 4,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 159,
+    "name": "text",
+    "x": 9,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 160,
+    "name": "water",
+    "x": 13,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 161,
+    "name": "water",
+    "x": 16,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 162,
+    "name": "win",
+    "x": 17,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 163,
+    "name": "you",
+    "x": 7,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 164,
+    "name": "you",
+    "x": 7,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 165,
+    "name": "you",
+    "x": 14,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 166,
+    "name": "you",
+    "x": 7,
+    "y": 15,
+    "isText": true
+   },
+   {
+    "id": 167,
+    "name": "you",
+    "x": 18,
+    "y": 17,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrrlddruddrrrudluldludlulururrrruuuuu",
+ "initial": "playing|and!@5,0(float+push);and!@8,0(float+push);and!@11,0(float+push);and!@16,17(float+push);baba!@12,12(float+push);baba@right@10,8(you);flag!@17,3(float+push);flag@right@10,15();float!@11,17(float+push);fungi@down@20,1();fungi@down@14,2();fungi@down@22,11();fungi@down@0,15();fungi@down@23,16();fungi@right@6,3();fungi@right@0,4();fungus@down@0,2();fungus@down@4,2();fungus@down@3,3();fungus@down@23,8();fungus@down@21,15();fungus@down@2,16();fungus@right@22,3();hedge!@2,0(float+push);hedge!@12,0(float+push);hedge@down@1,0(stop);hedge@down@13,0(stop);hedge@down@16,0(stop);hedge@down@17,0(stop);hedge@down@18,0(stop);hedge@down@1,1(stop);hedge@down@2,1(stop);hedge@down@3,1(stop);hedge@down@4,1(stop);hedge@down@5,1(stop);hedge@down@6,1(stop);hedge@down@7,1(stop);hedge@down@8,1(stop);hedge@down@9,1(stop);hedge@down@10,1(stop);hedge@down@11,1(stop);hedge@down@12,1(stop);hedge@down@13,1(stop);hedge@down@16,1(stop);hedge@down@18,1(stop);hedge@down@16,2(stop);hedge@down@16,3(stop);hedge@down@18,3(stop);hedge@down@4,4(stop);hedge@down@5,4(stop);hedge@down@6,4(stop);hedge@down@7,4(stop);hedge@down@8,4(stop);hedge@down@10,4(stop);hedge@down@12,4(stop);hedge@down@13,4(stop);hedge@down@14,4(stop);hedge@down@15,4(stop);hedge@down@16,4(stop);hedge@down@4,5(stop);hedge@down@8,5(stop);hedge@down@19,5(stop);hedge@down@0,6(stop);hedge@down@1,6(stop);hedge@down@2,6(stop);hedge@down@3,6(stop);hedge@down@4,6(stop);hedge@down@5,6(stop);hedge@down@6,6(stop);hedge@down@7,6(stop);hedge@down@9,6(stop);hedge@down@13,6(stop);hedge@down@14,6(stop);hedge@down@15,6(stop);hedge@down@16,6(stop);hedge@down@18,6(stop);hedge@down@19,7(stop);hedge@down@19,10(stop);hedge@down@19,11(stop);hedge@down@0,14(stop);hedge@down@1,14(stop);hedge@down@2,14(stop);hedge@down@3,14(stop);hedge@down@4,14(stop);hedge@down@5,14(stop);hedge@down@6,14(stop);hedge@down@7,14(stop);hedge@down@8,14(stop);hedge@down@4,15(stop);hedge@down@4,16(stop);hedge@down@5,16(stop);hedge@down@6,16(stop);hedge@down@7,16(stop);hedge@down@8,17(stop);hedge@down@12,17(stop);hedge@down@19,17(stop);hedge@right@18,2(stop);hedge@right@9,4(stop);hedge@right@11,4(stop);hedge@right@18,4(stop);hedge@right@19,4(stop);hedge@right@8,6(stop);hedge@right@10,6(stop);hedge@right@11,6(stop);hedge@right@12,6(stop);hedge@right@17,6(stop);hedge@right@19,6(stop);hedge@right@19,8(stop);hedge@right@19,9(stop);hedge@right@19,12(stop);hedge@right@19,13(stop);hedge@right@9,14(stop);hedge@right@10,14(stop);hedge@right@11,14(stop);hedge@right@12,14(stop);hedge@right@13,14(stop);hedge@right@14,14(stop);hedge@right@15,14(stop);hedge@right@16,14(stop);hedge@right@19,14(stop);hedge@right@8,15(stop);hedge@right@19,15(stop);hedge@right@8,16(stop);hedge@right@9,16(stop);hedge@right@10,16(stop);hedge@right@11,16(stop);hedge@right@12,16(stop);hedge@right@13,16(stop);hedge@right@14,16(stop);hedge@right@15,16(stop);hedge@right@16,16(stop);hedge@right@17,16(stop);hedge@right@18,16(stop);hedge@right@19,16(stop);is!@3,0(float+push);is!@17,4(float+push);is!@6,5(float+push);is!@13,8(float+push);is!@13,12(float+push);is!@6,15(float+push);is!@10,17(float+push);is!@14,17(float+push);lonely!@17,2(float+push);not!@6,0(float+push);not!@9,0(float+push);not!@17,1(float+push);not!@13,9(float+push);not!@13,11(float+push);not!@17,17(float+push);push!@10,0(float+push);push!@14,8(float+push);rock!@12,8(float+push);rock!@5,15(float+push);rock@right@10,12(push+you);sink!@15,17(float+push);skull!@5,5(float+push);skull@right@10,5(you);stop!@4,0(float+push);text!@9,17(float+push);water!@13,17(float+push);water@right@16,15(sink);win!@17,5(float+push);you!@7,0(float+push);you!@7,5(float+push);you!@14,12(float+push);you!@7,15(float+push);you!@18,17(float+push)",
+ "hashes": [
+  "72e0759cd2b5eb82",
+  "c1a90cd64bfd4849",
+  "4dd4089196eff9da",
+  "209a8f9865f1429d",
+  "abcfca29b5786f97",
+  "d6b0b2694f73dca1",
+  "77a891d4b492d0e8",
+  "fdb6c9aa2c0334a0",
+  "1cf4c516e23ef2e4",
+  "5fc483cf0db6ea7d",
+  "48c3804516056661",
+  "c87ceb9f42f2029c",
+  "46a574d8706509f7",
+  "f1ba1c771f1dd1d9",
+  "80ac0f8ed170b2d1",
+  "d9ca39c97ab2eed3",
+  "722c8d0b15d62022",
+  "7360f66e0739b293",
+  "7f35fc3352126844",
+  "0d2c799199a5262f",
+  "b48feeb2c786ab43",
+  "437d47a44cfb1417",
+  "452b8e458d93f792",
+  "b2e498f37dc5f794",
+  "5e524679c33dce3e",
+  "4ea7e84adcc4f127",
+  "309b2102ff296dbb",
+  "e448c762f3ddf20b",
+  "66236485affd5a48",
+  "e23d8934472eb985",
+  "cc38ec2b07ecd74c",
+  "35b04ed66bf7f7da",
+  "cde7ec78a962f773",
+  "28659d0142f61535",
+  "08fcd33d0daf00f7",
+  "80f10d85a292df08",
+  "53566941c8087b1d"
+ ],
+ "final": "win|and!@5,0(float+push);and!@8,0(float+push);and!@11,0(float+push);and!@16,17(float+push);baba@right!@14,11(float+push);baba@right@17,10();flag!@17,3(float+push);flag@up@17,10(win+you);float!@11,17(float+push);fungi@up@23,0(you);fungi@up@15,0(you);fungi@up@23,4(you);fungi@right@3,15(you);fungi@up@23,9(you);fungi@right@13,2(you);fungi@up@7,2(you);fungus@right@7,2(you);fungus@right@11,2(you);fungus@right@10,2(you);fungus@up@23,1(you);fungus@up@23,8(you);fungus@up@3,15(you);fungus@up@23,0(you);hedge!@2,0(float+push);hedge!@12,0(float+push);hedge@down@1,0(stop);hedge@down@13,0(stop);hedge@down@16,0(stop);hedge@down@17,0(stop);hedge@down@18,0(stop);hedge@down@1,1(stop);hedge@down@2,1(stop);hedge@down@3,1(stop);hedge@down@4,1(stop);hedge@down@5,1(stop);hedge@down@6,1(stop);hedge@down@7,1(stop);hedge@down@8,1(stop);hedge@down@9,1(stop);hedge@down@10,1(stop);hedge@down@11,1(stop);hedge@down@12,1(stop);hedge@down@13,1(stop);hedge@down@16,1(stop);hedge@down@18,1(stop);hedge@down@16,2(stop);hedge@down@16,3(stop);hedge@down@18,3(stop);hedge@down@4,4(stop);hedge@down@5,4(stop);hedge@down@6,4(stop);hedge@down@7,4(stop);hedge@down@8,4(stop);hedge@down@10,4(stop);hedge@down@12,4(stop);hedge@down@13,4(stop);hedge@down@14,4(stop);hedge@down@15,4(stop);hedge@down@16,4(stop);hedge@down@4,5(stop);hedge@down@8,5(stop);hedge@down@19,5(stop);hedge@down@0,6(stop);hedge@down@1,6(stop);hedge@down@2,6(stop);hedge@down@3,6(stop);hedge@down@4,6(stop);hedge@down@5,6(stop);hedge@down@6,6(stop);hedge@down@7,6(stop);hedge@down@9,6(stop);hedge@down@13,6(stop);hedge@down@14,6(stop);hedge@down@15,6(stop);hedge@down@16,6(stop);hedge@down@18,6(stop);hedge@down@19,7(stop);hedge@down@19,10(stop);hedge@down@19,11(stop);hedge@down@0,14(stop);hedge@down@1,14(stop);hedge@down@2,14(stop);hedge@down@3,14(stop);hedge@down@4,14(stop);hedge@down@5,14(stop);hedge@down@6,14(stop);hedge@down@7,14(stop);hedge@down@8,14(stop);hedge@down@4,15(stop);hedge@down@4,16(stop);hedge@down@5,16(stop);hedge@down@6,16(stop);hedge@down@7,16(stop);hedge@down@8,17(stop);hedge@down@12,17(stop);hedge@down@19,17(stop);hedge@right@18,2(stop);hedge@right@9,4(stop);hedge@right@11,4(stop);hedge@right@18,4(stop);hedge@right@19,4(stop);hedge@right@8,6(stop);hedge@right@10,6(stop);hedge@right@11,6(stop);hedge@right@12,6(stop);hedge@right@17,6(stop);hedge@right@19,6(stop);hedge@right@19,8(stop);hedge@right@19,9(stop);hedge@right@19,12(stop);hedge@right@19,13(stop);hedge@right@9,14(stop);hedge@right@10,14(stop);hedge@right@11,14(stop);hedge@right@12,14(stop);hedge@right@13,14(stop);hedge@right@14,14(stop);hedge@right@15,14(stop);hedge@right@16,14(stop);hedge@right@19,14(stop);hedge@right@8,15(stop);hedge@right@19,15(stop);hedge@right@8,16(stop);hedge@right@9,16(stop);hedge@right@10,16(stop);hedge@right@11,16(stop);hedge@right@12,16(stop);hedge@right@13,16(stop);hedge@right@14,16(stop);hedge@right@15,16(stop);hedge@right@16,16(stop);hedge@right@17,16(stop);hedge@right@18,16(stop);hedge@right@19,16(stop);is!@3,0(float+push);is!@17,4(float+push);is!@6,5(float+push);is@right!@15,8(float+push);is@up!@15,11(float+push);is!@6,15(float+push);is!@10,17(float+push);is!@14,17(float+push);lonely!@17,2(float+push);not!@6,0(float+push);not!@9,0(float+push);not!@17,1(float+push);not@up!@13,8(float+push);not@right!@13,11(float+push);not!@17,17(float+push);push!@10,0(float+push);push@up!@16,7(float+push);rock@right!@14,8(float+push);rock!@5,15(float+push);rock@up@16,8(you);sink!@15,17(float+push);skull!@5,5(float+push);skull@right@16,5(you);stop!@4,0(float+push);text!@9,17(float+push);water!@13,17(float+push);water@right@18,15(sink);win!@17,5(float+push);you!@7,0(float+push);you!@7,5(float+push);you@up!@16,11(float+push);you!@7,15(float+push);you!@18,17(float+push)",
+ "status": "win"
+}

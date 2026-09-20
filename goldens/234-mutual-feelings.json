@@ -1,0 +1,163 @@
+{
+ "level": "",
+ "levelIndex": 234,
+ "levelData": {
+  "title": "MUTUAL FEELINGS",
+  "width": 15,
+  "height": 8,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 10,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 6,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "flag",
+    "x": 2,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 8,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 5,
+    "name": "is",
+    "x": 3,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 11,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 14,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "is",
+    "x": 1,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "is",
+    "x": 13,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "level",
+    "x": 14,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "love",
+    "x": 0,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "love",
+    "x": 6,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 13,
+    "name": "love",
+    "x": 8,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 14,
+    "name": "push",
+    "x": 12,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 15,
+    "name": "rock",
+    "x": 12,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 16,
+    "name": "rock",
+    "x": 1,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 17,
+    "name": "tele",
+    "x": 2,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 18,
+    "name": "win",
+    "x": 4,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 19,
+    "name": "you",
+    "x": 14,
+    "y": 7,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uurrrrrd",
+ "initial": "playing|baba!@10,1(push);baba@right@6,4(push);flag!@2,1(push);flag@right@8,4(win);is!@3,1(push);is!@11,1(push);is!@14,1(push);is!@1,7(push);is!@13,7(push);level!@14,0(push);love!@0,7(push);love@right@6,3(tele);love@right@8,3(tele);push!@12,1(push);rock!@12,7(push);rock@right@1,5(you);tele!@2,7(push);win!@4,1(push);you!@14,7(push)",
+ "hashes": [
+  "492d6ddf2f576937",
+  "8de348c64d270b92",
+  "7f32dc04c20c359c",
+  "e7bcaaa1389d9b94",
+  "6347d6988082579c",
+  "fa37c6113f2d8e6d",
+  "a88f69cc97261407",
+  "acbc04d8c6c91fd2"
+ ],
+ "final": "win|baba!@10,1(push);baba@right@6,4(push);flag!@2,1(push);flag@right@8,4(win);is!@3,1(push);is!@11,1(push);is!@14,1(push);is!@1,7(push);is!@13,7(push);level!@14,0(push);love!@0,7(push);love@right@6,3(tele);love@right@8,3(tele);push!@12,1(push);rock!@12,7(push);rock@down@8,4(you);tele!@2,7(push);win!@4,1(push);you!@14,7(push)",
+ "status": "win"
+}

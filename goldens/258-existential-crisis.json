@@ -1,0 +1,815 @@
+{
+ "level": "",
+ "levelIndex": 258,
+ "levelData": {
+  "title": "EXISTENTIAL CRISIS",
+  "width": 28,
+  "height": 16,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 9,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 7,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "cloud",
+    "x": 0,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "cloud",
+    "x": 3,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 5,
+    "name": "cloud",
+    "x": 3,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "cloud",
+    "x": 0,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 7,
+    "name": "cloud",
+    "x": 1,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "cloud",
+    "x": 2,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "cloud",
+    "x": 3,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "cloud",
+    "x": 14,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "cloud",
+    "x": 16,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "cloud",
+    "x": 19,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "cloud",
+    "x": 20,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "cloud",
+    "x": 21,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "cloud",
+    "x": 3,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "cloud",
+    "x": 21,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "cloud",
+    "x": 0,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "cloud",
+    "x": 1,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "cloud",
+    "x": 2,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "cloud",
+    "x": 3,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "cloud",
+    "x": 21,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "cloud",
+    "x": 3,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "cloud",
+    "x": 21,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "cloud",
+    "x": 0,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "cloud",
+    "x": 1,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "cloud",
+    "x": 2,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "cloud",
+    "x": 21,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "cloud",
+    "x": 21,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "cloud",
+    "x": 19,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "cloud",
+    "x": 20,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "cloud",
+    "x": 21,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "cloud",
+    "x": 6,
+    "y": 0,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 33,
+    "name": "cloud",
+    "x": 5,
+    "y": 1,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 34,
+    "name": "cloud",
+    "x": 6,
+    "y": 1,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 35,
+    "name": "cloud",
+    "x": 5,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 36,
+    "name": "cloud",
+    "x": 5,
+    "y": 3,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 37,
+    "name": "cloud",
+    "x": 5,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 38,
+    "name": "cloud",
+    "x": 12,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 39,
+    "name": "cloud",
+    "x": 15,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 40,
+    "name": "cloud",
+    "x": 4,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 41,
+    "name": "cloud",
+    "x": 5,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 42,
+    "name": "cloud",
+    "x": 12,
+    "y": 11,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 43,
+    "name": "cloud",
+    "x": 0,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 44,
+    "name": "cloud",
+    "x": 1,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 45,
+    "name": "cloud",
+    "x": 2,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 46,
+    "name": "cloud",
+    "x": 3,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 47,
+    "name": "cloud",
+    "x": 0,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 48,
+    "name": "cloud",
+    "x": 1,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 49,
+    "name": "cloud",
+    "x": 2,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 50,
+    "name": "cloud",
+    "x": 3,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 51,
+    "name": "cloud",
+    "x": 18,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 52,
+    "name": "cloud",
+    "x": 12,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 53,
+    "name": "cloud",
+    "x": 12,
+    "y": 7,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 54,
+    "name": "cloud",
+    "x": 13,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 55,
+    "name": "cloud",
+    "x": 14,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 56,
+    "name": "cloud",
+    "x": 15,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 57,
+    "name": "cloud",
+    "x": 16,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 58,
+    "name": "cloud",
+    "x": 17,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 59,
+    "name": "cloud",
+    "x": 18,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 60,
+    "name": "cloud",
+    "x": 13,
+    "y": 5,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 61,
+    "name": "cloud",
+    "x": 17,
+    "y": 5,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 62,
+    "name": "cloud",
+    "x": 12,
+    "y": 9,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 63,
+    "name": "cloud",
+    "x": 12,
+    "y": 10,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 64,
+    "name": "defeat",
+    "x": 2,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 65,
+    "name": "empty",
+    "x": 0,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 66,
+    "name": "empty",
+    "x": 2,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 67,
+    "name": "empty",
+    "x": 5,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 68,
+    "name": "flag",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 69,
+    "name": "flag",
+    "x": 19,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 70,
+    "name": "is",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 71,
+    "name": "is",
+    "x": 1,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 72,
+    "name": "is",
+    "x": 1,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 73,
+    "name": "is",
+    "x": 1,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 74,
+    "name": "is",
+    "x": 10,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 75,
+    "name": "is",
+    "x": 1,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 76,
+    "name": "is",
+    "x": 9,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 77,
+    "name": "moon",
+    "x": 0,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 78,
+    "name": "moon",
+    "x": 17,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 79,
+    "name": "moon",
+    "x": 17,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 80,
+    "name": "moon",
+    "x": 17,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 81,
+    "name": "moon",
+    "x": 17,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 82,
+    "name": "moon",
+    "x": 17,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 83,
+    "name": "moon",
+    "x": 4,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 84,
+    "name": "push",
+    "x": 2,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 85,
+    "name": "push",
+    "x": 11,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 86,
+    "name": "rocket",
+    "x": 0,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 87,
+    "name": "rocket",
+    "x": 12,
+    "y": 8,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 88,
+    "name": "star",
+    "x": 10,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 89,
+    "name": "star",
+    "x": 25,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 90,
+    "name": "star",
+    "x": 23,
+    "y": 3,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 91,
+    "name": "star",
+    "x": 24,
+    "y": 13,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 92,
+    "name": "star",
+    "x": 19,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 93,
+    "name": "stop",
+    "x": 2,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 94,
+    "name": "win",
+    "x": 4,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 95,
+    "name": "you",
+    "x": 9,
+    "y": 9,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uurrdllllldrrrrddluldrrrrddrrrruuulllllllrruuuulluuulldudur",
+ "initial": "playing|baba!@9,7(push);baba@right@7,8(push+you);cloud!@0,2(push);cloud@down@3,2(stop);cloud@down@3,4(stop);cloud@down@0,5(stop);cloud@down@1,5(stop);cloud@down@2,5(stop);cloud@down@3,5(stop);cloud@down@14,5(stop);cloud@down@16,5(stop);cloud@down@19,5(stop);cloud@down@20,5(stop);cloud@down@21,5(stop);cloud@down@3,6(stop);cloud@down@21,6(stop);cloud@down@0,7(stop);cloud@down@1,7(stop);cloud@down@2,7(stop);cloud@down@3,7(stop);cloud@down@21,7(stop);cloud@down@3,8(stop);cloud@down@21,8(stop);cloud@down@0,9(stop);cloud@down@1,9(stop);cloud@down@2,9(stop);cloud@down@21,9(stop);cloud@down@21,10(stop);cloud@down@19,11(stop);cloud@down@20,11(stop);cloud@down@21,11(stop);cloud@left@6,0(stop);cloud@left@5,1(stop);cloud@left@6,1(stop);cloud@left@5,2(stop);cloud@left@5,3(stop);cloud@left@5,5(stop);cloud@left@12,5(stop);cloud@left@15,5(stop);cloud@left@4,6(stop);cloud@left@5,6(stop);cloud@left@12,11(stop);cloud@right@0,1(stop);cloud@right@1,1(stop);cloud@right@2,1(stop);cloud@right@3,1(stop);cloud@right@0,3(stop);cloud@right@1,3(stop);cloud@right@2,3(stop);cloud@right@3,3(stop);cloud@right@18,5(stop);cloud@right@12,6(stop);cloud@right@12,7(stop);cloud@right@13,11(stop);cloud@right@14,11(stop);cloud@right@15,11(stop);cloud@right@16,11(stop);cloud@right@17,11(stop);cloud@right@18,11(stop);cloud@up@13,5(stop);cloud@up@17,5(stop);cloud@up@12,9(stop);cloud@up@12,10(stop);defeat!@2,6(push);empty!@0,8(push);empty!@2,8(push);empty!@5,8(push);flag!@0,0(push);flag@down@19,8();is!@1,0(push);is!@1,2(push);is!@1,4(push);is!@1,6(push);is!@10,7(push);is!@1,8(push);is!@9,8(push);moon!@0,6(push);moon@down@17,6(defeat);moon@down@17,7(defeat);moon@down@17,8(defeat);moon@down@17,9(defeat);moon@down@17,10(defeat);moon@left@4,2(defeat);push!@2,4(push);push!@11,7(push);rocket!@0,4(push);rocket@up@12,8(push);star@down@10,1();star@down@25,8();star@left@23,3();star@left@24,13();star@right@19,15();stop!@2,2(push);win!@4,1(push);you!@9,9(push)",
+ "hashes": [
+  "c2209ca27d0957ff",
+  "2b8a8fc20460cea4",
+  "09a5cb748c3f8b19",
+  "386741fe0b69cc6b",
+  "1122dee3c25570ab",
+  "0644bda2cd982074",
+  "ebdcab103f5df827",
+  "1d9ba8dbfe6d071a",
+  "c8c61a4de0e6ce58",
+  "9cd85dfc9fc9e432",
+  "b138c19df3dd6803",
+  "730c32c747a5ace1",
+  "62f4f68afa95e982",
+  "f1fe4e567682d082",
+  "ae1f49c8ae9e401e",
+  "78b74f56c5cc7860",
+  "f301a5b510fc71b7",
+  "5389d901de8e0b09",
+  "e68a88a6e1e91b47",
+  "61e152769b297e9b",
+  "f66b70f8b82bdeda",
+  "285f6f3e7c4fd9af",
+  "fabd129109cff105",
+  "6a9fd7437bd559ae",
+  "78cccc8d5d04c3c6",
+  "b16d6e2159849c39",
+  "8f0e90bcd2defb04",
+  "f215f2938bae52cf",
+  "56d041132b0f0730",
+  "5bd384b6716f6024",
+  "d0ef1348b2964353",
+  "5d36d690c6ba09fd",
+  "06633c2692a312a4",
+  "8661c9927f6324eb",
+  "9a2a0d57c43383c7",
+  "973595d962910019",
+  "d5430820e60b7248",
+  "73b1c975a9230d41",
+  "fbb898d00ada1521",
+  "560d68e2886bccc2",
+  "ec88d0ad04286e5a",
+  "ae229c08413fa59a",
+  "d68ef802c9c398ca",
+  "1f930198fbf3af68",
+  "9e803857f1f14438",
+  "60430ae91ed4514c",
+  "13474a1e8e8a3471",
+  "dfb6c545ec60370b",
+  "1574417b43b3adc8",
+  "874438e68b3af607",
+  "50f4cc85fbcba28a",
+  "8e62e1fd32991d1e",
+  "25f70d50cfd23e11",
+  "0ad6f5788f9065b5",
+  "d2ebb2d41b225712",
+  "eff2ee20fc74e33e",
+  "f9fcbcc33acb4984",
+  "6a464cf68dd3507f",
+  "f4741a4a1bab7f00"
+ ],
+ "final": "win|baba@up!@4,7(push);baba@right@19,8(you);cloud!@0,2(push);cloud@down@3,2(stop);cloud@down@3,4(stop);cloud@down@0,5(stop);cloud@down@1,5(stop);cloud@down@2,5(stop);cloud@down@3,5(stop);cloud@down@14,5(stop);cloud@down@16,5(stop);cloud@down@19,5(stop);cloud@down@20,5(stop);cloud@down@21,5(stop);cloud@down@3,6(stop);cloud@down@21,6(stop);cloud@down@0,7(stop);cloud@down@1,7(stop);cloud@down@2,7(stop);cloud@down@3,7(stop);cloud@down@21,7(stop);cloud@down@3,8(stop);cloud@down@21,8(stop);cloud@down@0,9(stop);cloud@down@1,9(stop);cloud@down@2,9(stop);cloud@down@21,9(stop);cloud@down@21,10(stop);cloud@down@19,11(stop);cloud@down@20,11(stop);cloud@down@21,11(stop);cloud@left@6,0(stop);cloud@left@5,1(stop);cloud@left@6,1(stop);cloud@left@5,2(stop);cloud@left@5,3(stop);cloud@left@5,5(stop);cloud@left@12,5(stop);cloud@left@15,5(stop);cloud@left@4,6(stop);cloud@left@5,6(stop);cloud@left@12,11(stop);cloud@right@0,1(stop);cloud@right@1,1(stop);cloud@right@2,1(stop);cloud@right@3,1(stop);cloud@right@0,3(stop);cloud@right@1,3(stop);cloud@right@2,3(stop);cloud@right@3,3(stop);cloud@right@18,5(stop);cloud@right@12,6(stop);cloud@right@12,7(stop);cloud@right@13,11(stop);cloud@right@14,11(stop);cloud@right@15,11(stop);cloud@right@16,11(stop);cloud@right@17,11(stop);cloud@right@18,11(stop);cloud@up@13,5(stop);cloud@up@17,5(stop);cloud@up@12,9(stop);cloud@up@12,10(stop);defeat!@2,6(push);empty!@0,8(push);empty!@2,8(push);empty@up!@6,5(push);flag!@0,0(push);flag@down@19,8(win);is!@1,0(push);is!@1,2(push);is!@1,4(push);is!@1,6(push);is@up!@5,7(push);is!@1,8(push);is@up!@6,6(push);moon!@0,6(push);moon@down@17,6(defeat);moon@down@17,7(defeat);moon@down@17,8(defeat);moon@down@17,9(defeat);moon@down@17,10(defeat);moon@left@4,2(defeat);push!@2,4(push);push@up!@4,1(push);rocket!@0,4(push);rocket@right@17,10(push);star@down@10,1();star@down@25,8();star@left@23,3();star@left@24,13();star@right@19,15();stop!@2,2(push);win@left!@2,0(push);you@up!@6,7(push)",
+ "status": "win"
+}

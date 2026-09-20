@@ -1,0 +1,364 @@
+{
+ "level": "",
+ "levelIndex": 9,
+ "levelData": {
+  "title": "EMPTY",
+  "width": 15,
+  "height": 8,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 6,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "belt",
+    "x": 0,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "belt",
+    "x": 10,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 5,
+    "name": "belt",
+    "x": 11,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "belt",
+    "x": 12,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 7,
+    "name": "belt",
+    "x": 10,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "belt",
+    "x": 11,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "belt",
+    "x": 12,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "cloud",
+    "x": 5,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "cloud",
+    "x": 10,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "cloud",
+    "x": 2,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "cloud",
+    "x": 3,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "cloud",
+    "x": 9,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "cloud",
+    "x": 9,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 16,
+    "name": "cloud",
+    "x": 11,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 17,
+    "name": "cloud",
+    "x": 12,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 18,
+    "name": "cloud",
+    "x": 13,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 19,
+    "name": "cloud",
+    "x": 9,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 20,
+    "name": "cloud",
+    "x": 13,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 21,
+    "name": "cloud",
+    "x": 0,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 22,
+    "name": "cloud",
+    "x": 1,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 23,
+    "name": "cloud",
+    "x": 9,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 24,
+    "name": "cloud",
+    "x": 13,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 25,
+    "name": "cloud",
+    "x": 3,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 26,
+    "name": "cloud",
+    "x": 9,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 27,
+    "name": "cloud",
+    "x": 13,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 28,
+    "name": "cloud",
+    "x": 13,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 29,
+    "name": "empty",
+    "x": 6,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 30,
+    "name": "flag",
+    "x": 12,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 31,
+    "name": "flag",
+    "x": 11,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 32,
+    "name": "is",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 33,
+    "name": "is",
+    "x": 13,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 34,
+    "name": "is",
+    "x": 7,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 35,
+    "name": "is",
+    "x": 1,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 36,
+    "name": "is",
+    "x": 6,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 37,
+    "name": "shift",
+    "x": 2,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 38,
+    "name": "star",
+    "x": 14,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "star",
+    "x": 4,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 40,
+    "name": "star",
+    "x": 2,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 41,
+    "name": "stop",
+    "x": 7,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 42,
+    "name": "win",
+    "x": 14,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 43,
+    "name": "you",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uuuuddruullurrrrl",
+ "initial": "playing|baba!@0,0(push);baba@right@6,5(you);belt!@0,4(push);belt@down@10,5(shift);belt@down@11,5(shift);belt@down@12,5(shift);belt@down@10,6(shift);belt@down@11,6(shift);belt@down@12,6(shift);cloud!@5,7(push);cloud@down@10,1(stop);cloud@down@2,3(stop);cloud@down@3,3(stop);cloud@down@9,5(stop);cloud@right@9,1(stop);cloud@right@11,1(stop);cloud@right@12,1(stop);cloud@right@13,1(stop);cloud@right@9,2(stop);cloud@right@13,2(stop);cloud@right@0,3(stop);cloud@right@1,3(stop);cloud@right@9,3(stop);cloud@right@13,3(stop);cloud@right@3,4(stop);cloud@right@9,4(stop);cloud@right@13,4(stop);cloud@right@13,5(stop);empty!@6,2(push);flag!@12,0(push);flag@right@11,3(win);is!@1,0(push);is!@13,0(push);is!@7,2(push);is!@1,4(push);is!@6,7(push);shift!@2,4(push);star@down@14,7();star@right@4,1();star@right@2,6();stop!@7,7(push);win!@14,0(push);you!@2,0(push)",
+ "hashes": [
+  "fbc0d76d0fbceb4f",
+  "3dfd7e6bdb670804",
+  "894f5cbf79cbf790",
+  "9d8299d882bc4f6f",
+  "6b8d0ea089e4c651",
+  "dc15734a9f94fcff",
+  "6d60a266453a6a03",
+  "21e6172470f82d44",
+  "d05beb5ff95ace24",
+  "6b9c5c54addc4062",
+  "56e5c800d914a14f",
+  "3bca3afdcce1dfac",
+  "99a8fc93174434e7",
+  "efaaec4c2036eb9d",
+  "beacce1b7f8c9eb2",
+  "a2857ad2e75ff0db",
+  "19f690b972c78537"
+ ],
+ "final": "win|baba!@0,0(push);baba@left@8,0(you);belt!@0,4(push);belt@down@10,5(shift);belt@down@11,5(shift);belt@down@12,5(shift);belt@down@10,6(shift);belt@down@11,6(shift);belt@down@12,6(shift);cloud!@5,7(push);cloud@down@10,1(stop);cloud@down@2,3(stop);cloud@down@3,3(stop);cloud@down@9,5(stop);cloud@right@9,1(stop);cloud@right@11,1(stop);cloud@right@12,1(stop);cloud@right@13,1(stop);cloud@right@9,2(stop);cloud@right@13,2(stop);cloud@right@0,3(stop);cloud@right@1,3(stop);cloud@right@9,3(stop);cloud@right@13,3(stop);cloud@right@3,4(stop);cloud@right@9,4(stop);cloud@right@13,4(stop);cloud@right@13,5(stop);empty@right!@10,0(push);flag!@12,0(push);flag@right@11,3(win);is!@1,0(push);is!@13,0(push);is@right!@11,0(push);is!@1,4(push);is!@6,7(push);shift!@2,4(push);star@down@14,7();star@right@4,1();star@right@2,6();stop!@7,7(push);win!@14,0(push);you!@2,0(push);flag@3,0(win);flag@4,0(win);flag@5,0(win);flag@6,0(win);flag@7,0(win);flag@8,0(win);flag@0,1(win);flag@1,1(win);flag@2,1(win);flag@3,1(win);flag@5,1(win);flag@6,1(win);flag@7,1(win);flag@8,1(win);flag@14,1(win);flag@0,2(win);flag@1,2(win);flag@2,2(win);flag@3,2(win);flag@4,2(win);flag@5,2(win);flag@6,2(win);flag@7,2(win);flag@8,2(win);flag@10,2(win);flag@11,2(win);flag@12,2(win);flag@14,2(win);flag@4,3(win);flag@5,3(win);flag@6,3(win);flag@7,3(win);flag@8,3(win);flag@10,3(win);flag@12,3(win);flag@14,3(win);flag@4,4(win);flag@5,4(win);flag@6,4(win);flag@7,4(win);flag@8,4(win);flag@10,4(win);flag@11,4(win);flag@12,4(win);flag@14,4(win);flag@0,5(win);flag@1,5(win);flag@2,5(win);flag@3,5(win);flag@4,5(win);flag@5,5(win);flag@6,5(win);flag@7,5(win);flag@8,5(win);flag@14,5(win);flag@0,6(win);flag@1,6(win);flag@3,6(win);flag@4,6(win);flag@5,6(win);flag@6,6(win);flag@7,6(win);flag@8,6(win);flag@9,6(win);flag@13,6(win);flag@14,6(win);flag@0,7(win);flag@1,7(win);flag@2,7(win);flag@3,7(win);flag@4,7(win);flag@8,7(win);flag@9,7(win);flag@10,7(win);flag@11,7(win);flag@12,7(win);flag@13,7(win);flag@9,0(win)",
+ "status": "win"
+}

@@ -79,14 +79,30 @@ export const createSingleMoveRuntime = (
       return true
 
     const pushTargets: Item[] = []
+    // `x is swap` works both ways: the mover itself carrying swap trades
+    // places with whatever it walks into, ignoring the target's
+    // push/pull/stop entirely (but `still` units can't be displaced, so
+    // the swap — and the move — fails against them).
+    const moverSwap = !throughEmptyPush && context.swapIds.has(item.id)
     for (const target of targets) {
       // Phantom units are ghosts for collision purposes — movers pass
       // through them with no push/pull/stop interaction at all.
       if (context.phantomIds.has(target.id)) continue
       if (context.weakIds.has(target.id)) continue
 
+      if (moverSwap) {
+        if (!context.stillIds.has(target.id)) continue
+        if (context.moverIds.has(target.id)) {
+          if (!canMove(target.id, visiting)) return false
+          continue
+        }
+        return false
+      }
+
+      // A swap target trades places instead of being pushed — swap
+      // outranks push on the same object.
       const pushable = context.pushIds.has(target.id)
-      const swappable = context.swapIds.has(target.id) && !pushable
+      const swappable = context.swapIds.has(target.id)
       const blockingStop =
         context.stopIds.has(target.id) && !pushable && !swappable
       const blockingPull =
@@ -105,7 +121,7 @@ export const createSingleMoveRuntime = (
         }
         return false
       }
-      if (pushable) pushTargets.push(target)
+      if (pushable && !swappable) pushTargets.push(target)
     }
 
     for (const target of pushTargets) {
@@ -143,15 +159,24 @@ export const createSingleMoveRuntime = (
       }
     }
 
-    const pushTargets = frontTargets.filter((target) =>
-      context.pushIds.has(target.id),
-    )
+    const moverSwap = !throughEmptyPush && context.swapIds.has(item.id)
+    const pushTargets = moverSwap
+      ? []
+      : frontTargets.filter(
+          (target) =>
+            context.pushIds.has(target.id) &&
+            !context.swapIds.has(target.id),
+        )
     const swapTargets = throughEmptyPush
       ? []
       : frontTargets.filter(
-      (target) =>
-        !context.pushIds.has(target.id) && context.swapIds.has(target.id),
-    )
+          (target) =>
+            !context.phantomIds.has(target.id) &&
+            !context.weakIds.has(target.id) &&
+            (moverSwap
+              ? !context.stillIds.has(target.id)
+              : context.swapIds.has(target.id)),
+        )
 
     const behindX = oldX - dx
     const behindY = oldY - dy

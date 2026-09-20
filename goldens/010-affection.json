@@ -1,0 +1,555 @@
+{
+ "level": "",
+ "levelIndex": 10,
+ "levelData": {
+  "title": "AFFECTION",
+  "width": 24,
+  "height": 14,
+  "items": [
+   {
+    "id": 1,
+    "name": "algae",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "algae",
+    "x": 14,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 3,
+    "name": "algae",
+    "x": 15,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 4,
+    "name": "algae",
+    "x": 16,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 5,
+    "name": "algae",
+    "x": 17,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "algae",
+    "x": 18,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 7,
+    "name": "algae",
+    "x": 14,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "algae",
+    "x": 18,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "algae",
+    "x": 14,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "algae",
+    "x": 18,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "algae",
+    "x": 14,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "algae",
+    "x": 18,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "algae",
+    "x": 14,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "algae",
+    "x": 15,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "algae",
+    "x": 16,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "algae",
+    "x": 17,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "algae",
+    "x": 18,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "baba",
+    "x": 21,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 19,
+    "name": "baba",
+    "x": 3,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 20,
+    "name": "brick",
+    "x": 14,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "brick",
+    "x": 15,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "brick",
+    "x": 13,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "brick",
+    "x": 15,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "brick",
+    "x": 16,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "brick",
+    "x": 17,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "brick",
+    "x": 12,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "brick",
+    "x": 13,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "brick",
+    "x": 19,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "brick",
+    "x": 6,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "brick",
+    "x": 7,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "brick",
+    "x": 13,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "brick",
+    "x": 14,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "brick",
+    "x": 15,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "brick",
+    "x": 5,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "brick",
+    "x": 6,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "brick",
+    "x": 7,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "brick",
+    "x": 4,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 38,
+    "name": "brick",
+    "x": 3,
+    "y": 7,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 39,
+    "name": "brick",
+    "x": 4,
+    "y": 7,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 40,
+    "name": "defeat",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 41,
+    "name": "is",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 42,
+    "name": "is",
+    "x": 10,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 43,
+    "name": "is",
+    "x": 10,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 44,
+    "name": "is",
+    "x": 0,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 45,
+    "name": "is",
+    "x": 22,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 46,
+    "name": "keke",
+    "x": 9,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 47,
+    "name": "keke",
+    "x": 12,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "keke",
+    "x": 6,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 49,
+    "name": "keke",
+    "x": 7,
+    "y": 7,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 50,
+    "name": "love",
+    "x": 9,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 51,
+    "name": "love",
+    "x": 0,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 52,
+    "name": "love",
+    "x": 16,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "move",
+    "x": 11,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 54,
+    "name": "push",
+    "x": 11,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 55,
+    "name": "win",
+    "x": 0,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 56,
+    "name": "you",
+    "x": 23,
+    "y": 13,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uuuuddddlrwuuuddrrruwurrrudrrrddddluuuulluluurdldllddrrrrllluuuuurrdrrduuudddwdrdlddlluurdrududududududrr",
+ "initial": "playing|algae!@0,0(push);algae@down@14,5(defeat);algae@down@15,5(defeat);algae@down@16,5(defeat);algae@down@17,5(defeat);algae@down@18,5(defeat);algae@down@14,6(defeat);algae@down@18,6(defeat);algae@down@14,7(defeat);algae@down@18,7(defeat);algae@down@14,8(defeat);algae@down@18,8(defeat);algae@down@14,9(defeat);algae@down@15,9(defeat);algae@down@16,9(defeat);algae@down@17,9(defeat);algae@down@18,9(defeat);baba!@21,13(push);baba@right@3,9(you);brick@down@14,4();brick@down@15,7();brick@down@13,8();brick@down@15,8();brick@down@16,8();brick@down@17,8();brick@down@12,9();brick@down@13,9();brick@down@19,9();brick@down@6,10();brick@down@7,10();brick@down@13,10();brick@down@14,10();brick@down@15,10();brick@down@5,11();brick@down@6,11();brick@down@7,11();brick@right@4,6();brick@right@3,7();brick@right@4,7();defeat!@2,0(push);is!@1,0(push);is!@10,5(push);is!@10,9(push);is!@0,12(push);is!@22,13(push);keke!@9,5(push);keke@down@12,10(move);keke@right@6,3(move);keke@up@7,7(move);love!@9,9(push);love!@0,11(push);love@down@16,7(push+win);move!@11,5(push);push!@11,9(push);win!@0,13(push);you!@23,13(push)",
+ "hashes": [
+  "138afd690211b32f",
+  "9d42e1dff59255b8",
+  "9fc5dcbe2e1690a5",
+  "4a6129f71cce61e8",
+  "17e3b75ccd2a7e2b",
+  "747dbede68e02d02",
+  "e467cf1dad216d86",
+  "c8a6164671a12d8e",
+  "3e218913caac3a22",
+  "ee3e090ef8a27679",
+  "9cdf4bb3221045bb",
+  "f8872cdd51f860a6",
+  "b163fb6551b006a3",
+  "eadf8fd6dd0ef58a",
+  "0c98b4d3de5b03b2",
+  "e9a6fc0b49c5d29b",
+  "9be9cb77f289c9ff",
+  "de41e031e6bc6a93",
+  "006fc740641e3fcc",
+  "7a4d6525f40a80e8",
+  "27a0bc2fbfc74219",
+  "a371692d3892173e",
+  "7cf7b09ccb8b9dc6",
+  "a24c327dd1699059",
+  "5eaa824a06d5fa63",
+  "913113aed7728f20",
+  "6f682dc3f858f1e6",
+  "ad0f8bfa0335a247",
+  "72215be0cee91b0b",
+  "5e6377223837c57e",
+  "90d0676abb3c03d5",
+  "c4c8914d97287201",
+  "17c0f96893ab12cb",
+  "43488566ba0b2fbd",
+  "114e2c09eb57f460",
+  "72d9dfc080e787da",
+  "c896ac2cfbd49b8e",
+  "3872c5bb3fa25aa7",
+  "e6847c87f283265b",
+  "4b3040d584a16050",
+  "6d9be09a5603efed",
+  "88704094aa846cdd",
+  "2cc151c849363e62",
+  "1607ef9b8c32dbd9",
+  "a652ab242af21e40",
+  "646b67e252335a09",
+  "297000ecd62a94d9",
+  "c858fe41db962c9f",
+  "f142ec607edf353c",
+  "39c723edf62f6946",
+  "7abda8a55eb43cbc",
+  "400ce6abd6d42f4e",
+  "eb2a292628389a98",
+  "d70917634c91df50",
+  "ec30b6ff0758a251",
+  "7158dc49908b2fe7",
+  "3c886873751bd420",
+  "2fb3eaef07126d24",
+  "0d86745abca843dd",
+  "b8b0f13c380e2908",
+  "1f05be159845e836",
+  "5826d0ab34b08bc0",
+  "d0918e4967e9c67e",
+  "a85e73aadc19dc97",
+  "6cf1fdc237a0aaa5",
+  "9b70675e1486b4ce",
+  "b6474e1eae8a3545",
+  "63a1d4ad3ba593eb",
+  "ffbdbba57e106f1e",
+  "1e86489598e7bbd4",
+  "0dcce975daa8bf6b",
+  "98fce56fa2f75895",
+  "6ae17369e8e6ff72",
+  "e14066ac9a662d59",
+  "f5e448ea8a6690e1",
+  "7f4c23c052ef5e59",
+  "0134f523dd95bca6",
+  "267f55641b694b13",
+  "bc43c21e60fb43ba",
+  "6c96788e66cc885c",
+  "6e528c10a5745989",
+  "450694f04aaf0e55",
+  "6a4b9669733bcb2f",
+  "4631f266f1adbb80",
+  "c1a0b662caeb18ee",
+  "c3d54d94ee5743a6",
+  "986c900bc6eb4da2",
+  "df91b96c1379ad3a",
+  "0a7d65fcc2508afe",
+  "b1f928bd14c78622",
+  "941a0ee5f9c3b730",
+  "9fb2c9e715365419",
+  "da2ab9c796253341",
+  "864ce843e7d80f07",
+  "837a2d3b7ac2ed33",
+  "577478d0f6601bd6",
+  "e088d7a49328b328",
+  "1da33604a2937ad1",
+  "fdfb701339c2ee44",
+  "a7223dae1317c35b",
+  "3653abe10ab99b44",
+  "d4b6f4a6360305c7",
+  "4dc03a2fd8430ab1",
+  "5cf172729a16b5e0",
+  "930d0fc46d7b5b15"
+ ],
+ "final": "win|algae!@0,0(push);algae@down@14,5(defeat);algae@down@15,5(defeat);algae@down@16,5(defeat);algae@down@17,5(defeat);algae@down@18,5(defeat);algae@down@14,6(defeat);algae@down@18,6(defeat);algae@down@14,7(defeat);algae@down@18,7(defeat);algae@down@14,8(defeat);algae@down@18,8(defeat);algae@down@14,9(defeat);algae@down@15,9(defeat);algae@down@16,9(defeat);algae@down@17,9(defeat);algae@down@18,9(defeat);baba!@21,13(push);baba@right@13,7(you);brick@down@14,4();brick@down@15,7();brick@down@13,8();brick@down@15,8();brick@down@16,8();brick@down@17,8();brick@down@12,9();brick@down@13,9();brick@down@19,9();brick@down@6,10();brick@down@7,10();brick@down@13,10();brick@down@14,10();brick@down@15,10();brick@down@5,11();brick@down@6,11();brick@down@7,11();brick@right@4,6();brick@right@3,7();brick@right@4,7();defeat!@2,0(push);is!@1,0(push);is!@10,5(push);is!@10,9(push);is!@0,12(push);is!@22,13(push);keke@down!@9,5(push);keke@down@12,5(move);keke@right@7,3(move);keke@left@14,7(move);love!@9,9(push);love!@0,11(push);love@left@13,7(push+win);move@up!@11,5(push);push@down!@11,9(push);win!@0,13(push);you!@23,13(push)",
+ "status": "win"
+}

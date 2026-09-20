@@ -25,6 +25,15 @@ export type StepStageSync =
   | { kind: 'reapply-properties' }
   | { kind: 'recollect-rules' }
 
+// Per-step values the stage bodies need — passed in rather than closed
+// over, so the stage table below is a single static allocation instead of
+// a dozen fresh objects plus closures on every step() call.
+export type StepStageContext = {
+  direction: Direction | null
+  turn: number
+  levelDir: Direction
+}
+
 type ReuseRulesStage = {
   name:
     | 'player-move'
@@ -43,6 +52,7 @@ type ReuseRulesStage = {
   run: (
     items: Item[],
     runtime: RuleRuntime,
+    ctx: StepStageContext,
   ) => { items: Item[]; changed: boolean }
 }
 
@@ -51,20 +61,20 @@ type RecomputeStage = Omit<ReuseRulesStage, 'sync' | 'run'> & {
   run: (
     items: Item[],
     runtime: RuleRuntime,
+    ctx: StepStageContext,
   ) => { items: StepPhaseItems; changed: boolean }
 }
 
 export type StepStage = ReuseRulesStage | RecomputeStage
 
-export const buildStepStages = (
-  direction: Direction | null,
-  turn: number,
-  levelDir?: Direction,
-): StepStage[] => [
+// The stage sequence — a single static table. Per-step variation travels
+// in `ctx`, so step() allocates zero stage objects per call.
+export const STEP_STAGES: StepStage[] = [
   {
     name: 'player-move',
     sync: { kind: 'reapply-properties' },
-    run: (items, runtime) => {
+    run: (items, runtime, ctx) => {
+      const direction = ctx.direction
       if (!direction) return { items, changed: false }
       const isMover = (item: Item): boolean =>
         isYouLike(item) &&
@@ -117,8 +127,8 @@ export const buildStepStages = (
   {
     name: 'shift',
     sync: { kind: 'recollect-rules' },
-    run: (items, runtime) => {
-      const moved = applyShift(items, runtime, levelDir)
+    run: (items, runtime, ctx) => {
+      const moved = applyShift(items, runtime, ctx.levelDir)
       return { items: moved.items, changed: moved.moved }
     },
   },
@@ -139,21 +149,6 @@ export const buildStepStages = (
     },
   },
   {
-    name: 'make',
-    sync: { kind: 'recollect-rules' },
-    run: (items, runtime) => applyMake(items, runtime),
-  },
-  {
-    name: 'write',
-    sync: { kind: 'recollect-rules' },
-    run: (items, runtime) => applyWrite(items, runtime),
-  },
-  {
-    name: 'more',
-    sync: { kind: 'recollect-rules' },
-    run: (items, runtime) => applyMore(items, runtime.width, runtime.height),
-  },
-  {
     // `x is back` rewinds movers to their pre-step cell (official
     // undo-buffer restore in blocks.lua) — runs after all movement but
     // before interactions, so the restored position still collides.
@@ -172,16 +167,36 @@ export const buildStepStages = (
   {
     name: 'teleport',
     sync: { kind: 'recollect-rules' },
-    run: (items, runtime) => {
+    run: (items, runtime, ctx) => {
       const teleported = applyTeleport(
         items,
         runtime.width,
         runtime.height,
-        turn,
+        ctx.turn,
         runtime.buckets.level,
         runtime.context,
       )
       return { items: teleported.items, changed: teleported.moved }
     },
   },
+  // Creation verbs run at the end of the turn, after every destruction
+  // check — official ordering ("make comes after most of the checks like
+  // defeat"), which is what lets a `you` stand on the hazard it just
+  // made until the next turn (e.g. JAYWALKERS UNITED's grass trail).
+  {
+    name: 'make',
+    sync: { kind: 'recollect-rules' },
+    run: (items, runtime) => applyMake(items, runtime),
+  },
+  {
+    name: 'write',
+    sync: { kind: 'recollect-rules' },
+    run: (items, runtime) => applyWrite(items, runtime),
+  },
+  {
+    name: 'more',
+    sync: { kind: 'recollect-rules' },
+    run: (items, runtime) => applyMore(items, runtime.width, runtime.height),
+  },
 ]
+

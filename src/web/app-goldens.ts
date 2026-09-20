@@ -17,6 +17,9 @@ export type GoldenReplay = {
   title: string
   inputs: string
   level: LevelData
+  // Solver-emitted goldens pin the campaign index they were generated
+  // on; fixture recordings leave it undefined and bind by inference.
+  levelIndex?: number
 }
 
 const resolveGolden = (entry: {
@@ -25,13 +28,20 @@ const resolveGolden = (entry: {
   levelSource: string
   levelData?: LevelData
   levelText?: string
+  levelIndex?: number
 }): GoldenReplay => {
   const level =
     entry.levelData ??
     (entry.levelText
       ? parseLevel(entry.levelText)
       : { title: '', width: 0, height: 0, items: [] })
-  return { name: entry.name, title: level.title, inputs: entry.inputs, level }
+  return {
+    name: entry.name,
+    title: level.title,
+    inputs: entry.inputs,
+    level,
+    ...(entry.levelIndex !== undefined ? { levelIndex: entry.levelIndex } : {}),
+  }
 }
 
 export const goldenReplays: GoldenReplay[] = manifest

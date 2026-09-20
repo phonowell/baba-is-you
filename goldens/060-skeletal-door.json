@@ -1,0 +1,1450 @@
+{
+ "level": "",
+ "levelIndex": 60,
+ "levelData": {
+  "title": "SKELETAL DOOR",
+  "width": 33,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 14,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 15,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "defeat",
+    "x": 17,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "fence",
+    "x": 4,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 5,
+    "name": "fence",
+    "x": 29,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "fence",
+    "x": 4,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 7,
+    "name": "fence",
+    "x": 29,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "fence",
+    "x": 30,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "fence",
+    "x": 31,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "fence",
+    "x": 32,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "fence",
+    "x": 0,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "fence",
+    "x": 1,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "fence",
+    "x": 2,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "fence",
+    "x": 3,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "fence",
+    "x": 4,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "fence",
+    "x": 0,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "fence",
+    "x": 1,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "fence",
+    "x": 31,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "fence",
+    "x": 32,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "fence",
+    "x": 1,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "fence",
+    "x": 31,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "fence",
+    "x": 1,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "fence",
+    "x": 31,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "fence",
+    "x": 0,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "fence",
+    "x": 1,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "fence",
+    "x": 2,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "fence",
+    "x": 3,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "fence",
+    "x": 4,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "fence",
+    "x": 31,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "fence",
+    "x": 4,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "fence",
+    "x": 26,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "fence",
+    "x": 27,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "fence",
+    "x": 28,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "fence",
+    "x": 29,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "fence",
+    "x": 30,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "fence",
+    "x": 31,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "fence",
+    "x": 32,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "fence",
+    "x": 4,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "fence",
+    "x": 26,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "flag",
+    "x": 19,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 41,
+    "name": "flag",
+    "x": 27,
+    "y": 9,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 42,
+    "name": "foliage",
+    "x": 14,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 43,
+    "name": "foliage",
+    "x": 17,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 44,
+    "name": "foliage",
+    "x": 5,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "foliage",
+    "x": 30,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "foliage",
+    "x": 26,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 47,
+    "name": "foliage",
+    "x": 28,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "foliage",
+    "x": 4,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 49,
+    "name": "foliage",
+    "x": 3,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 50,
+    "name": "foliage",
+    "x": 30,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 51,
+    "name": "foliage",
+    "x": 25,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 52,
+    "name": "foliage",
+    "x": 29,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "foliage",
+    "x": 7,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 54,
+    "name": "foliage",
+    "x": 27,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 55,
+    "name": "foliage",
+    "x": 17,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 56,
+    "name": "foliage",
+    "x": 19,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 57,
+    "name": "grass",
+    "x": 0,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 58,
+    "name": "grass",
+    "x": 1,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 59,
+    "name": "grass",
+    "x": 2,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 60,
+    "name": "grass",
+    "x": 3,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 61,
+    "name": "grass",
+    "x": 30,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 62,
+    "name": "grass",
+    "x": 31,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 63,
+    "name": "grass",
+    "x": 32,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 64,
+    "name": "grass",
+    "x": 0,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 65,
+    "name": "grass",
+    "x": 1,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 66,
+    "name": "grass",
+    "x": 2,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 67,
+    "name": "grass",
+    "x": 3,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 68,
+    "name": "grass",
+    "x": 0,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 69,
+    "name": "grass",
+    "x": 32,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 70,
+    "name": "grass",
+    "x": 0,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 71,
+    "name": "grass",
+    "x": 32,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 72,
+    "name": "grass",
+    "x": 32,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 73,
+    "name": "grass",
+    "x": 0,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 74,
+    "name": "grass",
+    "x": 1,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 75,
+    "name": "grass",
+    "x": 2,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 76,
+    "name": "grass",
+    "x": 3,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 77,
+    "name": "grass",
+    "x": 0,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 78,
+    "name": "grass",
+    "x": 1,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 79,
+    "name": "grass",
+    "x": 2,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 80,
+    "name": "grass",
+    "x": 3,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 81,
+    "name": "grass",
+    "x": 27,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 82,
+    "name": "grass",
+    "x": 28,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 83,
+    "name": "grass",
+    "x": 29,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 84,
+    "name": "grass",
+    "x": 30,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 85,
+    "name": "grass",
+    "x": 31,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 86,
+    "name": "grass",
+    "x": 32,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 87,
+    "name": "is",
+    "x": 12,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 88,
+    "name": "is",
+    "x": 16,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 89,
+    "name": "is",
+    "x": 20,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 90,
+    "name": "is",
+    "x": 15,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 91,
+    "name": "leaf",
+    "x": 27,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 92,
+    "name": "leaf",
+    "x": 25,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 93,
+    "name": "leaf",
+    "x": 25,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 94,
+    "name": "push",
+    "x": 16,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 95,
+    "name": "skull",
+    "x": 15,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 96,
+    "name": "skull",
+    "x": 21,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 97,
+    "name": "skull",
+    "x": 21,
+    "y": 8,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 98,
+    "name": "skull",
+    "x": 21,
+    "y": 9,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 99,
+    "name": "skull",
+    "x": 21,
+    "y": 10,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 100,
+    "name": "skull",
+    "x": 21,
+    "y": 11,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 101,
+    "name": "stop",
+    "x": 13,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 102,
+    "name": "text",
+    "x": 14,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 103,
+    "name": "tree",
+    "x": 7,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 104,
+    "name": "tree",
+    "x": 2,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 105,
+    "name": "tree",
+    "x": 3,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 106,
+    "name": "tree",
+    "x": 1,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 107,
+    "name": "tree",
+    "x": 6,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 108,
+    "name": "tree",
+    "x": 4,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 109,
+    "name": "tree",
+    "x": 3,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 110,
+    "name": "tree",
+    "x": 7,
+    "y": 16,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 111,
+    "name": "tree",
+    "x": 8,
+    "y": 17,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 112,
+    "name": "wall",
+    "x": 11,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 113,
+    "name": "wall",
+    "x": 10,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 114,
+    "name": "wall",
+    "x": 11,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 115,
+    "name": "wall",
+    "x": 12,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 116,
+    "name": "wall",
+    "x": 13,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 117,
+    "name": "wall",
+    "x": 14,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 118,
+    "name": "wall",
+    "x": 15,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 119,
+    "name": "wall",
+    "x": 16,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 120,
+    "name": "wall",
+    "x": 17,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 121,
+    "name": "wall",
+    "x": 18,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 122,
+    "name": "wall",
+    "x": 19,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 123,
+    "name": "wall",
+    "x": 20,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 124,
+    "name": "wall",
+    "x": 21,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 125,
+    "name": "wall",
+    "x": 22,
+    "y": 2,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 126,
+    "name": "wall",
+    "x": 10,
+    "y": 3,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 127,
+    "name": "wall",
+    "x": 14,
+    "y": 3,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 128,
+    "name": "wall",
+    "x": 18,
+    "y": 3,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 129,
+    "name": "wall",
+    "x": 22,
+    "y": 3,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 130,
+    "name": "wall",
+    "x": 10,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 131,
+    "name": "wall",
+    "x": 11,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 132,
+    "name": "wall",
+    "x": 12,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 133,
+    "name": "wall",
+    "x": 13,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 134,
+    "name": "wall",
+    "x": 14,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 135,
+    "name": "wall",
+    "x": 15,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 136,
+    "name": "wall",
+    "x": 16,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 137,
+    "name": "wall",
+    "x": 17,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 138,
+    "name": "wall",
+    "x": 18,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 139,
+    "name": "wall",
+    "x": 19,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 140,
+    "name": "wall",
+    "x": 20,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 141,
+    "name": "wall",
+    "x": 21,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 142,
+    "name": "wall",
+    "x": 22,
+    "y": 4,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 143,
+    "name": "wall",
+    "x": 10,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 144,
+    "name": "wall",
+    "x": 22,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 145,
+    "name": "wall",
+    "x": 10,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 146,
+    "name": "wall",
+    "x": 22,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 147,
+    "name": "wall",
+    "x": 10,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 148,
+    "name": "wall",
+    "x": 10,
+    "y": 8,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 149,
+    "name": "wall",
+    "x": 10,
+    "y": 9,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 150,
+    "name": "wall",
+    "x": 10,
+    "y": 10,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 151,
+    "name": "wall",
+    "x": 10,
+    "y": 11,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 152,
+    "name": "wall",
+    "x": 10,
+    "y": 12,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 153,
+    "name": "wall",
+    "x": 22,
+    "y": 12,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 154,
+    "name": "wall",
+    "x": 10,
+    "y": 13,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 155,
+    "name": "wall",
+    "x": 22,
+    "y": 13,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 156,
+    "name": "wall",
+    "x": 10,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 157,
+    "name": "wall",
+    "x": 11,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 158,
+    "name": "wall",
+    "x": 12,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 159,
+    "name": "wall",
+    "x": 13,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 160,
+    "name": "wall",
+    "x": 14,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 161,
+    "name": "wall",
+    "x": 15,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 162,
+    "name": "wall",
+    "x": 16,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 163,
+    "name": "wall",
+    "x": 17,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 164,
+    "name": "wall",
+    "x": 18,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 165,
+    "name": "wall",
+    "x": 19,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 166,
+    "name": "wall",
+    "x": 20,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 167,
+    "name": "wall",
+    "x": 21,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 168,
+    "name": "wall",
+    "x": 22,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 169,
+    "name": "win",
+    "x": 21,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 170,
+    "name": "you",
+    "x": 16,
+    "y": 6,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "ddddruuuuuruldddddldluuuuuudddllllrrrrruuurrrrlldddllllluluurrrrrrrrrlllllllllluddrrrrr",
+ "initial": "playing|baba!@14,6(push);baba@right@15,9(you);defeat!@17,3(push);fence@down@4,0();fence@down@29,0();fence@down@4,1();fence@down@29,1();fence@down@30,1();fence@down@31,1();fence@down@32,1();fence@down@0,2();fence@down@1,2();fence@down@2,2();fence@down@3,2();fence@down@4,2();fence@down@0,12();fence@down@1,12();fence@down@31,12();fence@down@32,12();fence@down@1,13();fence@down@31,13();fence@down@1,14();fence@down@31,14();fence@down@0,15();fence@down@1,15();fence@down@2,15();fence@down@3,15();fence@down@4,15();fence@down@31,15();fence@down@4,16();fence@down@26,16();fence@down@27,16();fence@down@28,16();fence@down@29,16();fence@down@30,16();fence@down@31,16();fence@down@32,16();fence@down@4,17();fence@down@26,17();flag!@19,3(push);flag@left@27,9(win);foliage@down@14,0();foliage@down@17,1();foliage@down@5,3();foliage@down@30,5();foliage@down@26,6();foliage@down@28,7();foliage@down@4,8();foliage@down@3,9();foliage@down@30,10();foliage@down@25,11();foliage@down@29,11();foliage@down@7,12();foliage@down@27,12();foliage@down@17,16();foliage@down@19,17();grass@down@0,0();grass@down@1,0();grass@down@2,0();grass@down@3,0();grass@down@30,0();grass@down@31,0();grass@down@32,0();grass@down@0,1();grass@down@1,1();grass@down@2,1();grass@down@3,1();grass@down@0,13();grass@down@32,13();grass@down@0,14();grass@down@32,14();grass@down@32,15();grass@down@0,16();grass@down@1,16();grass@down@2,16();grass@down@3,16();grass@down@0,17();grass@down@1,17();grass@down@2,17();grass@down@3,17();grass@down@27,17();grass@down@28,17();grass@down@29,17();grass@down@30,17();grass@down@31,17();grass@down@32,17();is!@12,3(push);is!@16,3(push);is!@20,3(push);is!@15,6(push);leaf@down@27,1();leaf@down@25,2();leaf@down@25,14();push!@16,12(push);skull!@15,3(push);skull@left@21,7(defeat);skull@left@21,8(defeat);skull@left@21,9(defeat);skull@left@21,10(defeat);skull@left@21,11(defeat);stop!@13,3(push);text!@14,12(push);tree@down@7,1();tree@down@2,4();tree@down@3,5();tree@down@1,7();tree@down@6,8();tree@down@4,12();tree@down@3,13();tree@down@7,16();tree@down@8,17();wall!@11,3(push);wall@left@10,2(stop);wall@left@11,2(stop);wall@left@12,2(stop);wall@left@13,2(stop);wall@left@14,2(stop);wall@left@15,2(stop);wall@left@16,2(stop);wall@left@17,2(stop);wall@left@18,2(stop);wall@left@19,2(stop);wall@left@20,2(stop);wall@left@21,2(stop);wall@left@22,2(stop);wall@left@10,3(stop);wall@left@14,3(stop);wall@left@18,3(stop);wall@left@22,3(stop);wall@left@10,4(stop);wall@left@11,4(stop);wall@left@12,4(stop);wall@left@13,4(stop);wall@left@14,4(stop);wall@left@15,4(stop);wall@left@16,4(stop);wall@left@17,4(stop);wall@left@18,4(stop);wall@left@19,4(stop);wall@left@20,4(stop);wall@left@21,4(stop);wall@left@22,4(stop);wall@left@10,5(stop);wall@left@22,5(stop);wall@left@10,6(stop);wall@left@22,6(stop);wall@left@10,7(stop);wall@left@10,8(stop);wall@left@10,9(stop);wall@left@10,10(stop);wall@left@10,11(stop);wall@left@10,12(stop);wall@left@22,12(stop);wall@left@10,13(stop);wall@left@22,13(stop);wall@left@10,14(stop);wall@left@11,14(stop);wall@left@12,14(stop);wall@left@13,14(stop);wall@left@14,14(stop);wall@left@15,14(stop);wall@left@16,14(stop);wall@left@17,14(stop);wall@left@18,14(stop);wall@left@19,14(stop);wall@left@20,14(stop);wall@left@21,14(stop);wall@left@22,14(stop);win!@21,3(push);you!@16,6(push)",
+ "hashes": [
+  "9a1168aa62c1b9f4",
+  "bfcb19eea576e63e",
+  "7aa8bab2a9a2dc02",
+  "121ebf44326a2ccc",
+  "0c9e91ffb4b5a8b7",
+  "7f65a9962587889f",
+  "1ee87c28c0261ba2",
+  "78f9eed18216dde9",
+  "3e679ff84d376f64",
+  "04345cff7a1260c6",
+  "98ee492b06cb94a3",
+  "69a74eb821a7cc3a",
+  "fb592de577a4665c",
+  "0cd5be52ca34cc77",
+  "91fd034d3fb91a16",
+  "64630d6844341593",
+  "a8a995d04f9b565a",
+  "2998bf038e4ef4e3",
+  "2474210b6ffdedaa",
+  "26b7c95efd9df5d2",
+  "b5b9377646678b63",
+  "73c799fb95c00f32",
+  "1908cec0f693f672",
+  "4528d0494c1d2ff2",
+  "a55eb5b61221b322",
+  "3e0e2b53de48a286",
+  "b0d5aa03e37cc966",
+  "3bdc1d3b24b261b9",
+  "d218ec9b5b9dc858",
+  "2dc4126da6be7271",
+  "50268ee9d2d78d6b",
+  "86beb32cb0e94867",
+  "df283177f5567c50",
+  "c0dc63b30fb7c1b7",
+  "32953c6918cedce8",
+  "7f21f597a16ad494",
+  "df9bd722f2ff0b38",
+  "5fd650dc7f0c00f7",
+  "f476a1f9823fa917",
+  "abd61f5d39f441a3",
+  "7bb30b9000672feb",
+  "247138439b56f8c2",
+  "5f3692f0e740437c",
+  "9fd5ad9a410f5bdf",
+  "68a10598140dcd03",
+  "8e50e991135226e4",
+  "a4f8253a0e645af8",
+  "72e377bd4abd9f9b",
+  "4dc922d760a00045",
+  "0c5f813d83c19809",
+  "7f63b921d317a397",
+  "37048cea846ae6eb",
+  "100284b3b1ae4427",
+  "c5191a720ba7a227",
+  "2c8fb9651a2e28bd",
+  "b02b14eccb1b743e",
+  "c7b3c0321fbd0ba5",
+  "9fa0242dc36513ac",
+  "5984de031397afc4",
+  "343484375296f804",
+  "ff46ffa716ee623b",
+  "ea79244ccf0a55d4",
+  "c853606a88ca380a",
+  "7e83be92eba1917c",
+  "de57b0158d350bfb",
+  "9e77b9c294e52836",
+  "4a5f9ca3184fa87f",
+  "c0778874c65115d6",
+  "14509a9495216847",
+  "91af2449f22d16a3",
+  "92f1df61a0416524",
+  "ebad4e8168ac2a69",
+  "f04ad572ed04a76c",
+  "32cfd5c849d8759c",
+  "05d666eefebaa7b7",
+  "c312923076897a10",
+  "e8fbc6ca91e4a642",
+  "08f089bc1f0a082a",
+  "696b8f1f73dabdbb",
+  "c10ef6e6bd321eae",
+  "0f59ca08890a30cc",
+  "5bb90882a45bb054",
+  "5480d49d1f56509d",
+  "4851194fc5a1a85d",
+  "a9304c309356da82",
+  "a1855099c4732cde",
+  "174a812b0e1cfb73"
+ ],
+ "final": "win|baba@left!@11,5(push);baba@right@27,9(you);defeat!@17,3(push);fence@down@4,0();fence@down@29,0();fence@down@4,1();fence@down@29,1();fence@down@30,1();fence@down@31,1();fence@down@32,1();fence@down@0,2();fence@down@1,2();fence@down@2,2();fence@down@3,2();fence@down@4,2();fence@down@0,12();fence@down@1,12();fence@down@31,12();fence@down@32,12();fence@down@1,13();fence@down@31,13();fence@down@1,14();fence@down@31,14();fence@down@0,15();fence@down@1,15();fence@down@2,15();fence@down@3,15();fence@down@4,15();fence@down@31,15();fence@down@4,16();fence@down@26,16();fence@down@27,16();fence@down@28,16();fence@down@29,16();fence@down@30,16();fence@down@31,16();fence@down@32,16();fence@down@4,17();fence@down@26,17();flag!@19,3(push);flag@left@27,9(win);foliage@down@14,0();foliage@down@17,1();foliage@down@5,3();foliage@down@30,5();foliage@down@26,6();foliage@down@28,7();foliage@down@4,8();foliage@down@3,9();foliage@down@30,10();foliage@down@25,11();foliage@down@29,11();foliage@down@7,12();foliage@down@27,12();foliage@down@17,16();foliage@down@19,17();grass@down@0,0();grass@down@1,0();grass@down@2,0();grass@down@3,0();grass@down@30,0();grass@down@31,0();grass@down@32,0();grass@down@0,1();grass@down@1,1();grass@down@2,1();grass@down@3,1();grass@down@0,13();grass@down@32,13();grass@down@0,14();grass@down@32,14();grass@down@32,15();grass@down@0,16();grass@down@1,16();grass@down@2,16();grass@down@3,16();grass@down@0,17();grass@down@1,17();grass@down@2,17();grass@down@3,17();grass@down@27,17();grass@down@28,17();grass@down@29,17();grass@down@30,17();grass@down@31,17();grass@down@32,17();is!@12,3(push);is!@16,3(push);is!@20,3(push);is@up!@12,5(push);leaf@down@27,1();leaf@down@25,2();leaf@down@25,14();skull!@15,3(push);skull@left@21,7(defeat);skull@left@21,8(defeat);skull@left@21,9(defeat);skull@left@21,10(defeat);skull@left@21,11(defeat);stop!@13,3(push);text@left!@11,6(push);tree@down@7,1();tree@down@2,4();tree@down@3,5();tree@down@1,7();tree@down@6,8();tree@down@4,12();tree@down@3,13();tree@down@7,16();tree@down@8,17();wall!@11,3(push);wall@left@10,2(stop);wall@left@11,2(stop);wall@left@12,2(stop);wall@left@13,2(stop);wall@left@14,2(stop);wall@left@15,2(stop);wall@left@16,2(stop);wall@left@17,2(stop);wall@left@18,2(stop);wall@left@19,2(stop);wall@left@20,2(stop);wall@left@21,2(stop);wall@left@22,2(stop);wall@left@10,3(stop);wall@left@14,3(stop);wall@left@18,3(stop);wall@left@22,3(stop);wall@left@10,4(stop);wall@left@11,4(stop);wall@left@12,4(stop);wall@left@13,4(stop);wall@left@14,4(stop);wall@left@15,4(stop);wall@left@16,4(stop);wall@left@17,4(stop);wall@left@18,4(stop);wall@left@19,4(stop);wall@left@20,4(stop);wall@left@21,4(stop);wall@left@22,4(stop);wall@left@10,5(stop);wall@left@22,5(stop);wall@left@10,6(stop);wall@left@22,6(stop);wall@left@10,7(stop);wall@left@10,8(stop);wall@left@10,9(stop);wall@left@10,10(stop);wall@left@10,11(stop);wall@left@10,12(stop);wall@left@22,12(stop);wall@left@10,13(stop);wall@left@22,13(stop);wall@left@10,14(stop);wall@left@11,14(stop);wall@left@12,14(stop);wall@left@13,14(stop);wall@left@14,14(stop);wall@left@15,14(stop);wall@left@16,14(stop);wall@left@17,14(stop);wall@left@18,14(stop);wall@left@19,14(stop);wall@left@20,14(stop);wall@left@21,14(stop);wall@left@22,14(stop);win!@21,3(push);you@up!@13,5(push)",
+ "status": "win"
+}

@@ -1,7 +1,7 @@
 import { resolveActiveEmptyProps } from './empty.js'
 import { applyProperties } from './resolve.js'
 import { collectRuleRuntime, createRuleRuntime } from './rule-runtime.js'
-import { buildStepStages } from './step/phase-list.js'
+import { STEP_STAGES } from './step/phase-list.js'
 import { advanceLevelRoom, levelPushPullDelta } from './step/shared.js'
 import { checkWin, hasAnyYou } from './step/win.js'
 
@@ -9,6 +9,7 @@ import type { RuleRuntime } from './rule-runtime.js'
 import type {
   StepPhaseItems,
   StepStage,
+  StepStageContext,
   StepStageSync,
 } from './step/phase-list.js'
 import type {
@@ -214,6 +215,7 @@ const runStage = (
   frame: StepFrame,
   stage: StepStage,
   rulesStale: boolean,
+  ctx: StepStageContext,
 ): StageOutcome => {
   const keepFrame = (
     items: StepPhaseItems,
@@ -236,7 +238,7 @@ const runStage = (
   }
 
   if (isReuseRulesStage(stage)) {
-    const result = stage.run(frame.items, frame.runtime)
+    const result = stage.run(frame.items, frame.runtime, ctx)
     if (!result.changed) return keepFrame(result.items, false)
     return {
       frame: rebindFrameWithSameRules(result.items, frame),
@@ -245,7 +247,7 @@ const runStage = (
     }
   }
 
-  const result = stage.run(frame.items, frame.runtime)
+  const result = stage.run(frame.items, frame.runtime, ctx)
   if (!result.changed)
     return keepFrame(result.items, stage.sync.kind === 'recollect-rules')
   return {
@@ -278,18 +280,18 @@ const withBackMemory = (items: Item[], previousItems: Item[]): Item[] => {
   })
 }
 
-export const step = (
-  state: GameState,
-  direction: Direction | null,
-): StepResult => {
-  const extras = { idle: direction === null, turn: state.turn + 1 }
+// Frame resolution depends on direction only through the `idle` flag
+// (idle conditions fire on waits). Directional siblings share the entire
+// resolve — parser check, rule runtime, property application — which is
+// ~18% of a step on large boards.
+const resolveStepFrame = (state: GameState, idle: boolean): StepFrame => {
+  const extras = { idle, turn: state.turn + 1 }
   // The stored rules were parsed from `rulesSourceItems`; when this step's
   // items still match it on every field the parser reads, reparsing would
   // produce the identical rules and override marks — bind a runtime onto
   // them directly instead.
   const source = state.rulesSourceItems
   const overridden = state.overriddenTextIds
-  let frame: StepFrame
   if (
     source !== undefined &&
     overridden !== undefined &&
@@ -303,26 +305,32 @@ export const step = (
       overridden,
       extras,
     )
-    frame = {
+    return {
       items: applyProperties(state.items, runtime),
       runtime,
       ruleSourceItems: state.items,
     }
-  } else {
-    frame = resolveFrame(state.items, state.width, state.height, extras)
   }
+  return resolveFrame(state.items, state.width, state.height, extras)
+}
+
+const runStages = (
+  state: GameState,
+  frame: StepFrame,
+  direction: Direction | null,
+): StepResult => {
   let rulesStale = false
 
   // The produced frame's index is `state.turn + 1`; the predecessor seeds
   // tele RNG with its history length, which is the same value.
-  const stages: StepStage[] = buildStepStages(
+  const ctx: StepStageContext = {
     direction,
-    state.turn + 1,
-    state.levelDir ?? 'down',
-  )
+    turn: state.turn + 1,
+    levelDir: state.levelDir ?? 'down',
+  }
 
-  for (const stage of stages) {
-    const stageResult = runStage(frame, stage, rulesStale)
+  for (const stage of STEP_STAGES) {
+    const stageResult = runStage(frame, stage, rulesStale, ctx)
     frame = stageResult.frame
     rulesStale = stageResult.rulesStale
   }
@@ -434,4 +442,23 @@ export const step = (
       statusChanged ||
       roomChanged,
   }
+}
+
+export const step = (
+  state: GameState,
+  direction: Direction | null,
+): StepResult =>
+  runStages(state, resolveStepFrame(state, direction === null), direction)
+
+// Sibling-expansion entry point for the solver: resolves the rule frame
+// once (non-idle), then each returned call runs only the stage pipeline.
+// Stages treat their input items as immutable (they copy before writing,
+// e.g. move-single's `items.map(({...item}))`), so sharing the prepared
+// frame across calls is safe. Waits are NOT covered — `idle` flips rule
+// matching, so `step(state, null)` remains the only correct wait.
+export const prepareStep = (
+  state: GameState,
+): ((direction: Direction) => StepResult) => {
+  const frame = resolveStepFrame(state, false)
+  return (direction) => runStages(state, frame, direction)
 }

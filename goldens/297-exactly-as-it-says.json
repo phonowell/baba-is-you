@@ -1,0 +1,556 @@
+{
+ "level": "",
+ "levelIndex": 297,
+ "levelData": {
+  "title": "EXACTLY AS IT SAYS",
+  "width": 24,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 14,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 6,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 4,
+    "name": "defeat",
+    "x": 10,
+    "y": 10,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 15,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "hedge",
+    "x": 4,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "hedge",
+    "x": 4,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "hedge",
+    "x": 14,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "hedge",
+    "x": 16,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "hedge",
+    "x": 13,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "hedge",
+    "x": 14,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "hedge",
+    "x": 15,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "hedge",
+    "x": 16,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "hedge",
+    "x": 17,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "hedge",
+    "x": 3,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 16,
+    "name": "hedge",
+    "x": 4,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 17,
+    "name": "hedge",
+    "x": 5,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 18,
+    "name": "hedge",
+    "x": 6,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 19,
+    "name": "hedge",
+    "x": 14,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 20,
+    "name": "hedge",
+    "x": 15,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 21,
+    "name": "hedge",
+    "x": 16,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 22,
+    "name": "hedge",
+    "x": 17,
+    "y": 4,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 23,
+    "name": "hedge",
+    "x": 3,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 24,
+    "name": "hedge",
+    "x": 17,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 25,
+    "name": "hedge",
+    "x": 13,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 26,
+    "name": "hedge",
+    "x": 17,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 27,
+    "name": "hedge",
+    "x": 13,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 28,
+    "name": "hedge",
+    "x": 17,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 29,
+    "name": "hedge",
+    "x": 13,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 30,
+    "name": "hedge",
+    "x": 17,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 31,
+    "name": "hedge",
+    "x": 13,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 32,
+    "name": "hedge",
+    "x": 17,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 33,
+    "name": "is",
+    "x": 5,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 34,
+    "name": "is",
+    "x": 5,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 35,
+    "name": "is",
+    "x": 15,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 36,
+    "name": "is",
+    "x": 22,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 37,
+    "name": "not",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 38,
+    "name": "not",
+    "x": 3,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 39,
+    "name": "not",
+    "x": 8,
+    "y": 10,
+    "isText": true
+   },
+   {
+    "id": 40,
+    "name": "sink",
+    "x": 23,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 41,
+    "name": "skull",
+    "x": 9,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 42,
+    "name": "stop",
+    "x": 6,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 43,
+    "name": "water",
+    "x": 21,
+    "y": 17,
+    "isText": true
+   },
+   {
+    "id": 44,
+    "name": "water",
+    "x": 15,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "water",
+    "x": 23,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "water",
+    "x": 23,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 47,
+    "name": "water",
+    "x": 22,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 48,
+    "name": "water",
+    "x": 23,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 49,
+    "name": "water",
+    "x": 21,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 50,
+    "name": "water",
+    "x": 22,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 51,
+    "name": "water",
+    "x": 23,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 52,
+    "name": "water",
+    "x": 20,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 53,
+    "name": "water",
+    "x": 21,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 54,
+    "name": "water",
+    "x": 22,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 55,
+    "name": "water",
+    "x": 23,
+    "y": 14,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 56,
+    "name": "water",
+    "x": 20,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 57,
+    "name": "water",
+    "x": 21,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 58,
+    "name": "water",
+    "x": 22,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 59,
+    "name": "water",
+    "x": 19,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 60,
+    "name": "water",
+    "x": 20,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 61,
+    "name": "water",
+    "x": 21,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 62,
+    "name": "water",
+    "x": 22,
+    "y": 16,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 63,
+    "name": "water",
+    "x": 17,
+    "y": 17,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 64,
+    "name": "water",
+    "x": 18,
+    "y": 17,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 65,
+    "name": "water",
+    "x": 19,
+    "y": 17,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 66,
+    "name": "water",
+    "x": 20,
+    "y": 17,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 67,
+    "name": "win",
+    "x": 6,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 68,
+    "name": "without",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 69,
+    "name": "you",
+    "x": 16,
+    "y": 5,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uurrr",
+ "initial": "playing|baba!@1,0(push);baba!@14,5(push);baba@right@6,10(you);defeat!@10,10(push);flag@down@15,12(win);hedge!@4,0(push);hedge!@4,5(push);hedge@down@14,10(stop+win);hedge@down@16,10(stop+win);hedge@down@13,14(stop+win);hedge@down@14,14(stop+win);hedge@down@15,14(stop+win);hedge@down@16,14(stop+win);hedge@down@17,14(stop+win);hedge@right@3,4(stop+win);hedge@right@4,4(stop+win);hedge@right@5,4(stop+win);hedge@right@6,4(stop+win);hedge@right@14,4(stop+win);hedge@right@15,4(stop+win);hedge@right@16,4(stop+win);hedge@right@17,4(stop+win);hedge@right@3,5(stop+win);hedge@right@17,5(stop+win);hedge@right@13,10(stop+win);hedge@right@17,10(stop+win);hedge@right@13,11(stop+win);hedge@right@17,11(stop+win);hedge@right@13,12(stop+win);hedge@right@17,12(stop+win);hedge@right@13,13(stop+win);hedge@right@17,13(stop+win);is!@5,0(push);is!@5,5(push);is!@15,5(push);is!@22,17(push);not!@0,0(push);not!@3,0(push);not!@8,10(push);sink!@23,17(push);skull@down@9,8(win);stop!@6,5(push);water!@21,17(push);water@down@15,10(sink+win);water@down@23,15(sink+win);water@right@23,11(sink+win);water@right@22,12(sink+win);water@right@23,12(sink+win);water@right@21,13(sink+win);water@right@22,13(sink+win);water@right@23,13(sink+win);water@right@20,14(sink+win);water@right@21,14(sink+win);water@right@22,14(sink+win);water@right@23,14(sink+win);water@right@20,15(sink+win);water@right@21,15(sink+win);water@right@22,15(sink+win);water@right@19,16(sink+win);water@right@20,16(sink+win);water@right@21,16(sink+win);water@right@22,16(sink+win);water@right@17,17(sink+win);water@right@18,17(sink+win);water@right@19,17(sink+win);water@right@20,17(sink+win);win!@6,0(push);without!@2,0(push);you!@16,5(push)",
+ "hashes": [
+  "337304a85d871ff8",
+  "37716962c66207f0",
+  "0c499785bfb48407",
+  "bb7c16bd31ae02b2",
+  "d35d797687e22e6a"
+ ],
+ "final": "win|baba!@1,0(push);baba!@14,5(push);baba@right@9,8(you);defeat!@10,10(push);flag@down@15,12(win);hedge!@4,0(push);hedge!@4,5(push);hedge@down@14,10(stop+win);hedge@down@16,10(stop+win);hedge@down@13,14(stop+win);hedge@down@14,14(stop+win);hedge@down@15,14(stop+win);hedge@down@16,14(stop+win);hedge@down@17,14(stop+win);hedge@right@3,4(stop+win);hedge@right@4,4(stop+win);hedge@right@5,4(stop+win);hedge@right@6,4(stop+win);hedge@right@14,4(stop+win);hedge@right@15,4(stop+win);hedge@right@16,4(stop+win);hedge@right@17,4(stop+win);hedge@right@3,5(stop+win);hedge@right@17,5(stop+win);hedge@right@13,10(stop+win);hedge@right@17,10(stop+win);hedge@right@13,11(stop+win);hedge@right@17,11(stop+win);hedge@right@13,12(stop+win);hedge@right@17,12(stop+win);hedge@right@13,13(stop+win);hedge@right@17,13(stop+win);is!@5,0(push);is!@5,5(push);is!@15,5(push);is!@22,17(push);not!@0,0(push);not!@3,0(push);not!@8,10(push);sink!@23,17(push);skull@down@9,8(win);stop!@6,5(push);water!@21,17(push);water@down@15,10(sink+win);water@down@23,15(sink+win);water@right@23,11(sink+win);water@right@22,12(sink+win);water@right@23,12(sink+win);water@right@21,13(sink+win);water@right@22,13(sink+win);water@right@23,13(sink+win);water@right@20,14(sink+win);water@right@21,14(sink+win);water@right@22,14(sink+win);water@right@23,14(sink+win);water@right@20,15(sink+win);water@right@21,15(sink+win);water@right@22,15(sink+win);water@right@19,16(sink+win);water@right@20,16(sink+win);water@right@21,16(sink+win);water@right@22,16(sink+win);water@right@17,17(sink+win);water@right@18,17(sink+win);water@right@19,17(sink+win);water@right@20,17(sink+win);win!@6,0(push);without!@2,0(push);you!@16,5(push)",
+ "status": "win"
+}

@@ -1,0 +1,549 @@
+{
+ "level": "",
+ "levelIndex": 0,
+ "levelData": {
+  "title": "BABA IS YOU",
+  "width": 33,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 11,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 12,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "flag",
+    "x": 19,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 20,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 5,
+    "name": "is",
+    "x": 12,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 20,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 12,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "is",
+    "x": 20,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "push",
+    "x": 21,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "rock",
+    "x": 19,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "rock",
+    "x": 16,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 12,
+    "name": "rock",
+    "x": 16,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 13,
+    "name": "rock",
+    "x": 16,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 14,
+    "name": "stop",
+    "x": 13,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 15,
+    "name": "tile",
+    "x": 11,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "tile",
+    "x": 12,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "tile",
+    "x": 13,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "tile",
+    "x": 14,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "tile",
+    "x": 15,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "tile",
+    "x": 17,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "tile",
+    "x": 19,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "tile",
+    "x": 20,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "tile",
+    "x": 21,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "tile",
+    "x": 11,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "tile",
+    "x": 13,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "tile",
+    "x": 14,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "tile",
+    "x": 15,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "tile",
+    "x": 17,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "tile",
+    "x": 18,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "tile",
+    "x": 19,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "tile",
+    "x": 21,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "tile",
+    "x": 11,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "tile",
+    "x": 12,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "tile",
+    "x": 13,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "tile",
+    "x": 14,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "tile",
+    "x": 15,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "tile",
+    "x": 18,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "tile",
+    "x": 19,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "tile",
+    "x": 20,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "tile",
+    "x": 21,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "tile",
+    "x": 18,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 42,
+    "name": "tile",
+    "x": 17,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 43,
+    "name": "wall",
+    "x": 11,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 44,
+    "name": "wall",
+    "x": 11,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "wall",
+    "x": 12,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "wall",
+    "x": 13,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 47,
+    "name": "wall",
+    "x": 14,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "wall",
+    "x": 15,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 49,
+    "name": "wall",
+    "x": 16,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 50,
+    "name": "wall",
+    "x": 19,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 51,
+    "name": "wall",
+    "x": 20,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 52,
+    "name": "wall",
+    "x": 21,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "wall",
+    "x": 14,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 54,
+    "name": "wall",
+    "x": 15,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 55,
+    "name": "wall",
+    "x": 16,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 56,
+    "name": "wall",
+    "x": 17,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 57,
+    "name": "wall",
+    "x": 18,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 58,
+    "name": "wall",
+    "x": 17,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 59,
+    "name": "wall",
+    "x": 18,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 60,
+    "name": "wall",
+    "x": 11,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 61,
+    "name": "wall",
+    "x": 12,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 62,
+    "name": "wall",
+    "x": 13,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 63,
+    "name": "wall",
+    "x": 19,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 64,
+    "name": "wall",
+    "x": 20,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 65,
+    "name": "wall",
+    "x": 21,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 66,
+    "name": "win",
+    "x": 21,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 67,
+    "name": "you",
+    "x": 13,
+    "y": 6,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrrrrrrr",
+ "initial": "playing|baba!@11,6(push);baba@right@12,10(you);flag!@19,6(push);flag@down@20,10(win);is!@12,6(push);is!@20,6(push);is!@12,14(push);is!@20,14(push);push!@21,14(push);rock!@19,14(push);rock@right@16,9(push);rock@right@16,10(push);rock@right@16,11(push);stop!@13,14(push);tile@down@11,9();tile@down@12,9();tile@down@13,9();tile@down@14,9();tile@down@15,9();tile@down@17,9();tile@down@19,9();tile@down@20,9();tile@down@21,9();tile@down@11,10();tile@down@13,10();tile@down@14,10();tile@down@15,10();tile@down@17,10();tile@down@18,10();tile@down@19,10();tile@down@21,10();tile@down@11,11();tile@down@12,11();tile@down@13,11();tile@down@14,11();tile@down@15,11();tile@down@18,11();tile@down@19,11();tile@down@20,11();tile@down@21,11();tile@right@18,9();tile@right@17,11();wall!@11,14(push);wall@down@11,8(stop);wall@down@12,8(stop);wall@down@13,8(stop);wall@down@14,8(stop);wall@down@15,8(stop);wall@down@16,8(stop);wall@down@19,8(stop);wall@down@20,8(stop);wall@down@21,8(stop);wall@down@14,12(stop);wall@down@15,12(stop);wall@down@16,12(stop);wall@down@17,12(stop);wall@down@18,12(stop);wall@right@17,8(stop);wall@right@18,8(stop);wall@right@11,12(stop);wall@right@12,12(stop);wall@right@13,12(stop);wall@right@19,12(stop);wall@right@20,12(stop);wall@right@21,12(stop);win!@21,6(push);you!@13,6(push)",
+ "hashes": [
+  "2a931fba309b6be7",
+  "370ba2e150b66b47",
+  "38f7322dd993bad7",
+  "7805624868ab76ea",
+  "70e9b5e770ecc4f9",
+  "a3acb646a55be036",
+  "adff27410fb84277",
+  "5da2437be448aca1"
+ ],
+ "final": "win|baba!@11,6(push);baba@right@20,10(you);flag!@19,6(push);flag@down@20,10(win);is!@12,6(push);is!@20,6(push);is!@12,14(push);is!@20,14(push);push!@21,14(push);rock!@19,14(push);rock@right@16,9(push);rock@right@21,10(push);rock@right@16,11(push);stop!@13,14(push);tile@down@11,9();tile@down@12,9();tile@down@13,9();tile@down@14,9();tile@down@15,9();tile@down@17,9();tile@down@19,9();tile@down@20,9();tile@down@21,9();tile@down@11,10();tile@down@13,10();tile@down@14,10();tile@down@15,10();tile@down@17,10();tile@down@18,10();tile@down@19,10();tile@down@21,10();tile@down@11,11();tile@down@12,11();tile@down@13,11();tile@down@14,11();tile@down@15,11();tile@down@18,11();tile@down@19,11();tile@down@20,11();tile@down@21,11();tile@right@18,9();tile@right@17,11();wall!@11,14(push);wall@down@11,8(stop);wall@down@12,8(stop);wall@down@13,8(stop);wall@down@14,8(stop);wall@down@15,8(stop);wall@down@16,8(stop);wall@down@19,8(stop);wall@down@20,8(stop);wall@down@21,8(stop);wall@down@14,12(stop);wall@down@15,12(stop);wall@down@16,12(stop);wall@down@17,12(stop);wall@down@18,12(stop);wall@right@17,8(stop);wall@right@18,8(stop);wall@right@11,12(stop);wall@right@12,12(stop);wall@right@13,12(stop);wall@right@19,12(stop);wall@right@20,12(stop);wall@right@21,12(stop);win!@21,6(push);you!@13,6(push)",
+ "status": "win"
+}

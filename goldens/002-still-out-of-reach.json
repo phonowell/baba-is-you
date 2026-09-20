@@ -1,0 +1,586 @@
+{
+ "level": "",
+ "levelIndex": 2,
+ "levelData": {
+  "title": "STILL OUT OF REACH",
+  "width": 24,
+  "height": 14,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 0,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 6,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "defeat",
+    "x": 15,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 18,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 1,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "is",
+    "x": 3,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "is",
+    "x": 15,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "push",
+    "x": 4,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "rock",
+    "x": 2,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "rock",
+    "x": 6,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "rock",
+    "x": 6,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "rock",
+    "x": 6,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "skull",
+    "x": 15,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 16,
+    "name": "skull",
+    "x": 13,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "skull",
+    "x": 14,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "skull",
+    "x": 15,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "skull",
+    "x": 16,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "skull",
+    "x": 17,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "skull",
+    "x": 18,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "skull",
+    "x": 19,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "skull",
+    "x": 20,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "skull",
+    "x": 21,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "skull",
+    "x": 13,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "skull",
+    "x": 21,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "skull",
+    "x": 13,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "skull",
+    "x": 21,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "skull",
+    "x": 13,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "skull",
+    "x": 21,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "skull",
+    "x": 5,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "skull",
+    "x": 7,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "skull",
+    "x": 13,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "skull",
+    "x": 21,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "skull",
+    "x": 5,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "skull",
+    "x": 7,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "skull",
+    "x": 13,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "skull",
+    "x": 21,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "skull",
+    "x": 3,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "skull",
+    "x": 4,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "skull",
+    "x": 5,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 42,
+    "name": "skull",
+    "x": 7,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 43,
+    "name": "skull",
+    "x": 8,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 44,
+    "name": "skull",
+    "x": 9,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "skull",
+    "x": 13,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "skull",
+    "x": 21,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 47,
+    "name": "skull",
+    "x": 3,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "skull",
+    "x": 9,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 49,
+    "name": "skull",
+    "x": 13,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 50,
+    "name": "skull",
+    "x": 21,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 51,
+    "name": "skull",
+    "x": 3,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 52,
+    "name": "skull",
+    "x": 9,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "skull",
+    "x": 13,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 54,
+    "name": "skull",
+    "x": 14,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 55,
+    "name": "skull",
+    "x": 15,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 56,
+    "name": "skull",
+    "x": 16,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 57,
+    "name": "skull",
+    "x": 17,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 58,
+    "name": "skull",
+    "x": 18,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 59,
+    "name": "skull",
+    "x": 19,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 60,
+    "name": "skull",
+    "x": 20,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 61,
+    "name": "skull",
+    "x": 21,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 62,
+    "name": "skull",
+    "x": 3,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 63,
+    "name": "skull",
+    "x": 9,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 64,
+    "name": "skull",
+    "x": 3,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 65,
+    "name": "skull",
+    "x": 9,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 66,
+    "name": "win",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 67,
+    "name": "you",
+    "x": 2,
+    "y": 1,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uuuuuulurluuurdlddrluurdldrrrrrrrrrrrrrrddddl",
+ "initial": "playing|baba!@0,1(push);baba@right@6,12(you);defeat!@15,7(push);flag!@0,0(push);flag@right@18,9(win);is!@1,0(push);is!@1,1(push);is!@3,5(push);is!@15,6(push);push!@4,5(push);rock!@2,5(push);rock@down@6,8(push);rock@down@6,9(push);rock@down@6,10(push);skull!@15,5(push);skull@down@13,3(defeat);skull@down@14,3(defeat);skull@down@15,3(defeat);skull@down@16,3(defeat);skull@down@17,3(defeat);skull@down@18,3(defeat);skull@down@19,3(defeat);skull@down@20,3(defeat);skull@down@21,3(defeat);skull@down@13,4(defeat);skull@down@21,4(defeat);skull@down@13,5(defeat);skull@down@21,5(defeat);skull@down@13,6(defeat);skull@down@21,6(defeat);skull@down@5,7(defeat);skull@down@7,7(defeat);skull@down@13,7(defeat);skull@down@21,7(defeat);skull@down@5,8(defeat);skull@down@7,8(defeat);skull@down@13,8(defeat);skull@down@21,8(defeat);skull@down@3,9(defeat);skull@down@4,9(defeat);skull@down@5,9(defeat);skull@down@7,9(defeat);skull@down@8,9(defeat);skull@down@9,9(defeat);skull@down@13,9(defeat);skull@down@21,9(defeat);skull@down@3,10(defeat);skull@down@9,10(defeat);skull@down@13,10(defeat);skull@down@21,10(defeat);skull@down@3,11(defeat);skull@down@9,11(defeat);skull@down@13,11(defeat);skull@down@14,11(defeat);skull@down@15,11(defeat);skull@down@16,11(defeat);skull@down@17,11(defeat);skull@down@18,11(defeat);skull@down@19,11(defeat);skull@down@20,11(defeat);skull@down@21,11(defeat);skull@down@3,12(defeat);skull@down@9,12(defeat);skull@down@3,13(defeat);skull@down@9,13(defeat);win!@2,0(push);you!@2,1(push)",
+ "hashes": [
+  "0ba21f1073dc45ce",
+  "27f8540448a4b214",
+  "42c7dfdfa145ff26",
+  "bcc427975ab474e4",
+  "b39da8385557f8ba",
+  "58113ce2dd5d6d39",
+  "d33ed89a0f8fbfdc",
+  "b25e7b520f13ebdd",
+  "19a57c252e754a21",
+  "fb08107f925da632",
+  "a8fd64bbd4340bfe",
+  "1bc07e9f12f3c8cd",
+  "ab81a16e0505a6cf",
+  "a548b10dbae71c4c",
+  "97ccedd41633061c",
+  "47adc7b65414a06d",
+  "fbb774c68f59ea72",
+  "736b5bbb3f6314b8",
+  "0a39ced053c8eada",
+  "d3ff23673328ff83",
+  "5c372e70b5d20b87",
+  "7460e97e8267c4d7",
+  "15913f88d4858044",
+  "b2fdcc5055826688",
+  "9a513ad4684be75e",
+  "11b46392630fe2c3",
+  "0945858c27834672",
+  "3ba1d581df56dddc",
+  "d2a6bb8753fef227",
+  "f27d9ae84955e1b0",
+  "136db941014ce8a6",
+  "4adcaf08a10c0c70",
+  "f40e7f9984dd0fd7",
+  "31cdb834f968100c",
+  "4a2965c4f33e9efb",
+  "040e7312148d3ce1",
+  "b3daa9d55aedfcce",
+  "f68513bc9a15d16b",
+  "d067164f347e8607",
+  "d21de214ee366827",
+  "8182dcfc0df8f8ef",
+  "c557171d650f5add",
+  "5ae1cfe9b9f285c1",
+  "5cc0e6380bc9ccae",
+  "ca527f034ca1c5dc"
+ ],
+ "final": "win|baba!@0,1(push);baba@left@18,9(you);defeat!@15,7(push);flag!@0,0(push);flag@right@18,9(win);is!@1,0(push);is!@1,1(push);is!@3,5(push);is!@15,6(push);push!@4,5(push);rock!@2,5(push);rock@right@20,5(push);rock@right@21,5(push);rock@right@22,5(push);skull@right!@23,5(push);skull@down@13,3();skull@down@14,3();skull@down@15,3();skull@down@16,3();skull@down@17,3();skull@down@18,3();skull@down@19,3();skull@down@20,3();skull@down@21,3();skull@down@13,4();skull@down@21,4();skull@down@13,5();skull@down@21,5();skull@down@13,6();skull@down@21,6();skull@down@5,7();skull@down@7,7();skull@down@13,7();skull@down@21,7();skull@down@5,8();skull@down@7,8();skull@down@13,8();skull@down@21,8();skull@down@3,9();skull@down@4,9();skull@down@5,9();skull@down@7,9();skull@down@8,9();skull@down@9,9();skull@down@13,9();skull@down@21,9();skull@down@3,10();skull@down@9,10();skull@down@13,10();skull@down@21,10();skull@down@3,11();skull@down@9,11();skull@down@13,11();skull@down@14,11();skull@down@15,11();skull@down@16,11();skull@down@17,11();skull@down@18,11();skull@down@19,11();skull@down@20,11();skull@down@21,11();skull@down@3,12();skull@down@9,12();skull@down@3,13();skull@down@9,13();win!@2,0(push);you!@2,1(push)",
+ "status": "win"
+}

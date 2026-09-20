@@ -1,0 +1,259 @@
+{
+ "level": "",
+ "levelIndex": 296,
+ "levelData": {
+  "title": "BABA NEEDS FRIENDS",
+  "width": 24,
+  "height": 14,
+  "items": [
+   {
+    "id": 1,
+    "name": "and",
+    "x": 0,
+    "y": 10,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 0,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 1,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "baba",
+    "x": 10,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 5,
+    "name": "is",
+    "x": 14,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 0,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 2,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "is",
+    "x": 2,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "keke",
+    "x": 0,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "keke",
+    "x": 0,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "keke",
+    "x": 1,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "keke",
+    "x": 19,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "keke",
+    "x": 11,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "keke",
+    "x": 8,
+    "y": 0,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 15,
+    "name": "keke",
+    "x": 21,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 16,
+    "name": "keke",
+    "x": 18,
+    "y": 8,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 17,
+    "name": "keke",
+    "x": 6,
+    "y": 9,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 18,
+    "name": "keke",
+    "x": 3,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 19,
+    "name": "keke",
+    "x": 15,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 20,
+    "name": "keke",
+    "x": 2,
+    "y": 7,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 21,
+    "name": "keke",
+    "x": 13,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 22,
+    "name": "keke",
+    "x": 16,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 23,
+    "name": "keke",
+    "x": 11,
+    "y": 3,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 24,
+    "name": "keke",
+    "x": 7,
+    "y": 5,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 25,
+    "name": "keke",
+    "x": 21,
+    "y": 11,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 26,
+    "name": "near",
+    "x": 0,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 27,
+    "name": "push",
+    "x": 15,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 28,
+    "name": "statue",
+    "x": 13,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 29,
+    "name": "statue",
+    "x": 14,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "stop",
+    "x": 3,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 31,
+    "name": "win",
+    "x": 0,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 32,
+    "name": "you",
+    "x": 3,
+    "y": 13,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rr",
+ "initial": "playing|and!@0,10(push);baba!@0,7(push);baba!@1,13(push);baba@left@10,7(you);is!@14,3(push);is!@0,12(push);is!@2,12(push);is!@2,13(push);keke!@0,9(push);keke!@0,11(push);keke!@1,12(push);keke@down@19,2(stop);keke@down@11,11(stop);keke@left@8,0(stop);keke@left@21,5(stop);keke@left@18,8(stop);keke@left@6,9(stop);keke@right@3,2(stop);keke@right@15,5(stop);keke@right@2,7(stop);keke@right@13,8(stop);keke@right@16,12(stop);keke@up@11,3(stop);keke@up@7,5(stop);keke@up@21,11(stop);near!@0,8(push);push!@15,3(push);statue!@13,3(push);statue@down@14,2(push);stop!@3,12(push);win!@0,13(push);you!@3,13(push)",
+ "hashes": [
+  "542bc40b26c57deb",
+  "4008abd90aeea6aa"
+ ],
+ "final": "win|and!@0,10(push);baba!@0,7(push);baba!@1,13(push);baba@right@12,7(win+you);is!@14,3(push);is!@0,12(push);is!@2,12(push);is!@2,13(push);keke!@0,9(push);keke!@0,11(push);keke!@1,12(push);keke@down@19,2(stop);keke@down@11,11(stop);keke@left@8,0(stop);keke@left@21,5(stop);keke@left@18,8(stop);keke@left@6,9(stop);keke@right@3,2(stop);keke@right@15,5(stop);keke@right@2,7(stop);keke@right@13,8(stop);keke@right@16,12(stop);keke@up@11,3(stop);keke@up@7,5(stop);keke@up@21,11(stop);near!@0,8(push);push!@15,3(push);statue!@13,3(push);statue@down@14,2(push);stop!@3,12(push);win!@0,13(push);you!@3,13(push)",
+ "status": "win"
+}

@@ -1,0 +1,649 @@
+{
+ "level": "",
+ "levelIndex": 6,
+ "levelData": {
+  "title": "GRASS YARD",
+  "width": 24,
+  "height": 14,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 7,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 9,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 3,
+    "name": "flag",
+    "x": 14,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 16,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 5,
+    "name": "grass",
+    "x": 23,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "grass",
+    "x": 10,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 7,
+    "name": "grass",
+    "x": 13,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "grass",
+    "x": 12,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "grass",
+    "x": 15,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "grass",
+    "x": 6,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "grass",
+    "x": 7,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "grass",
+    "x": 12,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "grass",
+    "x": 15,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "grass",
+    "x": 10,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "grass",
+    "x": 13,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "grass",
+    "x": 6,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 17,
+    "name": "grass",
+    "x": 14,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 18,
+    "name": "grass",
+    "x": 16,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 19,
+    "name": "grass",
+    "x": 17,
+    "y": 7,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 20,
+    "name": "grass",
+    "x": 12,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 21,
+    "name": "is",
+    "x": 8,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 22,
+    "name": "is",
+    "x": 23,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 23,
+    "name": "stop",
+    "x": 23,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 24,
+    "name": "wall",
+    "x": 5,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "wall",
+    "x": 6,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "wall",
+    "x": 10,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "wall",
+    "x": 11,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "wall",
+    "x": 13,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "wall",
+    "x": 14,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "wall",
+    "x": 15,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "wall",
+    "x": 16,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "wall",
+    "x": 17,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "wall",
+    "x": 18,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "wall",
+    "x": 5,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "wall",
+    "x": 18,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "wall",
+    "x": 18,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "wall",
+    "x": 5,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "wall",
+    "x": 18,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "wall",
+    "x": 5,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "wall",
+    "x": 18,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "wall",
+    "x": 5,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 42,
+    "name": "wall",
+    "x": 5,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 43,
+    "name": "wall",
+    "x": 18,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 44,
+    "name": "wall",
+    "x": 5,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "wall",
+    "x": 18,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "wall",
+    "x": 5,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 47,
+    "name": "wall",
+    "x": 6,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "wall",
+    "x": 7,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 49,
+    "name": "wall",
+    "x": 8,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 50,
+    "name": "wall",
+    "x": 11,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 51,
+    "name": "wall",
+    "x": 12,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 52,
+    "name": "wall",
+    "x": 13,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "wall",
+    "x": 14,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 54,
+    "name": "wall",
+    "x": 15,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 55,
+    "name": "wall",
+    "x": 16,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 56,
+    "name": "wall",
+    "x": 17,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 57,
+    "name": "wall",
+    "x": 18,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 58,
+    "name": "wall",
+    "x": 7,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 59,
+    "name": "wall",
+    "x": 8,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 60,
+    "name": "wall",
+    "x": 9,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 61,
+    "name": "wall",
+    "x": 12,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 62,
+    "name": "wall",
+    "x": 5,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 63,
+    "name": "wall",
+    "x": 18,
+    "y": 3,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 64,
+    "name": "wall",
+    "x": 5,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 65,
+    "name": "wall",
+    "x": 18,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 66,
+    "name": "wall",
+    "x": 9,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 67,
+    "name": "wall",
+    "x": 10,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 68,
+    "name": "win",
+    "x": 16,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 69,
+    "name": "you",
+    "x": 9,
+    "y": 4,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "urrrrdrdddrdllllllllldluuuuuuuulurrrldllddrrrrrrrrrddrrrrdruuuurullllllluldrdlllrurrrrrr",
+ "initial": "playing|baba!@7,4(push);baba@down@9,7(you);flag!@14,8(push);flag@down@16,4();grass!@23,6(push);grass@down@10,3(stop);grass@down@13,5(stop);grass@down@12,7(stop);grass@down@15,7(stop);grass@down@6,8(stop);grass@down@7,9(stop);grass@down@12,9(stop);grass@down@15,9(stop);grass@down@10,10(stop);grass@down@13,10(stop);grass@right@6,5(stop);grass@right@14,6(stop);grass@right@16,6(stop);grass@right@17,7(stop);grass@right@12,8(stop);is!@8,4(push);is!@23,7(push);stop!@23,8(push);wall@down@5,2();wall@down@6,2();wall@down@10,2();wall@down@11,2();wall@down@13,2();wall@down@14,2();wall@down@15,2();wall@down@16,2();wall@down@17,2();wall@down@18,2();wall@down@5,4();wall@down@18,4();wall@down@18,5();wall@down@5,6();wall@down@18,6();wall@down@5,7();wall@down@18,7();wall@down@5,8();wall@down@5,9();wall@down@18,9();wall@down@5,10();wall@down@18,10();wall@down@5,11();wall@down@6,11();wall@down@7,11();wall@down@8,11();wall@down@11,11();wall@down@12,11();wall@down@13,11();wall@down@14,11();wall@down@15,11();wall@down@16,11();wall@down@17,11();wall@down@18,11();wall@right@7,2();wall@right@8,2();wall@right@9,2();wall@right@12,2();wall@right@5,3();wall@right@18,3();wall@right@5,5();wall@right@18,8();wall@right@9,11();wall@right@10,11();win!@16,8(push);you!@9,4(push)",
+ "hashes": [
+  "7b3786c74b3de278",
+  "ecd84816fb9dc767",
+  "e69e824252c232d1",
+  "2e673fba8b83c246",
+  "56b24f27ef3b3c81",
+  "308fd78e247ba610",
+  "09b90413840558c4",
+  "ce27e00642bf11f4",
+  "77769dafb6acd4e5",
+  "4b30dcf8ca09ffb8",
+  "1b32e01a4279a6a7",
+  "5cff0d44a23de70d",
+  "6575c5a1e8f533b9",
+  "b6d4e6c1cfc8a270",
+  "9bad071e1d863b9e",
+  "36c13d21b32b3c7c",
+  "2f4450a10101fdbb",
+  "025f359a0c092387",
+  "5882ec8db16079a5",
+  "7e4bf064857abc19",
+  "5d00aaff97855669",
+  "8e43df09bf7377ed",
+  "10cbbf530ce38118",
+  "8b95e5430b0f0caf",
+  "f06ee743edf89ae3",
+  "8ed5c0b3d983d160",
+  "da5b17f6b137e7a0",
+  "43f23fce31c00942",
+  "4145a90ac84939f4",
+  "58a7dd8920e899ea",
+  "4c87e20dbd971704",
+  "3a73b208aab8166d",
+  "250c083c9ae6a84f",
+  "792aecd27ac115cb",
+  "8922ee8c361c6690",
+  "1462dd07215de019",
+  "1881ee4aeb629c6c",
+  "bcaf320f8f5b8541",
+  "32534b50dfa2a9a6",
+  "b32ec2a80ec4dfec",
+  "778a9bf18c80274d",
+  "7505fec92082792d",
+  "3a60bb6f144bb9b1",
+  "43319a46f0ff685a",
+  "c9f9b30a7085fb08",
+  "260024f661519bb3",
+  "668299e7e0a0a197",
+  "fe1aa83d28d6a8fb",
+  "a2032012d4f65863",
+  "02a6aa2e63ddae95",
+  "80da0b3236a8537e",
+  "eb292de189e84538",
+  "f7a6ef60747ae165",
+  "e871e6e1012a477e",
+  "edb2a4223f69012a",
+  "4b4fabb68b28941b",
+  "909ce4e3da47b91d",
+  "e75b55c2a9578759",
+  "32fc987e9f511536",
+  "7328c4713cc79bfc",
+  "c5debf7ad8563676",
+  "0c41aacd5dd68c68",
+  "ae2a3680d9873a0c",
+  "e2a9dbf3e3a21856",
+  "f8744b8ff61f6adb",
+  "d54467c2b912bdef",
+  "a43ba592f1107c03",
+  "a83711dfc2944a59",
+  "f5535caa81e2560f",
+  "8b6f1fb88c8ad7fe",
+  "ca80b881c854f245",
+  "dcea7f790100b24a",
+  "43ffcefe7f6ad7d2",
+  "36c2818f1c49f861",
+  "dfec83c20ccb76bb",
+  "0cd92ff60eae34ac",
+  "38e0b437a59598b1",
+  "b5ac5c7907560ce0",
+  "5e488b1eaf2e0a7b",
+  "bb813ac5c132c707",
+  "89f99decc1b93ef9",
+  "e5e352b97e81b423",
+  "285dc8c27adcc6f1",
+  "0761aabdc277d4d1",
+  "6cc652766a89a6cf",
+  "2c7638217410a92e",
+  "bc76238e20dd1da8",
+  "800a6f5852ec495d"
+ ],
+ "final": "win|baba!@7,4(push);baba@right@16,4(you);flag@right!@8,3(push);flag@down@16,4(win);grass!@23,6(push);grass@down@10,3(stop);grass@down@13,5(stop);grass@down@12,7(stop);grass@down@15,7(stop);grass@down@6,8(stop);grass@down@7,9(stop);grass@down@12,9(stop);grass@down@15,9(stop);grass@down@10,10(stop);grass@down@13,10(stop);grass@right@6,5(stop);grass@right@14,6(stop);grass@right@16,6(stop);grass@right@17,7(stop);grass@right@12,8(stop);is!@8,4(push);is!@23,7(push);stop!@23,8(push);wall@down@5,2();wall@down@6,2();wall@down@10,2();wall@down@11,2();wall@down@13,2();wall@down@14,2();wall@down@15,2();wall@down@16,2();wall@down@17,2();wall@down@18,2();wall@down@5,4();wall@down@18,4();wall@down@18,5();wall@down@5,6();wall@down@18,6();wall@down@5,7();wall@down@18,7();wall@down@5,8();wall@down@5,9();wall@down@18,9();wall@down@5,10();wall@down@18,10();wall@down@5,11();wall@down@6,11();wall@down@7,11();wall@down@8,11();wall@down@11,11();wall@down@12,11();wall@down@13,11();wall@down@14,11();wall@down@15,11();wall@down@16,11();wall@down@17,11();wall@down@18,11();wall@right@7,2();wall@right@8,2();wall@right@9,2();wall@right@12,2();wall@right@5,3();wall@right@18,3();wall@right@5,5();wall@right@18,8();wall@right@9,11();wall@right@10,11();win@left!@8,5(push);you!@9,4(push)",
+ "status": "win"
+}

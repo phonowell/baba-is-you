@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { decodeReplayInput } from './replay-input.js'
-import { solveState } from './solve.js'
+import { solveState, solveToLayout } from './solve.js'
 import { parseLevel } from './parse-level.js'
 import { createInitialState } from './state.js'
 import { step } from './step.js'
@@ -69,6 +69,60 @@ test('solveState reports a state-space cutoff on a tiny visited cap', () => {
 test('greedy strategy also solves and returns a replayable path', () => {
   const initial = createInitialState(WINNABLE, 0)
   const result = solveState(initial, CAPS, 'greedy')
+
+  assert.equal(result.kind, 'solved')
+  if (result.kind !== 'solved') return
+  assert.equal(replayTo(initial, result.inputs).status, 'win')
+})
+
+test('solveToLayout reaches a mid-path layout and the chain still wins', () => {
+  const initial = createInitialState(WINNABLE, 0)
+  const mid = replayTo(initial, 'r')
+
+  const segment = solveToLayout(initial, mid, CAPS)
+  assert.equal(segment.kind, 'solved')
+  if (segment.kind !== 'solved') return
+  assert.equal(segment.state.status, 'playing')
+
+  // The reached state feeds the next segment — a plain win search from
+  // there finishes the level.
+  const rest = solveState(segment.state, CAPS)
+  assert.equal(rest.kind, 'solved')
+  if (rest.kind !== 'solved') return
+  assert.equal(replayTo(initial, segment.inputs + rest.inputs).status, 'win')
+})
+
+test('solveToLayout surfaces an early win instead of the waypoint', () => {
+  const initial = createInitialState(WINNABLE, 0)
+  // The "waypoint" is a layout past the flag — BFS bumps into the win
+  // first and returns it rather than chasing the stale target.
+  const beyond = replayTo(initial, 'rrr')
+  const segment = solveToLayout(initial, beyond, CAPS)
+  assert.equal(segment.kind, 'solved')
+  if (segment.kind !== 'solved') return
+  assert.equal(segment.state.status, 'win')
+})
+
+// baba at (0,1), rock at (2,1) blocking the corridor, flag at (4,1):
+// 'rrrr' — push the rock twice onto the flag's cell, step on. Only the
+// macro strategy treats that push chain as single decisions.
+const PUSH = parseLevel(
+  'Title Push; Size 6x3; baba 0,1; rock 2,1; flag 4,1; Baba 0,0; Is 1,0; You 2,0; Rock 0,2; Is 1,2; Push 2,2; Flag 3,0; Is 4,0; Win 5,0',
+)
+
+test('macro strategy walks to a goal in one decision', () => {
+  const initial = createInitialState(WINNABLE, 0)
+  const result = solveState(initial, CAPS, 'macro')
+
+  assert.equal(result.kind, 'solved')
+  if (result.kind !== 'solved') return
+  assert.equal(result.inputs, 'rrr')
+  assert.equal(replayTo(initial, result.inputs).status, 'win')
+})
+
+test('macro strategy pushes blockers out of the corridor', () => {
+  const initial = createInitialState(PUSH, 0)
+  const result = solveState(initial, CAPS, 'macro')
 
   assert.equal(result.kind, 'solved')
   if (result.kind !== 'solved') return

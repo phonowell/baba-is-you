@@ -1,0 +1,766 @@
+{
+ "level": "",
+ "levelIndex": 76,
+ "levelData": {
+  "title": "JAYWALKERS UNITED",
+  "width": 18,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "and",
+    "x": 8,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 5,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 8,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 4,
+    "name": "defeat",
+    "x": 3,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "defeat",
+    "x": 9,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "flag",
+    "x": 1,
+    "y": 10,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "flag",
+    "x": 1,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "grass",
+    "x": 5,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "grass",
+    "x": 8,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "hedge",
+    "x": 9,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "hedge",
+    "x": 0,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "hedge",
+    "x": 4,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "hedge",
+    "x": 8,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "hedge",
+    "x": 0,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "hedge",
+    "x": 2,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "hedge",
+    "x": 3,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "hedge",
+    "x": 4,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "hedge",
+    "x": 6,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "hedge",
+    "x": 7,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "hedge",
+    "x": 8,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "hedge",
+    "x": 9,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "hedge",
+    "x": 10,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "hedge",
+    "x": 0,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "hedge",
+    "x": 4,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "hedge",
+    "x": 10,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "hedge",
+    "x": 0,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "hedge",
+    "x": 1,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "hedge",
+    "x": 2,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "hedge",
+    "x": 3,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "hedge",
+    "x": 4,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "hedge",
+    "x": 10,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "hedge",
+    "x": 4,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "hedge",
+    "x": 10,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "hedge",
+    "x": 4,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "hedge",
+    "x": 10,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "hedge",
+    "x": 4,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "hedge",
+    "x": 10,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "hedge",
+    "x": 16,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "hedge",
+    "x": 16,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "hedge",
+    "x": 16,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "hedge",
+    "x": 16,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 42,
+    "name": "hedge",
+    "x": 16,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 43,
+    "name": "hedge",
+    "x": 16,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 44,
+    "name": "hedge",
+    "x": 16,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "hedge",
+    "x": 16,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "is",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 47,
+    "name": "is",
+    "x": 6,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 48,
+    "name": "is",
+    "x": 10,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 49,
+    "name": "is",
+    "x": 16,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 50,
+    "name": "is",
+    "x": 2,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 51,
+    "name": "is",
+    "x": 6,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 52,
+    "name": "is",
+    "x": 14,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 53,
+    "name": "is",
+    "x": 1,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 54,
+    "name": "keke",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 55,
+    "name": "keke",
+    "x": 15,
+    "y": 8,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 56,
+    "name": "keke",
+    "x": 15,
+    "y": 9,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 57,
+    "name": "keke",
+    "x": 15,
+    "y": 10,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 58,
+    "name": "keke",
+    "x": 15,
+    "y": 11,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 59,
+    "name": "keke",
+    "x": 15,
+    "y": 12,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 60,
+    "name": "keke",
+    "x": 15,
+    "y": 13,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 61,
+    "name": "keke",
+    "x": 15,
+    "y": 14,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 62,
+    "name": "keke",
+    "x": 15,
+    "y": 15,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 63,
+    "name": "make",
+    "x": 1,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 64,
+    "name": "make",
+    "x": 5,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 65,
+    "name": "me",
+    "x": 15,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 66,
+    "name": "me",
+    "x": 1,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 67,
+    "name": "move",
+    "x": 3,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 68,
+    "name": "on",
+    "x": 14,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 69,
+    "name": "on",
+    "x": 1,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 70,
+    "name": "push",
+    "x": 14,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 71,
+    "name": "rock",
+    "x": 13,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 72,
+    "name": "rock",
+    "x": 14,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 73,
+    "name": "rock",
+    "x": 1,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 74,
+    "name": "rock",
+    "x": 11,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 75,
+    "name": "stop",
+    "x": 11,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 76,
+    "name": "stop",
+    "x": 7,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 77,
+    "name": "tile",
+    "x": 1,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 78,
+    "name": "tile",
+    "x": 15,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 79,
+    "name": "tile",
+    "x": 15,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 80,
+    "name": "tile",
+    "x": 15,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 81,
+    "name": "tile",
+    "x": 15,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 82,
+    "name": "tile",
+    "x": 15,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 83,
+    "name": "tile",
+    "x": 15,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 84,
+    "name": "tile",
+    "x": 15,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 85,
+    "name": "tile",
+    "x": 15,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 86,
+    "name": "win",
+    "x": 17,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 87,
+    "name": "you",
+    "x": 7,
+    "y": 0,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "ddllllllluuldddrrrrrrrrrrrrrrrrruuuuuuuuuuuuuuulllllldddruurrdddllllllllllllddlluuurd",
+ "initial": "playing|and!@8,2(push);baba!@5,0(push);baba@down@8,13(you);defeat!@3,2(push);defeat!@9,2(push);flag!@1,10(push);flag@down@1,5();grass!@5,2(push);grass@down@8,13(defeat+stop);hedge!@9,0(push);hedge@down@0,0(stop);hedge@down@4,0(stop);hedge@down@8,0(stop);hedge@down@0,1(stop);hedge@down@2,1(stop);hedge@down@3,1(stop);hedge@down@4,1(stop);hedge@down@6,1(stop);hedge@down@7,1(stop);hedge@down@8,1(stop);hedge@down@9,1(stop);hedge@down@10,1(stop);hedge@down@0,2(stop);hedge@down@4,2(stop);hedge@down@10,2(stop);hedge@down@0,3(stop);hedge@down@1,3(stop);hedge@down@2,3(stop);hedge@down@3,3(stop);hedge@down@4,3(stop);hedge@down@10,3(stop);hedge@down@4,4(stop);hedge@down@10,4(stop);hedge@down@4,6(stop);hedge@down@10,6(stop);hedge@down@4,7(stop);hedge@down@10,7(stop);hedge@down@16,8(stop);hedge@down@16,9(stop);hedge@down@16,10(stop);hedge@down@16,11(stop);hedge@down@16,12(stop);hedge@down@16,13(stop);hedge@down@16,14(stop);hedge@down@16,15(stop);is!@2,0(push);is!@6,0(push);is!@10,0(push);is!@16,0(push);is!@2,2(push);is!@6,2(push);is!@14,5(push);is!@1,13(push);keke!@1,0(push);keke@left@15,8(move);keke@left@15,9(move);keke@left@15,10(move);keke@left@15,11(move);keke@left@15,12(move);keke@left@15,13(move);keke@left@15,14(move);keke@left@15,15(move);make!@1,1(push);make!@5,1(push);me!@15,0(push);me!@1,14(push);move!@3,0(push);on!@14,0(push);on!@1,11(push);push!@14,6(push);rock!@13,0(push);rock!@14,4(push);rock!@1,12(push);rock@down@11,3(push);stop!@11,0(push);stop!@7,2(push);tile!@1,2(push);tile@down@15,8(defeat);tile@down@15,9(defeat);tile@down@15,10(defeat);tile@down@15,11(defeat);tile@down@15,12(defeat);tile@down@15,13(defeat);tile@down@15,14(defeat);tile@down@15,15(defeat);win!@17,0(push);you!@7,0(push)",
+ "hashes": [
+  "8a4480e3a24e861a",
+  "654e4d42c2c6c828",
+  "2e5d698720f8881c",
+  "2b5dfbc92301f1b8",
+  "f9b6981c32069fe8",
+  "f5498ef0c011c2f3",
+  "e47763aae069680a",
+  "7aff4f4fe0472c18",
+  "0f447284196b1185",
+  "0ce169db0ce54186",
+  "b188d5cf047058d5",
+  "3f26f0c93dbbca0b",
+  "3eecffa2fb60cc00",
+  "45fb04c707a088e9",
+  "1c00485814e66631",
+  "58ee21c111c3ea32",
+  "87a9406e9e59bef8",
+  "f188c09b17a4f5a4",
+  "9499943126798d59",
+  "11f135966ff5abd3",
+  "fe91faf556a9e8ab",
+  "df72365b190eae65",
+  "fba5e93daed187eb",
+  "1fe9dc936b141e9d",
+  "9f11e1688e87209f",
+  "96acea8d2ea48ce2",
+  "b474e7b0cf2d8cf1",
+  "393e0a5f234f2930",
+  "7dc97979eafd800a",
+  "f6c4c9042941f797",
+  "71d25afc6692de08",
+  "30a570f8a68f564c",
+  "77fec72d35f0c4ac",
+  "680469bc422d96cd",
+  "6fe2e63cdc0a25c0",
+  "a5032aeff72cfae4",
+  "9b613222976d4bfb",
+  "842126e4fc4eac1b",
+  "f39bb8266c99be4b",
+  "b16a4b333545f2cd",
+  "eb6b16ab96554287",
+  "dcc11ca36526e026",
+  "e5d547cd497e45d7",
+  "f141005af27ca5b1",
+  "9fbfeb9015d17302",
+  "0c06e160cac6b63f",
+  "494436fc60813e1a",
+  "0e6401050ad5d447",
+  "8ebc9cf1ecb90707",
+  "dbafd8d99e68cba9",
+  "e3144113f02ed337",
+  "c9807e88ce627e51",
+  "6cb62d066df41576",
+  "73b85eb13f807a32",
+  "a83e5bf6be60be81",
+  "b654aff68ab670f0",
+  "b0ed01218e3a30ab",
+  "62d9a94d7d3a3152",
+  "4f19e4c848dc76a8",
+  "b82cd376f798b060",
+  "fa74c2b5840519fc",
+  "9a1731c35de2d48d",
+  "bd89a536a652d7b6",
+  "86898887eab77a45",
+  "bf4c6fc82c293706",
+  "e3c99d8c7f114d21",
+  "51dd1385dae5be2c",
+  "305e11cdcdc0e07a",
+  "87d57659fc5aff69",
+  "c77ea1d901fba1c9",
+  "76b60f875324cb5e",
+  "5ae7dbeffe7b69c7",
+  "e9efbcd05f37851d",
+  "fb9421de3011b32a",
+  "e626f1a3f93ab316",
+  "8cc0e79a123fdd22",
+  "7d7ec4115a5bc0fb",
+  "14b6477c68407330",
+  "470d6b0d5f9a907b",
+  "7d6cc334c72182a6",
+  "02640ab5b396a39c",
+  "d0230cd14aafa096",
+  "0b00b9f63f0d96bd",
+  "a2e1feb6dc10cc5b",
+  "2500bf55f5e32ff4"
+ ],
+ "final": "win|and!@8,2(push);baba!@5,0(push);baba@down@1,5(you);defeat!@3,2(push);defeat!@9,2(push);flag@left!@0,8(push);me@down@1,5();grass!@5,2(push);grass@down@8,13(defeat+stop);hedge!@9,0(push);hedge@down@0,0(stop);hedge@down@4,0(stop);hedge@down@8,0(stop);hedge@down@0,1(stop);hedge@down@2,1(stop);hedge@down@3,1(stop);hedge@down@4,1(stop);hedge@down@6,1(stop);hedge@down@7,1(stop);hedge@down@8,1(stop);hedge@down@9,1(stop);hedge@down@10,1(stop);hedge@down@0,2(stop);hedge@down@4,2(stop);hedge@down@10,2(stop);hedge@down@0,3(stop);hedge@down@1,3(stop);hedge@down@2,3(stop);hedge@down@3,3(stop);hedge@down@4,3(stop);hedge@down@10,3(stop);hedge@down@4,4(stop);hedge@down@10,4(stop);hedge@down@4,6(stop);hedge@down@10,6(stop);hedge@down@4,7(stop);hedge@down@10,7(stop);hedge@down@16,8(stop);hedge@down@16,9(stop);hedge@down@16,10(stop);hedge@down@16,11(stop);hedge@down@16,12(stop);hedge@down@16,13(stop);hedge@down@16,14(stop);hedge@down@16,15(stop);is!@2,0(push);is!@6,0(push);is!@10,0(push);is!@16,0(push);is!@2,2(push);is!@6,2(push);is@down!@14,7(push);is@left!@0,11(push);keke!@1,0(push);keke@left@12,8(move);keke@left@14,9(move);keke@left@14,10(move);keke@left@14,11(move);keke@left@14,12(move);keke@left@14,13(move);keke@left@14,14(move);keke@left@14,15(move);make!@1,1(push);make!@5,1(push);me!@15,0(push);me@left!@0,12(push);move!@3,0(push);on!@14,0(push);on@left!@0,9(push);push@right!@15,8(push);rock!@13,0(push);rock@down!@14,6(push);rock@left!@0,10(push);rock@left@1,5(win);stop!@11,0(push);stop!@7,2(push);tile!@1,2(push);tile@down@15,8(defeat);tile@down@15,9(defeat);tile@down@15,10(defeat);tile@down@15,11(defeat);tile@down@15,12(defeat);tile@down@15,13(defeat);tile@down@15,14(defeat);tile@down@15,15(defeat);win!@17,0(push);you!@7,0(push);grass@down@8,14(defeat+stop);tile@left@14,8(defeat);tile@left@14,9(defeat);tile@left@14,10(defeat);tile@left@14,11(defeat);tile@left@14,12(defeat);tile@left@14,13(defeat);tile@left@14,14(defeat);tile@left@14,15(defeat);grass@down@8,15(defeat+stop);tile@left@13,8(defeat);tile@left@13,9(defeat);tile@left@13,10(defeat);tile@left@13,11(defeat);tile@left@13,12(defeat);tile@left@13,13(defeat);tile@left@13,14(defeat);tile@left@13,15(defeat);grass@left@7,15(defeat+stop);tile@left@12,8(defeat);tile@left@12,9(defeat);tile@left@12,10(defeat);tile@left@12,11(defeat);tile@left@12,12(defeat);tile@left@12,13(defeat);tile@left@12,14(defeat);tile@left@12,15(defeat);grass@left@6,15(defeat+stop);tile@left@11,8(defeat);tile@left@11,9(defeat);tile@left@11,10(defeat);tile@left@11,11(defeat);tile@left@11,12(defeat);tile@left@11,13(defeat);tile@left@11,14(defeat);tile@left@11,15(defeat);grass@left@5,15(defeat+stop);tile@left@10,8(defeat);tile@left@10,9(defeat);tile@left@10,10(defeat);tile@left@10,11(defeat);tile@left@10,12(defeat);tile@left@10,13(defeat);tile@left@10,14(defeat);tile@left@10,15(defeat);grass@left@4,15(defeat+stop);tile@left@9,8(defeat);tile@left@9,9(defeat);tile@left@9,10(defeat);tile@left@9,11(defeat);tile@left@9,12(defeat);tile@left@9,13(defeat);tile@left@9,14(defeat);tile@left@9,15(defeat);grass@left@3,15(defeat+stop);tile@left@8,8(defeat);tile@left@8,9(defeat);tile@left@8,10(defeat);tile@left@8,11(defeat);tile@left@8,12(defeat);grass@left@2,15(defeat+stop);tile@left@7,8(defeat);tile@left@7,9(defeat);tile@left@7,10(defeat);tile@left@7,11(defeat);tile@left@7,12(defeat);grass@left@1,15(defeat+stop);tile@left@6,8(defeat);tile@left@6,9(defeat);tile@left@6,10(defeat);tile@left@6,11(defeat);tile@left@6,12(defeat);grass@up@1,14(defeat+stop);tile@left@5,8(defeat);tile@left@5,9(defeat);tile@left@5,10(defeat);tile@left@5,11(defeat);tile@left@5,12(defeat);grass@up@1,13(defeat+stop);tile@left@4,8(defeat);tile@left@4,9(defeat);tile@left@4,10(defeat);tile@left@4,11(defeat);tile@left@4,12(defeat);grass@left@0,13(defeat+stop);tile@left@3,8(defeat);tile@left@3,9(defeat);tile@left@3,10(defeat);tile@left@3,11(defeat);tile@left@3,12(defeat);grass@down@0,14(defeat+stop);tile@left@2,8(defeat);tile@left@2,9(defeat);tile@left@2,10(defeat);tile@left@2,11(defeat);tile@left@2,12(defeat);grass@down@0,15(defeat+stop);tile@left@1,8(defeat);tile@left@1,9(defeat);tile@left@1,10(defeat);tile@left@1,11(defeat);tile@left@1,12(defeat);grass@down@0,16(defeat+stop);grass@right@1,16(defeat+stop);grass@right@2,16(defeat+stop);grass@right@3,16(defeat+stop);grass@right@4,16(defeat+stop);grass@right@5,16(defeat+stop);grass@right@6,16(defeat+stop);grass@right@7,16(defeat+stop);grass@right@8,16(defeat+stop);grass@right@9,16(defeat+stop);grass@right@10,16(defeat+stop);grass@right@11,16(defeat+stop);grass@right@12,16(defeat+stop);grass@right@13,16(defeat+stop);grass@right@14,16(defeat+stop);grass@right@15,16(defeat+stop);grass@right@16,16(defeat+stop);grass@right@17,16(defeat+stop);grass@up@17,15(defeat+stop);grass@up@17,14(defeat+stop);grass@up@17,13(defeat+stop);grass@up@17,12(defeat+stop);grass@up@17,11(defeat+stop);grass@up@17,10(defeat+stop);grass@up@17,9(defeat+stop);grass@up@17,8(defeat+stop);grass@up@17,7(defeat+stop);grass@up@17,6(defeat+stop);grass@up@17,5(defeat+stop);grass@up@17,4(defeat+stop);grass@up@17,3(defeat+stop);grass@up@17,2(defeat+stop);grass@up@17,1(defeat+stop);grass@left@16,1(defeat+stop);grass@left@15,1(defeat+stop);grass@left@14,1(defeat+stop);grass@left@13,1(defeat+stop);grass@left@12,1(defeat+stop);grass@left@11,1(defeat+stop);grass@down@11,2(defeat+stop);grass@down@11,3(defeat+stop);grass@down@11,4(defeat+stop);grass@right@12,4(defeat+stop);grass@up@12,3(defeat+stop);grass@up@12,2(defeat+stop);grass@right@13,2(defeat+stop);grass@right@14,2(defeat+stop);grass@down@14,3(defeat+stop);grass@down@14,4(defeat+stop);grass@down@14,5(defeat+stop);grass@left@13,5(defeat+stop);grass@left@12,5(defeat+stop);grass@left@11,5(defeat+stop);grass@left@10,5(defeat+stop);grass@left@9,5(defeat+stop);grass@left@8,5(defeat+stop);grass@left@7,5(defeat+stop);grass@left@6,5(defeat+stop);grass@left@5,5(defeat+stop);grass@left@4,5(defeat+stop);grass@left@3,5(defeat+stop);grass@left@2,5(defeat+stop);grass@down@2,6(defeat+stop);grass@down@2,7(defeat+stop);grass@left@1,7(defeat+stop);grass@left@0,7(defeat+stop);grass@up@0,6(defeat+stop);grass@up@0,5(defeat+stop);grass@up@0,4(defeat+stop);grass@right@1,4(defeat+stop);grass@down@1,5(defeat+stop)",
+ "status": "win"
+}

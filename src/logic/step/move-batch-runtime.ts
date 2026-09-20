@@ -25,6 +25,10 @@ export type BatchMoveContext = MoveCoreContext & {
   // `level is hold`-pinned units: can't move under their own power.
   pinnedIds: Set<number>
   status: { changed: boolean }
+  // Movers carrying `swap` trade places with the whole destination cell
+  // instead of pushing — same bidirectional rule as the single-move
+  // engine (swap outranks push/pull/stop, `still`/`pinned` still block).
+  swapIds: Set<number>
 }
 
 export const resolveBatchArrows = (
@@ -93,7 +97,13 @@ export const resolveBatchArrows = (
         }
       }
 
-      if (!blocked) {
+      // `x is swap` movers trade places with whatever they enter — no
+      // push propagation, no stop/pull block; only `still`/`pinned`
+      // units (which can't be displaced) hold the cell. Officially swap
+      // outranks every other collision prop on the target.
+      const swapMove = !throughEmptyPush && context.swapIds.has(id)
+
+      if (!blocked && !swapMove) {
         let pushed = false
         for (const target of targets) {
           if (context.phantomIds.has(target.id)) continue
@@ -113,6 +123,24 @@ export const resolveBatchArrows = (
         if (!throughEmptyPush && isOpenShutPair(context, item, target)) {
           if (removeOne(context, item)) context.status.changed = true
           if (removeOne(context, target)) context.status.changed = true
+          continue
+        }
+
+        if (swapMove) {
+          // Weak units are left in place (they die in the interaction
+          // phase, same as the single-move engine's swap filter).
+          if (context.weakIds.has(target.id)) continue
+          const targetArrow = arrows.get(target.id)
+          if (targetArrow?.status === 'moving') continue
+          if (targetArrow?.status === 'pending') {
+            defer = true
+            continue
+          }
+          if (
+            context.stillIds.has(target.id) ||
+            context.pinnedIds.has(target.id)
+          )
+            blocked = true
           continue
         }
 

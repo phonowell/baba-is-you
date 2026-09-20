@@ -1,0 +1,178 @@
+{
+ "level": "",
+ "levelIndex": 231,
+ "levelData": {
+  "title": "A PRIZE WELL EARNED",
+  "width": 15,
+  "height": 8,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 1,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 7,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 3,
+    "name": "bonus",
+    "x": 8,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "is",
+    "x": 2,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "is",
+    "x": 7,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 6,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 13,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "orb",
+    "x": 6,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "orb",
+    "x": 12,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "orb",
+    "x": 7,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "weak",
+    "x": 14,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "win",
+    "x": 8,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 13,
+    "name": "you",
+    "x": 3,
+    "y": 1,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rruullrruullullduldulllldrrrurrrdudlrdldllulluurrlurdullddruurrdlldr",
+ "initial": "playing|baba!@1,1(push);baba@down@7,5(you);bonus!@8,1(push);is!@2,1(push);is!@7,1(push);is!@6,3(push);is!@13,7(push);orb!@6,1(push);orb!@12,7(push);orb@down@7,2(bonus+weak);weak!@14,7(push);win!@8,3(push);you!@3,1(push)",
+ "hashes": [
+  "d7a2be2883a1b933",
+  "06f97e7bd0f2e997",
+  "2f40bdeb5a5a5562",
+  "2640d0279829310d",
+  "c26138b789cbfb94",
+  "3ba369bd20b29eec",
+  "dcf62d3856c2b686",
+  "2992e78604b6816f",
+  "599cfff233937e26",
+  "1a848a5183b60bde",
+  "8d3ca2d1dc7a0599",
+  "371d346183a5294d",
+  "e3a746c81203ede5",
+  "be2b46d28df82ed9",
+  "f84d8e9bce8d1ee8",
+  "f5097dd059e12235",
+  "bc391c5918ca1c67",
+  "6dbc9b4dc11cfb63",
+  "a17de9037ef7f778",
+  "f0142e5b93ffd8e4",
+  "ec13933ea7125c7b",
+  "bae4ce4b920ae8fa",
+  "26919b25947a8928",
+  "6ae4c88808e0bf4e",
+  "a0d5a0e1f77605d9",
+  "1d1cb6c7f201bb21",
+  "fec49442ad1d3e86",
+  "11aa3d999d67ec12",
+  "2bea5971105aeac2",
+  "0be477545ca83eba",
+  "2989b66b4136161b",
+  "c4b99a72dfa4689e",
+  "de395ba65ef9144a",
+  "4bd0c77605566e07",
+  "b52f47dbea32367f",
+  "54542da367364ce5",
+  "e0469ae92f3e8a89",
+  "bab6a7b42be1bed1",
+  "34442e9e337d81d6",
+  "554373a70dc315b6",
+  "87f58e3437a6c709",
+  "679d8e5de6bfb65e",
+  "6274382a36d457d1",
+  "f0db09424b0c870a",
+  "1abf404fe7e77d65",
+  "83e3ba8117e8cb8a",
+  "96b7689b80ba07a1",
+  "2bfd531207e7d337",
+  "05aa6b32a9323621",
+  "dcc73018ebe1e551",
+  "ce4c4bd959bc9a05",
+  "b69909bcc7b9dc6d",
+  "524283b40ec3b8b2",
+  "25271798cc7308bb",
+  "284689bdf2c99150",
+  "f34720b28bf2e31d",
+  "1d37addc74d0ff4b",
+  "ef260f75f26a3b0c",
+  "9dc8469e505e3193",
+  "372c49cfecf4d1f0",
+  "f8a05c40e90f93a1",
+  "ec9cfde842ad1684",
+  "16bbea03e8460a71",
+  "478d7f6f0a239614",
+  "6dbf995e1bbb9eaf",
+  "cb6f3daf154629b9",
+  "f77ae12858abe91f",
+  "46b3014faa679204"
+ ],
+ "final": "win|baba@right!@6,0(push);bonus@right!@8,0(push);is@right!@7,0(push);is@right!@6,2(push);is@down!@5,3(push);is!@13,7(push);orb@right!@5,2(push);orb!@12,7(push);orb@right@4,2(weak+win+you);weak!@14,7(push);win@down!@5,4(push);you@right!@7,2(push)",
+ "status": "win"
+}

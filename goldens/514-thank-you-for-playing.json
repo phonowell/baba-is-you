@@ -1,0 +1,104 @@
+{
+ "level": "",
+ "levelIndex": 514,
+ "levelData": {
+  "title": "THANK YOU FOR PLAYING!",
+  "width": 18,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 3,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 4,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "end",
+    "x": 4,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 2,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 14,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 6,
+    "name": "is",
+    "x": 3,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 4,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "sign",
+    "x": 9,
+    "y": 5,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 9,
+    "name": "win",
+    "x": 10,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "you",
+    "x": 5,
+    "y": 11,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rruuuurrrrrrrr",
+ "initial": "playing|baba!@3,11(push);baba@right@4,12(you);end!@4,4(push);flag!@2,4(push);flag@right@14,8(end);is!@3,4(push);is!@4,11(push);sign@right@9,5();win!@10,8(push);you!@5,11(push)",
+ "hashes": [
+  "b62a240c5b458f37",
+  "b10fc9759fe581b4",
+  "3007dd06259de809",
+  "0b4067afc517c061",
+  "9117ce9fbbd89da5",
+  "495fa858656931a0",
+  "f1da747cd738607c",
+  "4854812b2a099ab6",
+  "0ab42c7f7b0a0b31",
+  "9fd38988b5f00456",
+  "0c20121f6e7e0fb3",
+  "a73e51fa5a29e33a",
+  "648816c9652bcb36",
+  "5e67ab6cb0375992"
+ ],
+ "final": "win|baba!@3,11(push);baba@right@14,8(you);end!@4,4(push);flag!@2,4(push);flag@right@14,8(end);is!@3,4(push);is!@4,11(push);sign@right@9,5();win@right!@15,8(push);you!@5,11(push)",
+ "status": "win"
+}

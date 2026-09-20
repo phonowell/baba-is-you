@@ -84,9 +84,12 @@ test('step WRITE does not duplicate same text target in one cell', () => {
   assert.equal(wins.length, 1)
 })
 
-test('step WRITE-created rule affects interactions in the same turn', () => {
+test('step WRITE-created rule applies from the next turn', () => {
+  // Official ordering: creation verbs (write/make/more) run in the
+  // end-of-turn block, after the destruction checks — so a rule a write
+  // spawns this turn starts biting next turn.
   const level: LevelData = {
-    title: 'write-rule-same-turn',
+    title: 'write-rule-next-turn',
     width: 7,
     height: 3,
     items: [
@@ -104,11 +107,14 @@ test('step WRITE-created rule affects interactions in the same turn', () => {
   }
 
   const state = createInitialState(level, 0)
-  const result = step(state, null)
-
-  assert.equal(result.state.status, 'lose')
+  const first = step(state, null)
+  // The written `skull` completes `skull is defeat`, but the destruction
+  // pass already ran — baba survives the spawn turn.
+  assert.equal(first.state.status, 'playing')
+  const second = step(first.state, null)
+  assert.equal(second.state.status, 'lose')
   assert.equal(
-    result.state.items.some(
+    second.state.items.some(
       (item) =>
         !item.isText && item.name === 'baba' && item.props.includes('you'),
     ),

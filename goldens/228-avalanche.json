@@ -1,0 +1,370 @@
+{
+ "level": "",
+ "levelIndex": 228,
+ "levelData": {
+  "title": "AVALANCHE",
+  "width": 14,
+  "height": 14,
+  "items": [
+   {
+    "id": 1,
+    "name": "and",
+    "x": 11,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 13,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 0,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "baba",
+    "x": 6,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "baba",
+    "x": 6,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "cliff",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "cliff",
+    "x": 7,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "cliff",
+    "x": 6,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "cliff",
+    "x": 5,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 10,
+    "name": "cliff",
+    "x": 6,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 11,
+    "name": "cliff",
+    "x": 5,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 12,
+    "name": "fall",
+    "x": 10,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 13,
+    "name": "fall",
+    "x": 7,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 14,
+    "name": "is",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 15,
+    "name": "is",
+    "x": 8,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 16,
+    "name": "is",
+    "x": 1,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 17,
+    "name": "is",
+    "x": 6,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 18,
+    "name": "level",
+    "x": 5,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 19,
+    "name": "not",
+    "x": 9,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 20,
+    "name": "not",
+    "x": 12,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 21,
+    "name": "not",
+    "x": 9,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 22,
+    "name": "on",
+    "x": 9,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 23,
+    "name": "rubble",
+    "x": 0,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 24,
+    "name": "rubble",
+    "x": 0,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 25,
+    "name": "rubble",
+    "x": 13,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 26,
+    "name": "rubble",
+    "x": 0,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 27,
+    "name": "rubble",
+    "x": 1,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 28,
+    "name": "rubble",
+    "x": 12,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 29,
+    "name": "rubble",
+    "x": 13,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 30,
+    "name": "rubble",
+    "x": 0,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 31,
+    "name": "rubble",
+    "x": 1,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 32,
+    "name": "rubble",
+    "x": 2,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 33,
+    "name": "rubble",
+    "x": 3,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 34,
+    "name": "rubble",
+    "x": 8,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 35,
+    "name": "rubble",
+    "x": 9,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 36,
+    "name": "rubble",
+    "x": 11,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 37,
+    "name": "rubble",
+    "x": 12,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 38,
+    "name": "rubble",
+    "x": 13,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 39,
+    "name": "stop",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 40,
+    "name": "win",
+    "x": 6,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 41,
+    "name": "you",
+    "x": 2,
+    "y": 1,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uuudlulurrdrrurullllulddldrrruurdddddddlldddr",
+ "initial": "playing|and!@11,0(push);baba!@13,0(push);baba!@0,1(push);baba!@6,8(push);baba@down@6,6(you);cliff!@0,0(push);cliff!@7,0(push);cliff@down@6,0(stop);cliff@right@5,10(stop);cliff@right@6,10(stop);cliff@right@5,11(stop);fall!@10,0(push);fall!@7,4(push);is!@1,0(push);is!@8,0(push);is!@1,1(push);is!@6,3(push);level!@5,3(push);not!@9,0(push);not!@12,0(push);not!@9,5(push);on!@9,7(push);rubble@right@0,10();rubble@right@0,11();rubble@right@13,11();rubble@right@0,12();rubble@right@1,12();rubble@right@12,12();rubble@right@13,12();rubble@right@0,13();rubble@right@1,13();rubble@right@2,13();rubble@right@3,13();rubble@right@8,13();rubble@right@9,13();rubble@right@11,13();rubble@right@12,13();rubble@right@13,13();stop!@2,0(push);win!@6,11(push);you!@2,1(push)",
+ "hashes": [
+  "4d8d0004d39ab8ce",
+  "86e34822a7d08aaa",
+  "e82c598c72e16e5d",
+  "d690f85f3a104beb",
+  "fa318667f56cd6ea",
+  "f29958196127c348",
+  "ea194ab3b7b3382e",
+  "4e7c51bc544e9f4b",
+  "500deb6972b3e4a5",
+  "0347099c3c59749a",
+  "693c6ac1cb7be197",
+  "d378e22ab101f2db",
+  "d077ef31c9984662",
+  "1cc12d3ea448ad7c",
+  "b9d55d01a5e205fe",
+  "3f88e43b79debcd1",
+  "b5819b3939d5db42",
+  "f24e5d18cf7a758b",
+  "0d6e6bda9bfc69b9",
+  "f3151abc9fac4d16",
+  "ce76c1c42cb56cb5",
+  "4ced0e081a6ae199",
+  "c672979bfb977ec9",
+  "01fc7241f6f05969",
+  "7188229a5a83f7e7",
+  "0c52f94bc30476fd",
+  "e63932cdde0451fa",
+  "c9c70716da29739c",
+  "93e06f930aba123d",
+  "0d927eb620f231db",
+  "c348088888ac60c1",
+  "6da27462e2a0258a",
+  "200a4cf6dee326a5",
+  "e69c382a55e02df9",
+  "f3214dfa3b5a855e",
+  "f1a2485466a559f1",
+  "fdaa33304383a58c",
+  "93e81ffb901c991b",
+  "118cfa05cacc9873",
+  "77b86ffdd3c55a4e",
+  "f78b27413b8557e6",
+  "8e6734069fb1f654",
+  "46ddf8e681d04ad3",
+  "ae4c39d31aae3a9e",
+  "cb2f5dccd2848f72"
+ ],
+ "final": "win|and!@11,0(push);baba!@13,0(push);baba!@0,1(push);baba@left!@4,8(push);baba@right@6,11(you);cliff!@0,0(push);cliff!@7,0(push);level@down@6,9(win);level@right@5,12(win);level@right@6,10(win);level@right@5,13(win);fall!@10,0(push);fall@right!@8,11(push);is!@1,0(push);is!@8,0(push);is!@1,1(push);is@down!@7,10(push);level@down!@7,9(push);not!@9,0(push);not!@12,0(push);not!@9,5(push);on!@9,7(push);rubble@right@0,10();rubble@right@0,11();rubble@right@13,11();rubble@right@0,12();rubble@right@1,12();rubble@right@12,12();rubble@right@13,12();rubble@right@0,13();rubble@right@1,13();rubble@right@2,13();rubble@right@3,13();rubble@right@8,13();rubble@right@9,13();rubble@right@11,13();rubble@right@12,13();rubble@right@13,13();stop!@2,0(push);win@right!@7,11(push);you!@2,1(push)",
+ "status": "win"
+}

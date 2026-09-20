@@ -106,6 +106,79 @@ test('step swaps mover with SWAP target', () => {
   assert.equal(rock?.x, 0)
 })
 
+test('step SWAP mover trades places with pushable targets', () => {
+  // Official SWAP is bidirectional: a mover carrying `swap` swaps with
+  // whatever it walks into — pushable or not (swap outranks push on the
+  // counterpart). MATRIX-style boards rely on this to permute text on a
+  // full grid where pushes can never complete.
+  const level: LevelData = {
+    title: 'swap-mover',
+    width: 7,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'rock', 1, 0, false),
+      createItem(3, 'baba', 0, 2, true),
+      createItem(4, 'is', 1, 2, true),
+      createItem(5, 'you', 2, 2, true),
+      createItem(6, 'baba', 4, 2, true),
+      createItem(7, 'is', 5, 2, true),
+      createItem(8, 'swap', 6, 2, true),
+      createItem(9, 'rock', 0, 1, true),
+      createItem(10, 'is', 1, 1, true),
+      createItem(11, 'push', 2, 1, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = result.state.items.find(
+    (item) => !item.isText && item.name === 'baba',
+  )
+  const rock = result.state.items.find(
+    (item) => !item.isText && item.name === 'rock',
+  )
+
+  // `rock is push` + `baba is swap`: baba moves into the pushable rock —
+  // swap wins over push, so they trade places instead.
+  assert.equal(baba?.x, 1)
+  assert.equal(rock?.x, 0)
+})
+
+test('step SWAP mover swaps with non-blocking win target', () => {
+  // A swap mover can't land on a win flag — it trades places with it
+  // (the flag leaves the cell), so no overlap means no win.
+  const level: LevelData = {
+    title: 'swap-win',
+    width: 7,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'flag', 1, 0, false),
+      createItem(3, 'baba', 0, 2, true),
+      createItem(4, 'is', 1, 2, true),
+      createItem(5, 'you', 2, 2, true),
+      createItem(6, 'baba', 4, 2, true),
+      createItem(7, 'is', 5, 2, true),
+      createItem(8, 'swap', 6, 2, true),
+      createItem(9, 'flag', 0, 1, true),
+      createItem(10, 'is', 1, 1, true),
+      createItem(11, 'win', 2, 1, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = result.state.items.find(
+    (item) => !item.isText && item.name === 'baba',
+  )
+  const flag = result.state.items.find(
+    (item) => !item.isText && item.name === 'flag',
+  )
+
+  assert.equal(baba?.x, 1)
+  assert.equal(flag?.x, 0)
+  assert.equal(result.state.status, 'playing')
+})
+
 test('step teleports across different TELE object types', () => {
   const level: LevelData = {
     title: 'tele-cross-type',

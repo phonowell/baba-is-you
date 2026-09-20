@@ -221,6 +221,7 @@ const buildGoldensManifest = async () => {
       .replace(/\\/g, '/')
       .replace(/\.json$/, '')
     const entry = { name, inputs: golden.inputs, levelSource: golden.level }
+    if (golden.levelIndex !== undefined) entry.levelIndex = golden.levelIndex
     if (golden.levelData) {
       entry.levelData = golden.levelData
     } else {

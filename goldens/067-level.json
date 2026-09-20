@@ -1,0 +1,146 @@
+{
+ "level": "",
+ "levelIndex": 67,
+ "levelData": {
+  "title": "?",
+  "width": 33,
+  "height": 18,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 8,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 13,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "bonus",
+    "x": 18,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 23,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 20,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "hide",
+    "x": 16,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "hide",
+    "x": 10,
+    "y": 10,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "is",
+    "x": 9,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "is",
+    "x": 24,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "is",
+    "x": 16,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "is",
+    "x": 17,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "is",
+    "x": 10,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 13,
+    "name": "orb",
+    "x": 16,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 14,
+    "name": "orb",
+    "x": 18,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "text",
+    "x": 10,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 16,
+    "name": "win",
+    "x": 25,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 17,
+    "name": "you",
+    "x": 10,
+    "y": 0,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrrrrrr",
+ "initial": "playing|baba!@8,0(hide+push);baba@right@13,9(you);bonus!@18,1(hide+push);flag!@23,0(hide+push);flag@down@20,9(win);hide!@16,3(hide+push);hide!@10,10(hide+push);is!@9,0(hide+push);is!@24,0(hide+push);is!@16,2(hide+push);is!@17,2(hide+push);is!@10,9(hide+push);orb!@16,1(hide+push);orb@down@18,3(hide);text!@10,8(hide+push);win!@25,0(hide+push);you!@10,0(hide+push)",
+ "hashes": [
+  "9d38f51fa8f46472",
+  "003302a4bae11283",
+  "a863c1b1f2b69fa5",
+  "93c3e25069b3a664",
+  "436bba9546d182ca",
+  "5ea538c285b14373",
+  "b328a7a6b5b05e57"
+ ],
+ "final": "win|baba!@8,0(hide+push);baba@right@20,9(you);bonus!@18,1(hide+push);flag!@23,0(hide+push);flag@down@20,9(win);hide!@16,3(hide+push);hide!@10,10(hide+push);is!@9,0(hide+push);is!@24,0(hide+push);is!@16,2(hide+push);is!@17,2(hide+push);is!@10,9(hide+push);orb!@16,1(hide+push);orb@down@18,3(hide);text!@10,8(hide+push);win!@25,0(hide+push);you!@10,0(hide+push)",
+ "status": "win"
+}

@@ -4,6 +4,9 @@ import type { LevelData } from '../logic/types.js'
 // satisfies it; tests substitute plain fixtures.
 type GoldenWithLevel = {
   level: LevelData
+  // Solver-emitted records pin the campaign level they were generated
+  // on; an explicit index beats title/signature inference.
+  levelIndex?: number
 }
 
 // Level identity for golden binding. Campaign titles keep punctuation the
@@ -76,6 +79,13 @@ export const bindGoldensToLevels = <G extends GoldenWithLevel>(
     }
     const signature = itemSignature(golden.level)
     if (!forSignature.has(signature)) forSignature.set(signature, golden)
+  }
+
+  // Solver-emitted goldens carry their campaign index — an explicit pin
+  // wins the slot over any heuristic binding that landed there first.
+  for (const golden of goldens) {
+    if (golden.levelIndex !== undefined && golden.levelIndex < levels.length)
+      forIndex.set(golden.levelIndex, golden)
   }
 
   return {

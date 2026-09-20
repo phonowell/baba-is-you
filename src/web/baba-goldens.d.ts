@@ -14,6 +14,10 @@ declare module 'baba-goldens' {
     // keys are omitted from the manifest JSON entirely.
     levelData?: LevelData
     levelText?: string
+    // Solver-emitted goldens record the exact campaign level they were
+    // generated on — the binding prefers it over title/signature
+    // inference, so an explicit index always wins the slot.
+    levelIndex?: number
   }
 
   const entries: GoldenManifestEntry[]

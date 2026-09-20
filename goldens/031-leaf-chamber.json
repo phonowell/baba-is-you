@@ -1,0 +1,1257 @@
+{
+ "level": "",
+ "levelIndex": 31,
+ "levelData": {
+  "title": "LEAF CHAMBER",
+  "width": 28,
+  "height": 16,
+  "items": [
+   {
+    "id": 1,
+    "name": "and",
+    "x": 3,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "and",
+    "x": 24,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 5,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "baba",
+    "x": 8,
+    "y": 14,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 5,
+    "name": "defeat",
+    "x": 24,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "flag",
+    "x": 0,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 7,
+    "name": "foliage",
+    "x": 24,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "foliage",
+    "x": 16,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "foliage",
+    "x": 17,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "foliage",
+    "x": 18,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "foliage",
+    "x": 16,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "foliage",
+    "x": 17,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "foliage",
+    "x": 18,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "foliage",
+    "x": 16,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "foliage",
+    "x": 17,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "foliage",
+    "x": 18,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 17,
+    "name": "fungus",
+    "x": 0,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 18,
+    "name": "fungus",
+    "x": 17,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "has",
+    "x": 0,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 20,
+    "name": "hedge",
+    "x": 13,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 21,
+    "name": "hedge",
+    "x": 16,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "hedge",
+    "x": 17,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 23,
+    "name": "hedge",
+    "x": 14,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 24,
+    "name": "hedge",
+    "x": 15,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "hedge",
+    "x": 16,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "hedge",
+    "x": 18,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "hedge",
+    "x": 19,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "hedge",
+    "x": 20,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "hedge",
+    "x": 21,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "hedge",
+    "x": 11,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "hedge",
+    "x": 21,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "hedge",
+    "x": 10,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "hedge",
+    "x": 11,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "hedge",
+    "x": 21,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "hedge",
+    "x": 9,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "hedge",
+    "x": 10,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "hedge",
+    "x": 21,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "hedge",
+    "x": 9,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "hedge",
+    "x": 16,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "hedge",
+    "x": 18,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "hedge",
+    "x": 21,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 42,
+    "name": "hedge",
+    "x": 22,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 43,
+    "name": "hedge",
+    "x": 9,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 44,
+    "name": "hedge",
+    "x": 22,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "hedge",
+    "x": 7,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "hedge",
+    "x": 8,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 47,
+    "name": "hedge",
+    "x": 9,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "hedge",
+    "x": 17,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 49,
+    "name": "hedge",
+    "x": 22,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 50,
+    "name": "hedge",
+    "x": 23,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 51,
+    "name": "hedge",
+    "x": 7,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 52,
+    "name": "hedge",
+    "x": 7,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "hedge",
+    "x": 9,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 54,
+    "name": "hedge",
+    "x": 7,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 55,
+    "name": "hedge",
+    "x": 9,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 56,
+    "name": "hedge",
+    "x": 23,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 57,
+    "name": "hedge",
+    "x": 6,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 58,
+    "name": "hedge",
+    "x": 7,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 59,
+    "name": "hedge",
+    "x": 9,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 60,
+    "name": "hedge",
+    "x": 11,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 61,
+    "name": "hedge",
+    "x": 12,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 62,
+    "name": "hedge",
+    "x": 21,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 63,
+    "name": "hedge",
+    "x": 22,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 64,
+    "name": "hedge",
+    "x": 23,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 65,
+    "name": "hedge",
+    "x": 10,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 66,
+    "name": "hedge",
+    "x": 20,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 67,
+    "name": "hedge",
+    "x": 21,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 68,
+    "name": "hedge",
+    "x": 6,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 69,
+    "name": "hedge",
+    "x": 19,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 70,
+    "name": "hedge",
+    "x": 20,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 71,
+    "name": "hedge",
+    "x": 21,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 72,
+    "name": "hedge",
+    "x": 6,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 73,
+    "name": "hedge",
+    "x": 13,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 74,
+    "name": "hedge",
+    "x": 14,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 75,
+    "name": "hedge",
+    "x": 15,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 76,
+    "name": "hedge",
+    "x": 16,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 77,
+    "name": "hedge",
+    "x": 17,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 78,
+    "name": "hedge",
+    "x": 18,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 79,
+    "name": "hedge",
+    "x": 19,
+    "y": 15,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 80,
+    "name": "hedge",
+    "x": 11,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 81,
+    "name": "hedge",
+    "x": 12,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 82,
+    "name": "hedge",
+    "x": 13,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 83,
+    "name": "hedge",
+    "x": 23,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 84,
+    "name": "hedge",
+    "x": 23,
+    "y": 9,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 85,
+    "name": "hedge",
+    "x": 10,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 86,
+    "name": "hedge",
+    "x": 6,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 87,
+    "name": "hedge",
+    "x": 21,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 88,
+    "name": "hedge",
+    "x": 6,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 89,
+    "name": "hedge",
+    "x": 10,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 90,
+    "name": "hedge",
+    "x": 10,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 91,
+    "name": "hedge",
+    "x": 11,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 92,
+    "name": "hedge",
+    "x": 12,
+    "y": 15,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 93,
+    "name": "hedge",
+    "x": 18,
+    "y": 0,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 94,
+    "name": "husk",
+    "x": 22,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 95,
+    "name": "husk",
+    "x": 7,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 96,
+    "name": "husk",
+    "x": 25,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 97,
+    "name": "husk",
+    "x": 5,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 98,
+    "name": "husk",
+    "x": 1,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 99,
+    "name": "husk",
+    "x": 2,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 100,
+    "name": "husk",
+    "x": 25,
+    "y": 14,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 101,
+    "name": "husk",
+    "x": 6,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 102,
+    "name": "husk",
+    "x": 26,
+    "y": 13,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 103,
+    "name": "is",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 104,
+    "name": "is",
+    "x": 14,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 105,
+    "name": "is",
+    "x": 1,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 106,
+    "name": "is",
+    "x": 1,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 107,
+    "name": "is",
+    "x": 25,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 108,
+    "name": "is",
+    "x": 17,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 109,
+    "name": "is",
+    "x": 24,
+    "y": 10,
+    "isText": true
+   },
+   {
+    "id": 110,
+    "name": "is",
+    "x": 17,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 111,
+    "name": "is",
+    "x": 5,
+    "y": 14,
+    "isText": true
+   },
+   {
+    "id": 112,
+    "name": "key",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 113,
+    "name": "key",
+    "x": 16,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 114,
+    "name": "key",
+    "x": 8,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 115,
+    "name": "leaf",
+    "x": 24,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 116,
+    "name": "leaf",
+    "x": 26,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 117,
+    "name": "leaf",
+    "x": 16,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 118,
+    "name": "leaf",
+    "x": 11,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 119,
+    "name": "leaf",
+    "x": 12,
+    "y": 14,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 120,
+    "name": "move",
+    "x": 18,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 121,
+    "name": "open",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 122,
+    "name": "pull",
+    "x": 4,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 123,
+    "name": "pull",
+    "x": 17,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 124,
+    "name": "push",
+    "x": 18,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 125,
+    "name": "shut",
+    "x": 2,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 126,
+    "name": "stop",
+    "x": 15,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 127,
+    "name": "win",
+    "x": 2,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 128,
+    "name": "you",
+    "x": 5,
+    "y": 15,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "udwudrrrrurrruruwurrruulduldduullrddluuuuulurddddddddddrrruullrrdldlulluuuuluurddddldruluuuuuuuuldldrrrddddddddrrrudluuluuurrdlduuldduuuurrudlddddlldddruulurdrluurduuuurudlddddlulluurrddrrldlurrrrdlulllllddrlururdrlddruwwwwwwdlldlrrdruuuluuurduuuru",
+ "initial": "playing|and!@3,2(push);and!@24,8(push);baba!@5,13(push);baba@up@8,14(you);defeat!@24,11(push);flag!@0,4(push);foliage!@24,9(push);foliage@down@16,2(defeat);foliage@down@17,2(defeat);foliage@down@18,2(defeat);foliage@down@16,3(defeat);foliage@down@17,3(defeat);foliage@down@18,3(defeat);foliage@down@16,4(defeat);foliage@down@17,4(defeat);foliage@down@18,4(defeat);fungus!@0,2(push);fungus@down@17,1(pull+shut);has!@0,3(push);hedge!@13,0(push);hedge@down@16,0(stop);hedge@down@17,0(stop);hedge@down@14,1(stop);hedge@down@15,1(stop);hedge@down@16,1(stop);hedge@down@18,1(stop);hedge@down@19,1(stop);hedge@down@20,1(stop);hedge@down@21,1(stop);hedge@down@11,2(stop);hedge@down@21,2(stop);hedge@down@10,3(stop);hedge@down@11,3(stop);hedge@down@21,3(stop);hedge@down@9,4(stop);hedge@down@10,4(stop);hedge@down@21,4(stop);hedge@down@9,5(stop);hedge@down@16,5(stop);hedge@down@18,5(stop);hedge@down@21,5(stop);hedge@down@22,5(stop);hedge@down@9,6(stop);hedge@down@22,6(stop);hedge@down@7,7(stop);hedge@down@8,7(stop);hedge@down@9,7(stop);hedge@down@17,7(stop);hedge@down@22,7(stop);hedge@down@23,7(stop);hedge@down@7,8(stop);hedge@down@7,9(stop);hedge@down@9,9(stop);hedge@down@7,10(stop);hedge@down@9,10(stop);hedge@down@23,10(stop);hedge@down@6,11(stop);hedge@down@7,11(stop);hedge@down@9,11(stop);hedge@down@11,11(stop);hedge@down@12,11(stop);hedge@down@21,11(stop);hedge@down@22,11(stop);hedge@down@23,11(stop);hedge@down@10,12(stop);hedge@down@20,13(stop);hedge@down@21,13(stop);hedge@down@6,14(stop);hedge@down@19,14(stop);hedge@down@20,14(stop);hedge@down@21,14(stop);hedge@down@6,15(stop);hedge@down@13,15(stop);hedge@down@14,15(stop);hedge@down@15,15(stop);hedge@down@16,15(stop);hedge@down@17,15(stop);hedge@down@18,15(stop);hedge@down@19,15(stop);hedge@right@11,1(stop);hedge@right@12,1(stop);hedge@right@13,1(stop);hedge@right@23,8(stop);hedge@right@23,9(stop);hedge@right@10,11(stop);hedge@right@6,12(stop);hedge@right@21,12(stop);hedge@right@6,13(stop);hedge@right@10,13(stop);hedge@right@10,15(stop);hedge@right@11,15(stop);hedge@right@12,15(stop);hedge@up@18,0(stop);husk@down@22,0();husk@down@7,5();husk@down@25,5();husk@down@5,7();husk@down@1,11();husk@down@2,12();husk@down@25,14();husk@right@6,1();husk@right@26,13();is!@1,0(push);is!@14,0(push);is!@1,2(push);is!@1,4(push);is!@25,7(push);is!@17,9(push);is!@24,10(push);is!@17,11(push);is!@5,14(push);key!@0,0(push);key!@16,11(push);key@right@8,8(open+push);leaf!@24,7(push);leaf!@26,7(push);leaf!@16,9(push);leaf@down@11,12(defeat+move);leaf@up@12,14(defeat+move);move!@18,9(push);open!@2,0(push);pull!@4,2(push);pull!@17,13(push);push!@18,11(push);shut!@2,2(push);stop!@15,0(push);win!@2,4(push);you!@5,15(push)",
+ "hashes": [
+  "236487a22b2c3ad3",
+  "1dee4906bb0f1791",
+  "a6dcb6be02e6aa37",
+  "e93b66f904d293d3",
+  "f7e1eecf67683824",
+  "7520ff028d656908",
+  "cc251ffe4b36dbe9",
+  "b5896dfb0633c4ff",
+  "3661193b39a5dcdc",
+  "1644dcbde8f25573",
+  "eee713aa2b904d68",
+  "aec57671a39e3ae1",
+  "f7f0c3579f3d29eb",
+  "dcc76b9a6d7187ca",
+  "19bd9d0a15d0ac1f",
+  "342614705aaa9c1a",
+  "ed8f7d025575aa6e",
+  "98f8abd84c585457",
+  "277a8ceabf1ea124",
+  "a775f9d46ea11845",
+  "7ed57d9ab4c0d8f3",
+  "4fb3195fd029d7a0",
+  "a1d70742bb94ac10",
+  "16bab1a4fd343849",
+  "bebd6393aaa9d35d",
+  "6ce2a691b4b83cc5",
+  "88803528a9eaf576",
+  "80835962f7f5e6a1",
+  "bb0960371fc9d005",
+  "fec81d4433ae9d9c",
+  "f74dc457c17866f7",
+  "5a3bb40c46046c79",
+  "e3d9ac162ce7652a",
+  "496b788c072e7b1f",
+  "09bb1e3dcab79a20",
+  "e85746f8833f8d18",
+  "7c100f6c9b3f536b",
+  "c71f2e87721c5c2b",
+  "0063692077c2195f",
+  "fe90e9f8c4e36e4e",
+  "4ca48ad43741ca94",
+  "4aa53402c11eb198",
+  "1d0064b7c0aaee1f",
+  "9b75970f2d328e13",
+  "06946cf3c4db93dc",
+  "e30ad5135fe2ab0b",
+  "89f1d7566d0ffbb0",
+  "25d8bcd5499a011e",
+  "93575a5adecee4bf",
+  "4cfad4f37f96b5f4",
+  "52789eb89e5f94e2",
+  "c4f5f99f08437d29",
+  "7414e37a2c391a30",
+  "fb9a52d0a7a56e7b",
+  "069066ce25a735f5",
+  "2b0a180b69f20ddd",
+  "ab41cc0f8297ce3c",
+  "98332656f49283ab",
+  "62cae568d6812ce7",
+  "174f0a97b5407521",
+  "66c3d83c296fd817",
+  "71bca7c81a29f5a2",
+  "bbe951dfd73a82cf",
+  "43b53d4285cea2be",
+  "0365ac48933a5686",
+  "c609ee4d84bad88a",
+  "3df8aa81ee95529f",
+  "13e3127922c2dc58",
+  "7b991256c9c8b4ea",
+  "85d8f823b3a46757",
+  "246b9caeaedfd7cf",
+  "8189d20c771cd688",
+  "68a4efd205634f97",
+  "eb8a30a99f4e1b96",
+  "9931ae84fcf9376b",
+  "ba52b162bccb194a",
+  "1d8961e214a6a997",
+  "9c69244c7168f338",
+  "576502a2c1c34523",
+  "3e6a2ceff58f5459",
+  "2f64671c3ab40ca6",
+  "73f2024e9d33bcbe",
+  "e19054252614d344",
+  "3788821dde6a063d",
+  "bac880a030e59fc4",
+  "7b5e1f9fc1020874",
+  "9806818980d48d95",
+  "f635ae8526bad825",
+  "66180a039bd2a7f8",
+  "548aaec7ca5be011",
+  "39ecffebd6644dae",
+  "52a36160427bb16e",
+  "451cf78ec702f9b7",
+  "f3085a54a276c2fc",
+  "69c625aba2a80afd",
+  "5b11d7c265d4af78",
+  "e991b61bb6a2d25f",
+  "c120dee4d710d9a2",
+  "fc8f6abee23b37ba",
+  "e92f6d848706e9ab",
+  "3a981d23348ba2a0",
+  "8ca5215514267376",
+  "3886a0a0e598bb2f",
+  "05b0bc8220a331de",
+  "dc347adf3503d8b7",
+  "8dd82ef6b55589ae",
+  "6b272d0bcecf262b",
+  "ca82f7ed0ecee5e2",
+  "cca3048bf1109217",
+  "1f66690a8bf8f6f9",
+  "f5d6ca8ab7eca31f",
+  "f24c01e12914d475",
+  "877b17c72acdefe6",
+  "61945c4a8032f686",
+  "90bbce7fdf2a5ce3",
+  "9315693d60f50d73",
+  "d21d0a591febdb23",
+  "27ac9fe1c08778db",
+  "69d8a9739ff689b7",
+  "29d85d210b99554b",
+  "3f0040ec3a8031a6",
+  "d2456190bc599903",
+  "d1d9f4112b8266b1",
+  "eeeeb2ae1fb490d2",
+  "ac1774a5eb08cce5",
+  "c6d684ce06308fec",
+  "080c12358582efb7",
+  "94b163fa59edaf7b",
+  "b01c5c3961cdd523",
+  "095c43cac7708ccf",
+  "cd04b8f5451281d2",
+  "1e263b28352ebb4a",
+  "f693a5f5591cffbc",
+  "7dbbeb53f2e02e64",
+  "da33c0fdd4a080da",
+  "7cf0cfc40ca35b16",
+  "77ce6888bdda94d9",
+  "b34175d53bcde278",
+  "0f342e3070637be9",
+  "0091079e73cd49ad",
+  "43880f00d7be1d15",
+  "e5095138008f8ba6",
+  "ef626e663377de8d",
+  "1ccec4274d1a3576",
+  "29d2d39d12d8c5cf",
+  "ca20dda27f06e0e6",
+  "1ec3db3dddb1ab93",
+  "7dd722f10c7e0e83",
+  "642639df7dbbe4e9",
+  "038dc683791e3347",
+  "a07cb3867afa9fb1",
+  "1962d84c7f6c6aa7",
+  "fb25838764f57b1a",
+  "312cd50b46248538",
+  "66f6836012d90bcd",
+  "e247e23efb095f94",
+  "667b7168e5cf873a",
+  "89bce77f91bb8110",
+  "963a13d205a9c912",
+  "3e5bc6b5d076584e",
+  "199d8db709b5ea53",
+  "e2ec232e6e642250",
+  "ae9e4777945edc09",
+  "a9e0abc763e6aec6",
+  "8483c10475da6986",
+  "ceec04a0ca2886c0",
+  "2d9faaddbe70d275",
+  "3cd32b0e50fa2c08",
+  "9cd73cad6fb528ab",
+  "419ced53a1c3257b",
+  "5d85f60b7bdd9edf",
+  "5b5c3cd26ffe5bee",
+  "7f649a1752b00017",
+  "97b936e31761629e",
+  "b9026f37fff446ee",
+  "bb70330c18ad145c",
+  "99cfd5f51de45811",
+  "341e7c9480098448",
+  "8b085369387c314b",
+  "7d3b5820fb899d9c",
+  "4e28bd093824544b",
+  "7b8001e46245c264",
+  "4b4c51c9dfcc3977",
+  "d9f6bdb5fe0b10c9",
+  "575cf7dd6c4dd53d",
+  "dec08afe19d1ca25",
+  "a513beeebbc08c2b",
+  "0a599ba3c4874ccb",
+  "dc8b2b44e9018e22",
+  "075a3b5bc63395d4",
+  "92160cbec4935340",
+  "1e4e738304ab7e00",
+  "f3cd124e21ad5b86",
+  "ee47010c6c163364",
+  "46db1474b8640ba8",
+  "7b441997913be514",
+  "3285c8f5d3131f07",
+  "64a6c5da4a3c01ec",
+  "2a4a70cd686ce8d7",
+  "1b43d385fc7de0f5",
+  "4da8202348411aea",
+  "343d075acb4325f3",
+  "09f9b5c4f7e00a3f",
+  "3538ed8a4c6eb385",
+  "30d085f6b844e78f",
+  "3523d3f1204a68bc",
+  "bf4ff56aa256d70a",
+  "cfc18522ef21146c",
+  "ef16bcc72266b02e",
+  "32479df087f7eeb1",
+  "c67d24528893936d",
+  "558bdded3bf88004",
+  "d1534bbc528a9dfb",
+  "7185c48d482daa07",
+  "d65444958c48ab1a",
+  "01f8fc7a304a1796",
+  "1cef3bc462550fdc",
+  "6d521a9b0ed5b4e4",
+  "81eddb6fd8f7956d",
+  "143114474cf567ed",
+  "792b7ac56e862209",
+  "e3a3ffc7f8b42cf2",
+  "9fbd94a322a0c2aa",
+  "6757178afabac671",
+  "3725dddfddd42c59",
+  "b8e4aa7f9d18056a",
+  "6c830950896be5b1",
+  "4f0162537e33c4c5",
+  "816a09a3fa1c9418",
+  "c4449d9cb66141fd",
+  "1e1a86f390565dba",
+  "f6c232c512681f2c",
+  "de6766549573a36c",
+  "3b7fe45488f4d972",
+  "41e39059530c4f64",
+  "412b1593dbe123e2",
+  "fee986269cdac4cd",
+  "545502f0a6130b68",
+  "ed5bd02e6a515189",
+  "0ce93d00aac75974",
+  "5cd609bcd77e0432",
+  "1c6be50a66b23f3b",
+  "d62161c58f77e27d",
+  "d1d157f9574da7a1",
+  "a59a00268347dbd1",
+  "9b81bc59861fd013",
+  "e4c252acf35b92c4",
+  "217083946440bbc6"
+ ],
+ "final": "win|and!@3,2(push);and!@24,8(push);baba!@5,13(push);baba@up@17,5(you);defeat!@24,11(push);flag!@0,4(push);foliage!@24,9(push);foliage@down@16,2(defeat);foliage@down@17,2(defeat);foliage@down@18,2(defeat);foliage@down@16,3(defeat);foliage@down@17,3(defeat);foliage@down@18,3(defeat);foliage@down@16,4(defeat);foliage@down@17,4(defeat);foliage@down@18,4(defeat);fungus!@0,2(push);has!@0,3(push);hedge!@13,0(push);hedge@down@16,0(stop);hedge@down@17,0(stop);hedge@down@14,1(stop);hedge@down@15,1(stop);hedge@down@16,1(stop);hedge@down@18,1(stop);hedge@down@19,1(stop);hedge@down@20,1(stop);hedge@down@21,1(stop);hedge@down@11,2(stop);hedge@down@21,2(stop);hedge@down@10,3(stop);hedge@down@11,3(stop);hedge@down@21,3(stop);hedge@down@9,4(stop);hedge@down@10,4(stop);hedge@down@21,4(stop);hedge@down@9,5(stop);hedge@down@16,5(stop);hedge@down@18,5(stop);hedge@down@21,5(stop);hedge@down@22,5(stop);hedge@down@9,6(stop);hedge@down@22,6(stop);hedge@down@7,7(stop);hedge@down@8,7(stop);hedge@down@9,7(stop);hedge@down@17,7(stop);hedge@down@22,7(stop);hedge@down@23,7(stop);hedge@down@7,8(stop);hedge@down@7,9(stop);hedge@down@9,9(stop);hedge@down@7,10(stop);hedge@down@9,10(stop);hedge@down@23,10(stop);hedge@down@6,11(stop);hedge@down@7,11(stop);hedge@down@9,11(stop);hedge@down@11,11(stop);hedge@down@12,11(stop);hedge@down@21,11(stop);hedge@down@22,11(stop);hedge@down@23,11(stop);hedge@down@10,12(stop);hedge@down@20,13(stop);hedge@down@21,13(stop);hedge@down@6,14(stop);hedge@down@19,14(stop);hedge@down@20,14(stop);hedge@down@21,14(stop);hedge@down@6,15(stop);hedge@down@13,15(stop);hedge@down@14,15(stop);hedge@down@15,15(stop);hedge@down@16,15(stop);hedge@down@17,15(stop);hedge@down@18,15(stop);hedge@down@19,15(stop);hedge@right@11,1(stop);hedge@right@12,1(stop);hedge@right@13,1(stop);hedge@right@23,8(stop);hedge@right@23,9(stop);hedge@right@10,11(stop);hedge@right@6,12(stop);hedge@right@21,12(stop);hedge@right@6,13(stop);hedge@right@10,13(stop);hedge@right@10,15(stop);hedge@right@11,15(stop);hedge@right@12,15(stop);hedge@up@18,0(stop);husk@down@22,0();husk@down@7,5();husk@down@25,5();husk@down@5,7();husk@down@1,11();husk@down@2,12();husk@down@25,14();husk@right@6,1();husk@right@26,13();is!@1,0(push);is!@14,0(push);is!@1,2(push);is!@1,4(push);is!@25,7(push);is@right!@17,10(push);is!@24,10(push);is@right!@17,11(push);is!@5,14(push);key!@0,0(push);key@down!@16,11(push);leaf!@24,7(push);leaf!@26,7(push);leaf@down!@16,10(push);leaf@up@11,12(defeat+move);leaf@up@17,1(defeat+move);move@right!@18,10(push);open!@2,0(push);pull!@4,2(push);pull@right!@18,11(push);push@right!@19,11(push);shut!@2,2(push);stop!@15,0(push);win!@2,4(push);you!@5,15(push);flag@down@17,5(win)",
+ "status": "win"
+}

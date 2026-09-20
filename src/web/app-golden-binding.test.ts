@@ -72,6 +72,19 @@ test('a level with several recordings keeps the first golden', () => {
   assert.equal(binding.forLevelIndex(0), first)
 })
 
+test('a golden carrying levelIndex wins its slot over an inferred binding', () => {
+  // The inferred binding lands first (unique title 'ONE'); the solver-
+  // emitted pin then claims index 0 outright.
+  const inferred = golden('g/0-0', level('ONE', 'Baba 0,0; Is 1,0; You 2,0; baba 0,1'))
+  const pinned = {
+    ...golden('g/9-9', level('ZERO', 'keke 0,0')),
+    levelIndex: 0,
+  }
+  const binding = bindGoldensToLevels([inferred, pinned], campaign)
+
+  assert.equal(binding.forLevelIndex(0), pinned)
+})
+
 test('forLevel resolves a recorded layout by identity or signature', () => {
   const recordedLevel = level('ONE', 'Baba 0,0; Is 1,0; You 2,0; baba 0,1')
   const recording = golden('g/0-0', recordedLevel)

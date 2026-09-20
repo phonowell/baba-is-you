@@ -24,6 +24,7 @@ export const moveItemsBatch = (
   const weakIds = new Set<number>()
   const stillIds = new Set<number>()
   const phantomIds = new Set<number>()
+  const swapIds = new Set<number>()
   // `level is hold` pins — unlike `still`, a pinned unit can't move under
   // its own power either.
   const pinnedIds = new Set<number>()
@@ -39,6 +40,7 @@ export const moveItemsBatch = (
       else if (prop === 'weak') weakIds.add(item.id)
       else if (prop === 'still') stillIds.add(item.id)
       else if (prop === 'phantom') phantomIds.add(item.id)
+      else if (prop === 'swap') swapIds.add(item.id)
     }
   }
 
@@ -114,6 +116,7 @@ export const moveItemsBatch = (
     status,
     stillIds,
     stopIds,
+    swapIds,
     weakIds,
     width,
   }

@@ -3,7 +3,7 @@ import test from 'node:test'
 
 import { createInitialState } from './state.js'
 import { step } from './step.js'
-import { buildStepStages } from './step/phase-list.js'
+import { STEP_STAGES } from './step/phase-list.js'
 
 import type { Direction, GameState, LevelData, LevelItem } from './types.js'
 
@@ -21,8 +21,8 @@ const stripRuleSource = (state: GameState): GameState => {
   return rest
 }
 
-test('buildStepStages exposes gameplay-first stage names and sync semantics', () => {
-  const stages = buildStepStages('right', 0)
+test('STEP_STAGES exposes gameplay-first stage names and sync semantics', () => {
+  const stages = STEP_STAGES
 
   assert.deepEqual(
     stages.map((stage) => stage.name),
@@ -33,12 +33,12 @@ test('buildStepStages exposes gameplay-first stage names and sync semantics', ()
       'shift',
       'direction-faces',
       'transform',
-      'make',
-      'write',
-      'more',
       'back',
       'interactions',
       'teleport',
+      'make',
+      'write',
+      'more',
     ],
   )
 
@@ -51,10 +51,10 @@ test('buildStepStages exposes gameplay-first stage names and sync semantics', ()
       'recollect-rules',
       'reuse-rules',
       'recollect-rules',
-      'recollect-rules',
-      'recollect-rules',
-      'recollect-rules',
       'reuse-rules',
+      'recollect-rules',
+      'recollect-rules',
+      'recollect-rules',
       'recollect-rules',
       'recollect-rules',
     ],

@@ -1,0 +1,913 @@
+{
+ "level": "",
+ "levelIndex": 174,
+ "levelData": {
+  "title": "HIDDEN RELIC",
+  "width": 24,
+  "height": 14,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 5,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 11,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 10,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 4,
+    "name": "box",
+    "x": 2,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "box",
+    "x": 2,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "box",
+    "x": 16,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 7,
+    "name": "brick",
+    "x": 16,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 8,
+    "name": "brick",
+    "x": 17,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 9,
+    "name": "brick",
+    "x": 18,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 10,
+    "name": "brick",
+    "x": 18,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 11,
+    "name": "brick",
+    "x": 18,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 12,
+    "name": "brick",
+    "x": 15,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "brick",
+    "x": 16,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 14,
+    "name": "brick",
+    "x": 17,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 15,
+    "name": "brick",
+    "x": 18,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 16,
+    "name": "flag",
+    "x": 2,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 17,
+    "name": "foliage",
+    "x": 1,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 18,
+    "name": "foliage",
+    "x": 22,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 19,
+    "name": "foliage",
+    "x": 21,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 20,
+    "name": "foliage",
+    "x": 23,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 21,
+    "name": "foliage",
+    "x": 21,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 22,
+    "name": "has",
+    "x": 2,
+    "y": 12,
+    "isText": true
+   },
+   {
+    "id": 23,
+    "name": "hedge",
+    "x": 3,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 24,
+    "name": "hedge",
+    "x": 6,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 25,
+    "name": "hedge",
+    "x": 19,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 26,
+    "name": "hedge",
+    "x": 3,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 27,
+    "name": "hedge",
+    "x": 19,
+    "y": 1,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 28,
+    "name": "hedge",
+    "x": 3,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 29,
+    "name": "hedge",
+    "x": 5,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 30,
+    "name": "hedge",
+    "x": 6,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 31,
+    "name": "hedge",
+    "x": 19,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 32,
+    "name": "hedge",
+    "x": 3,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 33,
+    "name": "hedge",
+    "x": 5,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 34,
+    "name": "hedge",
+    "x": 6,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 35,
+    "name": "hedge",
+    "x": 15,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 36,
+    "name": "hedge",
+    "x": 16,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 37,
+    "name": "hedge",
+    "x": 17,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 38,
+    "name": "hedge",
+    "x": 18,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 39,
+    "name": "hedge",
+    "x": 19,
+    "y": 3,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 40,
+    "name": "hedge",
+    "x": 3,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 41,
+    "name": "hedge",
+    "x": 6,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 42,
+    "name": "hedge",
+    "x": 19,
+    "y": 4,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 43,
+    "name": "hedge",
+    "x": 3,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 44,
+    "name": "hedge",
+    "x": 19,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 45,
+    "name": "hedge",
+    "x": 3,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 46,
+    "name": "hedge",
+    "x": 19,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 47,
+    "name": "hedge",
+    "x": 3,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 48,
+    "name": "hedge",
+    "x": 5,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 49,
+    "name": "hedge",
+    "x": 7,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 50,
+    "name": "hedge",
+    "x": 8,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 51,
+    "name": "hedge",
+    "x": 15,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 52,
+    "name": "hedge",
+    "x": 16,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 53,
+    "name": "hedge",
+    "x": 17,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 54,
+    "name": "hedge",
+    "x": 18,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 55,
+    "name": "hedge",
+    "x": 19,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 56,
+    "name": "hedge",
+    "x": 3,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 57,
+    "name": "hedge",
+    "x": 15,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 58,
+    "name": "hedge",
+    "x": 19,
+    "y": 8,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 59,
+    "name": "hedge",
+    "x": 3,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 60,
+    "name": "hedge",
+    "x": 4,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 61,
+    "name": "hedge",
+    "x": 15,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 62,
+    "name": "hedge",
+    "x": 17,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 63,
+    "name": "hedge",
+    "x": 19,
+    "y": 9,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 64,
+    "name": "hedge",
+    "x": 3,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 65,
+    "name": "hedge",
+    "x": 15,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 66,
+    "name": "hedge",
+    "x": 16,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 67,
+    "name": "hedge",
+    "x": 17,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 68,
+    "name": "hedge",
+    "x": 19,
+    "y": 10,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 69,
+    "name": "hedge",
+    "x": 3,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 70,
+    "name": "hedge",
+    "x": 19,
+    "y": 11,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 71,
+    "name": "hedge",
+    "x": 3,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 72,
+    "name": "hedge",
+    "x": 4,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 73,
+    "name": "hedge",
+    "x": 5,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 74,
+    "name": "hedge",
+    "x": 6,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 75,
+    "name": "hedge",
+    "x": 7,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 76,
+    "name": "hedge",
+    "x": 15,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 77,
+    "name": "hedge",
+    "x": 16,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 78,
+    "name": "hedge",
+    "x": 17,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 79,
+    "name": "hedge",
+    "x": 18,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 80,
+    "name": "hedge",
+    "x": 19,
+    "y": 12,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 81,
+    "name": "hedge",
+    "x": 7,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 82,
+    "name": "hedge",
+    "x": 15,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 83,
+    "name": "hot",
+    "x": 2,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 84,
+    "name": "is",
+    "x": 4,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 85,
+    "name": "is",
+    "x": 2,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 86,
+    "name": "is",
+    "x": 12,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 87,
+    "name": "is",
+    "x": 1,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 88,
+    "name": "is",
+    "x": 5,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 89,
+    "name": "is",
+    "x": 12,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 90,
+    "name": "is",
+    "x": 2,
+    "y": 8,
+    "isText": true
+   },
+   {
+    "id": 91,
+    "name": "is",
+    "x": 1,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 92,
+    "name": "is",
+    "x": 3,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 93,
+    "name": "keke",
+    "x": 11,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 94,
+    "name": "keke",
+    "x": 2,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 95,
+    "name": "keke",
+    "x": 17,
+    "y": 5,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 96,
+    "name": "lava",
+    "x": 0,
+    "y": 9,
+    "isText": true
+   },
+   {
+    "id": 97,
+    "name": "lava",
+    "x": 9,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 98,
+    "name": "lava",
+    "x": 9,
+    "y": 7,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 99,
+    "name": "leaf",
+    "x": 21,
+    "y": 0,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 100,
+    "name": "leaf",
+    "x": 0,
+    "y": 2,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 101,
+    "name": "leaf",
+    "x": 22,
+    "y": 7,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 102,
+    "name": "leaf",
+    "x": 20,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 103,
+    "name": "melt",
+    "x": 2,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 104,
+    "name": "move",
+    "x": 13,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 105,
+    "name": "stop",
+    "x": 5,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 106,
+    "name": "text",
+    "x": 0,
+    "y": 5,
+    "isText": true
+   },
+   {
+    "id": 107,
+    "name": "win",
+    "x": 4,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 108,
+    "name": "you",
+    "x": 5,
+    "y": 6,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rrruuullrrrdwllddlllwurruwruldurdwrdldllllddddddrrrruuulld",
+ "initial": "playing|baba!@5,4(melt+push);baba!@11,4(melt+push);baba@right@10,8(you);box!@2,3(melt+push);box!@2,11(melt+push);box@down@16,9(melt);brick@down@16,8();brick@down@17,8();brick@down@18,8();brick@down@18,9();brick@down@18,10();brick@down@15,11();brick@down@16,11();brick@down@17,11();brick@down@18,11();flag!@2,13(melt+push);foliage@down@1,1();foliage@down@22,2();foliage@down@21,3();foliage@down@23,9();foliage@down@21,11();has!@2,12(melt+push);hedge!@3,0(melt+push);hedge@down@6,0(stop);hedge@down@19,0(stop);hedge@down@3,1(stop);hedge@down@19,1(stop);hedge@down@3,2(stop);hedge@down@5,2(stop);hedge@down@6,2(stop);hedge@down@19,2(stop);hedge@down@3,3(stop);hedge@down@5,3(stop);hedge@down@6,3(stop);hedge@down@15,3(stop);hedge@down@16,3(stop);hedge@down@17,3(stop);hedge@down@18,3(stop);hedge@down@19,3(stop);hedge@down@3,4(stop);hedge@down@6,4(stop);hedge@down@19,4(stop);hedge@down@3,5(stop);hedge@down@19,5(stop);hedge@down@3,6(stop);hedge@down@19,6(stop);hedge@down@3,7(stop);hedge@down@5,7(stop);hedge@down@7,7(stop);hedge@down@8,7(stop);hedge@down@15,7(stop);hedge@down@16,7(stop);hedge@down@17,7(stop);hedge@down@18,7(stop);hedge@down@19,7(stop);hedge@down@3,8(stop);hedge@down@15,8(stop);hedge@down@19,8(stop);hedge@down@3,9(stop);hedge@down@4,9(stop);hedge@down@15,9(stop);hedge@down@17,9(stop);hedge@down@19,9(stop);hedge@down@3,10(stop);hedge@down@15,10(stop);hedge@down@16,10(stop);hedge@down@17,10(stop);hedge@down@19,10(stop);hedge@down@3,11(stop);hedge@down@19,11(stop);hedge@down@3,12(stop);hedge@down@4,12(stop);hedge@down@5,12(stop);hedge@down@6,12(stop);hedge@down@7,12(stop);hedge@down@15,12(stop);hedge@down@16,12(stop);hedge@down@17,12(stop);hedge@down@18,12(stop);hedge@down@19,12(stop);hedge@down@7,13(stop);hedge@down@15,13(stop);hot!@2,9(melt+push);is!@4,0(melt+push);is!@2,4(melt+push);is!@12,4(melt+push);is!@1,5(melt+push);is!@5,5(melt+push);is!@12,5(melt+push);is!@2,8(melt+push);is!@1,9(melt+push);is!@3,13(melt+push);keke!@11,5(melt+push);keke!@2,7(melt+push);keke@down@17,5(hot+move);lava!@0,9(melt+push);lava@right@9,6(hot);lava@right@9,7(hot);leaf@down@21,0();leaf@down@0,2();leaf@down@22,7();leaf@down@20,13();melt!@2,5(melt+push);move!@13,5(melt+push);stop!@5,0(melt+push);text!@0,5(melt+push);win!@4,13(melt+push);you!@5,6(melt+push)",
+ "hashes": [
+  "ac25db47b5cf286e",
+  "f6107279a5edff62",
+  "7a91ba218c8e0227",
+  "4d17fa28715f1098",
+  "fa224a5b12a1fcb6",
+  "0bb3ef5317bb55bd",
+  "e0cba198b1683cd1",
+  "91466a34f345a55e",
+  "d14c55dc69685067",
+  "1a9c9a306b950c53",
+  "59e077feecca03ec",
+  "48703778ef4a79fe",
+  "7bf9c69a1ef2dde7",
+  "df599445001f2840",
+  "3853e9996d28b4c4",
+  "3b7b2c9a8e29cac8",
+  "74c079fd4ee36225",
+  "dccb9fe0fcdf3424",
+  "6588a034f543ead3",
+  "c827d7099ebbde5f",
+  "ff203bd00115c590",
+  "99fd6466f6386c1b",
+  "13b1671dbd729147",
+  "72138e41b9ee74d2",
+  "8e24630bd46ab75b",
+  "2a173ea4642a0103",
+  "a977b102bcc5d249",
+  "29ccf58b3be3ac05",
+  "cea73ba758868ea5",
+  "a6558bdfbe0ad052",
+  "55413dda751fea22",
+  "f09a7ec5f936ba9b",
+  "3d5b3e1ea3844516",
+  "1672b4d8f86a14ec",
+  "e020e445a2b12098",
+  "9425d171037d6cdf",
+  "ce41cf264e301fba",
+  "f3418e2bcdcba999",
+  "1a2053cc31a1a0e0",
+  "913ea28f27e14679",
+  "308c33422cc7b45f",
+  "9ae655dd0d60f0f5",
+  "8df7e0fcb5f35d08",
+  "655f3b54239058d1",
+  "8b624b09c5a0aa01",
+  "c2f641a91789e921",
+  "8783a3c45907a38a",
+  "f176780a307cb197",
+  "4547ce028de9d003",
+  "1c5a43ca3e47d5c0",
+  "25da29edc26bece5",
+  "f3899f0574b43ce2",
+  "2cece88f6605dd4b",
+  "ca7ded217f311ea2",
+  "032ccbf06bb62ba5",
+  "02bd136ba258c265",
+  "6df0d66e8ad63116",
+  "89dbe28007490231"
+ ],
+ "final": "win|baba!@5,4(melt+push);baba@left!@8,4(melt+push);baba@left@8,6();box!@2,3(melt+push);box!@2,11(melt+push);brick@down@16,8();brick@down@17,8();brick@down@18,8();brick@down@18,9();brick@down@18,10();brick@down@15,11();brick@down@16,11();brick@down@17,11();brick@down@18,11();flag!@2,13(melt+push);foliage@down@1,1();foliage@down@22,2();foliage@down@21,3();foliage@down@23,9();foliage@down@21,11();has!@2,12(melt+push);hedge!@3,0(melt+push);hedge@down@6,0(stop);hedge@down@19,0(stop);hedge@down@3,1(stop);hedge@down@19,1(stop);hedge@down@3,2(stop);hedge@down@5,2(stop);hedge@down@6,2(stop);hedge@down@19,2(stop);hedge@down@3,3(stop);hedge@down@5,3(stop);hedge@down@6,3(stop);hedge@down@15,3(stop);hedge@down@16,3(stop);hedge@down@17,3(stop);hedge@down@18,3(stop);hedge@down@19,3(stop);hedge@down@3,4(stop);hedge@down@6,4(stop);hedge@down@19,4(stop);hedge@down@3,5(stop);hedge@down@19,5(stop);hedge@down@3,6(stop);hedge@down@19,6(stop);hedge@down@3,7(stop);hedge@down@5,7(stop);hedge@down@7,7(stop);hedge@down@8,7(stop);hedge@down@15,7(stop);hedge@down@16,7(stop);hedge@down@17,7(stop);hedge@down@18,7(stop);hedge@down@19,7(stop);hedge@down@3,8(stop);hedge@down@15,8(stop);hedge@down@19,8(stop);hedge@down@3,9(stop);hedge@down@4,9(stop);hedge@down@15,9(stop);hedge@down@17,9(stop);hedge@down@19,9(stop);hedge@down@3,10(stop);hedge@down@15,10(stop);hedge@down@16,10(stop);hedge@down@17,10(stop);hedge@down@19,10(stop);hedge@down@3,11(stop);hedge@down@19,11(stop);hedge@down@3,12(stop);hedge@down@4,12(stop);hedge@down@5,12(stop);hedge@down@6,12(stop);hedge@down@7,12(stop);hedge@down@15,12(stop);hedge@down@16,12(stop);hedge@down@17,12(stop);hedge@down@18,12(stop);hedge@down@19,12(stop);hedge@down@7,13(stop);hedge@down@15,13(stop);hot!@2,9(melt+push);is!@4,0(melt+push);is!@2,4(melt+push);is@left!@8,5(melt+push);is!@1,5(melt+push);is!@5,5(melt+push);is@left!@7,5(melt+push);is!@2,8(melt+push);is!@1,9(melt+push);is!@3,13(melt+push);keke@down!@7,4(melt+push);keke!@2,7(melt+push);keke@down@16,9(hot+you);lava!@0,9(melt+push);lava@right@9,6(hot);lava@right@9,7(hot);leaf@down@21,0();leaf@down@0,2();leaf@down@22,7();leaf@down@20,13();melt!@2,5(melt+push);move@right!@11,4(melt+push);stop!@5,0(melt+push);text!@0,5(melt+push);win!@4,13(melt+push);you@left!@7,6(melt+push);flag@down@16,9(win)",
+ "status": "win"
+}
