@@ -145,7 +145,7 @@ test('applyTransforms applies NOT TEXT subject to non-text only', () => {
   assert.equal(textRock.isText, true)
 })
 
-test('applyTransforms ALL target is vetoed when the subject is present', () => {
+test('applyTransforms ALL keeps the source and spawns every other object name', () => {
   const items = [
     createItem(1, 'baba', 1, 0, false),
     createItem(2, 'rock', 2, 0, false),
@@ -153,12 +153,17 @@ test('applyTransforms ALL target is vetoed when the subject is present', () => {
   const rules: Rule[] = [rule({ subject: 'baba', object: 'all', kind: 'transform' })]
 
   const result = applyTransforms(items, runtimeFor(items, rules, 4, 1))
-  const rock = result.items.find(
-    (item) => item.id !== 2 && item.name === 'rock',
+  const spawned = result.items.find(
+    (item) => item.id !== 1 && item.name === 'rock',
   )
 
-  assert.equal(result.changed, false)
-  assert.equal(rock !== undefined, false)
+  // Official `createall_single`: the source survives, and one unit per
+  // objectlist entry other than the source name appears at its cell.
+  assert.equal(result.changed, true)
+  assert.equal(result.items.some((item) => item.id === 1 && item.name === 'baba'), true)
+  assert.equal(spawned !== undefined, true)
+  assert.equal(spawned?.x, 1)
+  assert.equal(spawned?.y, 0)
 })
 
 test('applyTransforms supports LEVEL target as concrete object transform', () => {

@@ -2,12 +2,12 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { decodeReplayInput } from './replay-input.js'
-import { solveState, solveToLayout } from './solve.js'
+import { layoutKey, solveState, solveToLayout, stateKey } from './solve.js'
 import { parseLevel } from './parse-level.js'
 import { createInitialState } from './state.js'
 import { step } from './step.js'
 
-import type { GameState } from './types.js'
+import type { GameState, Item } from './types.js'
 
 const CAPS = { maxDepth: 32, maxStates: 100_000, deadlineMs: 10_000 }
 
@@ -127,4 +127,91 @@ test('macro strategy pushes blockers out of the corridor', () => {
   assert.equal(result.kind, 'solved')
   if (result.kind !== 'solved') return
   assert.equal(replayTo(initial, result.inputs).status, 'win')
+})
+
+const mkItem = (
+  name: string,
+  x: number,
+  y: number,
+  extra: Partial<Item> = {},
+): Item => ({ id: 0, name, x, y, isText: false, props: [], ...extra })
+
+const mkState = (items: Item[], extra: Partial<GameState> = {}): GameState => ({
+  levelIndex: 0,
+  title: 't',
+  width: 16,
+  height: 8,
+  items,
+  rules: [],
+  status: 'playing',
+  turn: 0,
+  ...extra,
+})
+
+// The numeric key must reproduce the old sorted-tuple partition exactly:
+// same multiset merges (any array order), any identity-field difference
+// splits. The y-swap case is a regression guard — a previous revision
+// xor-aliased nameId and x into one multiply, so position swaps between
+// two items collided at ~0.5% instead of ~2^-96.
+test('stateKey: multiset-identity with per-field discrimination', () => {
+  const a = mkItem('baba', 9, 7, { isText: true, dir: 'left' })
+  const b = mkItem('rock', 11, 6, { isText: true, dir: 'left' })
+  const base = mkState([a, b])
+
+  assert.equal(stateKey(base), stateKey(mkState([b, a])))
+
+  const ySwapped = mkState([
+    mkItem('baba', 9, 6, { isText: true, dir: 'left' }),
+    mkItem('rock', 11, 7, { isText: true, dir: 'left' }),
+  ])
+  assert.notEqual(stateKey(base), stateKey(ySwapped))
+
+  const variants = [
+    mkItem('keke', 9, 7, { isText: true, dir: 'left' }),
+    mkItem('baba', 8, 7, { isText: true, dir: 'left' }),
+    mkItem('baba', 9, 7, { isText: true, dir: 'up' }),
+    mkItem('baba', 9, 7, { isText: false, dir: 'left' }),
+    mkItem('baba', 9, 7, { isText: true, dir: 'left', originName: 'keke' }),
+    mkItem('baba', 9, 7, {
+      isText: true,
+      dir: 'left',
+      prevX: -1,
+      prevY: 4,
+    }),
+    mkItem('baba', 9, 7, { isText: true, dir: 'left', prevX: 2 }),
+  ]
+  for (const v of variants)
+    assert.notEqual(stateKey(base), stateKey(mkState([v, b])))
+
+  assert.notEqual(stateKey(base), stateKey(mkState([a, a, b])))
+  assert.notEqual(
+    stateKey(base),
+    stateKey(mkState([a, b], { status: 'lose' })),
+  )
+  assert.notEqual(
+    stateKey(base),
+    stateKey(mkState([a, b], { levelDir: 'up' })),
+  )
+
+  // `turn` only enters the key when the board is turn-seeded (chill/tele
+  // props or often/seldom/level rules) — same guard as the old key.
+  assert.equal(stateKey(base), stateKey(mkState([a, b], { turn: 3 })))
+  const tele = mkItem('pad', 1, 1, { props: ['tele'] })
+  assert.notEqual(
+    stateKey(mkState([a, tele])),
+    stateKey(mkState([a, tele], { turn: 3 })),
+  )
+})
+
+test('layoutKey ignores turn and levelDir', () => {
+  const item = mkItem('baba', 1, 1)
+  const base = mkState([item])
+  assert.equal(
+    layoutKey(base),
+    layoutKey(mkState([item], { turn: 9, levelDir: 'left' })),
+  )
+  assert.notEqual(
+    layoutKey(base),
+    layoutKey(mkState([mkItem('baba', 1, 2)])),
+  )
 })

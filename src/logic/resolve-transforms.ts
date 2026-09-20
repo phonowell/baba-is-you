@@ -1,8 +1,20 @@
-import { createEmptyMatchContext, resolveEmptyRuleTargetsAt } from './empty.js'
+import {
+  createEmptyMatchContext,
+  resolveEmptyNegatedObjectsAt,
+  resolveEmptyRuleTargetsAt,
+} from './empty.js'
 import { resolveRuleTargets } from './helpers.js'
+import { isLetterName } from './letter-words.js'
 import { matchesRuleSubject } from './rule-match.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
+import {
+  isDirectionWord,
+  isPropertyWord,
+  isSpecialNounWord,
+  RULE_SYNTAX_WORDS,
+} from './types.js'
+
 import type { LevelItem, Rule } from './types.js'
 
 const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
@@ -36,14 +48,7 @@ const resolveTransformTarget = (item: LevelItem, target: string): string =>
 const transformVariants = (
   item: LevelItem,
   target: string,
-  allTargets: string[],
 ): LevelItem[] => {
-  if (target === 'all') {
-    return allTargets
-      .map((name) => toTransformed(item, name))
-      .filter((value): value is LevelItem => value !== null)
-  }
-
   const transformed = toTransformed(item, target)
   if (!transformed) return []
   return [transformed]
@@ -90,8 +95,22 @@ export const applyTransforms = (
   const { context, height, width } = runtime
   const transformRules = runtime.buckets.isTransform
   if (!transformRules.length) return { items, changed: false }
+  // The official `objectlist` backing `x is all` registers every placed
+  // non-text unit plus the noun each type-0 `text_X` word refers to —
+  // so `rock is all` can spawn `love` even when no love unit exists.
   const allTargets = Array.from(
-    new Set(items.filter((item) => !item.isText).map((item) => item.name)),
+    new Set(
+      items
+        .map((item) => item.name)
+        .filter(
+          (name) =>
+            !isPropertyWord(name) &&
+            !isSpecialNounWord(name) &&
+            !isDirectionWord(name) &&
+            !isLetterName(name) &&
+            !RULE_SYNTAX_WORDS.has(name),
+        ),
+    ),
   )
 
   const next: LevelItem[] = []
@@ -123,14 +142,42 @@ export const applyTransforms = (
     }
 
     const transformedByKey = new Map<string, LevelItem>()
+    const spawnedByKey = new Map<string, LevelItem>()
     let vetoed = false
+    // `x is not b` rules protect object b from an `x is all` spawn
+    // (official createall_single checks `x is not b` before creating).
+    const negated = new Set<string>()
+    for (const rule of isTransformRules) {
+      if (rule.objectNegated && matchesRuleSubject(item, rule, context))
+        negated.add(rule.object)
+    }
+    const namesAtCell = new Set(
+      items
+        .filter(
+          (other) =>
+            other.id !== item.id &&
+            other.x === item.x &&
+            other.y === item.y &&
+            !other.isText,
+        )
+        .map((other) => other.name),
+    )
     const collectVariants = (targets: string[], vetoOnIdentity: boolean) => {
       for (const target of targets) {
-        const variants = transformVariants(
-          item,
-          resolveTransformTarget(item, target),
-          allTargets,
-        )
+        const resolved = resolveTransformTarget(item, target)
+        // `x is all` keeps the source and stacks one of every other
+        // object name at the cell — it is additive, not a transform,
+        // so it never participates in the identity veto below.
+        if (resolved === 'all') {
+          for (const name of allTargets) {
+            if (name === item.name || negated.has(name)) continue
+            if (namesAtCell.has(name)) continue
+            const variant = toTransformed(item, name)
+            if (variant) spawnedByKey.set(`0:${name}`, variant)
+          }
+          continue
+        }
+        const variants = transformVariants(item, resolved)
         for (const variant of variants) {
           const identity =
             variant.name === item.name && variant.isText === item.isText
@@ -148,11 +195,18 @@ export const applyTransforms = (
     collectVariants(isTargets, true)
     collectVariants(becomeTargets, false)
 
+    const spawned = Array.from(spawnedByKey.values())
+    const pushSpawned = () => {
+      for (const variant of spawned) next.push({ ...variant, id: nextId++ })
+      if (spawned.length) changed = true
+    }
+
     // `x is x` vetoes every transform for x (predecessor `is_noun` returns
     // no targets when the entity itself is among them), e.g.
     // `flag is flag` + `flag is jelly` leaves flag unchanged.
     if (vetoed) {
       next.push(item)
+      pushSpawned()
       continue
     }
 
@@ -169,8 +223,20 @@ export const applyTransforms = (
     }
 
     const transformed = Array.from(transformedByKey.values())
+    const resolvedTargets = [...isTargets, ...becomeTargets].map((target) =>
+      resolveTransformTarget(item, target),
+    )
+    const keepsSource =
+      resolvedTargets.includes('all') && !resolvedTargets.includes('empty')
     if (!transformed.length) {
-      changed = true
+      // Pure `x is all` leaves the source in place; `x is empty`
+      // still deletes it.
+      if (keepsSource) {
+        next.push(item)
+        pushSpawned()
+      } else {
+        changed = true
+      }
       continue
     }
 
@@ -180,6 +246,7 @@ export const applyTransforms = (
     next.push({ ...first, id: item.id })
     for (const rest of transformed.slice(1))
       next.push({ ...rest, id: nextId++ })
+    pushSpawned()
   }
 
   const emptyTransformRules = transformRules.filter(
@@ -216,6 +283,35 @@ export const applyTransforms = (
         if (!emptyTargets.length) continue
 
         for (const target of emptyTargets) {
+          // `empty is all` stacks one of every object name at the cell
+          // (respecting `empty is not b` protection). Officially the
+          // createall branch never sets the `conv` flag — the cell is
+          // occupied afterwards, so it cannot refire until emptied.
+          if (target === 'all') {
+            const emptyNegated = new Set<string>([
+              ...resolveEmptyNegatedObjectsAt(
+                emptyTransformRules,
+                emptyContext,
+                x,
+                y,
+                'is-transform',
+              ),
+              ...resolveEmptyNegatedObjectsAt(
+                emptyTransformRules,
+                emptyContext,
+                x,
+                y,
+                'become',
+              ),
+            ])
+            for (const name of allTargets) {
+              if (emptyNegated.has(name)) continue
+              next.push({ id: nextId, name, x, y, isText: false })
+              nextId += 1
+              changed = true
+            }
+            continue
+          }
           const spawned = createFromEmpty(nextId, x, y, target)
           if (!spawned) continue
           next.push(spawned)

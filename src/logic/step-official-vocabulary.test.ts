@@ -777,15 +777,15 @@ test('step REVERT transforms the entity back to its original kind', () => {
       ...ruleRow(10, 2, ['keke', 'is', 'revert']),
     ],
   }
-  // The initial transform already ran at state creation: the spawned
-  // keke (ogname=baba) reverts to baba on the first step, then `baba is
-  // keke` converts it again — the official two-rule oscillation.
+  // The official engine runs conversion() only inside movecommand, so
+  // `baba is keke` first fires on step 1 (keke keeps ogname=baba), then
+  // `keke is revert` fires on step 2 — the two-rule oscillation.
   const first = step(createInitialState(level, 0), null)
-  assert.equal(findObject(first.state, 'baba')?.x, 0)
-  assert.equal(findObject(first.state, 'keke'), undefined)
+  assert.equal(findObject(first.state, 'keke')?.x, 0)
+  assert.equal(findObject(first.state, 'baba'), undefined)
   const second = step(first.state, null)
-  assert.equal(findObject(second.state, 'keke')?.x, 0)
-  assert.equal(findObject(second.state, 'baba'), undefined)
+  assert.equal(findObject(second.state, 'baba')?.x, 0)
+  assert.equal(findObject(second.state, 'keke'), undefined)
 })
 
 test('step NUDGELEFT self-moves each turn', () => {
