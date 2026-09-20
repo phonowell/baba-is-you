@@ -72,3 +72,17 @@ Status: in-progress
 - sweep：shard 0 done（solved=4 exhausted=4 cutoff=52 skipped=506）、shard 1 done（solved=1 exhausted=4 cutoff=51 skipped=510）；shard 2–7 由 `tools-out/solve/run-shards.sh` 顺序接力（单 worker 自动续跑，日志 `chain.log`）
 - 约束更新：设备发热 → 此后**只跑 1 个求解进程**；已解关卡靠 `--skip-goldens` 跳过不重复演算
 - exhausted 审计线索（见 handoff §6）：6 关疑似引擎缺口（MATRIX/COMBINATION LOCK/CLEAR VISION/47/ADVENTURE/JAYWALKERS UNITED），其余为过场卡本无可解
+
+## 进度更新（四）— 官方移动碰撞/EAT 对齐
+
+- [x] **move-time `eat`/`lock`/`weak` 官方对齐**（对照 `movement.lua` `check()`/`trypush()`/`move()`）：
+  - `x eat y`：被吃目标 `valid=false` 永不阻挡（stop/pull/still/push 全无效）；门控 = 目标非 `safe` + 同 float 层 + 规则条件在**目标格**评估；被吃目标不进推挤/换位链
+  - `x eat empty`：按格判定（该格 `empty is safe`/`empty is float`）
+  - `open`/`shut` lock：同层 + 任一方非 safe 才触发，各自按自身 safe 判定死亡；mover 被同格其他障碍挡住时 **lock 不触发**（specials 只在 result==0 落地时执行）
+  - `weak` 同层目标：不算 stop/pull 阻挡但仍可 push/pull；实体 weak 死亡仍在交互阶段（官方实体 weak special 是空操作）
+  - `empty is pull` 挡普通进入、`empty is weak` 放行 —— `emptyBlocked` 三分支修正
+  - `x has y` 掉落在 `delete()` 瞬间生成（`inside()` 内联），移动期 eat 会先掉落再进交互
+- [x] 失效 golden 清理：旧投机性结算下录的 7 个 golden 删除（leaf-chamber×2、double-moat×2、main/starter-course、secure-cottage）——如 MAIN COURSE `rr` 依赖 eat 晚于 has-drop 的非官方时序
+- [x] 社区解答复测新增验证：031 Leaf Chamber、101 Floaty Platforms、257 Power Generator
+- [x] 测试：+8 个 eat/lock 回归（step-official-vocabulary + step-open-shut 断言改官方语义），767 全绿
+- reshard-0b（shard 0 栈溢出重跑）跑的是修复前快照；其产出 golden 靠 replay 测试兜底，分歧的删了重解
