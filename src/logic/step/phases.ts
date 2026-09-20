@@ -1,7 +1,8 @@
-import { keyForLayer } from '../helpers.js'
+import { resolveEmptyPropsByCell } from '../empty.js'
 
-import { hasProp } from './shared.js'
+import { hasProp, keyFor } from './shared.js'
 
+import type { RuleRuntime } from '../rule-runtime.js'
 import type { Item } from '../types.js'
 
 export {
@@ -11,10 +12,14 @@ export {
   applyShift,
 } from './phases-movement.js'
 
+// Official `more` (blocks.lua ~1174): a neighbouring cell blocks the copy
+// only when it holds the level edge, a stop/push/pull unit, or a unit with
+// the same name as the source — soft units (water, hot, …) never block, so
+// the copy lands on them and interactions resolve the overlap afterwards.
+// Cells empty of units block via their own `empty is stop/push/pull` rules.
 export const applyMore = (
   items: Item[],
-  width: number,
-  height: number,
+  runtime: RuleRuntime,
 ): {
   items: Item[]
   changed: boolean
@@ -24,11 +29,23 @@ export const applyMore = (
   )
   if (!sources.length) return { items, changed: false }
 
-  let nextId = items.reduce((max, item) => Math.max(max, item.id), 0) + 1
-  const occupied = new Set<number>()
-  for (const item of items)
-    occupied.add(keyForLayer(item.x, item.y, width, hasProp(item, 'float')))
+  const { width, height } = runtime
+  const byCell = new Map<number, Item[]>()
+  for (const item of items) {
+    const key = keyFor(item.x, item.y, width)
+    const cell = byCell.get(key)
+    if (cell) cell.push(item)
+    else byCell.set(key, [item])
+  }
+  const emptyProps = resolveEmptyPropsByCell(
+    runtime.rules,
+    items,
+    width,
+    height,
+    runtime.context,
+  )
 
+  let nextId = items.reduce((max, item) => Math.max(max, item.id), 0) + 1
   const spawned: Item[] = []
   const deltas: Array<[number, number]> = [
     [0, -1],
@@ -38,21 +55,43 @@ export const applyMore = (
   ]
 
   for (const source of sources) {
-    const floating = hasProp(source, 'float')
     for (const [dx, dy] of deltas) {
       const nx = source.x + dx
       const ny = source.y + dy
       if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue
-      const key = keyForLayer(nx, ny, width, floating)
-      if (occupied.has(key)) continue
-      occupied.add(key)
-      spawned.push({
+      const key = keyFor(nx, ny, width)
+      const cell = byCell.get(key)
+      if (cell) {
+        if (
+          cell.some(
+            (item) =>
+              item.name === source.name ||
+              hasProp(item, 'stop') ||
+              hasProp(item, 'push') ||
+              hasProp(item, 'pull'),
+          )
+        )
+          continue
+      } else {
+        const props = emptyProps.get(key)
+        if (
+          props?.has('stop') ||
+          props?.has('push') ||
+          props?.has('pull')
+        )
+          continue
+      }
+      const copy: Item = {
         ...source,
         id: nextId++,
         x: nx,
         y: ny,
         props: [],
-      })
+      }
+      spawned.push(copy)
+      const landed = byCell.get(key)
+      if (landed) landed.push(copy)
+      else byCell.set(key, [copy])
     }
   }
 

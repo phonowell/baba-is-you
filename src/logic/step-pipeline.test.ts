@@ -34,11 +34,11 @@ test('STEP_STAGES exposes gameplay-first stage names and sync semantics', () => 
       'direction-faces',
       'transform',
       'back',
+      'more',
       'interactions',
       'teleport',
       'make',
       'write',
-      'more',
     ],
   )
 

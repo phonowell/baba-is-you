@@ -158,6 +158,13 @@ export const STEP_STAGES: StepStage[] = [
     },
   },
   {
+    // Official block() order: `more` copies before sink/melt/defeat/eat so
+    // a copy landing on a soft hazard resolves in the same turn.
+    name: 'more',
+    sync: { kind: 'recollect-rules' },
+    run: (items, runtime) => applyMore(items, runtime),
+  },
+  {
     name: 'interactions',
     sync: { kind: 'recollect-rules' },
     run: (items, runtime) => applyInteractions(items, runtime),
@@ -190,11 +197,6 @@ export const STEP_STAGES: StepStage[] = [
     name: 'write',
     sync: { kind: 'recollect-rules' },
     run: (items, runtime) => applyWrite(items, runtime),
-  },
-  {
-    name: 'more',
-    sync: { kind: 'recollect-rules' },
-    run: (items, runtime) => applyMore(items, runtime.width, runtime.height),
   },
 ]
 
