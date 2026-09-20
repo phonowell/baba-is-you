@@ -347,15 +347,19 @@ const emptySubjectRules = (
       !rule.subjectNegated,
   )
 
-export const resolveActiveEmptyProps = (
+// Empty cells are per-cell pseudo-units (official unitid 2): each cell's
+// own `empty is <prop>` rules decide how movers interact with it, so a
+// conditional rule like `empty near water is push` only applies where the
+// condition holds. This map carries cellKey → that cell's props.
+export const resolveEmptyPropsByCell = (
   rules: Rule[],
   items: EmptyMatchItem[],
   width: number,
   height: number,
   context?: RuleMatchContext,
-): Set<string> => {
-  const active = new Set<string>()
-  if (!hasEmptyPropertyRules(rules)) return active
+): Map<number, Set<string>> => {
+  const byCell = new Map<number, Set<string>>()
+  if (!hasEmptyPropertyRules(rules)) return byCell
   // A caller-held match context over the same board saves the O(items)
   // index rebuild; its byCell size doubles as the empty-cell probe. It must
   // describe the same positions as `items` — callers pass their stage
@@ -363,7 +367,7 @@ export const resolveActiveEmptyProps = (
   const hasEmpty = context
     ? context.byCell.size < width * height
     : hasAnyEmptyCell(items, width, height)
-  if (!hasEmpty) return active
+  if (!hasEmpty) return byCell
 
   const emptyContext: EmptyMatchContext = context
     ? {
@@ -386,9 +390,28 @@ export const resolveActiveEmptyProps = (
         y,
         'is-property',
       )
-      for (const target of targets) active.add(target)
+      if (targets.length) byCell.set(keyFor(x, y, width), new Set(targets))
     }
   }
+  return byCell
+}
+
+export const resolveActiveEmptyProps = (
+  rules: Rule[],
+  items: EmptyMatchItem[],
+  width: number,
+  height: number,
+  context?: RuleMatchContext,
+): Set<string> => {
+  const active = new Set<string>()
+  for (const props of resolveEmptyPropsByCell(
+    rules,
+    items,
+    width,
+    height,
+    context,
+  ).values())
+    for (const prop of props) active.add(prop)
   return active
 }
 

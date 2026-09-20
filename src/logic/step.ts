@@ -1,4 +1,4 @@
-import { resolveActiveEmptyProps } from './empty.js'
+import { resolveEmptyPropsByCell } from './empty.js'
 import { applyProperties } from './resolve.js'
 import { collectRuleRuntime, createRuleRuntime } from './rule-runtime.js'
 import { STEP_STAGES } from './step/phase-list.js'
@@ -336,8 +336,10 @@ const runStages = (
   }
 
   // One empty-cells scan feeds both the win and the lose checks (the
-  // resolver early-outs cheaply when no `empty is …` rules exist).
-  const emptyProps = resolveActiveEmptyProps(
+  // resolver early-outs cheaply when no `empty is …` rules exist). The
+  // map stays per-cell: official empty pseudo-units interact only where
+  // their own props hold.
+  const emptyPropsByCell = resolveEmptyPropsByCell(
     frame.runtime.rules,
     frame.items,
     state.width,
@@ -348,7 +350,7 @@ const runStages = (
     frame.items,
     state.width,
     state.height,
-    emptyProps,
+    emptyPropsByCell,
     frame.runtime,
   )
   // Losing requires having had a `you` to lose: rooms that never gave the
@@ -358,8 +360,8 @@ const runStages = (
   // stack's job, not the step pipeline's.
   const didLose =
     !didWin &&
-    !hasAnyYou(frame.items, emptyProps) &&
-    (state.status === 'lose' || hasAnyYou(state.items, emptyProps))
+    !hasAnyYou(frame.items, emptyPropsByCell) &&
+    (state.status === 'lose' || hasAnyYou(state.items, emptyPropsByCell))
 
   // `back` bookkeeping needs the position snapshot only when some entity
   // carries the prop or a stale anchor needs clearing — most steps take

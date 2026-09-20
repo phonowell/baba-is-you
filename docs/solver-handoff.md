@@ -162,6 +162,34 @@ record stays valid only because replay uses the embedded board).
 - `Fragile Existence` (190): `key is key` + `key is you` mid-game both
   verified working — divergence is positional, late-game.
 
+## Per-cell empty props (this session — fixed)
+
+`resolveActiveEmptyProps` returned a board-wide UNION of `empty is …`
+props, so a conditional rule like `empty near water is push` made EVERY
+empty pushable — push chains then ran off the board edge and locked all
+movement ([393] BABA THE CONDUCTOR couldn't move at all). Officially each
+empty cell is its own pseudo-unit (`unitid 2`) and `hasfeature` is
+per-cell. Now:
+
+- `resolveEmptyPropsByCell` (new) returns `Map<cellKey, Set<prop>>`;
+  `resolveActiveEmptyProps` stays as the union for existential gates
+  (`level is melt` + any hot empty, `hasAnyYou`, macro marks now use the
+  per-cell map in `solve.ts`).
+- Single + batch move engines take `emptyPropsAt(x,y)`; the empty branch
+  mirrors official `canmove`: `still`/`locked<dir>` cancels `swap` first,
+  no-push/no-swap cells enter unless `stop`/`pull`, still push/swap
+  cells block, `push` forwards the chain per-cell until a non-push empty
+  absorbs it, real units become push targets, or the edge blocks.
+- `empty is you`/`move`/`auto`/`reverse`/`still`/`sleep`/`swap` all
+  per-cell now (move-single you-pass + phases-movement auto-pass).
+- `checkWin` empty half is per-cell — `empty is you`+`empty is win` wins
+  only when ONE cell carries both (conditional variants on disjoint
+  cells no longer fuse into a false win).
+- Residual gaps (rare): `empty is pull` being pulled, `x eat empty` /
+  `empty is weak`/`open`/`shut` specials (verdict equal, destruction VFX
+  unmodelled), empty-you pushing THROUGH a pushable empty (needs a
+  virtual empty mover).
+
 ## Open tasks (in order)
 
 1. **Rerun shard 3** (OOM'd) **and shards 0–1** (pre-swap-fix semantics)

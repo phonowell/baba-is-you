@@ -1,4 +1,4 @@
-import { resolveActiveEmptyProps } from './empty.js'
+import { resolveEmptyPropsByCell } from './empty.js'
 import { prepareStep, step } from './step.js'
 import { isYouLike } from './step/shared.js'
 
@@ -748,17 +748,14 @@ const macroMoves = (state: GameState, activity: BoardActivity): MacroMove[] => {
   }
 
   // `empty is …` rules apply to unoccupied cells — they can turn voids
-  // into walls (`empty is stop`) or goals (`empty is win`).
-  const emptyProps = resolveActiveEmptyProps(
+  // into walls (`empty is stop`) or goals (`empty is win`). Per-cell:
+  // conditional rules only mark the cells where they hold.
+  const emptyPropsByCell = resolveEmptyPropsByCell(
     state.rules,
     state.items,
     width,
     height,
   )
-  const emptyBlocked = [...emptyProps].some((prop) =>
-    MACRO_BLOCK_PROPS.has(prop),
-  )
-  const emptyGoal = [...emptyProps].some((prop) => MACRO_GOAL_PROPS.has(prop))
 
   const endpointCells: number[] = []
   const markEndpoint = (cell: number): void => {
@@ -771,8 +768,21 @@ const macroMoves = (state: GameState, activity: BoardActivity): MacroMove[] => {
   for (let cell = 0; cell < cells; cell += 1) {
     const items = cellItems[cell]
     if (!items || items.length === 0) {
-      if (emptyBlocked) flags[cell] = CELL_BLOCKED
-      else if (emptyGoal) markEndpoint(cell)
+      const props = emptyPropsByCell.get(cell)
+      if (props) {
+        let blocked = false
+        for (const prop of props)
+          if (MACRO_BLOCK_PROPS.has(prop)) blocked = true
+        if (blocked) {
+          flags[cell] = CELL_BLOCKED
+          continue
+        }
+        for (const prop of props)
+          if (MACRO_GOAL_PROPS.has(prop)) {
+            markEndpoint(cell)
+            break
+          }
+      }
       continue
     }
     for (const item of items) {

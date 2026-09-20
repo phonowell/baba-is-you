@@ -1,0 +1,235 @@
+{
+ "level": "",
+ "levelIndex": 265,
+ "levelData": {
+  "title": "DO IT YOURSELF",
+  "width": 24,
+  "height": 14,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 10,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 9,
+    "y": 8,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "defeat",
+    "x": 2,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 10,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 0,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "flag",
+    "x": 13,
+    "y": 8,
+    "isText": false,
+    "dir": "up"
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 11,
+    "y": 4,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "is",
+    "x": 1,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "is",
+    "x": 1,
+    "y": 13,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "stop",
+    "x": 2,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "wall",
+    "x": 0,
+    "y": 11,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "wall",
+    "x": 3,
+    "y": 13,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 13,
+    "name": "wall",
+    "x": 0,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 14,
+    "name": "wall",
+    "x": 1,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 15,
+    "name": "wall",
+    "x": 2,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 16,
+    "name": "wall",
+    "x": 3,
+    "y": 10,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 17,
+    "name": "wall",
+    "x": 3,
+    "y": 11,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 18,
+    "name": "wall",
+    "x": 0,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 19,
+    "name": "wall",
+    "x": 1,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 20,
+    "name": "wall",
+    "x": 2,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 21,
+    "name": "wall",
+    "x": 3,
+    "y": 12,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 22,
+    "name": "win",
+    "x": 12,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 23,
+    "name": "write",
+    "x": 11,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 24,
+    "name": "you",
+    "x": 12,
+    "y": 4,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "uuuurdrrrddluddluudllurrdrrulruruullld",
+ "initial": "playing|baba!@10,4(push);baba@right@9,8(you);defeat!@2,13(push);flag!@10,6(push);flag!@0,13(push);flag@up@13,8(defeat);is!@11,4(push);is!@1,11(push);is!@1,13(push);stop!@2,11(push);wall!@0,11(push);wall@down@3,13(stop);wall@right@0,10(stop);wall@right@1,10(stop);wall@right@2,10(stop);wall@right@3,10(stop);wall@right@3,11(stop);wall@right@0,12(stop);wall@right@1,12(stop);wall@right@2,12(stop);wall@right@3,12(stop);win!@12,6(push);write!@11,7(push);you!@12,4(push)",
+ "hashes": [
+  "fb0bfb25ee76ce02",
+  "8f6f17807bf9b174",
+  "02a9ddd77a176f3a",
+  "8f56c32169f50560",
+  "0561dcad3b77a576",
+  "528c92c758bc6dbe",
+  "4bbca11359aed2c2",
+  "435172d9bdce0a56",
+  "347df5e30abb3e14",
+  "db8cc9d8780440a1",
+  "d80a6dbb0aa4282c",
+  "b4d5df3bda84ec79",
+  "25724c09182a81ad",
+  "4d2a76fcd5f568f5",
+  "ff9715b984a957d2",
+  "254f335cebd479da",
+  "abe73d5976cb6cfe",
+  "d7cece4b343586c5",
+  "614f9bcdd54913bb",
+  "4899e9605b29b12f",
+  "a60240500e107fce",
+  "0da7e5200e580af7",
+  "3f2ebfe2879c6326",
+  "c5132f0c53df70fa",
+  "054c329e0915745d",
+  "7564df0a94a4d36e",
+  "56b254ceb306234d",
+  "192f398074398a32",
+  "1ba3cb21977b2d88",
+  "28c9281e26f292a9",
+  "04cb48ebb87194d4",
+  "0245b0b65a8b84b1",
+  "bca0878d8f19085a",
+  "bc7a243fc70bdb90",
+  "1572f7c0a3a5296e",
+  "162a33f1b59ba390",
+  "8ebaf474a22dfb66",
+  "2d02eb239ca602bc"
+ ],
+ "final": "win|baba@down!@11,5(push);baba@down@11,4();defeat!@2,13(push);flag@down!@11,7(push);flag!@0,13(push);flag@up@13,8(defeat+win+you);is@right!@12,4(push);is!@1,11(push);is!@1,13(push);stop!@2,11(push);wall!@0,11(push);wall@down@3,13(stop);wall@right@0,10(stop);wall@right@1,10(stop);wall@right@2,10(stop);wall@right@3,10(stop);wall@right@3,11(stop);wall@right@0,12(stop);wall@right@1,12(stop);wall@right@2,12(stop);wall@right@3,12(stop);win@up!@12,5(push);write@down!@11,6(push);you@right!@13,4(push);flag@right!@10,6(push);flag@left!@12,6(push);flag@right!@13,6(push);flag@up!@13,5(push);flag@right!@14,5(push);flag@up!@14,4(push);flag@up!@14,3(push);flag@left!@13,3(push);flag@left!@12,3(push);flag@left!@11,3(push);flag@down!@11,4(push);flag@up!@13,8(push)",
+ "status": "win"
+}

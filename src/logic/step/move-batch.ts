@@ -1,4 +1,6 @@
-import { resolveActiveEmptyProps } from '../empty.js'
+import { resolveEmptyPropsByCell } from '../empty.js'
+
+import { keyFor } from '../helpers.js'
 
 import { applyBatchMovement } from './move-batch-apply.js'
 import { resolveBatchArrows } from './move-batch-runtime.js'
@@ -90,19 +92,18 @@ export const moveItemsBatch = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { changed: false }
-  const emptyProps = resolveActiveEmptyProps(
+  const emptyPropsByCell = resolveEmptyPropsByCell(
     rules,
     next,
     width,
     height,
     runtime.context,
   )
-  const emptyPush = emptyProps.has('push')
-  const emptyStop = emptyProps.has('stop')
+  const EMPTY_PROPS: ReadonlySet<string> = new Set()
   const context = {
     byId,
-    emptyPush,
-    emptyStop,
+    emptyPropsAt: (x: number, y: number): ReadonlySet<string> =>
+      emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS,
     grid: buildGrid(next, width),
     height,
     openIds,

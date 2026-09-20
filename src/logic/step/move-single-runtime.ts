@@ -3,6 +3,7 @@ import {
   inBounds,
   isLockedFor,
   isOpenShutPair,
+  LOCKED_PROPS,
   moveOne,
   removeOne,
 } from './move-core.js'
@@ -12,8 +13,10 @@ import type { MoveCoreContext } from './move-core.js'
 import type { Direction, Item } from '../types.js'
 
 export type SingleMoveContext = MoveCoreContext & {
-  emptyPush: boolean
-  emptyStop: boolean
+  // Per-cell `empty is <prop>` resolution: every empty cell is its own
+  // pseudo-unit (official unitid 2), so conditional rules like
+  // `empty near water is push` only apply where the condition holds.
+  emptyPropsAt: (x: number, y: number) => ReadonlySet<string>
   moved: Set<number>
   moverIds: Set<number>
   status: { anyMoved: boolean }
@@ -30,6 +33,32 @@ export const createSingleMoveRuntime = (
   doMove: (id: number) => void
 } => {
   const [dx, dy] = MOVE_DELTAS[direction]
+
+  // Official `canmove` empty branch: `still`/`locked<dir>` cancels
+  // `swap` first; a cell with no remaining push/swap is enterable unless
+  // `stop`/`pull` walls it off, while a still `push`/`swap` empty can't
+  // be displaced and blocks outright.
+  const emptyBlocked = (x: number, y: number): boolean => {
+    const props = context.emptyPropsAt(x, y)
+    const estill = props.has('still') || props.has(LOCKED_PROPS[direction])
+    const eswap = props.has('swap') && !estill
+    if (!props.has('push') && !eswap)
+      return props.has('pull') || props.has('stop')
+    return estill
+  }
+
+  // A pushable empty forwards the push: the chain ends on the first
+  // non-push empty (the pushed emptiness lands there), on real units
+  // (which become the push targets), or on the board edge (blocked).
+  const emptyForwardsPush = (x: number, y: number): boolean => {
+    const props = context.emptyPropsAt(x, y)
+    return (
+      props.has('push') &&
+      !props.has('swap') &&
+      !props.has('still') &&
+      !props.has(LOCKED_PROPS[direction])
+    )
+  }
 
   const isMoveEntity = (id: number): boolean =>
     isMovePhase && context.moverIds.has(id)
@@ -58,17 +87,24 @@ export const createSingleMoveRuntime = (
     let throughEmptyPush = false
     let targets = getLiveCellItems(context, nx, ny)
     if (!targets.length) {
-      if (!context.emptyPush) return !context.emptyStop
+      // Swapping with an empty is a plain step in; a pushable empty
+      // forwards the push until the chain lands somewhere.
+      if (context.emptyPropsAt(nx, ny).has('swap') && !emptyBlocked(nx, ny))
+        return true
+      if (emptyBlocked(nx, ny)) return false
 
-      throughEmptyPush = true
       let lookX = nx
       let lookY = ny
-      while (true) {
+      while (emptyForwardsPush(lookX, lookY)) {
         lookX += dx
         lookY += dy
         if (!inBounds(context, lookX, lookY)) return false
         targets = getLiveCellItems(context, lookX, lookY)
-        if (targets.length) break
+        if (targets.length) {
+          throughEmptyPush = true
+          break
+        }
+        if (emptyBlocked(lookX, lookY)) return false
       }
     }
 
@@ -146,16 +182,18 @@ export const createSingleMoveRuntime = (
 
     let throughEmptyPush = false
     let frontTargets = getLiveCellItems(context, nx, ny)
-    if (!frontTargets.length && context.emptyPush) {
-      throughEmptyPush = true
+    if (!frontTargets.length) {
       let lookX = nx
       let lookY = ny
-      while (true) {
+      while (emptyForwardsPush(lookX, lookY)) {
         lookX += dx
         lookY += dy
         if (!inBounds(context, lookX, lookY)) break
         frontTargets = getLiveCellItems(context, lookX, lookY)
-        if (frontTargets.length) break
+        if (frontTargets.length) {
+          throughEmptyPush = true
+          break
+        }
       }
     }
 

@@ -16,14 +16,15 @@ const hasWinLike = (item: Item): boolean =>
 
 // Single pass: win iff some (cell, float-layer) holds both `you` and
 // `win`. Layer keys mirror `splitByFloatLayer` without building cell
-// lists; the EMPTY-subject half is decided by the caller's precomputed
-// `emptyProps` (`resolveActiveEmptyProps` already covers the
-// no-empty-rules/no-empty-cells early-outs).
+// lists; the EMPTY-subject half is per-cell (`resolveEmptyPropsByCell`):
+// official empty pseudo-units win only when the SAME empty cell carries
+// both `you` and a win prop — a union across cells would fuse conditions
+// that hold in different places.
 export const checkWin = (
   items: Item[],
   width: number,
   height: number,
-  emptyProps: ReadonlySet<string>,
+  emptyPropsByCell: ReadonlyMap<number, ReadonlySet<string>>,
   runtime: RuleRuntime,
 ): boolean => {
   const youLayers = new Set<number>()
@@ -36,8 +37,17 @@ export const checkWin = (
   }
   for (const key of youLayers) if (winLayers.has(key)) return true
 
-  for (const prop of WIN_LIKE_PROPS) {
-    if (emptyProps.has('you') && emptyProps.has(prop)) return true
+  for (const props of emptyPropsByCell.values()) {
+    const you = props.has('you') || props.has('you2') || props.has('3d')
+    if (you) {
+      for (const prop of WIN_LIKE_PROPS)
+        if (props.has(prop)) return true
+    }
+  }
+  const emptyHas = (prop: string): boolean => {
+    for (const props of emptyPropsByCell.values())
+      if (props.has(prop)) return true
+    return false
   }
 
   const { level: levelRules } = runtime.buckets
@@ -64,7 +74,7 @@ export const checkWin = (
       if (rule.objectNegated || rule.subjectNegated) continue
       if (!WIN_LIKE_PROPS.has(rule.object as Property)) continue
       if (rule.subject === 'empty') {
-        if (emptyProps.has(rule.object)) return true
+        if (emptyHas(rule.object)) return true
         continue
       }
       if (rule.subject === 'level') continue // covered above
@@ -87,8 +97,11 @@ export const checkWin = (
 
 export const hasAnyYou = (
   items: Item[],
-  emptyProps: ReadonlySet<string>,
+  emptyPropsByCell: ReadonlyMap<number, ReadonlySet<string>>,
 ): boolean => {
   for (const item of items) if (isYouLike(item)) return true
-  return emptyProps.has('you') || emptyProps.has('you2') || emptyProps.has('3d')
+  for (const props of emptyPropsByCell.values())
+    if (props.has('you') || props.has('you2') || props.has('3d'))
+      return true
+  return false
 }

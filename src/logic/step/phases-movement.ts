@@ -1,4 +1,4 @@
-import { resolveActiveEmptyProps } from '../empty.js'
+import { resolveEmptyPropsByCell } from '../empty.js'
 import { keyFor } from '../helpers.js'
 import { matchesRuleSubject } from '../rule-match.js'
 
@@ -406,7 +406,7 @@ export const applyMoveAdjective = (
   // in the direction their `empty is <dir>` rules set (`emptydir`) and
   // push whatever stands in the target cell — or swap under
   // `empty is swap`. `empty is reverse` flips the direction.
-  const emptyProps = resolveActiveEmptyProps(
+  const emptyPropsByCell = resolveEmptyPropsByCell(
     runtime.rules,
     items,
     runtime.width,
@@ -414,10 +414,15 @@ export const applyMoveAdjective = (
     runtime.context,
   )
   const emptySwaps: Array<{ id: number; x: number; y: number }> = []
-  const emptyMoves =
-    (emptyProps.has('move') || emptyProps.has('auto')) &&
-    !emptyProps.has('still') &&
-    !emptyProps.has('sleep')
+  // Per-cell like the official unitid 2: `still`/`sleep`/`reverse` and
+  // the move/auto prop itself only apply where their conditions hold.
+  const emptyMovesCell = (props: ReadonlySet<string>): boolean =>
+    (props.has('move') || props.has('auto')) &&
+    !props.has('still') &&
+    !props.has('sleep')
+  const emptyMoves = Array.from(emptyPropsByCell.values()).some(
+    emptyMovesCell,
+  )
   if (emptyMoves) {
     let dirProp: Direction | undefined
     for (const rule of runtime.rules) {
@@ -457,42 +462,40 @@ export const applyMoveAdjective = (
       return dirProp
     }
     const grid = buildGrid(items, runtime.width)
-    const emptySwap = emptyProps.has('swap')
     const queued = new Set(movers.map((mover) => mover.id))
-    for (let y = 0; y < runtime.height; y += 1) {
-      for (let x = 0; x < runtime.width; x += 1) {
-        if ((grid.get(keyFor(x, y, runtime.width))?.length ?? 0) > 0)
-          continue
-        const cellDir = dirAt(x, y)
-        if (!cellDir) continue
-        const dir = emptyProps.has('reverse')
-          ? reverseDirection(cellDir)
-          : cellDir
-        const [dx, dy] = MOVE_DELTAS[dir]
-        const tx = x + dx
-        const ty = y + dy
-        if (
-          tx < 0 ||
-          tx >= runtime.width ||
-          ty < 0 ||
-          ty >= runtime.height
-        )
-          continue
-        const targets = grid.get(keyFor(tx, ty, runtime.width))
-        if (!targets?.length) continue
-        for (const target of targets) {
-          if (emptySwap) {
-            if (!hasProp(target, 'still'))
-              emptySwaps.push({ id: target.id, x, y })
-          } else if (
-            (hasProp(target, 'push') || hasProp(target, 'word')) &&
-            !hasProp(target, 'still') &&
-            !hasProp(target, 'phantom') &&
-            !queued.has(target.id)
-          ) {
-            movers.push({ id: target.id, dir, isMove: false })
-            queued.add(target.id)
-          }
+    for (const [key, props] of emptyPropsByCell) {
+      if (!emptyMovesCell(props)) continue
+      const x = key % runtime.width
+      const y = (key - x) / runtime.width
+      const cellDir = dirAt(x, y)
+      if (!cellDir) continue
+      const dir = props.has('reverse')
+        ? reverseDirection(cellDir)
+        : cellDir
+      const [dx, dy] = MOVE_DELTAS[dir]
+      const tx = x + dx
+      const ty = y + dy
+      if (
+        tx < 0 ||
+        tx >= runtime.width ||
+        ty < 0 ||
+        ty >= runtime.height
+      )
+        continue
+      const targets = grid.get(keyFor(tx, ty, runtime.width))
+      if (!targets?.length) continue
+      for (const target of targets) {
+        if (props.has('swap')) {
+          if (!hasProp(target, 'still'))
+            emptySwaps.push({ id: target.id, x, y })
+        } else if (
+          (hasProp(target, 'push') || hasProp(target, 'word')) &&
+          !hasProp(target, 'still') &&
+          !hasProp(target, 'phantom') &&
+          !queued.has(target.id)
+        ) {
+          movers.push({ id: target.id, dir, isMove: false })
+          queued.add(target.id)
         }
       }
     }

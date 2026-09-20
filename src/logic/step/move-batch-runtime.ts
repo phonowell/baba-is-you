@@ -3,6 +3,7 @@ import {
   inBounds,
   isLockedFor,
   isOpenShutPair,
+  LOCKED_PROPS,
   removeOne,
 } from './move-core.js'
 import { MOVE_DELTAS, reverseDirection } from './shared.js'
@@ -20,8 +21,10 @@ export type Arrow = {
 }
 
 export type BatchMoveContext = MoveCoreContext & {
-  emptyPush: boolean
-  emptyStop: boolean
+  // Per-cell `empty is <prop>` resolution: every empty cell is its own
+  // pseudo-unit (official unitid 2), so conditional rules like
+  // `empty near water is push` only apply where the condition holds.
+  emptyPropsAt: (x: number, y: number) => ReadonlySet<string>
   // `level is hold`-pinned units: can't move under their own power.
   pinnedIds: Set<number>
   status: { changed: boolean }
@@ -37,6 +40,35 @@ export const resolveBatchArrows = (
 ): Map<number, Arrow> => {
   const arrows = new Map<number, Arrow>()
   const queue: number[] = []
+
+  // Official `canmove` empty branch, per cell: `still`/`locked<dir>`
+  // cancels `swap` first; a cell with no remaining push/swap is
+  // enterable unless `stop`/`pull` walls it off, while a still
+  // `push`/`swap` empty can't be displaced and blocks outright.
+  const emptyBlocked = (x: number, y: number, dir: Direction): boolean => {
+    const props = context.emptyPropsAt(x, y)
+    const estill = props.has('still') || props.has(LOCKED_PROPS[dir])
+    const eswap = props.has('swap') && !estill
+    if (!props.has('push') && !eswap)
+      return props.has('pull') || props.has('stop')
+    return estill
+  }
+
+  // A pushable empty forwards the push along `dir` until the chain lands
+  // on a non-push empty, real units, or the board edge (which blocks).
+  const emptyForwardsPush = (
+    x: number,
+    y: number,
+    dir: Direction,
+  ): boolean => {
+    const props = context.emptyPropsAt(x, y)
+    return (
+      props.has('push') &&
+      !props.has('swap') &&
+      !props.has('still') &&
+      !props.has(LOCKED_PROPS[dir])
+    )
+  }
 
   const addArrow = (id: number, dir: Direction, isMove: boolean): void => {
     if (context.removed.has(id) || arrows.has(id)) return
@@ -79,12 +111,20 @@ export const resolveBatchArrows = (
 
     if (!blocked) {
       if (!targets.length) {
-        if (!context.emptyPush) blocked = context.emptyStop
-        else {
-          throughEmptyPush = true
+        // Swapping with an empty is a plain step in; a pushable empty
+        // forwards the push until the chain lands somewhere.
+        const firstProps = context.emptyPropsAt(nx, ny)
+        if (
+          firstProps.has('swap') &&
+          !emptyBlocked(nx, ny, arrow.dir)
+        ) {
+          // free entry
+        } else if (emptyBlocked(nx, ny, arrow.dir)) {
+          blocked = true
+        } else {
           let lookX = nx
           let lookY = ny
-          while (true) {
+          while (emptyForwardsPush(lookX, lookY, arrow.dir)) {
             lookX += dx
             lookY += dy
             if (!inBounds(context, lookX, lookY)) {
@@ -92,7 +132,14 @@ export const resolveBatchArrows = (
               break
             }
             targets = getLiveCellItems(context, lookX, lookY)
-            if (targets.length) break
+            if (targets.length) {
+              throughEmptyPush = true
+              break
+            }
+            if (emptyBlocked(lookX, lookY, arrow.dir)) {
+              blocked = true
+              break
+            }
           }
         }
       }

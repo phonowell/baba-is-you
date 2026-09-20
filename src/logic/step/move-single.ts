@@ -1,4 +1,4 @@
-import { resolveActiveEmptyProps } from '../empty.js'
+import { resolveEmptyPropsByCell } from '../empty.js'
 
 import { isLockedFor } from './move-core.js'
 import { createSingleMoveRuntime } from './move-single-runtime.js'
@@ -17,24 +17,30 @@ export const moveItems = (
   reversePass = false,
 ): { items: Item[]; moved: boolean } => {
   const { height, rules, width } = runtime
-  const emptyProps = resolveActiveEmptyProps(
+  const emptyPropsByCell = resolveEmptyPropsByCell(
     rules,
     items,
     width,
     height,
     runtime.context,
   )
-  // `empty is you`: every empty cell becomes a pseudo-unit (official
-  // unitid 2) that moves with the player input, pushing the unit in its
-  // target cell — or swapping places under `empty is swap`. Like other
-  // movers it obeys only its own `empty is reverse`, so it runs in the
-  // pass whose flipped flag matches.
+  const EMPTY_PROPS: ReadonlySet<string> = new Set()
+  const emptyPropsAt = (x: number, y: number): ReadonlySet<string> =>
+    emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS
+  // `empty is you`: each qualifying empty cell becomes a pseudo-unit
+  // (official unitid 2) that moves with the player input, pushing the
+  // unit in its target cell — or swapping places under `empty is swap`.
+  // Like other movers it obeys only its own `empty is reverse`, so it
+  // runs in the pass whose flipped flag matches; `still`/`sleep` are
+  // per-cell too (conditional rules only apply where they hold).
+  const emptyMovesYou = (props: ReadonlySet<string>): boolean =>
+    reversePass === props.has('reverse') &&
+    !props.has('still') &&
+    !props.has('sleep') &&
+    (props.has('you') || props.has('you2') || props.has('3d'))
   const emptyYou =
     !isMovePhase &&
-    reversePass === emptyProps.has('reverse') &&
-    !emptyProps.has('still') &&
-    !emptyProps.has('sleep') &&
-    (emptyProps.has('you') || emptyProps.has('you2') || emptyProps.has('3d'))
+    Array.from(emptyPropsByCell.values()).some(emptyMovesYou)
   if (!items.some(isMover) && !emptyYou) return { items, moved: false }
 
   const next = items.map((item) => ({ ...item }))
@@ -129,14 +135,11 @@ export const moveItems = (
   const removed = new Set<number>()
   const removedItems: Item[] = []
   const status = { anyMoved: false }
-  const emptyPush = emptyProps.has('push')
-  const emptyStop = emptyProps.has('stop')
   const grid = buildGrid(next, width)
   const engine = createSingleMoveRuntime(
     {
       byId,
-      emptyPush,
-      emptyStop,
+      emptyPropsAt,
       grid,
       height,
       moverIds,
@@ -159,29 +162,29 @@ export const moveItems = (
     isMovePhase,
   )
 
-  // `empty is you`: each empty cell moves with the input. It pushes the
-  // pushable units in its target cell (enqueue them as movers); under
-  // `empty is swap` the occupant trades places with the empty cell.
+  // `empty is you`: each qualifying empty cell moves with the input. It
+  // pushes the pushable units in its target cell (enqueue them as
+  // movers); under `empty is swap` the occupant trades places with the
+  // empty cell. Both checks are per-cell like the official unitid 2.
   const emptySwaps: Array<{ id: number; x: number; y: number }> = []
   if (emptyYou) {
     const [dx, dy] = MOVE_DELTAS[direction]
-    const emptySwap = emptyProps.has('swap')
-    for (let y = 0; y < height; y += 1) {
-      for (let x = 0; x < width; x += 1) {
-        if ((grid.get(keyFor(x, y, width))?.length ?? 0) > 0) continue
-        const tx = x + dx
-        const ty = y + dy
-        if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue
-        const targets = grid.get(keyFor(tx, ty, width))
-        if (!targets?.length) continue
-        for (const target of targets) {
-          if (emptySwap) {
-            if (!stillIds.has(target.id))
-              emptySwaps.push({ id: target.id, x, y })
-          } else if (pushIds.has(target.id) && !moverIds.has(target.id)) {
-            movers.push({ id: target.id, x: target.x, y: target.y })
-            moverIds.add(target.id)
-          }
+    for (const [key, props] of emptyPropsByCell) {
+      if (!emptyMovesYou(props)) continue
+      const x = key % width
+      const y = (key - x) / width
+      const tx = x + dx
+      const ty = y + dy
+      if (tx < 0 || tx >= width || ty < 0 || ty >= height) continue
+      const targets = grid.get(keyFor(tx, ty, width))
+      if (!targets?.length) continue
+      for (const target of targets) {
+        if (props.has('swap')) {
+          if (!stillIds.has(target.id))
+            emptySwaps.push({ id: target.id, x, y })
+        } else if (pushIds.has(target.id) && !moverIds.has(target.id)) {
+          movers.push({ id: target.id, x: target.x, y: target.y })
+          moverIds.add(target.id)
         }
       }
     }
