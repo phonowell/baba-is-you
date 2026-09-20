@@ -15,6 +15,10 @@ export type LevelItem = {
   // the previous step. Written by `step` for `back`-prop entities only.
   prevX?: number
   prevY?: number
+  // `x follow y` support: the id of the adjacent target this unit locked
+  // onto last turn (official `unit.followed`). While that unit stays
+  // adjacent the follower keeps facing it instead of re-picking.
+  followed?: number
 }
 
 export type Item = LevelItem & {

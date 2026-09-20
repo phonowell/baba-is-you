@@ -554,19 +554,40 @@ test('step GROUP2 membership works like group', () => {
   assert.equal(findObject(four.state, 'baba')?.x, 4)
 })
 
-test('step FOLLOW moves the subject toward the nearest target', () => {
+test('step FOLLOW aims the subject at the nearest target without moving it', () => {
   const level: LevelData = {
     title: 'follow',
     width: 7,
     height: 3,
     items: [
       createItem(1, 'baba', 0, 0, false),
-      createItem(2, 'keke', 4, 0, false),
+      createItem(2, 'keke', 4, 0, false, 'right'),
       ...ruleRow(3, 1, ['baba', 'is', 'you']),
       ...ruleRow(10, 2, ['keke', 'follow', 'baba']),
     ],
   }
-  // keke chases baba: two waits close the gap by two cells.
+  // Officially FOLLOW is aim-only (`updatedir` in moveblock): keke turns
+  // to face baba but stays put.
+  const one = step(createInitialState(level, 0), null)
+  assert.equal(findObject(one.state, 'keke')?.x, 4)
+  assert.equal(findObject(one.state, 'keke')?.dir, 'left')
+})
+
+test('step FOLLOW steers a MOVE unit toward its target', () => {
+  const level: LevelData = {
+    title: 'follow-move',
+    width: 7,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'keke', 4, 0, false, 'right'),
+      ...ruleRow(3, 1, ['baba', 'is', 'you']),
+      ...ruleRow(10, 2, ['keke', 'follow', 'baba']),
+      ...ruleRow(15, 1, ['keke', 'is', 'move']),
+    ],
+  }
+  // The aim lands before the move take: keke chases baba leftward even
+  // though it started facing right.
   const one = step(createInitialState(level, 0), null)
   assert.equal(findObject(one.state, 'keke')?.x, 3)
   const two = step(one.state, null)

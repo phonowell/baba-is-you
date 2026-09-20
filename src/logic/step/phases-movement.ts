@@ -51,9 +51,11 @@ const OFFICIAL_DIR_INDEX: Record<Direction, number> = {
 }
 
 // Target words for `fear`/`follow` objects: `text` matches text entities,
-// `all` any entity, negated objects everything but the word. `empty` and
-// group subjects are unsupported (officially rare — empty cells can't be
-// resolved through the item matcher).
+// `all` any entity, negated objects everything but the word. Other nouns
+// resolve to the object type only — `follow baba` must not chase the
+// `baba` word card (officially text units are `text_*` objects). `empty`
+// and group subjects are unsupported (officially rare — empty cells can't
+// be resolved through the item matcher).
 const matchesVerbTarget = (
   item: Item,
   word: string,
@@ -61,7 +63,7 @@ const matchesVerbTarget = (
 ): boolean => {
   const match =
     word === 'all' ||
-    (word === 'text' ? item.isText : item.name === word)
+    (word === 'text' ? item.isText : item.name === word && !item.isText)
   return negated ? !match : match
 }
 
@@ -95,24 +97,89 @@ const followDirectionForWords = (
   return best.dy > 0 ? 'down' : 'up'
 }
 
-const followDirection = (
+// Official `x follow y` is aim-only: `moveblock` calls `updatedir` and the
+// unit never moves under follow alone — movement still needs `move`,
+// `auto` & co., which then travel in the freshly aimed direction.
+// Target pick: nearest unit (vertical axis wins ties); an adjacent target
+// outranks distance — the previously locked target (`item.followed`)
+// keeps it, else facing > left-turn > right-turn > last found, and the
+// pick becomes the new lock. With no target the lock clears and the unit
+// keeps its facing.
+const followAim = (
   item: Item,
   items: Item[],
   rules: Rule[],
   context: RuleRuntime['context'],
-): Direction | null =>
-  followDirectionForWords(
-    item.x,
-    item.y,
-    item.id,
-    items,
-    rules
-      .filter((rule) => matchesRuleSubject(item, rule, context))
-      .map((rule) => ({
-        word: rule.object,
-        negated: rule.objectNegated === true,
-      })),
+): { dir: Direction; followed: number } | null => {
+  const words = rules
+    .filter((rule) => matchesRuleSubject(item, rule, context))
+    .map((rule) => ({
+      word: rule.object,
+      negated: rule.objectNegated === true,
+    }))
+  if (!words.length) return null
+
+  const facing = OFFICIAL_DIR_INDEX[item.dir ?? 'right'] ?? 0
+  const offsets = [0, 1, 3].map(
+    (turn) => MOVE_DELTAS[OFFICIAL_DIRS[(facing + turn) % 4]!]!,
   )
+
+  let nearest: { dist: number; dir: Direction } | null = null
+  let lockedDir: Direction | null = null
+  let adjacentFacing: { id: number; dir: Direction } | null = null
+  let adjacentTurn: { id: number; dir: Direction } | null = null
+  let adjacentAny: { id: number; dir: Direction } | null = null
+
+  for (const candidate of items) {
+    if (candidate.id === item.id) continue
+    if (!words.some((w) => matchesVerbTarget(candidate, w.word, w.negated)))
+      continue
+    const dx = candidate.x - item.x
+    const dy = candidate.y - item.y
+    const dist = Math.abs(dx) + Math.abs(dy)
+    if (dist === 0) continue
+    const dir: Direction =
+      Math.abs(dx) <= Math.abs(dy)
+        ? dy >= 0
+          ? 'down'
+          : 'up'
+        : dx > 0
+          ? 'right'
+          : 'left'
+    if (!nearest || dist <= nearest.dist) nearest = { dist, dir }
+    if (dist === 1) {
+      if (item.followed === candidate.id) {
+        lockedDir = dir
+        break
+      }
+      const entry = { id: candidate.id, dir }
+      adjacentAny = entry
+      if (
+        item.x + offsets[0]![0] === candidate.x &&
+        item.y + offsets[0]![1] === candidate.y
+      )
+        adjacentFacing = entry
+      else if (
+        !adjacentFacing &&
+        item.x + offsets[1]![0] === candidate.x &&
+        item.y + offsets[1]![1] === candidate.y
+      )
+        adjacentTurn = entry
+      else if (
+        !adjacentFacing &&
+        !adjacentTurn &&
+        item.x + offsets[2]![0] === candidate.x &&
+        item.y + offsets[2]![1] === candidate.y
+      )
+        adjacentTurn = entry
+    }
+  }
+
+  if (lockedDir) return { dir: lockedDir, followed: item.followed ?? -1 }
+  const pick = adjacentFacing ?? adjacentTurn ?? adjacentAny
+  if (pick) return { dir: pick.dir, followed: pick.id }
+  return nearest ? { dir: nearest.dir, followed: -1 } : null
+}
 
 const fearDirection = (
   item: Item,
@@ -163,6 +230,38 @@ export const applyMoveAdjective = (
   items: Item[],
   runtime: RuleRuntime,
 ): { items: Item[]; moved: boolean } => {
+  const { context } = runtime
+
+  // `follow` only re-aims units (official `updatedir` in moveblock) — it
+  // runs before the movers are collected so `follow`+`move`/`auto` units
+  // travel in the aimed direction this same turn. An applied aim counts
+  // as a real change: `dir`/`followed` are state fields, and reporting
+  // `changed` false would drop them at the stage boundary.
+  let aimed = false
+  if (runtime.buckets.follow.length) {
+    const candidates = items
+      .filter((item) => !hasProp(item, 'sleep') && !hasProp(item, 'broken'))
+      .sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id)
+    const aims = new Map<number, { dir: Direction; followed: number }>()
+    for (const item of candidates) {
+      const aim = followAim(item, items, runtime.buckets.follow, context)
+      if (aim) aims.set(item.id, aim)
+    }
+    if (aims.size) {
+      items = items.map((item) => {
+        const aim = aims.get(item.id)
+        if (!aim) return item
+        const followed = aim.followed >= 0 ? aim.followed : undefined
+        if (item.dir === aim.dir && item.followed === followed) return item
+        aimed = true
+        const next = { ...item, dir: aim.dir }
+        if (followed === undefined) delete next.followed
+        else next.followed = followed
+        return next
+      })
+    }
+  }
+
   // Movers are collected row-major (y,x) like the predecessor's cell
   // iteration: resolution order decides which direction a contested pushed
   // item is pushed in. `auto`/`chill`/`nudge*` move unprompted like
@@ -194,19 +293,14 @@ export const applyMoveAdjective = (
       }
     })
 
-  const { context } = runtime
   const verbMovers: Array<{ id: number; dir: Direction; isMove: boolean }> =
     []
-  if (runtime.buckets.follow.length || runtime.buckets.fear.length) {
+  if (runtime.buckets.fear.length) {
     const candidates = items
       .filter((item) => !hasProp(item, 'sleep') && !hasProp(item, 'broken'))
       .sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id)
     for (const item of candidates) {
-      // Officially `follow` resolves in the start block, `fear` in a
-      // later movement take — follow takes the slot first here.
-      const dir =
-        followDirection(item, items, runtime.buckets.follow, context) ??
-        fearDirection(item, items, runtime.buckets.fear, context)
+      const dir = fearDirection(item, items, runtime.buckets.fear, context)
       if (!dir) continue
       verbMovers.push({
         id: item.id,
@@ -314,9 +408,11 @@ export const applyMoveAdjective = (
     }
   }
 
-  if (!movers.length && !emptySwaps.length) return { items, moved: false }
+  if (!movers.length && !emptySwaps.length)
+    return { items, moved: aimed }
   const moved = moveItemsBatch(items, runtime, movers)
-  if (!emptySwaps.length) return moved
+  if (!emptySwaps.length)
+    return { items: moved.items, moved: moved.moved || aimed }
 
   const byId = new Map<number, Item>()
   const next = moved.items.map((item) => {
