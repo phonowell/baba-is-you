@@ -15,6 +15,10 @@ export const moveItems = (
   isMover: (item: Item) => boolean,
   isMovePhase: boolean,
   reversePass = false,
+  // `fallblock` drive mode: fallers never push/pull/swap — every nonzero
+  // obstacle verdict lands them — and `empty is you` pseudo-movers don't
+  // exist for it.
+  fallMode = false,
 ): { items: Item[]; moved: boolean } => {
   const { height, rules, width } = runtime
   const emptyPropsByCell = resolveEmptyPropsByCell(
@@ -40,6 +44,7 @@ export const moveItems = (
     (props.has('you') || props.has('you2') || props.has('3d'))
   const emptyYou =
     !isMovePhase &&
+    !fallMode &&
     Array.from(emptyPropsByCell.values()).some(emptyMovesYou)
   if (!items.some(isMover) && !emptyYou) return { items, moved: false }
 
@@ -152,6 +157,8 @@ export const moveItems = (
       height,
       moverIds,
       moved,
+      moveWave: 0,
+      movedWave: new Map(),
       openIds,
       phantomIds,
       pullIds,
@@ -168,6 +175,7 @@ export const moveItems = (
     },
     direction,
     isMovePhase,
+    fallMode,
   )
 
   // `empty is you`: each qualifying empty cell moves with the input. It
@@ -225,7 +233,9 @@ export const moveItems = (
     }
     if (!engine.canMoveRoot(id)) {
       const item = byId.get(id)
-      if (item && weakIds.has(id) && !isMovePhase) {
+      // A blocked `weak` mover shatters on contact — but a blocked faller
+      // simply lands (official `fallblock` has no weak-mover crash).
+      if (item && weakIds.has(id) && !isMovePhase && !fallMode) {
         removed.add(item.id)
         removedItems.push(item)
         status.anyMoved = true

@@ -224,10 +224,11 @@ test('step FALL passes through non-solid units', () => {
   assert.equal(baba?.y, 3)
 })
 
-// The same `check` lets a faller shove a pushable target down with it.
-test('step FALL pushes pushable units', () => {
+// Official `fallblock` treats every nonzero obstacle verdict as ground —
+// a faller lands on TOP of pushable units rather than shoving them.
+test('step FALL lands on pushable units without pushing them', () => {
   const level: LevelData = {
-    title: 'fall-pushes',
+    title: 'fall-lands-on-push',
     width: 5,
     height: 6,
     items: [
@@ -252,6 +253,6 @@ test('step FALL pushes pushable units', () => {
     (item) => !item.isText && item.name === 'rock',
   )
 
-  assert.equal(baba?.y, 3)
-  assert.equal(rock?.y, 4)
+  assert.equal(baba?.y, 1)
+  assert.equal(rock?.y, 2)
 })

@@ -27,6 +27,12 @@ export const createSingleMoveRuntime = (
   context: SingleMoveContext,
   direction: Direction,
   isMovePhase: boolean,
+  // Official `fallblock` drives the same `check` but treats every
+  // nonzero obstacle verdict as ground — a faller lands on pushable,
+  // pullable and swap units instead of displacing them. Only consumed
+  // specials (lock/eat/same-layer `weak`) and soft objects let a fall
+  // continue.
+  fallMode = false,
 ): {
   canMove: (id: number, visiting: Set<number>) => boolean
   canMoveRoot: (id: number) => boolean
@@ -63,11 +69,27 @@ export const createSingleMoveRuntime = (
   const isMoveEntity = (id: number): boolean =>
     isMovePhase && context.moverIds.has(id)
 
+  // The official engine resolves a whole push chain against the frozen
+  // board: each pushed unit's `check` sees its target cell as it was at
+  // the start of the chain — a companion already queued out of the shared
+  // cell is not yet at the destination. We apply moves eagerly instead, so
+  // a unit that landed at the queried cell during THIS root push must be
+  // skipped. In a direction-locked phase any such unit arrived from the
+  // querying unit's own cell (a stacked companion); units displaced by
+  // earlier root pushes carry an older wave tag and still block normally.
+  const liveForward = (x: number, y: number): Item[] =>
+    getLiveCellItems(context, x, y).filter(
+      (target) => context.movedWave.get(target.id) !== context.moveWave,
+    )
+
+  let waveDepth = 0
+
   // Root-level `canMove` checks each want a fresh visiting set; one scratch
   // set cleared per call replaces the per-call allocation (the recursion
   // is synchronous, so sharing is safe).
   const visitingScratch = new Set<number>()
   const canMoveRoot = (id: number): boolean => {
+    if (waveDepth === 0) context.moveWave++
     visitingScratch.clear()
     return canMove(id, visitingScratch)
   }
@@ -85,7 +107,7 @@ export const createSingleMoveRuntime = (
     if (!inBounds(context, nx, ny)) return false
 
     let throughEmptyPush = false
-    let targets = getLiveCellItems(context, nx, ny)
+    let targets = liveForward(nx, ny)
     if (!targets.length) {
       // `x eat empty` frees the cell outright (official `valid=false`
       // skips the whole empty-block verdict).
@@ -102,7 +124,7 @@ export const createSingleMoveRuntime = (
         lookX += dx
         lookY += dy
         if (!inBounds(context, lookX, lookY)) return false
-        targets = getLiveCellItems(context, lookX, lookY)
+        targets = liveForward(lookX, lookY)
         if (targets.length) {
           throughEmptyPush = true
           break
@@ -133,12 +155,30 @@ export const createSingleMoveRuntime = (
         continue
       if (context.eats(item, target)) continue
 
-      if (moverSwap) continue
-
       // `weak` on the same float layer never counts as a solid blocker
       // (it dies on contact instead), but `weak`+`push` still pushes —
       // the official guard only skips the result-1 branch.
       const weakShatters = context.weakIds.has(target.id) && sameLayer
+
+      // `fallblock`: the falling unit lands on ANY nonzero obstacle —
+      // pushable/pullable/swappable all count — and only continues
+      // through soft objects and consumed specials (lock/eat above,
+      // same-layer weak here).
+      if (fallMode) {
+        if (weakShatters) continue
+        const blocksFall =
+          context.stopIds.has(target.id) ||
+          context.pushIds.has(target.id) ||
+          context.pullIds.has(target.id) ||
+          context.swapIds.has(target.id) ||
+          ((context.stillIds.has(target.id) ||
+            isLockedFor(target, direction)) &&
+            (hasProp(target, 'push') || hasProp(target, 'pull')))
+        if (blocksFall) return false
+        continue
+      }
+
+      if (moverSwap) continue
 
       // Official `cantmove` on the target (still / level-hold pin /
       // locked<dir>) nils `push` and `pull` into `stop` and cancels
@@ -183,7 +223,7 @@ export const createSingleMoveRuntime = (
     return true
   }
 
-  const doMove = (id: number): void => {
+  const doMoveInner = (id: number): void => {
     if (context.moved.has(id) || context.removed.has(id)) return
 
     const item = context.byId.get(id)
@@ -195,7 +235,7 @@ export const createSingleMoveRuntime = (
     const ny = item.y + dy
 
     let throughEmptyPush = false
-    let frontTargets = getLiveCellItems(context, nx, ny)
+    let frontTargets = liveForward(nx, ny)
     if (!frontTargets.length) {
       let lookX = nx
       let lookY = ny
@@ -203,7 +243,7 @@ export const createSingleMoveRuntime = (
         lookX += dx
         lookY += dy
         if (!inBounds(context, lookX, lookY)) break
-        frontTargets = getLiveCellItems(context, lookX, lookY)
+        frontTargets = liveForward(lookX, lookY)
         if (frontTargets.length) {
           throughEmptyPush = true
           break
@@ -223,24 +263,29 @@ export const createSingleMoveRuntime = (
             !context.eats(item, target) &&
             !isLockCollision(context, item, target),
         )
-    const swapTargets = throughEmptyPush
-      ? []
-      : frontTargets.filter(
-          (target) =>
-            !context.phantomIds.has(target.id) &&
-            !context.weakIds.has(target.id) &&
-            !context.eats(item, target) &&
-            !isLockCollision(context, item, target) &&
-            (moverSwap
-              ? !context.stillIds.has(target.id)
-              : context.swapIds.has(target.id)),
-        )
+    const swapTargets =
+      throughEmptyPush || fallMode
+        ? []
+        : frontTargets.filter(
+            (target) =>
+              !context.phantomIds.has(target.id) &&
+              !context.weakIds.has(target.id) &&
+              !context.eats(item, target) &&
+              !isLockCollision(context, item, target) &&
+              (moverSwap
+                ? !context.stillIds.has(target.id)
+                : context.swapIds.has(target.id)),
+          )
 
     const behindX = oldX - dx
     const behindY = oldY - dy
-    const pullTargets = getLiveCellItems(context, behindX, behindY).filter(
-      (target) => context.pullIds.has(target.id),
-    )
+    // A faller never drags `pull` cargo — `fallblock` only ever moves the
+    // falling unit itself.
+    const pullTargets = fallMode
+      ? []
+      : getLiveCellItems(context, behindX, behindY).filter((target) =>
+          context.pullIds.has(target.id),
+        )
 
     for (const target of pushTargets) {
       if (context.moved.has(target.id) || context.removed.has(target.id))
@@ -290,8 +335,16 @@ export const createSingleMoveRuntime = (
       context.status.anyMoved = true
 
       // `x eat y` specials: whatever the mover stepped onto is consumed.
+      // `fallblock` additionally shatters same-layer `weak` units on every
+      // cell the faller passes through or lands on — they die mid-fall,
+      // before the interaction phase could ever see the overlap.
       for (const target of getLiveCellItems(context, nx, ny)) {
-        if (target.id === item.id || !context.eats(item, target)) continue
+        if (target.id === item.id) continue
+        const weakVictim =
+          fallMode &&
+          context.weakIds.has(target.id) &&
+          hasProp(item, 'float') === hasProp(target, 'float')
+        if (!context.eats(item, target) && !weakVictim) continue
         if (removeOne(context, target)) context.status.anyMoved = true
       }
     }
@@ -312,6 +365,18 @@ export const createSingleMoveRuntime = (
         continue
       if (!canMoveRoot(target.id)) continue
       doMove(target.id)
+    }
+  }
+
+  // The wave tag spans one whole root push (nested pushes, pulls and
+  // swaps included) — matching the official frozen-board resolution.
+  const doMove = (id: number): void => {
+    if (waveDepth === 0) context.moveWave++
+    waveDepth++
+    try {
+      doMoveInner(id)
+    } finally {
+      waveDepth--
     }
   }
 

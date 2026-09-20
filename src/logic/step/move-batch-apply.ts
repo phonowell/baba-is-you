@@ -52,29 +52,32 @@ export const applyBatchMovement = (
     const oldY = item.y
     const nx = item.x + dx
     const ny = item.y + dy
+
+    // Official `lock` specials resolve before the position update:
+    // unsafe `open`/`shut` partners die at their own cell and an unsafe
+    // mover dies at its ORIGIN (`gone` skips the update), so `x has y`
+    // drops land on the departure cell rather than the destination.
+    const lockTargets = getLiveCellItems(context, nx, ny).filter(
+      (target): target is Item =>
+        target.id !== id && isLockCollision(context, item, target),
+    )
+    for (const target of lockTargets)
+      if (removeOne(context, target)) context.status.changed = true
+    if (lockTargets.length && removeOne(context, item)) {
+      context.status.changed = true
+      continue
+    }
+
     if (!moveOne(context, item, nx, ny)) continue
     context.status.changed = true
 
-    // Move-time specials (official `eat`/`lock` fire when the move
-    // lands): the destination cell's eaten targets and open/shut
-    // partners die before any swap displaces the remaining occupants.
-    let locked = false
+    // `x eat y` specials fire when the move lands: whatever the mover
+    // stepped onto is consumed before swap displaces other occupants.
     for (const target of getLiveCellItems(context, nx, ny)) {
       if (target.id === id) continue
       if (context.eats(item, target)) {
         if (removeOne(context, target)) context.status.changed = true
-        continue
       }
-      if (isLockCollision(context, item, target)) {
-        locked = true
-        if (removeOne(context, target)) context.status.changed = true
-      }
-    }
-    // An unsafe `open`/`shut` mover dies unlocking — officially `gone`
-    // skips the rest of its move.
-    if (locked && removeOne(context, item)) {
-      context.status.changed = true
-      continue
     }
 
     if (!swapIds.has(id)) {

@@ -115,6 +115,8 @@ export const moveItemsBatch = (
       emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS,
     grid: buildGrid(next, width),
     height,
+    moveWave: 0,
+    movedWave: new Map(),
     openIds,
     phantomIds,
     pinnedIds,

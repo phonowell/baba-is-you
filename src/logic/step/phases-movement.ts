@@ -3,6 +3,7 @@ import { keyFor } from '../helpers.js'
 import { matchesRuleSubject } from '../rule-match.js'
 
 import { moveItemsBatch } from './move-batch.js'
+import { moveItems } from './move-single.js'
 import {
   buildGrid,
   hasProp,
@@ -545,40 +546,117 @@ export const applyMoveAdjective = (
 // `fall` slides downward; `fallup`/`fallleft`/`fallright` are the
 // directional variants the official prop set adds. The official
 // `fallblock` resolves each cell of a fall through the regular move
-// `check` — fallers pass through walk-over units, push pushables and
-// stop only on real blockers — and re-runs the whole set until settled.
-// Reuse `moveItemsBatch` for one cell per iteration; `isMove:false`
-// keeps a blocked faller in place instead of bouncing like `move`.
+// `check`, but lands on ANY nonzero obstacle verdict — pushable,
+// pullable and swap units are ground, not pushed — and only passes
+// through soft objects plus consumed specials (lock/eat/same-layer
+// `weak`, which die mid-fall).
+//
+// Check entries are grouped by direction in the official list order
+// (down, right, up, left); a unit's `reverse` remaps each direction and
+// opposite-direction instances cancel pairwise (fd↔fu, fr↔fl). A unit
+// listed under several directions falls in every one during the first
+// pass — `objectdata.fallen` is only written when `fallblock` returns —
+// while later passes restrict it to its first listed direction.
 const FALL_PROPS: Record<string, Direction> = {
   fall: 'down',
+  fallright: 'right',
   fallup: 'up',
   fallleft: 'left',
-  fallright: 'right',
 }
+const FALL_GROUP_ORDER: Direction[] = ['down', 'right', 'up', 'left']
 
-const MAX_FALL_ITERATIONS = 64
+const MAX_FALL_PASSES = 64
 
 export const applyFall = (
   items: Item[],
   runtime: RuleRuntime,
 ): { items: Item[]; moved: boolean } => {
+  // Per-unit direction counts — props are deduped, so this stays at
+  // prop granularity (two same-prop rules can't double-count, unlike the
+  // official per-rule-instance list).
+  const counts = new Map<number, Map<Direction, number>>()
+  for (const item of items) {
+    if (hasProp(item, 'sleep') || hasProp(item, 'broken')) continue
+    const dirs = new Map<Direction, number>()
+    const reversed = hasProp(item, 'reverse')
+    for (const prop of item.props) {
+      const dir = FALL_PROPS[prop]
+      if (dir === undefined) continue
+      const remapped = reversed ? reverseDirection(dir) : dir
+      dirs.set(remapped, (dirs.get(remapped) ?? 0) + 1)
+    }
+    for (const [a, b] of [
+      ['down', 'up'],
+      ['left', 'right'],
+    ] as const) {
+      const cancel = Math.min(dirs.get(a) ?? 0, dirs.get(b) ?? 0)
+      if (cancel > 0) {
+        dirs.set(a, (dirs.get(a) ?? 0) - cancel)
+        dirs.set(b, (dirs.get(b) ?? 0) - cancel)
+      }
+    }
+    if ([...dirs.values()].some((count) => count > 0))
+      counts.set(item.id, dirs)
+  }
+  if (counts.size === 0) return { items, moved: false }
+
+  // Official check-list order: the whole `fall` group first, then
+  // fallright, fallup, fallleft — each direction listed once per
+  // surviving count.
+  const checks: Array<{ id: number; dir: Direction }> = []
+  for (const dir of FALL_GROUP_ORDER)
+    for (const [id, dirs] of counts)
+      for (let i = 0; i < (dirs.get(dir) ?? 0); i += 1)
+        checks.push({ id, dir })
+
+  const fallen = new Map<number, Direction>()
   let current = items
   let moved = false
 
-  for (let iteration = 0; iteration < MAX_FALL_ITERATIONS; iteration += 1) {
-    const movers: Array<{ id: number; dir: Direction; isMove: boolean }> = []
-    for (const item of current) {
-      if (hasProp(item, 'sleep') || hasProp(item, 'broken')) continue
-      const fallProp = item.props.find((prop) => prop in FALL_PROPS)
-      if (fallProp === undefined) continue
-      movers.push({ id: item.id, dir: FALL_PROPS[fallProp] ?? 'down', isMove: false })
-    }
-    if (!movers.length) break
+  for (let pass = 0; pass < MAX_FALL_PASSES; pass += 1) {
+    let passMoved = false
+    for (const { id, dir } of checks) {
+      if (pass === 0) {
+        // `fallen` latches the first listed direction — recorded whether
+        // or not the unit actually moves there.
+        if (!fallen.has(id)) fallen.set(id, dir)
+      } else if (fallen.get(id) !== dir) {
+        continue
+      }
 
-    const step = moveItemsBatch(current, runtime, movers)
-    if (!step.moved) break
-    current = step.items
-    moved = true
+      // Each entry falls its unit to ground before the next entry runs.
+      for (;;) {
+        const before = current.find((item) => item.id === id)
+        if (!before) break
+        const { x, y } = before
+        const step = moveItems(
+          current,
+          dir,
+          runtime,
+          (item) => item.id === id,
+          false,
+          false,
+          true,
+        )
+        const after = step.items.find((item) => item.id === id)
+        if (!after || after.x !== x || after.y !== y) {
+          current = step.items
+          moved = true
+          passMoved = true
+          if (!after) break
+          continue
+        }
+        // The unit stayed put — keep any side effects (dir aim, removals)
+        // but the descent is over.
+        if (step.moved) {
+          current = step.items
+          moved = true
+          passMoved = true
+        }
+        break
+      }
+    }
+    if (!passMoved) break
   }
 
   return { items: current, moved }

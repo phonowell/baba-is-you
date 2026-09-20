@@ -6,6 +6,15 @@ import type { Direction, Item, Rule } from '../types.js'
 
 export type MoveCoreContext = {
   byId: Map<number, Item>
+  // Push-wave bookkeeping for the single-move engine. The official engine
+  // resolves a whole push chain against the frozen board — queued updates
+  // apply only when the mover's movelist drains — so a companion displaced
+  // out of the pusher's own cell is not yet at the target cell when the
+  // next stacked unit evaluates it. `moveWave` tags the current root push;
+  // `movedWave` records which wave last displaced each unit, letting
+  // forward-target lookups skip this wave's arrivals.
+  moveWave: number
+  movedWave: Map<number, number>
   // `x eat y` resolves at move time (official `eat` specials): the
   // mover consumes a same-float-layer, non-`safe` target on entry —
   // even a `stop` target never blocks an eater. Absent eat rules make
@@ -155,6 +164,7 @@ export const moveOne = (
   const newList = context.grid.get(newKey) ?? []
   newList.push(item)
   context.grid.set(newKey, newList)
+  context.movedWave.set(item.id, context.moveWave)
   return true
 }
 
