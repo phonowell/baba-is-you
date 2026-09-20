@@ -181,47 +181,107 @@ const followAim = (
   return nearest ? { dir: nearest.dir, followed: -1 } : null
 }
 
+// Official `findfears` (tools.lua): each adjacent cell is scored by how
+// many feared WORDS are present there (not unit count — `diramount`
+// increments once per matching target word), scanning directions starting
+// opposite the facing. Only maximum-scoring directions stay feared; a
+// single one flees straight opposite, ties pick the first unobstructed,
+// unfearful candidate rotating [facing, left, right, behind]. The unit
+// then moves `amount = maxfear` cells — multiple feared words means a
+// multi-cell flee.
 const fearDirection = (
   item: Item,
   items: Item[],
   rules: Rule[],
   context: RuleRuntime['context'],
-): Direction | null => {
+  width: number,
+  height: number,
+): { dir: Direction; amount: number } | null => {
   const words = rules
     .filter((rule) => matchesRuleSubject(item, rule, context))
     .map((rule) => ({ word: rule.object, negated: rule.objectNegated === true }))
   if (!words.length) return null
 
-  const fearedByCell = new Map<string, Item[]>()
+  const cellItems = new Map<number, Item[]>()
   for (const candidate of items) {
     if (candidate.id === item.id) continue
-    if (!words.some((w) => matchesVerbTarget(candidate, w.word, w.negated)))
-      continue
-    const key = `${candidate.x},${candidate.y}`
-    const list = fearedByCell.get(key) ?? []
+    const key = keyFor(candidate.x, candidate.y, width)
+    const list = cellItems.get(key) ?? []
     list.push(candidate)
-    fearedByCell.set(key, list)
+    cellItems.set(key, list)
   }
 
   const facing = OFFICIAL_DIR_INDEX[item.dir ?? 'right'] ?? 0
-  const counts = new Array<number>(4).fill(0)
-  let maxCount = 0
+  const feardirs = new Array<number>(4).fill(0)
+  let maxfear = 0
+  let lastFound = -1
   for (let j = 0; j < 4; j += 1) {
     const dirIndex = (facing + 2 + j) % 4
     const direction = OFFICIAL_DIRS[dirIndex]
     if (!direction) continue
     const [dx, dy] = MOVE_DELTAS[direction]
-    const feared = fearedByCell.get(`${item.x + dx},${item.y + dy}`)?.length ?? 0
-    counts[dirIndex] = feared
-    if (feared > maxCount) maxCount = feared
+    const cx = item.x + dx
+    const cy = item.y + dy
+    const cell = cellItems.get(keyFor(cx, cy, width)) ?? []
+    let diramount = 0
+    for (const w of words) {
+      if (w.word === 'empty' && !w.negated) {
+        if (!cell.length) diramount += 1
+        continue
+      }
+      if (cell.some((c) => matchesVerbTarget(c, w.word, w.negated)))
+        diramount += 1
+    }
+    if (diramount > 0) {
+      feardirs[dirIndex] = diramount
+      if (diramount > maxfear) maxfear = diramount
+      lastFound = dirIndex
+    }
   }
-  if (!maxCount) return null
+  if (!maxfear || lastFound < 0) return null
 
-  for (let j = 0; j < 4; j += 1) {
-    const dirIndex = (facing + 2 + j) % 4
-    if (counts[dirIndex] !== maxCount) continue
+  let totalfeardirs = 0
+  for (let i = 0; i < 4; i += 1) {
+    if (feardirs[i]! >= maxfear) totalfeardirs += 1
+    else feardirs[i] = 0
+  }
+
+  // Single maximum: flee opposite the last feared direction in scan order
+  // (the official loop overwrites resultdir on every found direction).
+  if (totalfeardirs === 1) {
+    const flee = OFFICIAL_DIRS[(lastFound + 2) % 4]
+    return flee ? { dir: flee, amount: maxfear } : null
+  }
+
+  // Ties: rotate through [facing, left, right, behind] — the official
+  // candidate order produced by the successive ±1/±2 rotations. A
+  // candidate is skipped when it still holds fear (`feardirs == 1` is a
+  // literal comparison upstream — with maxfear > 1 tied cells never
+  // disqualify a direction) or when the cell blocks entry.
+  const obstructed = (dirIndex: number): boolean => {
     const direction = OFFICIAL_DIRS[dirIndex]
-    return direction ? reverseDirection(direction) : null
+    if (!direction) return true
+    const [dx, dy] = MOVE_DELTAS[direction]
+    const cx = item.x + dx
+    const cy = item.y + dy
+    if (cx < 0 || cx >= width || cy < 0 || cy >= height) return true
+    const cell = cellItems.get(keyFor(cx, cy, width)) ?? []
+    return cell.some(
+      (c) => hasProp(c, 'stop') || hasProp(c, 'still'),
+    )
+  }
+
+  let resultdir = facing
+  for (let tests = 0; tests < 4; tests += 1) {
+    const problems = feardirs[resultdir] === 1 || obstructed(resultdir)
+    if (!problems) {
+      const flee = OFFICIAL_DIRS[resultdir]
+      return flee ? { dir: flee, amount: maxfear } : null
+    }
+    if (tests === 0) resultdir = (resultdir + 3) % 4
+    else if (tests === 1) resultdir = (resultdir + 2) % 4
+    else if (tests === 2) resultdir = (resultdir + 1) % 4
+    else if (tests === 3) resultdir = (resultdir + 2) % 4
   }
   return null
 }
@@ -265,8 +325,11 @@ export const applyMoveAdjective = (
   // Movers are collected row-major (y,x) like the predecessor's cell
   // iteration: resolution order decides which direction a contested pushed
   // item is pushed in. `auto`/`chill`/`nudge*` move unprompted like
-  // `move`; `broken` units never move under their own power. `reverse`
-  // flips every self-move direction (official `reversecheck`).
+  // `move`; `broken`/`sleep`/`still` units never move under their own
+  // power (official `cantmove` in `add_moving_units`). `reverse` flips
+  // every self-move direction (official `reversecheck`). `isMove` marks
+  // the move/chill reasons — only they bounce off obstacles; `auto`,
+  // `nudge*` and `fear` just stop (and die if `weak`).
   const turn = runtime.context.turn ?? 0
   const selfMovers = items
     .filter(
@@ -276,11 +339,13 @@ export const applyMoveAdjective = (
           hasProp(item, 'chill') ||
           item.props.some((prop) => prop in NUDGE_PROPS)) &&
         !hasProp(item, 'sleep') &&
-        !hasProp(item, 'broken'),
+        !hasProp(item, 'broken') &&
+        !hasProp(item, 'still'),
     )
     .sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id)
     .map((item) => {
       const nudge = item.props.find((prop) => prop in NUDGE_PROPS)
+      const isMove = hasProp(item, 'move') || hasProp(item, 'chill')
       const dir = hasProp(item, 'chill')
         ? chillDirection(turn, item.id)
         : nudge
@@ -289,23 +354,48 @@ export const applyMoveAdjective = (
       return {
         id: item.id,
         dir: hasProp(item, 'reverse') ? reverseDirection(dir) : dir,
-        isMove: true,
+        isMove,
       }
     })
 
-  const verbMovers: Array<{ id: number; dir: Direction; isMove: boolean }> =
-    []
+  const verbMovers: Array<{
+    id: number
+    dir: Direction
+    isMove: boolean
+    moves: number
+  }> = []
   if (runtime.buckets.fear.length) {
     const candidates = items
       .filter((item) => !hasProp(item, 'sleep') && !hasProp(item, 'broken'))
       .sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id)
+    const fearDirs = new Map<number, Direction>()
     for (const item of candidates) {
-      const dir = fearDirection(item, items, runtime.buckets.fear, context)
-      if (!dir) continue
-      verbMovers.push({
-        id: item.id,
-        dir: hasProp(item, 'reverse') ? reverseDirection(dir) : dir,
-        isMove: true,
+      const fear = fearDirection(
+        item,
+        items,
+        runtime.buckets.fear,
+        context,
+        runtime.width,
+        runtime.height,
+      )
+      if (!fear) continue
+      const dir = hasProp(item, 'reverse')
+        ? reverseDirection(fear.dir)
+        : fear.dir
+      if (hasProp(item, 'still')) {
+        // Officially a still unit can't move but still turns to face the
+        // flee direction (`cantmove` → `updatedir` without a queue entry).
+        fearDirs.set(item.id, dir)
+        continue
+      }
+      verbMovers.push({ id: item.id, dir, isMove: false, moves: fear.amount })
+    }
+    if (fearDirs.size) {
+      items = items.map((item) => {
+        const dir = fearDirs.get(item.id)
+        if (!dir || item.dir === dir) return item
+        aimed = true
+        return { ...item, dir }
       })
     }
   }
@@ -400,7 +490,7 @@ export const applyMoveAdjective = (
             !hasProp(target, 'phantom') &&
             !queued.has(target.id)
           ) {
-            movers.push({ id: target.id, dir, isMove: true })
+            movers.push({ id: target.id, dir, isMove: false })
             queued.add(target.id)
           }
         }
@@ -411,11 +501,27 @@ export const applyMoveAdjective = (
   if (!movers.length && !emptySwaps.length)
     return { items, moved: aimed }
   const moved = moveItemsBatch(items, runtime, movers)
+
+  // Fear movers carry `moves = maxfear`: the official take loop moves the
+  // unit that many cells, each a full collision resolution — replay the
+  // extra steps as fresh one-mover batches against the moved board.
+  let fearItems = moved.items
+  let fearMoved = false
+  for (const mover of verbMovers) {
+    for (let stepIndex = 1; stepIndex < mover.moves; stepIndex += 1) {
+      const extra = moveItemsBatch(fearItems, runtime, [
+        { id: mover.id, dir: mover.dir, isMove: false },
+      ])
+      fearItems = extra.items
+      fearMoved = fearMoved || extra.moved
+    }
+  }
+
   if (!emptySwaps.length)
-    return { items: moved.items, moved: moved.moved || aimed }
+    return { items: fearItems, moved: moved.moved || fearMoved || aimed }
 
   const byId = new Map<number, Item>()
-  const next = moved.items.map((item) => {
+  const next = fearItems.map((item) => {
     byId.set(item.id, item)
     return { ...item }
   })
@@ -427,7 +533,10 @@ export const applyMoveAdjective = (
     item.y = swap.y
     swapped = true
   }
-  return { items: swapped ? next : moved.items, moved: moved.moved || swapped }
+  return {
+    items: swapped ? next : fearItems,
+    moved: moved.moved || fearMoved || swapped || aimed,
+  }
 }
 
 // `fall` slides downward; `fallup`/`fallleft`/`fallright` are the

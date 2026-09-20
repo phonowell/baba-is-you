@@ -3,14 +3,17 @@ import { inBounds, keyFor } from './helpers.js'
 import type { LevelItem } from './types.js'
 
 // Official letter units are `text_` objects with type 5: a-z, 0-9, plus the
-// multi-char `sharp`/`flat` tiles. Unlike ordinary text they never act as
-// standalone words — they only become rule words when a contiguous run of
+// multi-char `sharp`/`flat` tiles and the `ab`/`ba` digraphs the ??? world
+// defines as level-local type-5 objects. Unlike ordinary text they never act
+// as standalone words — they only become rule words when a contiguous run of
 // letter cells spells a dictionary word (rules.lua `formlettermap`).
 export const LETTER_WORDS = new Set<string>([
   ...'abcdefghijklmnopqrstuvwxyz',
   ...'0123456789',
   'sharp',
   'flat',
+  'ab',
+  'ba',
 ])
 
 // Words letters can spell: every name in the official object table

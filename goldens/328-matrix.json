@@ -1,0 +1,140 @@
+{
+ "level": "",
+ "levelIndex": 328,
+ "levelData": {
+  "title": "MATRIX",
+  "width": 4,
+  "height": 4,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 3,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 0,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 3,
+    "name": "baba",
+    "x": 1,
+    "y": 1,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 4,
+    "name": "defeat",
+    "x": 0,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 2,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 6,
+    "name": "flag",
+    "x": 2,
+    "y": 2,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 7,
+    "name": "is",
+    "x": 0,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 8,
+    "name": "is",
+    "x": 2,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 9,
+    "name": "is",
+    "x": 3,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 10,
+    "name": "is",
+    "x": 1,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 11,
+    "name": "not",
+    "x": 1,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 12,
+    "name": "push",
+    "x": 3,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 13,
+    "name": "swap",
+    "x": 2,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 14,
+    "name": "text",
+    "x": 1,
+    "y": 0,
+    "isText": true
+   },
+   {
+    "id": 15,
+    "name": "win",
+    "x": 0,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 16,
+    "name": "you",
+    "x": 3,
+    "y": 3,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "ldruruldu",
+ "initial": "playing|baba!@3,1(push);baba!@0,3(push);baba@right@1,1(swap+you);defeat!@0,2(push);flag!@2,1(push);flag@right@2,2();is!@0,0(push);is!@2,0(push);is!@3,2(push);is!@1,3(push);not!@1,2(push);push!@3,0(push);swap!@2,3(push);text!@1,0(push);win!@0,1(push);you!@3,3(push)",
+ "hashes": [
+  "f9de623da683e58f",
+  "d54af7e8b38ea176",
+  "146685383de36fe4",
+  "1abf1f67d643bd9f",
+  "9e3bf879dbf5876e",
+  "7ae45051dedfc17f",
+  "7116530fb90cbc22",
+  "383d6a24cbdaadb3",
+  "3a8e3a4fa798a5f6"
+ ],
+ "final": "win|baba!@3,1(push+win);baba!@0,3(push+win);baba@down@1,1(you);defeat!@0,1(push+win);flag!@1,0(push+win);baba@up@1,2(you);is!@0,0(push+win);is!@2,1(push+win);is!@3,2(push+win);is@up!@1,1(push+win);not!@0,2(push+win);push!@3,0(push+win);swap!@2,3(push+win);text!@2,0(push+win);win!@2,2(push+win);you!@3,3(push+win)",
+ "status": "win"
+}

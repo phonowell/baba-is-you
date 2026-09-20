@@ -103,19 +103,19 @@ export const collectRuleInstances = (
   // Letter runs spell words that behave like multi-cell text units
   // (rules.lua `formlettermap`): each substring matching the official
   // dictionary yields a word anchored between its first and last cell.
-  // Level-local names join the dictionary like `unitreference` does.
+  // The dictionary is `unitreference` — the global object table — so
+  // level-local names like the ??? world's `ba`/`ab` digraph letters are
+  // never spellable words themselves.
   const spelledWords: SpelledWord[] = []
   const spelledByStart = new Map<number, SpelledWord[]>()
   const spelledByEnd = new Map<number, SpelledWord[]>()
   if (letterCells.size) {
-    const localWords = new Set<string>()
-    for (const item of items) localWords.add(item.name)
     spelledWords.push(
       ...collectSpelledWords(
         letterCells,
         width,
         height,
-        localWords,
+        undefined,
         items.some((item) => item.isText && item.name === 'play'),
       ),
     )

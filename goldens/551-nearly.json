@@ -1,0 +1,229 @@
+{
+ "level": "",
+ "levelIndex": 551,
+ "levelData": {
+  "title": "NEARLY",
+  "width": 15,
+  "height": 8,
+  "items": [
+   {
+    "id": 1,
+    "name": "baba",
+    "x": 0,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 2,
+    "name": "baba",
+    "x": 6,
+    "y": 6,
+    "isText": false,
+    "dir": "right"
+   },
+   {
+    "id": 3,
+    "name": "flag",
+    "x": 7,
+    "y": 1,
+    "isText": true
+   },
+   {
+    "id": 4,
+    "name": "flag",
+    "x": 0,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 5,
+    "name": "flag",
+    "x": 8,
+    "y": 6,
+    "isText": false,
+    "dir": "down"
+   },
+   {
+    "id": 6,
+    "name": "grass",
+    "x": 0,
+    "y": 0,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 7,
+    "name": "grass",
+    "x": 1,
+    "y": 0,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 8,
+    "name": "grass",
+    "x": 13,
+    "y": 0,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 9,
+    "name": "grass",
+    "x": 14,
+    "y": 0,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 10,
+    "name": "grass",
+    "x": 0,
+    "y": 1,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 11,
+    "name": "grass",
+    "x": 14,
+    "y": 1,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 12,
+    "name": "grass",
+    "x": 0,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 13,
+    "name": "grass",
+    "x": 14,
+    "y": 5,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 14,
+    "name": "grass",
+    "x": 13,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 15,
+    "name": "grass",
+    "x": 14,
+    "y": 6,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 16,
+    "name": "grass",
+    "x": 3,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 17,
+    "name": "grass",
+    "x": 11,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 18,
+    "name": "grass",
+    "x": 12,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 19,
+    "name": "grass",
+    "x": 13,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 20,
+    "name": "grass",
+    "x": 14,
+    "y": 7,
+    "isText": false,
+    "dir": "left"
+   },
+   {
+    "id": 21,
+    "name": "is",
+    "x": 7,
+    "y": 2,
+    "isText": true
+   },
+   {
+    "id": 22,
+    "name": "is",
+    "x": 1,
+    "y": 6,
+    "isText": true
+   },
+   {
+    "id": 23,
+    "name": "is",
+    "x": 1,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 24,
+    "name": "swap",
+    "x": 2,
+    "y": 7,
+    "isText": true
+   },
+   {
+    "id": 25,
+    "name": "win",
+    "x": 7,
+    "y": 3,
+    "isText": true
+   },
+   {
+    "id": 26,
+    "name": "you",
+    "x": 2,
+    "y": 6,
+    "isText": true
+   }
+  ]
+ },
+ "inputs": "rruuuuuuldddd",
+ "initial": "playing|baba!@0,6(push);baba@right@6,6(you);flag!@7,1(push);flag!@0,7(push);flag@down@8,6(swap+win);grass@left@0,0();grass@left@1,0();grass@left@13,0();grass@left@14,0();grass@left@0,1();grass@left@14,1();grass@left@0,5();grass@left@14,5();grass@left@13,6();grass@left@14,6();grass@left@3,7();grass@left@11,7();grass@left@12,7();grass@left@13,7();grass@left@14,7();is!@7,2(push);is!@1,6(push);is!@1,7(push);swap!@2,7(push);win!@7,3(push);you!@2,6(push)",
+ "hashes": [
+  "72f7ea9ab9a32c0b",
+  "fe9bc58b304a4118",
+  "2e27cd4b1fc20a20",
+  "57ce93c97a4e18b5",
+  "fe0b356b9703209c",
+  "95a047104b3edd6b",
+  "86724f4aec011c5a",
+  "6dc36f66fe5b241f",
+  "b9f381c239cd1f8a",
+  "e8656630a9b09d56",
+  "356065cf77769553",
+  "4165ccafc4e13b5f",
+  "215297efa0ed1415"
+ ],
+ "final": "win|baba!@0,6(push);baba@down@7,4(you);flag@down!@7,5(push);flag!@0,7(push);flag@down@7,4(swap+win);grass@left@0,0();grass@left@1,0();grass@left@13,0();grass@left@14,0();grass@left@0,1();grass@left@14,1();grass@left@0,5();grass@left@14,5();grass@left@13,6();grass@left@14,6();grass@left@3,7();grass@left@11,7();grass@left@12,7();grass@left@13,7();grass@left@14,7();is@down!@7,6(push);is!@1,6(push);is!@1,7(push);swap!@2,7(push);win@down!@7,7(push);you!@2,6(push)",
+ "status": "win"
+}

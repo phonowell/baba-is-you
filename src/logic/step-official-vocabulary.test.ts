@@ -623,6 +623,78 @@ test('step FEAR flees an adjacent feared unit and stays otherwise', () => {
   assert.equal(findObject(far.state, 'keke')?.x, 3)
 })
 
+test('step FEAR moves once per feared word in the max direction', () => {
+  // Official `findfears` returns `amount = maxfear` — fearing two
+  // different words stacked on one cell flees two cells, not one.
+  const level: LevelData = {
+    title: 'fear-multistep',
+    width: 8,
+    height: 3,
+    items: [
+      createItem(1, 'keke', 5, 1, false, 'right'),
+      createItem(2, 'skull', 6, 1, false),
+      createItem(3, 'ghost', 6, 1, false),
+      ...ruleRow(10, 0, ['keke', 'fear', 'skull']),
+      ...ruleRow(20, 2, ['keke', 'fear', 'ghost']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), null)
+  assert.equal(findObject(result.state, 'keke')?.x, 3)
+})
+
+test('step STILL units turn toward the flee direction without moving', () => {
+  // `cantmove` blocks the move but official `updatedir` still applies.
+  const level: LevelData = {
+    title: 'fear-still',
+    width: 8,
+    height: 3,
+    items: [
+      createItem(1, 'keke', 5, 1, false, 'right'),
+      createItem(2, 'skull', 6, 1, false),
+      ...ruleRow(10, 0, ['keke', 'fear', 'skull']),
+      ...ruleRow(20, 2, ['keke', 'is', 'still']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), null)
+  const keke = findObject(result.state, 'keke')
+  assert.equal(keke?.x, 5)
+  assert.equal(keke?.dir, 'left')
+})
+
+test('step STILL blocks self-movement from MOVE and AUTO stays put when blocked', () => {
+  // `cantmove` gates `add_moving_units`: still units never self-move.
+  const stillMove: LevelData = {
+    title: 'still-move',
+    width: 8,
+    height: 3,
+    items: [
+      createItem(1, 'keke', 3, 1, false, 'right'),
+      ...ruleRow(10, 0, ['keke', 'is', 'move']),
+      ...ruleRow(20, 2, ['keke', 'is', 'still']),
+    ],
+  }
+  const still = step(createInitialState(stillMove, 0), null)
+  assert.equal(findObject(still.state, 'keke')?.x, 3)
+
+  // `auto` is not in the official flip set (only move/chill bounce) — a
+  // blocked auto unit just stays.
+  const autoBlocked: LevelData = {
+    title: 'auto-blocked',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'keke', 4, 2, false, 'right'),
+      createItem(2, 'wall', 5, 2, false),
+      ...ruleRow(10, 0, ['keke', 'is', 'auto']),
+      ...ruleRow(20, 3, ['wall', 'is', 'stop']),
+    ],
+  }
+  const auto = step(createInitialState(autoBlocked, 0), null)
+  const keke = findObject(auto.state, 'keke')
+  assert.equal(keke?.x, 4)
+  assert.equal(keke?.dir, 'right')
+})
+
 test('step MIMIC copies the target subject rules and MIMIC NOT blocks it', () => {
   const level: LevelData = {
     title: 'mimic-copy',
@@ -900,8 +972,9 @@ test('step LEVEL IS HOLD pins border units but leaves inner ones free', () => {
   assert.equal(findObject(result.state, 'keke')?.x, 3)
 })
 
-test('step STILL units still move under their own power', () => {
-  // `still` blocks external forces (push/pull/carry), not self-movement.
+test('step STILL blocks player movement but still turns the unit', () => {
+  // Official `cantmove` gates the `you` take too: a still you-unit does
+  // `updatedir` only — it faces the input without leaving its cell.
   const level: LevelData = {
     title: 'still-self-move',
     width: 6,
@@ -913,7 +986,9 @@ test('step STILL units still move under their own power', () => {
     ],
   }
   const result = step(createInitialState(level, 0), 'right')
-  assert.equal(findObject(result.state, 'baba')?.x, 2)
+  const baba = findObject(result.state, 'baba')
+  assert.equal(baba?.x, 1)
+  assert.equal(baba?.dir, 'right')
 })
 
 test('step HOLD does not carry STILL riders', () => {

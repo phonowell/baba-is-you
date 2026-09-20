@@ -1,5 +1,6 @@
 import { resolveActiveEmptyProps } from '../empty.js'
 
+import { isLockedFor } from './move-core.js'
 import { createSingleMoveRuntime } from './move-single-runtime.js'
 import { appendHasSpawns, buildGrid, carryHeldRiders, hasProp, MOVE_DELTAS, resolveLevelProps } from './shared.js'
 import { keyFor } from '../helpers.js'
@@ -197,7 +198,20 @@ export const moveItems = (
   for (const mover of movers) {
     const id = mover.id
     if (moved.has(id) || removed.has(id)) continue
-    if (pinnedIds.has(id)) continue
+    // `cantmove` (still / level-hold pin / locked dir) blocks the move but
+    // not the turn: official `updatedir` still aims the unit at the input.
+    const moverItem = byId.get(id)
+    if (
+      pinnedIds.has(id) ||
+      stillIds.has(id) ||
+      (moverItem && isLockedFor(moverItem, direction))
+    ) {
+      if (moverItem && moverItem.dir !== direction) {
+        moverItem.dir = direction
+        status.anyMoved = true
+      }
+      continue
+    }
     if (!engine.canMoveRoot(id)) {
       const item = byId.get(id)
       if (item && weakIds.has(id) && !isMovePhase) {

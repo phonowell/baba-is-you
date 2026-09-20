@@ -226,11 +226,18 @@ const main = async (): Promise<void> => {
         `✓ [${bound}] ${entry.title} — ${inputs.length} inputs (${named.file})`,
       )
     } else {
-      tally.failed += 1
+      // A path that fails only on uncovered same-title variants is a
+      // name collision, not an engine gap — the oracle was recorded on
+      // the already-covered sibling. Flag those separately so the
+      // failure list stays a clean gap-hunting signal.
+      const coveredSibling = candidates.some((index) => covered.has(index))
       const dupes = ` tried=${pending.join('/')}`
+      const tag = coveredSibling ? 'VARIANT' : 'FAILED'
+      if (!coveredSibling) tally.failed += 1
+      else tally.skipped += 1
       failed.push(
-        `${entry.levelRef} ${entry.title} ` +
-          `[${inputs.length}i ${closest}${dupes}]`,
+        `${tag === 'VARIANT' ? 'VARIANT ' : ''}${entry.levelRef} ` +
+          `${entry.title} [${inputs.length}i ${closest}${dupes}]`,
       )
     }
   }
