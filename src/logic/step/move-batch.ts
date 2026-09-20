@@ -35,7 +35,7 @@ export const moveItemsBatch = (
   for (const item of next) {
     byId.set(item.id, item)
     for (const prop of item.props) {
-      if (prop === 'push' || prop === 'word') pushIds.add(item.id)
+      if (prop === 'push') pushIds.add(item.id)
       else if (prop === 'stop') stopIds.add(item.id)
       else if (prop === 'pull') pullIds.add(item.id)
       else if (prop === 'open') openIds.add(item.id)

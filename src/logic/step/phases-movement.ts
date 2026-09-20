@@ -489,7 +489,7 @@ export const applyMoveAdjective = (
           if (!hasProp(target, 'still'))
             emptySwaps.push({ id: target.id, x, y })
         } else if (
-          (hasProp(target, 'push') || hasProp(target, 'word')) &&
+          hasProp(target, 'push') &&
           !hasProp(target, 'still') &&
           !hasProp(target, 'phantom') &&
           !queued.has(target.id)

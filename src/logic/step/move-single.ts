@@ -69,8 +69,9 @@ export const moveItems = (
       moverIds.add(item.id)
     }
     for (const prop of item.props) {
-      // `word` units are pushable like the text they stand in for.
-      if (prop === 'push' || prop === 'word') pushIds.add(item.id)
+      // `word` units stay soft objects — the prop lets them stand in
+      // for their noun in rules only; it does not grant push.
+      if (prop === 'push') pushIds.add(item.id)
       else if (prop === 'stop') stopIds.add(item.id)
       else if (prop === 'pull') pullIds.add(item.id)
       else if (prop === 'swap') swapIds.add(item.id)

@@ -1576,3 +1576,51 @@ test('step EAT NOT X spares the named object', () => {
   assert.equal(baba?.x, 1)
   assert.equal(rock?.x, 2)
 })
+
+test('step WORD object stays a soft obstacle — text slides in without pushing it', () => {
+  // Officially `x is word` grants the noun role in rules only; it does not
+  // make the unit pushable. A pushed text stacks onto the word unit when
+  // the word unit itself cannot vacate the cell (Metacognition step 31).
+  const level: LevelData = {
+    title: 'word-soft',
+    width: 6,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'is', 1, 0, true),
+      createItem(3, 'keke', 2, 0, false),
+      createItem(4, 'wall', 3, 0, false),
+      ...ruleRow(10, 1, ['baba', 'is', 'you']),
+      ...ruleRow(20, 2, ['keke', 'is', 'word']),
+      ...ruleRow(30, 3, ['wall', 'is', 'stop']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  // baba pushes `is` into keke's cell: keke is soft (word only), so `is`
+  // slides in and stacks — nothing is pushed onward.
+  const baba = findObject(result.state, 'baba')
+  const keke = findObject(result.state, 'keke')
+  const isText = result.state.items.find((item) => item.isText && item.name === 'is')
+  assert.equal(baba?.x, 1)
+  assert.equal(isText?.x, 2)
+  assert.equal(keke?.x, 2)
+})
+
+test('step WORD object does not block a mover walking onto its cell', () => {
+  const level: LevelData = {
+    title: 'word-walkable',
+    width: 4,
+    height: 3,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'keke', 1, 0, false),
+      ...ruleRow(10, 1, ['baba', 'is', 'you']),
+      ...ruleRow(20, 2, ['keke', 'is', 'word']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  const baba = findObject(result.state, 'baba')
+  const keke = findObject(result.state, 'keke')
+  assert.equal(baba?.x, 1)
+  assert.equal(keke?.x, 1)
+})
