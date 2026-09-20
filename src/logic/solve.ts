@@ -143,45 +143,171 @@ const isTurnSeeded = (state: GameState, chillOrTele: boolean): boolean => {
   return false
 }
 
-// Canonical layout tuples: same-name entities are interchangeable, so
-// items are sorted by their visible tuple. `props`/`rules`/
-// `overriddenTextIds` are re-derived from the layout each step and need
-// no slots in the key. The pass also reports `chill`/`tele` props so the
-// turn-seeded check doesn't scan the items a second time.
-const scanItemTuples = (
-  state: GameState,
-): { joined: string; chillOrTele: boolean } => {
+// Numeric dedupe keys. The old string form built one template + join
+// per item per successor — the GC dominator in the search profile.
+// Instead each item folds into three decorrelated 32-bit chains (zero
+// allocation), and the per-item hashes sum into a 96-bit multiset key:
+// order-independent, so no sort is needed. Every field mix ends in an
+// xor-shift — imul alone is additive-linear, so a trailing run of
+// identical fields would propagate differences linearly and make
+// field-swaps between items collide systematically; alternating the two
+// linears breaks that channel, leaving ~2^-96 per board pair. A false
+// merge can only hide a win — the same fail-safe direction as the old
+// merging rules — never a false `solved`, since wins come from real
+// states.
+
+// Names and originNames come from a small closed vocabulary, so they
+// intern to small ints — one Map hit per item instead of reading string
+// bytes. Ids start at 1, leaving 0 as the absent-field sentinel.
+const internIds = new Map<string, number>()
+const intern = (name: string): number => {
+  let id = internIds.get(name)
+  if (id === undefined) {
+    id = internIds.size + 1
+    internIds.set(name, id)
+  }
+  return id
+}
+
+const DIR_CODES: Record<Direction, number> = {
+  up: 1,
+  right: 2,
+  down: 3,
+  left: 4,
+}
+const STATUS_CODES: Record<GameState['status'], number> = {
+  playing: 1,
+  win: 2,
+  lose: 3,
+}
+
+// Item identity = the same tuple set as the old key: name, x, y, dir,
+// isText, originName, prevX, prevY (props/rules are re-derived from the
+// layout each step and need no slots). Presence flags for the optional
+// fields live in `flags` so any raw value — `back` anchors can sit
+// off-board, e.g. prevX = -1 — stays distinct from absent. The pass
+// also reports `chill`/`tele` props so the turn-seeded check doesn't
+// rescan items.
+type ItemScan = { a: number; b: number; c: number; chillOrTele: boolean }
+
+const scanItems = (state: GameState): ItemScan => {
+  let a = 0
+  let b = 0
+  let c = 0
   let chillOrTele = false
-  const parts = state.items.map((item) => {
+  for (const item of state.items) {
     if (!chillOrTele)
       chillOrTele = item.props.includes('chill') || item.props.includes('tele')
-    return `${item.name}@${item.x},${item.y}${item.dir ? `:${item.dir}` : ''}${
-      item.isText ? '!' : ''
-    }${item.originName !== undefined ? `#${item.originName}` : ''}${
-      item.prevX !== undefined ? `~${item.prevX},${item.prevY}` : ''
-    }`
-  })
-  parts.sort()
-  return { joined: parts.join(';'), chillOrTele }
+    const nameId = intern(item.name)
+    // Each field gets its own multiply — folding two fields into one xor
+    // slot (e.g. seed ^ nameId then ^ x) lets distinct items alias
+    // pre-mix (nameId1 ^ x1 = nameId2 ^ x2) and collide at ~0.5% on
+    // single-field swaps instead of ~2^-96.
+    let h1 = Math.imul(nameId ^ 0x9e3779b9, 0x85ebca6b)
+    let h2 = Math.imul(nameId ^ 0x85ebca77, 0xc2b2ae35)
+    let h3 = Math.imul(nameId ^ 0xc2b2ae3d, 0x165667b1)
+    h1 ^= h1 >>> 15
+    h2 ^= h2 >>> 16
+    h3 ^= h3 >>> 13
+    h1 = Math.imul(h1 ^ item.x, 0xcc9e2d51)
+    h2 = Math.imul(h2 ^ item.x, 0x1b873593)
+    h3 = Math.imul(h3 ^ item.x, 0x27d4eb2f)
+    h1 ^= h1 >>> 15
+    h2 ^= h2 >>> 16
+    h3 ^= h3 >>> 13
+    h1 = Math.imul(h1 ^ item.y, 0x85ebca6b)
+    h2 = Math.imul(h2 ^ item.y, 0xc2b2ae35)
+    h3 = Math.imul(h3 ^ item.y, 0x165667b1)
+    h1 ^= h1 >>> 15
+    h2 ^= h2 >>> 16
+    h3 ^= h3 >>> 13
+    const flags =
+      ((item.dir === undefined ? 0 : DIR_CODES[item.dir]) << 4) |
+      (item.isText ? 8 : 0) |
+      (item.originName === undefined ? 0 : 4) |
+      (item.prevX === undefined ? 0 : 2) |
+      (item.prevY === undefined ? 0 : 1)
+    h1 = Math.imul(h1 ^ flags, 0xcc9e2d51)
+    h2 = Math.imul(h2 ^ flags, 0x1b873593)
+    h3 = Math.imul(h3 ^ flags, 0x27d4eb2f)
+    h1 ^= h1 >>> 15
+    h2 ^= h2 >>> 16
+    h3 ^= h3 >>> 13
+    const origin = item.originName === undefined ? 0 : intern(item.originName)
+    h1 = Math.imul(h1 ^ origin, 0x85ebca6b)
+    h2 = Math.imul(h2 ^ origin, 0xc2b2ae35)
+    h3 = Math.imul(h3 ^ origin, 0x165667b1)
+    h1 ^= h1 >>> 15
+    h2 ^= h2 >>> 16
+    h3 ^= h3 >>> 13
+    const prevX = item.prevX ?? 0
+    h1 = Math.imul(h1 ^ prevX, 0xcc9e2d51)
+    h2 = Math.imul(h2 ^ prevX, 0x1b873593)
+    h3 = Math.imul(h3 ^ prevX, 0x27d4eb2f)
+    h1 ^= h1 >>> 15
+    h2 ^= h2 >>> 16
+    h3 ^= h3 >>> 13
+    const prevY = item.prevY ?? 0
+    h1 = Math.imul(h1 ^ prevY, 0x85ebca6b)
+    h2 = Math.imul(h2 ^ prevY, 0xc2b2ae35)
+    h3 = Math.imul(h3 ^ prevY, 0x165667b1)
+    h1 ^= h1 >>> 15
+    h2 ^= h2 >>> 16
+    h3 ^= h3 >>> 13
+    a = (a + h1) | 0
+    b = (b + h2) | 0
+    c = (c + h3) | 0
+  }
+  return { a, b, c, chillOrTele }
+}
+
+// Item sums + header (+ turn, when the board is turn-seeded) → one
+// bigint Set key.
+const foldKey = (scan: ItemScan, header: number, turn: number): bigint => {
+  let a = Math.imul(scan.a ^ header, 0x85ebca6b)
+  let b = Math.imul(scan.b ^ header, 0xc2b2ae35)
+  let c = Math.imul(scan.c ^ header, 0x165667b1)
+  if (turn >= 0) {
+    a = Math.imul(a ^ turn, 0x27d4eb2f)
+    b = Math.imul(b ^ turn, 0x9e3779b1)
+    c = Math.imul(c ^ turn, 0xcc9e2d51)
+  }
+  a ^= a >>> 13
+  b ^= b >>> 16
+  c ^= c >>> 15
+  return (
+    (BigInt(a >>> 0) << 64n) |
+    (BigInt(b >>> 0) << 32n) |
+    BigInt(c >>> 0)
+  )
 }
 
 // Waypoint-goal identity: board contents and status only. `turn` and
 // `levelDir` are timing/render details a differently-shaped detour is
 // allowed to shift — the full-path replay after a spliced solve is what
 // verifies the result.
-const layoutKey = (state: GameState): string =>
-  `${state.status}|${scanItemTuples(state).joined}`
+export const layoutKey = (state: GameState): bigint =>
+  foldKey(
+    scanItems(state),
+    state.items.length * 64 + STATUS_CODES[state.status] * 8,
+    -1,
+  )
 
 // Dedupe identity for open search. `history` and `levelOffset` are
 // excluded on purpose — merging boards that differ only there can hide a
 // win behind a different RNG roll, so the failure mode is a safe
 // `unknown`, never a false `solved`.
-const stateKey = (state: GameState): string => {
-  const scan = scanItemTuples(state)
-  const turn = isTurnSeeded(state, scan.chillOrTele)
-    ? `t${state.turn}|`
-    : ''
-  return `${state.status}|${state.levelDir ?? ''}|${turn}${scan.joined}`
+export const stateKey = (state: GameState): bigint => {
+  const scan = scanItems(state)
+  const header =
+    state.items.length * 64 +
+    STATUS_CODES[state.status] * 8 +
+    (state.levelDir === undefined ? 0 : DIR_CODES[state.levelDir])
+  return foldKey(
+    scan,
+    header,
+    isTurnSeeded(state, scan.chillOrTele) ? state.turn : -1,
+  )
 }
 
 // Guided distance: multi-source BFS from every `win` cell over the grid,
@@ -427,7 +553,7 @@ const scoreFor = (
 const solveBeam = (initial: GameState, caps: SolveCaps): SolveResult => {
   const deadline = Date.now() + caps.deadlineMs
   const width = caps.beamWidth ?? 5000
-  const visited = new Set<string>([stateKey(initial)])
+  const visited = new Set<bigint>([stateKey(initial)])
   let layer: SearchNode[] = [rootNode(initial)]
   let expanded = 0
 
@@ -508,7 +634,7 @@ export const solveState = (
   if (strategy === 'beam') return solveBeam(initial, caps)
   if (strategy === 'macro') return solveMacro(initial, caps)
   const deadline = Date.now() + caps.deadlineMs
-  const visited = new Set<string>([stateKey(initial)])
+  const visited = new Set<bigint>([stateKey(initial)])
   const frontier = createFrontier(strategy)
   frontier.push(rootNode(initial))
   let expanded = 0
@@ -594,7 +720,7 @@ export const solveToLayout = (
     return { kind: 'solved', inputs: '', depth: 0, expanded: 0, state: from }
   }
   const deadline = Date.now() + caps.deadlineMs
-  const visited = new Set<string>([layoutKey(from)])
+  const visited = new Set<bigint>([layoutKey(from)])
   const queue: SearchNode[] = [rootNode(from)]
   let head = 0
   let expanded = 0
@@ -946,7 +1072,7 @@ const macroMoves = (state: GameState, activity: BoardActivity): MacroMove[] => {
 
 const solveMacro = (initial: GameState, caps: SolveCaps): SolveResult => {
   const deadline = Date.now() + caps.deadlineMs
-  const visited = new Set<string>([stateKey(initial)])
+  const visited = new Set<bigint>([stateKey(initial)])
   // Greedy ranking: macro nodes already skip the travel, so ordering by
   // wall-aware win distance chases progress instead of breadth order.
   const frontier = createFrontier('greedy')
@@ -975,7 +1101,7 @@ const solveMacro = (initial: GameState, caps: SolveCaps): SolveResult => {
     // Distinct macros regularly land on the same board (walks ending at
     // neighboring cells, pushes that leave the layout untouched) — dedupe
     // per expansion so each unique successor is queued and scored once.
-    const localKeys = new Set<string>()
+    const localKeys = new Set<bigint>()
     for (const macro of macroMoves(state, activity)) {
       if (!macro.changed) continue
       const next = macro.state
