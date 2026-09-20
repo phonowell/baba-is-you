@@ -122,25 +122,45 @@ record stays valid only because replay uses the embedded board).
 
 ## Current state
 
-- **211 golden files; ~170 campaign levels covered (170/566)** after the
-  letter-unit fix landed `155`/`198`/`219`/`239`/`397`/`532`/`564` and the
-  condition/fall fixes added `104`/`124`/`248`/`220`/`533`
-- Stale goldens deleted after semantics fixes (re-solve pending):
-  `069`/`094`/`095`/`112`/`207`/`211`/`228`/`230` (old fall stopped on any
-  unit) + `297` (old `x not on y` misparsed as subject negation)
-- Legacy re-solve done: 89 wired / ~78 shortened (e.g. 385→284, 198→8) /
-  2 unwired (stale fixtures stay fixture-bound) / 1 fallback
-- External import: 246 Discord + 55 harbor solutions parsed → 169 + 45
-  replay-verified in dry run (rest: already covered, remix-only attempts,
-  or engine-gap suspects — see below)
-- Sweep status (single worker chain `tools-out/solve/run-shards.sh`):
-  - shard 0 done (old semantics): solved=4 exhausted=4 cutoff=52
-  - shard 1 done (old semantics): solved=1 exhausted=4 cutoff=51
-  - shard 2 done (new semantics): solved=5 exhausted=2 cutoff=52
-  - shard 3 **crashed** — Node heap OOM mid-shard (`[155] ERROR` …
-    `heap out of memory`); rerun after the chain
-  - shard 4 done; shard 5 running; 6–7 queued
+- **245 golden files; ~195 campaign levels covered** after letter-unit
+  fixes + community-import batch + sweep chain (`328` MATRIX,
+  `265` DO IT YOURSELF, `42` NEARLY re-solved under corrected swap, …).
+- `368-planet-baba` golden deleted — it only won under the old
+  still+you-moves semantics; reshard-0b will retry.
+- Legacy re-solve done: 89 wired / ~78 shortened / 2 unwired / 1 fallback.
+- External import: 246 Discord + 55 harbor parsed → ~215 replay-verified
+  total. ~66 remaining failures are almost all `playing@N-1/N` or
+  `lose@N-1/N` (path runs to completion, win never forms — divergence
+  somewhere mid-replay).
+- Sweep status (single worker, `tools-out/solve/run-reruns.sh`):
+  - sweep 0–7 done; reshard-0 **crashed** at ~[352] with
+    `Maximum call stack size exceeded` (not reproduced standalone;
+    reshard-0b re-queued at chain tail to cover the missed tail range)
+  - reshard-1 done: solved 265 DO IT YOURSELF
+  - reshard-3 running under `NODE_OPTIONS=--max-old-space-size=8192`
 - `pnpm check` green (740 tests), `pnpm build` green
+
+## Community-replay audit findings (this session)
+
+- **Rule-dump diff vs `baba-is-optimized` `rules/`**: no real parse bugs.
+  All diffs were (a) `lonely` print order — cosmetic; (b) title
+  collisions between worlds (two different `Tunnel`/`Shuffle`/`Backstage`
+  levels); (c) stale dumps from an older game version — official typos
+  `HADGE`/`SOOR`/`SOTP` are fixed in current data, `top` doesn't exist in
+  this build; (d) `box is me` in AUTOMATON is correctly vetoed by
+  `box is box` — the dump lists overridden rules too.
+- **`level is <noun>` transform** (official `convertlevel`): exits to map
+  and transforms the map icon — NOT a win. Discord "LEVEL IS BABA"-style
+  variants (Avalanche-11 etc.) are non-win completions; correctly stay
+  unverified. `level is <prop>` we already handle
+  (`level is win/defeat/hot` apply globally via `resolveLevelPropsGlobal`).
+- **Meta/Chasm cluster** (~15 failures): level-icon entities with
+  `level is fall` etc. work; the missing piece may be in-level
+  level-icon entry (`select`) semantics — unconfirmed.
+- Failing levels use only basic conditions (on/near/facing/lonely) —
+  divergences are movement/interaction-order subtleties, not vocabulary.
+- `Fragile Existence` (190): `key is key` + `key is you` mid-game both
+  verified working — divergence is positional, late-game.
 
 ## Open tasks (in order)
 
