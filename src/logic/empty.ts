@@ -4,6 +4,7 @@ import { isPropertyRule } from './types.js'
 
 import type { GroupMembers, RuleMatchContext } from './rule-match.js'
 
+import type { Item } from './game-types.js'
 import type { Direction, Property, Rule, RuleCondition } from './types.js'
 
 type EmptyMatchItem = {
@@ -274,13 +275,13 @@ export const createEmptyMatchContext = (
   }
 }
 
-export const resolveEmptyRuleTargetsAt = (
+const collectEmptyRuleTargetsAt = (
   rules: Rule[],
   context: EmptyMatchContext,
   x: number,
   y: number,
   kind: Rule['kind'],
-): string[] => {
+): { yes: Set<string>; no: Set<string> } => {
   const yes = new Set<string>()
   const no = new Set<string>()
 
@@ -293,8 +294,31 @@ export const resolveEmptyRuleTargetsAt = (
     else yes.add(rule.object)
   }
 
+  return { yes, no }
+}
+
+export const resolveEmptyRuleTargetsAt = (
+  rules: Rule[],
+  context: EmptyMatchContext,
+  x: number,
+  y: number,
+  kind: Rule['kind'],
+): string[] => {
+  const { yes, no } = collectEmptyRuleTargetsAt(rules, context, x, y, kind)
   return Array.from(yes).filter((target) => !no.has(target))
 }
+
+// `empty is not b` objects protect b from an `empty is all` spawn
+// (official createall_single consults `empty is not b` rules).
+export const resolveEmptyNegatedObjectsAt = (
+  rules: Rule[],
+  context: EmptyMatchContext,
+  x: number,
+  y: number,
+  kind: Rule['kind'],
+): Set<string> =>
+  collectEmptyRuleTargetsAt(rules, context, x, y, kind).no
+
 
 export const hasAnyEmptyCell = (
   items: Array<{ x: number; y: number }>,
@@ -440,4 +464,69 @@ export const emptyHasProp = (
     }
   }
   return false
+}
+
+// `empty has x` drops when an empty pseudo-unit is destroyed during
+// movement (official delete(2, x, y) → inside("empty", …)): the spawned
+// unit lands on the dead cell itself, with `empty is <dir>` setting its
+// facing the way `emptydir` does.
+export const appendEmptyHasSpawns = (
+  items: Item[],
+  deadCells: ReadonlySet<number>,
+  hasRules: Rule[],
+  dirRules: Rule[],
+  width: number,
+  height: number,
+): { items: Item[]; changed: boolean } => {
+  const emptyHas = hasRules.filter(
+    (rule) => rule.subject === 'empty' && !rule.subjectNegated,
+  )
+  if (!emptyHas.length || !deadCells.size) return { items, changed: false }
+
+  const context = createEmptyMatchContext(items, emptyHas, width, height)
+  let nextId = items.reduce((max, item) => Math.max(max, item.id), 0) + 1
+  const spawned: Item[] = []
+
+  for (const key of deadCells) {
+    const x = key % width
+    const y = (key - x) / width
+    const targets = resolveEmptyRuleTargetsAt(emptyHas, context, x, y, 'has')
+    if (!targets.length) continue
+    const dirs = dirRules.length
+      ? resolveEmptyRuleTargetsAt(dirRules, context, x, y, 'is-property')
+      : []
+    const dir = dirs.find(
+      (d): d is Direction =>
+        d === 'up' || d === 'right' || d === 'down' || d === 'left',
+    )
+
+    for (const target of targets) {
+      if (target === 'empty' || target === 'all' || target === 'level')
+        continue
+      if (target === 'text') {
+        spawned.push({
+          id: nextId++,
+          name: 'empty',
+          x,
+          y,
+          isText: true,
+          props: [],
+          ...(dir ? { dir } : {}),
+        })
+        continue
+      }
+      spawned.push({
+        id: nextId++,
+        name: target,
+        x,
+        y,
+        isText: false,
+        props: [],
+        ...(dir ? { dir } : {}),
+      })
+    }
+  }
+
+  if (!spawned.length) return { items, changed: false }
+  return { items: [...items, ...spawned], changed: true }
 }

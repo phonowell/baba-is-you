@@ -1,4 +1,6 @@
 import {
+  emptyLockHit,
+  emptyWeakHit,
   getLiveCellItems,
   inBounds,
   isLockedFor,
@@ -117,7 +119,13 @@ export const resolveBatchArrows = (
         // the chain lands somewhere.
         const firstProps = context.emptyPropsAt(nx, ny)
         if (context.eatsEmpty(item, nx, ny)) {
-          // free entry
+          // free entry — the empty pseudo-unit dies at apply time
+        } else if (
+          emptyLockHit(context, item, firstProps) ||
+          emptyWeakHit(item, firstProps)
+        ) {
+          // free entry — the empty dies at apply time; an unsafe lock
+          // mover dies at its own cell instead of landing
         } else if (
           firstProps.has('swap') &&
           !emptyBlocked(nx, ny, arrow.dir)

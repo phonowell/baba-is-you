@@ -1,4 +1,6 @@
 import {
+  emptyLockHit,
+  emptyWeakHit,
   getLiveCellItems,
   inBounds,
   isLockedFor,
@@ -7,7 +9,7 @@ import {
   moveOne,
   removeOne,
 } from './move-core.js'
-import { hasProp, MOVE_DELTAS } from './shared.js'
+import { hasProp, keyFor, MOVE_DELTAS } from './shared.js'
 
 import type { MoveCoreContext } from './move-core.js'
 import type { Direction, Item } from '../types.js'
@@ -112,9 +114,19 @@ export const createSingleMoveRuntime = (
       // `x eat empty` frees the cell outright (official `valid=false`
       // skips the whole empty-block verdict).
       if (context.eatsEmpty(item, nx, ny)) return true
+      const emptyProps = context.emptyPropsAt(nx, ny)
+      // Official empty-branch specials: an open/shut mover meeting the
+      // cell's partner prop annihilates on entry, and `empty is weak`
+      // crumbles — the empty pseudo-unit dies (dropping `empty has x`)
+      // instead of blocking. An unsafe lock mover dies at doMove.
+      if (
+        emptyLockHit(context, item, emptyProps) ||
+        emptyWeakHit(item, emptyProps)
+      )
+        return true
       // Swapping with an empty is a plain step in; a pushable empty
       // forwards the push until the chain lands somewhere.
-      if (context.emptyPropsAt(nx, ny).has('swap') && !emptyBlocked(nx, ny))
+      if (emptyProps.has('swap') && !emptyBlocked(nx, ny))
         return true
       if (emptyBlocked(nx, ny)) return false
 
@@ -236,6 +248,7 @@ export const createSingleMoveRuntime = (
 
     let throughEmptyPush = false
     let frontTargets = liveForward(nx, ny)
+    const frontCellEmpty = !frontTargets.length
     if (!frontTargets.length) {
       let lookX = nx
       let lookY = ny
@@ -297,6 +310,35 @@ export const createSingleMoveRuntime = (
         continue
       }
       doMove(target.id)
+    }
+
+    // Empty-branch specials at the landing cell (official check()): the
+    // empty pseudo-unit dies for `x eat empty`, a lock pair, or
+    // `empty is weak` — and an unsafe lock mover dies at its own cell
+    // without moving (`gone` skips the update).
+    if (frontCellEmpty) {
+      const emptyProps = context.emptyPropsAt(nx, ny)
+      const lockHit = emptyLockHit(context, item, emptyProps)
+      if (
+        context.eatsEmpty(item, nx, ny) ||
+        lockHit ||
+        emptyWeakHit(item, emptyProps)
+      )
+        context.deadEmptyCells.add(keyFor(nx, ny, context.width))
+      if (lockHit && removeOne(context, item)) {
+        context.moved.add(item.id)
+        context.status.anyMoved = true
+        for (const target of pullTargets) {
+          if (
+            context.moved.has(target.id) ||
+            context.removed.has(target.id)
+          )
+            continue
+          if (!canMoveRoot(target.id)) continue
+          doMove(target.id)
+        }
+        return
+      }
     }
 
     const openShutTargets = throughEmptyPush

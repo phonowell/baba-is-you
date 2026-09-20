@@ -25,6 +25,10 @@ export type MoveCoreContext = {
   // The empty pseudo-unit's float/safe come from that cell's `empty is
   // float`/`empty is safe` props, so the check is per-cell.
   eatsEmpty: (mover: Item, x: number, y: number) => boolean
+  // Cells whose `empty` pseudo-unit was destroyed this pass (official
+  // `delete(2, x, y)` — once per cell per turn). After the move pass
+  // each dead cell drops its `empty has x` contents.
+  deadEmptyCells: Set<number>
   grid: Map<number, Item[]>
   height: number
   openIds: Set<number>
@@ -123,6 +127,31 @@ export const isLockCollision = (
   isOpenShutPair(context, mover, target) &&
   hasProp(mover, 'float') === hasProp(target, 'float') &&
   (!hasProp(mover, 'safe') || !hasProp(target, 'safe'))
+
+// Official empty-branch specials (movement.lua ~1131): an open/shut
+// mover meeting the cell's opposite `empty is <partner>` prop locks on
+// contact — the empty pseudo-unit dies when unsafe, and an unsafe mover
+// dies at its own cell instead of landing. A `safe` pair never fires.
+export const emptyLockHit = (
+  context: MoveCoreContext,
+  mover: Item,
+  emptyProps: ReadonlySet<string>,
+): boolean =>
+  ((context.openIds.has(mover.id) && emptyProps.has('shut')) ||
+    (context.shutIds.has(mover.id) && emptyProps.has('open'))) &&
+  hasProp(mover, 'float') === emptyProps.has('float') &&
+  (!hasProp(mover, 'safe') || !emptyProps.has('safe'))
+
+// Official empty-branch `weak`: the empty cell crumbles on entry (its
+// `empty has x` drops later) and the mover lands — the mover's own
+// `safe` does not matter, only `issafe(2)` gates the empty's death.
+export const emptyWeakHit = (
+  mover: Item,
+  emptyProps: ReadonlySet<string>,
+): boolean =>
+  emptyProps.has('weak') &&
+  !emptyProps.has('safe') &&
+  hasProp(mover, 'float') === emptyProps.has('float')
 
 export const removeOne = (context: MoveCoreContext, item: Item): boolean => {
   if (context.removed.has(item.id)) return false

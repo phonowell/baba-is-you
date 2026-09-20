@@ -1,4 +1,4 @@
-import { resolveEmptyPropsByCell } from '../empty.js'
+import { appendEmptyHasSpawns, resolveEmptyPropsByCell } from '../empty.js'
 
 import { keyFor } from '../helpers.js'
 import { createEatsPredicates } from './move-core.js'
@@ -107,8 +107,10 @@ export const moveItemsBatch = (
     (x: number, y: number): ReadonlySet<string> =>
       emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS,
   )
+  const deadEmptyCells = new Set<number>()
   const context = {
     byId,
+    deadEmptyCells,
     eats,
     eatsEmpty,
     emptyPropsAt: (x: number, y: number): ReadonlySet<string> =>
@@ -151,9 +153,19 @@ export const moveItemsBatch = (
     height,
     next,
   )
+  const dropped = deadEmptyCells.size
+    ? appendEmptyHasSpawns(
+        spawned.items,
+        deadEmptyCells,
+        runtime.buckets.has,
+        runtime.buckets.isProperty,
+        width,
+        height,
+      )
+    : spawned
 
   return {
-    items: spawned.items,
-    moved: status.changed || spawned.changed,
+    items: dropped.items,
+    moved: status.changed || spawned.changed || dropped.changed,
   }
 }

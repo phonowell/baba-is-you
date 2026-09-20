@@ -1,10 +1,12 @@
 import {
+  emptyLockHit,
+  emptyWeakHit,
   getLiveCellItems,
   isLockCollision,
   moveOne,
   removeOne,
 } from './move-core.js'
-import { MOVE_DELTAS } from './shared.js'
+import { keyFor, MOVE_DELTAS } from './shared.js'
 
 import type { Arrow, BatchMoveContext } from './move-batch-runtime.js'
 import type { Item } from '../types.js'
@@ -52,6 +54,25 @@ export const applyBatchMovement = (
     const oldY = item.y
     const nx = item.x + dx
     const ny = item.y + dy
+
+    // Empty-branch specials at the destination cell (official check()
+    // empty case): `x eat empty`, an open/shut lock pair, or
+    // `empty is weak` destroy the empty pseudo-unit — and an unsafe lock
+    // mover dies at its origin instead of landing.
+    if (!getLiveCellItems(context, nx, ny).length) {
+      const emptyProps = context.emptyPropsAt(nx, ny)
+      const lockHit = emptyLockHit(context, item, emptyProps)
+      if (
+        context.eatsEmpty(item, nx, ny) ||
+        lockHit ||
+        emptyWeakHit(item, emptyProps)
+      )
+        context.deadEmptyCells.add(keyFor(nx, ny, context.width))
+      if (lockHit && removeOne(context, item)) {
+        context.status.changed = true
+        continue
+      }
+    }
 
     // Official `lock` specials resolve before the position update:
     // unsafe `open`/`shut` partners die at their own cell and an unsafe

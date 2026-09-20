@@ -1,4 +1,4 @@
-import { resolveEmptyPropsByCell } from '../empty.js'
+import { appendEmptyHasSpawns, resolveEmptyPropsByCell } from '../empty.js'
 
 import { createEatsPredicates, isLockedFor } from './move-core.js'
 import { createSingleMoveRuntime } from './move-single-runtime.js'
@@ -140,6 +140,9 @@ export const moveItems = (
   const moved = new Set<number>()
   const removed = new Set<number>()
   const removedItems: Item[] = []
+  // Empty pseudo-units destroyed by entry specials (eat/lock/weak) — each
+  // drops its `empty has x` contents after the pass.
+  const deadEmptyCells = new Set<number>()
   const status = { anyMoved: false }
   const grid = buildGrid(next, width)
   const { eats, eatsEmpty } = createEatsPredicates(
@@ -150,6 +153,7 @@ export const moveItems = (
   const engine = createSingleMoveRuntime(
     {
       byId,
+      deadEmptyCells,
       eats,
       eatsEmpty,
       emptyPropsAt,
@@ -268,9 +272,19 @@ export const moveItems = (
     height,
     next,
   )
+  const dropped = deadEmptyCells.size
+    ? appendEmptyHasSpawns(
+        spawned.items,
+        deadEmptyCells,
+        runtime.buckets.has,
+        runtime.buckets.isProperty,
+        width,
+        height,
+      )
+    : spawned
 
   return {
-    items: spawned.items,
-    moved: status.anyMoved || spawned.changed,
+    items: dropped.items,
+    moved: status.anyMoved || spawned.changed || dropped.changed,
   }
 }
