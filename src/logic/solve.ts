@@ -547,6 +547,117 @@ const scoreFor = (
   return depth + h
 }
 
+// A win popped from the frontier is already the answer — the recorded
+// parent chain rebuilds the input string once, at the end.
+const solvedAt = (node: SearchNode, expanded: number): SolveResult => ({
+  kind: 'solved',
+  inputs: nodeInputs(node),
+  depth: node.depth,
+  expanded,
+  state: node.state,
+})
+
+// A board with no `you`, no self-moving props and no wait-sensitive rules
+// can only produce no-op steps — expanding it churns five step() calls.
+const isStaticBoard = (activity: BoardActivity): boolean =>
+  !activity.hasYou && !activity.hasAuto && !activity.hasVirtualRules
+
+// Shared per-node guards for the search drivers: the deadline is sampled
+// every 1024 expansions (Date.now() is too hot to call per node), and
+// `depthFinal` decides whether an over-depth node ends the search (FIFO
+// pops arrive in depth order) or is just skipped.
+const searchGuard = (
+  node: SearchNode,
+  caps: SolveCaps,
+  deadline: number,
+  expanded: number,
+  depthFinal: boolean,
+): SolveResult | 'skip' | undefined => {
+  if ((expanded & 1023) === 0 && Date.now() > deadline)
+    return { kind: 'cutoff', reason: 'timeout', expanded }
+  if (node.depth > caps.maxDepth)
+    return depthFinal ? { kind: 'cutoff', reason: 'depth', expanded } : 'skip'
+  return undefined
+}
+
+// One node's five-action expansion. The per-strategy differences (goal
+// test beyond `win`, transposition key, child score) are parameters; the
+// mechanics — stepping each action, dropping unchanged/`lose` results and
+// enforcing the visited cap — are shared. Terminal outcomes come back as
+// 'solved'/'cutoff'; otherwise the scored children are returned for the
+// caller's own frontier.
+type Expansion =
+  | { kind: 'solved'; inputs: string; state: GameState }
+  | { kind: 'cutoff'; reason: 'states' }
+  | { kind: 'expanded'; children: SearchNode[] }
+
+const expandActions = (
+  node: SearchNode,
+  activity: BoardActivity,
+  caps: SolveCaps,
+  visited: Set<bigint>,
+  keyOf: (state: GameState) => bigint,
+  isGoal: (state: GameState, key: bigint) => boolean,
+  scoreOf: (state: GameState, depth: number) => number,
+): Expansion => {
+  const prepared = prepareStep(node.state)
+  const children: SearchNode[] = []
+  for (const action of ACTIONS) {
+    if (
+      action.direction === null &&
+      !activity.hasAuto &&
+      !activity.hasVirtualRules
+    )
+      continue
+    const result =
+      action.direction === null
+        ? step(node.state, null)
+        : prepared(action.direction)
+    if (!result.changed) continue
+    const next = result.state
+    const key = keyOf(next)
+    // Wins are terminal everywhere — surface them from the push side
+    // instead of parking them in the frontier for a later pop.
+    if (isGoal(next, key) || next.status === 'win') {
+      return {
+        kind: 'solved',
+        inputs: nodeInputs(node) + action.code,
+        state: next,
+      }
+    }
+    // A reached `lose` stays `lose` — dead states only churn keys.
+    if (next.status === 'lose') continue
+    if (visited.has(key)) continue
+    visited.add(key)
+    if (visited.size > caps.maxStates)
+      return { kind: 'cutoff', reason: 'states' }
+    children.push({
+      state: next,
+      parent: node,
+      code: action.code,
+      depth: node.depth + 1,
+      score: scoreOf(next, node.depth + 1),
+    })
+  }
+  return { kind: 'expanded', children }
+}
+
+// Wraps a terminal expansion into the search's SolveResult shape.
+const expansionResult = (
+  expansion: Expansion & { kind: 'solved' | 'cutoff' },
+  depth: number,
+  expanded: number,
+): SolveResult =>
+  expansion.kind === 'solved'
+    ? {
+        kind: 'solved',
+        inputs: expansion.inputs,
+        depth,
+        expanded,
+        state: expansion.state,
+      }
+    : { kind: 'cutoff', reason: expansion.reason, expanded }
+
 // Beam search keeps the frontier as a single sorted layer instead of a
 // queue: everything at depth d is expanded, ranked, and truncated before
 // depth d+1 starts.
@@ -562,61 +673,23 @@ const solveBeam = (initial: GameState, caps: SolveCaps): SolveResult => {
       return { kind: 'cutoff', reason: 'timeout', expanded }
     const nextLayer: SearchNode[] = []
     for (const node of layer) {
-      if (node.state.status === 'win') {
-        return {
-          kind: 'solved',
-          inputs: nodeInputs(node),
-          depth: node.depth,
-          expanded,
-          state: node.state,
-        }
-      }
+      if (node.state.status === 'win') return solvedAt(node, expanded)
       if (node.state.status === 'lose') continue
       expanded += 1
       const activity = boardActivity(node.state)
-      if (!activity.hasYou && !activity.hasAuto && !activity.hasVirtualRules)
-        continue
-      const prepared = prepareStep(node.state)
-      for (const action of ACTIONS) {
-        if (
-          action.direction === null &&
-          !activity.hasAuto &&
-          !activity.hasVirtualRules
-        )
-          continue
-        const result =
-          action.direction === null
-            ? step(node.state, null)
-            : prepared(action.direction)
-        if (!result.changed) continue
-        const next = result.state
-        // Wins are terminal everywhere — surface them from the push side
-        // instead of parking them in the frontier for a later pop.
-        if (next.status === 'win') {
-          return {
-            kind: 'solved',
-            inputs: nodeInputs(node) + action.code,
-            depth: node.depth + 1,
-            expanded,
-            state: next,
-          }
-        }
-        // A reached `lose` stays `lose` — dead states only churn keys.
-        if (next.status === 'lose') continue
-        const key = stateKey(next)
-        if (visited.has(key)) continue
-        visited.add(key)
-        if (visited.size > caps.maxStates) {
-          return { kind: 'cutoff', reason: 'states', expanded }
-        }
-        nextLayer.push({
-          state: next,
-          parent: node,
-          code: action.code,
-          depth: node.depth + 1,
-          score: winDistance(next),
-        })
-      }
+      if (isStaticBoard(activity)) continue
+      const expansion = expandActions(
+        node,
+        activity,
+        caps,
+        visited,
+        stateKey,
+        () => false,
+        (next) => winDistance(next),
+      )
+      if (expansion.kind !== 'expanded')
+        return expansionResult(expansion, node.depth + 1, expanded)
+      nextLayer.push(...expansion.children)
     }
     if (nextLayer.length === 0)
       return { kind: 'cutoff', reason: 'exhausted', expanded }
@@ -642,66 +715,31 @@ export const solveState = (
   for (;;) {
     const node = frontier.pop()
     if (!node) return { kind: 'exhausted', expanded }
-    if ((expanded & 1023) === 0 && Date.now() > deadline) {
-      return { kind: 'cutoff', reason: 'timeout', expanded }
-    }
-    if (node.depth > caps.maxDepth) {
-      // BFS pops in depth order; the heap does not, so only the FIFO
-      // frontier may treat this as a final cutoff.
-      if (strategy === 'bfs') return { kind: 'cutoff', reason: 'depth', expanded }
-      continue
-    }
+    // BFS pops in depth order; the heap does not, so only the FIFO
+    // frontier may treat over-depth as a final cutoff.
+    const guard = searchGuard(node, caps, deadline, expanded, strategy === 'bfs')
+    if (guard === 'skip') continue
+    if (guard) return guard
     const state = node.state
-    if (state.status === 'win') {
-      return {
-        kind: 'solved',
-        inputs: nodeInputs(node),
-        depth: node.depth,
-        expanded,
-        state,
-      }
-    }
+    if (state.status === 'win') return solvedAt(node, expanded)
     if (state.status === 'lose') continue
     expanded += 1
 
-    // Static board: nothing can move, wait, or rewire rules — every action
-    // is a no-op, so expanding would just churn five step() calls.
     const activity = boardActivity(state)
-    if (!activity.hasYou && !activity.hasAuto && !activity.hasVirtualRules)
-      continue
+    if (isStaticBoard(activity)) continue
 
-    const prepared = prepareStep(state)
-    for (const action of ACTIONS) {
-      if (action.direction === null && !activity.hasAuto && !activity.hasVirtualRules)
-        continue
-      const result =
-        action.direction === null ? step(state, null) : prepared(action.direction)
-      if (!result.changed) continue
-      const next = result.state
-      if (next.status === 'win') {
-        return {
-          kind: 'solved',
-          inputs: nodeInputs(node) + action.code,
-          depth: node.depth + 1,
-          expanded,
-          state: next,
-        }
-      }
-      if (next.status === 'lose') continue
-      const key = stateKey(next)
-      if (visited.has(key)) continue
-      visited.add(key)
-      if (visited.size > caps.maxStates) {
-        return { kind: 'cutoff', reason: 'states', expanded }
-      }
-      frontier.push({
-        state: next,
-        parent: node,
-        code: action.code,
-        depth: node.depth + 1,
-        score: scoreFor(strategy, next, node.depth + 1),
-      })
-    }
+    const expansion = expandActions(
+      node,
+      activity,
+      caps,
+      visited,
+      stateKey,
+      () => false,
+      (next, depth) => scoreFor(strategy, next, depth),
+    )
+    if (expansion.kind !== 'expanded')
+      return expansionResult(expansion, node.depth + 1, expanded)
+    for (const child of expansion.children) frontier.push(child)
   }
 }
 
@@ -729,61 +767,29 @@ export const solveToLayout = (
     const node = queue[head]
     head += 1
     if (!node) break
-    if ((expanded & 1023) === 0 && Date.now() > deadline) {
-      return { kind: 'cutoff', reason: 'timeout', expanded }
-    }
-    if (node.depth > caps.maxDepth) {
-      return { kind: 'cutoff', reason: 'depth', expanded }
-    }
+    const guard = searchGuard(node, caps, deadline, expanded, true)
+    if (guard === 'skip') continue
+    if (guard) return guard
     const state = node.state
-    if (state.status === 'win') {
-      return {
-        kind: 'solved',
-        inputs: nodeInputs(node),
-        depth: node.depth,
-        expanded,
-        state,
-      }
-    }
+    if (state.status === 'win') return solvedAt(node, expanded)
     if (state.status === 'lose') continue
     expanded += 1
 
     const activity = boardActivity(state)
-    if (!activity.hasYou && !activity.hasAuto && !activity.hasVirtualRules)
-      continue
+    if (isStaticBoard(activity)) continue
 
-    const prepared = prepareStep(state)
-    for (const action of ACTIONS) {
-      if (action.direction === null && !activity.hasAuto && !activity.hasVirtualRules)
-        continue
-      const result =
-        action.direction === null ? step(state, null) : prepared(action.direction)
-      if (!result.changed) continue
-      const next = result.state
-      const key = layoutKey(next)
-      if (key === goal || next.status === 'win') {
-        return {
-          kind: 'solved',
-          inputs: nodeInputs(node) + action.code,
-          depth: node.depth + 1,
-          expanded,
-          state: next,
-        }
-      }
-      if (next.status === 'lose') continue
-      if (visited.has(key)) continue
-      visited.add(key)
-      if (visited.size > caps.maxStates) {
-        return { kind: 'cutoff', reason: 'states', expanded }
-      }
-      queue.push({
-        state: next,
-        parent: node,
-        code: action.code,
-        depth: node.depth + 1,
-        score: 0,
-      })
-    }
+    const expansion = expandActions(
+      node,
+      activity,
+      caps,
+      visited,
+      layoutKey,
+      (_next, key) => key === goal,
+      () => 0,
+    )
+    if (expansion.kind !== 'expanded')
+      return expansionResult(expansion, node.depth + 1, expanded)
+    queue.push(...expansion.children)
   }
   return { kind: 'exhausted', expanded }
 }
@@ -1082,10 +1088,9 @@ const solveMacro = (initial: GameState, caps: SolveCaps): SolveResult => {
   for (;;) {
     const node = frontier.pop()
     if (!node) return { kind: 'exhausted', expanded }
-    if ((expanded & 1023) === 0 && Date.now() > deadline) {
-      return { kind: 'cutoff', reason: 'timeout', expanded }
-    }
-    if (node.depth > caps.maxDepth) continue
+    const guard = searchGuard(node, caps, deadline, expanded, false)
+    if (guard === 'skip') continue
+    if (guard) return guard
     const state = node.state
     if (state.status === 'win') {
       const inputs = nodeInputs(node)

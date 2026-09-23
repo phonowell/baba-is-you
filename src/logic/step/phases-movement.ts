@@ -1,6 +1,10 @@
 import { resolveEmptyPropsByCell } from '../empty.js'
-import { keyFor } from '../helpers.js'
-import { GROUP_NOUNS, matchesRuleSubject } from '../rule-match.js'
+import { fnvChar, fnvInt, fnvText, keyFor } from '../helpers.js'
+import {
+  GROUP_NOUNS,
+  matchesRuleSubject,
+  subjectRuleCandidates,
+} from '../rule-match.js'
 import { ruleDedupeKey } from '../rules.js'
 
 import { moveItemsBatch } from './move-batch.js'
@@ -10,7 +14,9 @@ import {
   buildGrid,
   hasLatchedFloat,
   hasProp,
+  isLevelConditionPositionFree,
   MOVE_DELTAS,
+  NUDGE_DIRS,
   resolveLevelProps,
   resolveLevelPropsGlobal,
   reverseDirection,
@@ -25,22 +31,13 @@ import type { Direction, Item, Rule } from '../types.js'
 const CHILL_DIRS: Direction[] = ['up', 'right', 'down', 'left']
 
 const chillDirection = (turn: number, id: number): Direction => {
+  // Same `chill:${turn}:${id}` byte sequence as the original string seed.
   let hash = 2166136261
-  const seed = `chill:${turn}:${id}`
-  for (let i = 0; i < seed.length; i += 1) {
-    hash ^= seed.charCodeAt(i)
-    hash = Math.imul(hash, 16777619)
-  }
+  hash = fnvText(hash, 'chill:')
+  hash = fnvInt(hash, turn)
+  hash = fnvChar(hash, 58)
+  hash = fnvInt(hash, id)
   return CHILL_DIRS[(hash >>> 0) % 4] ?? 'right'
-}
-
-// `nudge*` props are self-movement in a fixed direction — the official
-// `findallfeature(is nudge*)` feeds them into `moving_units` like `move`.
-const NUDGE_PROPS: Record<string, Direction> = {
-  nudgeright: 'right',
-  nudgeup: 'up',
-  nudgeleft: 'left',
-  nudgedown: 'down',
 }
 
 // Official direction numbering (values.lua ndirs): 0=right 1=up 2=left
@@ -110,18 +107,27 @@ const followDirectionForWords = (
 // keeps it, else facing > left-turn > right-turn > last found, and the
 // pick becomes the new lock. With no target the lock clears and the unit
 // keeps its facing.
+// Matched aim-rule objects with their negation — follow/fear both start
+// from the same candidate set.
+const aimWords = (
+  item: Item,
+  rules: Rule[],
+  context: RuleRuntime['context'],
+): { word: string; negated: boolean }[] =>
+  subjectRuleCandidates(rules, item)
+    .filter((rule) => matchesRuleSubject(item, rule, context))
+    .map((rule) => ({
+      word: rule.object,
+      negated: rule.objectNegated === true,
+    }))
+
 const followAim = (
   item: Item,
   items: Item[],
   rules: Rule[],
   context: RuleRuntime['context'],
 ): { dir: Direction; followed: number } | null => {
-  const words = rules
-    .filter((rule) => matchesRuleSubject(item, rule, context))
-    .map((rule) => ({
-      word: rule.object,
-      negated: rule.objectNegated === true,
-    }))
+  const words = aimWords(item, rules, context)
   if (!words.length) return null
 
   const facing = OFFICIAL_DIR_INDEX[item.dir ?? 'right'] ?? 0
@@ -202,9 +208,7 @@ const fearDirection = (
   width: number,
   height: number,
 ): { dir: Direction; amount: number } | null => {
-  const words = rules
-    .filter((rule) => matchesRuleSubject(item, rule, context))
-    .map((rule) => ({ word: rule.object, negated: rule.objectNegated === true }))
+  const words = aimWords(item, rules, context)
   if (!words.length) return null
 
   const cellItems = new Map<number, Item[]>()
@@ -408,7 +412,7 @@ export const applyMoveAdjective = (
         (hasProp(item, 'move') ||
           hasProp(item, 'auto') ||
           hasProp(item, 'chill') ||
-          item.props.some((prop) => prop in NUDGE_PROPS)) &&
+          item.props.some((prop) => prop in NUDGE_DIRS)) &&
         !hasProp(item, 'sleep') &&
         !hasProp(item, 'broken') &&
         !hasProp(item, 'still'),
@@ -416,7 +420,7 @@ export const applyMoveAdjective = (
     .sort((a, b) => takeIndexOf(a) - takeIndexOf(b) || a.id - b.id)
     .map((item) => {
       const takeIndex = takeIndexOf(item)
-      const nudge = item.props.find((prop) => prop in NUDGE_PROPS)
+      const nudge = item.props.find((prop) => prop in NUDGE_DIRS)
       const isMove = hasProp(item, 'move') || hasProp(item, 'chill')
       // Take-2 movers move in their facing dir (chill gets a fresh random
       // facing each turn); nudge movers ignore facing for their fixed dir.
@@ -425,7 +429,7 @@ export const applyMoveAdjective = (
           ? hasProp(item, 'chill')
             ? chillDirection(turn, item.id)
             : (item.dir ?? 'right')
-          : (NUDGE_PROPS[nudge ?? 'nudgeright'] ?? 'right')
+          : (NUDGE_DIRS[nudge ?? 'nudgeright'] ?? 'right')
       return {
         id: item.id,
         dir: hasProp(item, 'reverse') ? reverseDirection(dir) : dir,
@@ -740,10 +744,13 @@ export const applyFall = (
       }
 
       // Each entry falls its unit to ground before the next entry runs.
+      // The unit's position is re-read once per entry — other entries'
+      // pushes may move it — then chained through this entry's own
+      // steps, which are the only writes inside the descent loop.
+      let pos = current.find((item) => item.id === id)
       for (;;) {
-        const before = current.find((item) => item.id === id)
-        if (!before) break
-        const { x, y } = before
+        if (!pos) break
+        const { x, y } = pos
         const step = moveItems(
           current,
           dir,
@@ -753,12 +760,12 @@ export const applyFall = (
           false,
           true,
         )
-        const after = step.items.find((item) => item.id === id)
-        if (!after || after.x !== x || after.y !== y) {
+        pos = step.items.find((item) => item.id === id)
+        if (!pos || pos.x !== x || pos.y !== y) {
           current = step.items
           moved = true
           passMoved = true
-          if (!after) break
+          if (!pos) break
           continue
         }
         // The unit stayed put — keep any side effects (dir aim, removals)
@@ -808,26 +815,23 @@ export const applyShift = (
 ): { items: Item[]; moved: boolean } => {
   const { width, height } = runtime
   // `level is shift` shoves every unit along the room's facing
-  // (official: all units take a `mapdir` step each turn).
-  const levelShift =
-    levelDir !== undefined &&
-    resolveLevelPropsGlobal(
-      runtime.buckets.level,
-      runtime.context,
-      width,
-      height,
-    ).has('shift')
+  // (official: all units take a `mapdir` step each turn). One global
+  // resolve covers both the shift probe and the float-layer read —
+  // the border sweep is only needed when the room can shift at all.
+  const levelProps =
+    levelDir !== undefined
+      ? resolveLevelPropsGlobal(
+          runtime.buckets.level,
+          runtime.context,
+          width,
+          height,
+        )
+      : undefined
+  const levelShift = levelProps?.has('shift') ?? false
   // The rider sweep is gated by `floating_level(unit)` (movement.lua:433):
   // only units on the level's float layer ride — the unit side reads the
   // latched `values[FLOAT]`, the level side stays a fresh rule read.
-  const levelFloat =
-    levelShift &&
-    resolveLevelPropsGlobal(
-      runtime.buckets.level,
-      runtime.context,
-      width,
-      height,
-    ).has('float')
+  const levelFloat = levelShift && (levelProps?.has('float') ?? false)
   if (!levelShift && !items.some((item) => hasProp(item, 'shift')))
     return { items, moved: false }
 
@@ -901,6 +905,15 @@ export const applyShift = (
       (rule) => !rule.objectNegated && rule.object === 'hold',
     )
   ) {
+    // When every level rule is position-independent the contact-cell
+    // resolve is identical at all borders — compute it once.
+    const positionFree = runtime.buckets.level.every(
+      (rule) =>
+        !rule.condition || isLevelConditionPositionFree(rule.condition),
+    )
+    const sharedProps = positionFree
+      ? resolveLevelProps(runtime.buckets.level, runtime.context, 0, 0)
+      : undefined
     for (const item of shiftedItems) {
       const atBorder =
         item.x === 0 ||
@@ -908,12 +921,14 @@ export const applyShift = (
         item.x === width - 1 ||
         item.y === height - 1
       if (!atBorder) continue
-      const levelProps = resolveLevelProps(
-        runtime.buckets.level,
-        runtime.context,
-        item.x,
-        item.y,
-      )
+      const levelProps =
+        sharedProps ??
+        resolveLevelProps(
+          runtime.buckets.level,
+          runtime.context,
+          item.x,
+          item.y,
+        )
       if (hasLatchedFloat(item) !== levelProps.has('float')) continue
       if (levelProps.has('hold')) levelHeldIds.add(item.id)
     }
@@ -994,12 +1009,13 @@ export const applyShift = (
   // Official `moveblock` runs again at the end of the turn: every unit
   // resting on a `shift` belt adopts that belt's facing — which is what
   // steers a `x is move` unit riding a conveyor, not the belt that
-  // delivered it there.
-  const steered = multiItems.map((item) => ({ ...item }))
+  // delivered it there. `multiItems` entries are all owned here (the
+  // shifted clones above or fresh move results), so the steer pass
+  // mutates them in place instead of re-cloning the board.
   const steeredIds = new Set<number>()
-  const restByCell = buildGrid(steered, width)
+  const restByCell = buildGrid(multiItems, width)
   const restById = new Map<number, Item>()
-  for (const item of steered) restById.set(item.id, item)
+  for (const item of multiItems) restById.set(item.id, item)
   for (const cellItems of restByCell.values()) {
     for (const layer of splitByFloatLayer(cellItems)) {
       const belt = layer.find((item) => hasProp(item, 'shift'))
@@ -1018,7 +1034,7 @@ export const applyShift = (
     }
   }
   return {
-    items: steered,
+    items: multiItems,
     moved: multiMoved || facingChanged,
   }
 }

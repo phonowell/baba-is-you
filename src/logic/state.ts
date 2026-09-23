@@ -21,6 +21,7 @@ export const createInitialState = (
     items,
     rules: runtime.rules,
     overriddenTextIds: runtime.overriddenTextIds,
+    activeTextIds: runtime.activeTextIds,
     rulesSourceItems: level.items,
     ruleCounts: runtime.ruleCounts,
     status: 'playing',

@@ -4,7 +4,7 @@ import { decodeReplayInput } from './replay-input.js'
 import { createInitialState } from './state.js'
 import { step } from './step.js'
 
-import type { Direction, GameState, LevelData } from './types.js'
+import type { GameState, LevelData } from './types.js'
 
 // Replay support shared by golden tests and tooling.
 //
@@ -17,9 +17,6 @@ import type { Direction, GameState, LevelData } from './types.js'
 // which keeps simulating MOVE/SHIFT after a loss (there is no dead-state
 // input gate in its `step`). The win/lose input gate lives in the caller.
 
-export const encodeInput = (direction: Direction | null): string =>
-  direction === null ? 'w' : direction[0] ?? 'w'
-
 export const serializeState = (state: GameState): string => {
   const items = state.items
     .map(
@@ -30,7 +27,7 @@ export const serializeState = (state: GameState): string => {
   return `${state.status}|${items}`
 }
 
-export const hashState = (state: GameState): string =>
+const hashState = (state: GameState): string =>
   createHash('sha256').update(serializeState(state)).digest('hex').slice(0, 16)
 
 export type ReplayResult = {

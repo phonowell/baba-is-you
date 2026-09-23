@@ -183,39 +183,38 @@ const resolveFrame = (
   }
 }
 
-const rebindFrameWithSameRules = (
-  items: Item[],
+// Rebinding builds a fresh runtime over the frame's parsed rules — same
+// rules/overrides/counts, new item set and match context.
+const rebindRuntime = (
+  items: StepPhaseItems,
   frame: StepFrame,
-): StepFrame => {
-  const reboundRuntime = createRuleRuntime(
+  extras: Parameters<typeof createRuleRuntime>[6],
+): RuleRuntime =>
+  createRuleRuntime(
     items,
     frame.runtime.rules,
     frame.runtime.width,
     frame.runtime.height,
     frame.runtime.overriddenTextIds,
-    contextExtras(frame.runtime),
+    frame.runtime.activeTextIds,
+    extras,
     frame.runtime.ruleCounts,
   )
-  return {
-    items,
-    runtime: reboundRuntime,
-    ruleSourceItems: frame.ruleSourceItems,
-  }
-}
+
+const rebindFrameWithSameRules = (
+  items: Item[],
+  frame: StepFrame,
+): StepFrame => ({
+  items,
+  runtime: rebindRuntime(items, frame, contextExtras(frame.runtime)),
+  ruleSourceItems: frame.ruleSourceItems,
+})
 
 const refreshProperties = (
   items: StepPhaseItems,
   frame: StepFrame,
 ): StepFrame => {
-  const reboundRuntime = createRuleRuntime(
-    items,
-    frame.runtime.rules,
-    frame.runtime.width,
-    frame.runtime.height,
-    frame.runtime.overriddenTextIds,
-    contextExtras(frame.runtime),
-    frame.runtime.ruleCounts,
-  )
+  const reboundRuntime = rebindRuntime(items, frame, contextExtras(frame.runtime))
   return {
     items: applyFrameProperties(items, reboundRuntime),
     runtime: reboundRuntime,
@@ -233,15 +232,7 @@ const synchronizeStageFrame = (
     // units leaves the ruleset identical, so rebind instead of rescanning.
     // Mirrors `resolveFrame` exactly: no extras on the fresh context.
     if (sameRuleInputs(items, frame.ruleSourceItems)) {
-      const reboundRuntime = createRuleRuntime(
-        items,
-        frame.runtime.rules,
-        frame.runtime.width,
-        frame.runtime.height,
-        frame.runtime.overriddenTextIds,
-        undefined,
-        frame.runtime.ruleCounts,
-      )
+      const reboundRuntime = rebindRuntime(items, frame, undefined)
       return {
         items: applyFrameProperties(items, reboundRuntime),
         runtime: reboundRuntime,
@@ -346,9 +337,11 @@ const resolveStepFrame = (state: GameState, idle: boolean): StepFrame => {
   // them directly instead.
   const source = state.rulesSourceItems
   const overridden = state.overriddenTextIds
+  const active = state.activeTextIds
   if (
     source !== undefined &&
     overridden !== undefined &&
+    active !== undefined &&
     sameRuleInputs(source, state.items)
   ) {
     const runtime = createRuleRuntime(
@@ -357,6 +350,7 @@ const resolveStepFrame = (state: GameState, idle: boolean): StepFrame => {
       state.width,
       state.height,
       overridden,
+      active,
       extras,
       state.ruleCounts,
     )
@@ -506,6 +500,7 @@ const runStages = (
     items: itemsWithMemory,
     rules: frame.runtime.rules,
     overriddenTextIds: frame.runtime.overriddenTextIds,
+    activeTextIds: frame.runtime.activeTextIds,
     rulesSourceItems: frame.ruleSourceItems,
     ruleCounts: frame.runtime.ruleCounts,
     status: didWin ? 'win' : didLose ? 'lose' : 'playing',

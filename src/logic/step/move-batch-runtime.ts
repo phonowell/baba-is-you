@@ -1,4 +1,6 @@
 import {
+  emptyBlocked,
+  emptyForwardsPush,
   emptyLockHit,
   emptyPullRootBlocked,
   emptyWeakHit,
@@ -6,7 +8,6 @@ import {
   inBounds,
   isLockedFor,
   isLockCollision,
-  LOCKED_PROPS,
   removeOne,
   traceEmptyPullCargo,
 } from './move-core.js'
@@ -100,34 +101,16 @@ export const resolveBatchArrows = (
   const lastDeferTick = new Map<number, number>()
   const exhaustedTick = new Map<number, number>()
 
-  // Official `canmove` empty branch, per cell: `still`/`locked<dir>`
-  // cancels `swap` first; a cell with no remaining push/swap is
-  // enterable unless `stop`/`pull` walls it off, while a still
-  // `push`/`swap` empty can't be displaced and blocks outright.
-  const emptyBlocked = (x: number, y: number, dir: Direction): boolean => {
-    const props = context.emptyPropsAt(x, y)
-    const estill = props.has('still') || props.has(LOCKED_PROPS[dir])
-    const eswap = props.has('swap') && !estill
-    if (!props.has('push') && !eswap)
-      return props.has('pull') || props.has('stop')
-    return estill
-  }
+  // Empty-cell verdicts (move-core) bound to this runtime's lookup — the
+  // official `canmove` empty branch.
+  const emptyBlockedAt = (x: number, y: number, dir: Direction): boolean =>
+    emptyBlocked(context.emptyPropsAt, x, y, dir)
 
-  // A pushable empty forwards the push along `dir` until the chain lands
-  // on a non-push empty, real units, or the board edge (which blocks).
-  const emptyForwardsPush = (
+  const emptyForwardsPushAt = (
     x: number,
     y: number,
     dir: Direction,
-  ): boolean => {
-    const props = context.emptyPropsAt(x, y)
-    return (
-      props.has('push') &&
-      !props.has('swap') &&
-      !props.has('still') &&
-      !props.has(LOCKED_PROPS[dir])
-    )
-  }
+  ): boolean => emptyForwardsPush(context.emptyPropsAt, x, y, dir)
 
   const addArrow = (
     id: number,
@@ -264,21 +247,21 @@ export const resolveBatchArrows = (
         context.eatsEmpty(item, nx, ny) ||
         emptyLockHit(context, item, firstProps) ||
         emptyWeakHit(item, firstProps) ||
-        (firstProps.has('swap') && !emptyBlocked(nx, ny, dir))
+        (firstProps.has('swap') && !emptyBlockedAt(nx, ny, dir))
       ) {
         // free entry
-      } else if (emptyBlocked(nx, ny, dir)) {
+      } else if (emptyBlockedAt(nx, ny, dir)) {
         return false
       } else {
         let lookX = nx
         let lookY = ny
-        while (emptyForwardsPush(lookX, lookY, dir)) {
+        while (emptyForwardsPushAt(lookX, lookY, dir)) {
           lookX += dx
           lookY += dy
           if (!inBounds(context, lookX, lookY)) return false
           targets = getLiveCellItems(context, lookX, lookY)
           if (targets.length) break
-          if (emptyBlocked(lookX, lookY, dir)) return false
+          if (emptyBlockedAt(lookX, lookY, dir)) return false
         }
       }
     }
@@ -398,15 +381,15 @@ export const resolveBatchArrows = (
           // mover dies at its own cell instead of landing
         } else if (
           firstProps.has('swap') &&
-          !emptyBlocked(nx, ny, arrow.dir)
+          !emptyBlockedAt(nx, ny, arrow.dir)
         ) {
           // free entry
-        } else if (emptyBlocked(nx, ny, arrow.dir)) {
+        } else if (emptyBlockedAt(nx, ny, arrow.dir)) {
           blocked = true
         } else {
           let lookX = nx
           let lookY = ny
-          while (emptyForwardsPush(lookX, lookY, arrow.dir)) {
+          while (emptyForwardsPushAt(lookX, lookY, arrow.dir)) {
             lookX += dx
             lookY += dy
             if (!inBounds(context, lookX, lookY)) {
@@ -418,7 +401,7 @@ export const resolveBatchArrows = (
               throughEmptyPush = true
               break
             }
-            if (emptyBlocked(lookX, lookY, arrow.dir)) {
+            if (emptyBlockedAt(lookX, lookY, arrow.dir)) {
               blocked = true
               break
             }

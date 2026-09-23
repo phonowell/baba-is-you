@@ -10,40 +10,86 @@ const sameProps = (a: readonly Property[], b: readonly Property[]): boolean =>
 
 const NO_RULES: Rule[] = []
 
-// When no is-property rule carries a condition and no unconditional
-// `all is group*` rule derives membership from the live item set, every
-// rule match is a pure function of (isText, name): props resolve to one
-// shared array per entity kind. Cached per rules array — rebinds and the
-// next step all pass the same `rules` reference, so the memo survives
-// them. `null` marks rulesets that are not name-only.
-const staticPropCaches = new WeakMap<Rule[], Map<string, Property[]> | null>()
+// Per-rules-array index over the is-property set, partitioned the same
+// way `createRuleBuckets` splits subjects. Unconditional rules are
+// name-static — their verdict depends only on (isText, name) plus the
+// rules-derived group membership — so they resolve once per name and
+// feed every item's baseline; conditional rules stay per-item. An
+// unconditional `all is group*` rule derives membership from the live
+// item set, which blocks the base memo (`base: null`). `empty`-subject
+// positives never match an entity and drop out of both sides.
+type PropRuleBuckets = {
+  byName: Map<string, Rule[]>
+  text: Rule[]
+  wildcard: Rule[]
+}
+type PropRuleIndex = {
+  base: Map<string, { yes: string[]; no: string[] }> | null
+  conditional: PropRuleBuckets
+  // With no conditional rules the resolved props themselves are
+  // name-static — memoize the final array, skipping even the baseline
+  // merge per item.
+  final: Map<string, Property[]> | null
+  unconditional: PropRuleBuckets
+}
 
-const staticPropCacheFor = (rules: Rule[]): Map<string, Property[]> | null => {
-  const cached = staticPropCaches.get(rules)
-  if (cached !== undefined) return cached
-  const nameOnly = !rules.some(
-    (rule) =>
-      isPropertyRule(rule) &&
-      // `empty` rules never match an entity — their conditions can't
-      // disturb item props, so they don't disqualify the memo.
-      rule.subject !== 'empty' &&
-      (rule.condition !== undefined ||
-        (rule.subject === 'all' &&
-          !rule.subjectNegated &&
-          !rule.objectNegated &&
-          GROUP_NOUNS.has(rule.object))),
+const propRuleIndexes = new WeakMap<Rule[], PropRuleIndex>()
+
+const propRuleIndexFor = (rules: Rule[]): PropRuleIndex => {
+  const cached = propRuleIndexes.get(rules)
+  if (cached) return cached
+  const index: PropRuleIndex = {
+    base: new Map(),
+    conditional: { byName: new Map(), text: [], wildcard: [] },
+    final: new Map(),
+    unconditional: { byName: new Map(), text: [], wildcard: [] },
+  }
+  const insert = (buckets: PropRuleBuckets, rule: Rule): void => {
+    if (
+      rule.subjectNegated === true ||
+      rule.subject === 'all' ||
+      GROUP_NOUNS.has(rule.subject)
+    )
+      buckets.wildcard.push(rule)
+    else if (rule.subject === 'text') buckets.text.push(rule)
+    else {
+      const list = buckets.byName.get(rule.subject) ?? []
+      list.push(rule)
+      buckets.byName.set(rule.subject, list)
+    }
+  }
+  for (const rule of rules) {
+    if (!isPropertyRule(rule)) continue
+    if (rule.subject === 'empty' && !rule.subjectNegated) continue
+    if (rule.condition) {
+      insert(index.conditional, rule)
+      continue
+    }
+    insert(index.unconditional, rule)
+    // `all is group*` unconditional: membership is items-derived.
+    if (
+      rule.subject === 'all' &&
+      !rule.subjectNegated &&
+      !rule.objectNegated &&
+      GROUP_NOUNS.has(rule.object)
+    )
+      index.base = null
+  }
+  if (index.base === null) index.final = null
+  else if (
+    index.conditional.byName.size > 0 ||
+    index.conditional.text.length > 0 ||
+    index.conditional.wildcard.length > 0
   )
-  const cache = nameOnly ? new Map<string, Property[]>() : null
-  staticPropCaches.set(rules, cache)
-  return cache
+    index.final = null
+  propRuleIndexes.set(rules, index)
+  return index
 }
 
 export const applyProperties = (
   items: LevelItem[],
   runtime: RuleRuntime,
 ): Item[] => {
-  const { propertyBySubject, propertyText, propertyWildcard } =
-    runtime.buckets
   if (!runtime.buckets.isProperty.length) {
     return items.map((item) => {
       const prev = (item as Item).props
@@ -69,22 +115,47 @@ export const applyProperties = (
     if (!list.includes(rule.object)) list.push(rule.object)
   }
 
-  const staticCache = staticPropCacheFor(runtime.rules)
+  const index = propRuleIndexFor(runtime.rules)
+  const candidatesFor = (
+    buckets: PropRuleBuckets,
+    item: LevelItem,
+  ): readonly Rule[] =>
+    item.isText ? buckets.text : (buckets.byName.get(item.name) ?? NO_RULES)
+
   const propsFor = (item: LevelItem): Property[] => {
     const yes: string[] = []
     const no: string[] = []
 
-    if (item.isText) yes.push('push')
+    const applyBucket = (buckets: PropRuleBuckets): void => {
+      for (const rule of candidatesFor(buckets, item))
+        applyRule(item, rule, yes, no)
+      if (!item.isText)
+        for (const rule of buckets.wildcard)
+          applyRule(item, rule, yes, no)
+    }
 
-    // Subject-indexed buckets: a text entity can only satisfy `text`
-    // subjects; a named entity only its own bucket plus wildcards. Same
-    // (item, rule) evaluations as scanning `isProperty` in order.
-    const candidates = item.isText
-      ? propertyText
-      : (propertyBySubject.get(item.name) ?? NO_RULES)
-    for (const rule of candidates) applyRule(item, rule, yes, no)
-    if (!item.isText)
-      for (const rule of propertyWildcard) applyRule(item, rule, yes, no)
+    if (index.base) {
+      // All text entities resolve identically (`text` subject + implicit
+      // `push`); units key by name. `\0` can't appear in a word name.
+      const key = item.isText ? '\u0000' : item.name
+      const cached = index.base.get(key)
+      if (cached) {
+        yes.push(...cached.yes)
+        no.push(...cached.no)
+      } else {
+        if (item.isText) yes.push('push')
+        applyBucket(index.unconditional)
+        index.base.set(key, {
+          yes: [...yes],
+          no: [...no],
+        })
+      }
+    } else {
+      if (item.isText) yes.push('push')
+      applyBucket(index.unconditional)
+    }
+
+    applyBucket(index.conditional)
 
     return (
       no.length ? yes.filter((value) => !no.includes(value)) : yes
@@ -92,21 +163,17 @@ export const applyProperties = (
   }
 
   return items.map((item) => {
-    let props: Property[]
-    if (staticCache) {
-      // All text entities resolve identically (`text` subject + implicit
-      // `push`); units key by name. `\0` can't appear in a word name.
+    let props: Property[] | undefined
+    if (index.final) {
       const key = item.isText ? '\u0000' : item.name
-      const cached = staticCache.get(key)
-      if (cached !== undefined) {
-        props = cached
-      } else {
+      const cached = index.final.get(key)
+      if (cached !== undefined) props = cached
+      else {
         props = propsFor(item)
-        staticCache.set(key, props)
+        index.final.set(key, props)
       }
-    } else {
-      props = propsFor(item)
     }
+    if (props === undefined) props = propsFor(item)
 
     // Reapply pipelines rebuild the frame repeatedly; an item whose props
     // came out identical keeps its object, which the callers' clones and

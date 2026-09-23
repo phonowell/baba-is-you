@@ -1,4 +1,6 @@
 import {
+  emptyBlocked as emptyBlockedCore,
+  emptyForwardsPush as emptyForwardsPushCore,
   emptyLockHit,
   emptyPullRootBlocked,
   emptyWeakHit,
@@ -6,7 +8,7 @@ import {
   inBounds,
   isLockedFor,
   isLockCollision,
-  LOCKED_PROPS,
+  markEmptyLandingSpecials,
   moveOne,
   removeOne,
   traceEmptyPullCargo,
@@ -45,31 +47,13 @@ export const createSingleMoveRuntime = (
 } => {
   const [dx, dy] = MOVE_DELTAS[direction]
 
-  // Official `canmove` empty branch: `still`/`locked<dir>` cancels
-  // `swap` first; a cell with no remaining push/swap is enterable unless
-  // `stop`/`pull` walls it off, while a still `push`/`swap` empty can't
-  // be displaced and blocks outright.
-  const emptyBlocked = (x: number, y: number): boolean => {
-    const props = context.emptyPropsAt(x, y)
-    const estill = props.has('still') || props.has(LOCKED_PROPS[direction])
-    const eswap = props.has('swap') && !estill
-    if (!props.has('push') && !eswap)
-      return props.has('pull') || props.has('stop')
-    return estill
-  }
+  // Empty-cell verdicts (move-core) bound to this runtime's direction —
+  // the official `canmove` empty branch.
+  const emptyBlocked = (x: number, y: number): boolean =>
+    emptyBlockedCore(context.emptyPropsAt, x, y, direction)
 
-  // A pushable empty forwards the push: the chain ends on the first
-  // non-push empty (the pushed emptiness lands there), on real units
-  // (which become the push targets), or on the board edge (blocked).
-  const emptyForwardsPush = (x: number, y: number): boolean => {
-    const props = context.emptyPropsAt(x, y)
-    return (
-      props.has('push') &&
-      !props.has('swap') &&
-      !props.has('still') &&
-      !props.has(LOCKED_PROPS[direction])
-    )
-  }
+  const emptyForwardsPush = (x: number, y: number): boolean =>
+    emptyForwardsPushCore(context.emptyPropsAt, x, y, direction)
 
   const isMoveEntity = (id: number): boolean =>
     isMovePhase && context.moverIds.has(id)
@@ -485,6 +469,20 @@ export const createSingleMoveRuntime = (
       queuePulls(pullTargets, item.id, isWaveRoot)
       queuePulls(emptyPullTargets, item.id, false)
     }
+    // Swap cargo teleports to the mover's vacated cell — it resolves even
+    // for a mover that died mid-check (official dopush on the corpse).
+    const drainSwapTargets = (): void => {
+      for (const target of swapTargets) {
+        if (context.moved.has(target.id) || context.removed.has(target.id))
+          continue
+        const targetLive = context.byId.get(target.id)
+        if (!targetLive) continue
+        if (moveOne(context, targetLive, oldX, oldY)) {
+          context.moved.add(targetLive.id)
+          context.status.anyMoved = true
+        }
+      }
+    }
 
     for (const target of pushTargets) {
       if (context.removed.has(target.id)) continue
@@ -507,16 +505,7 @@ export const createSingleMoveRuntime = (
       // The corpse's own move is inert — but its queued swap teleports
       // and pull cargo still resolve, like the official dopush running
       // inside a dead mover's check.
-      for (const target of swapTargets) {
-        if (context.moved.has(target.id) || context.removed.has(target.id))
-          continue
-        const targetLive = context.byId.get(target.id)
-        if (!targetLive) continue
-        if (moveOne(context, targetLive, oldX, oldY)) {
-          context.moved.add(targetLive.id)
-          context.status.anyMoved = true
-        }
-      }
+      drainSwapTargets()
       queueAllPulls()
       context.moved.add(id)
       return
@@ -527,14 +516,7 @@ export const createSingleMoveRuntime = (
     // `empty is weak` — and an unsafe lock mover dies at its own cell
     // without moving (`gone` skips the update).
     if (frontCellEmpty) {
-      const emptyProps = context.emptyPropsAt(nx, ny)
-      const lockHit = emptyLockHit(context, item, emptyProps)
-      if (
-        context.eatsEmpty(item, nx, ny) ||
-        lockHit ||
-        emptyWeakHit(item, emptyProps)
-      )
-        context.deadEmptyCells.add(keyFor(nx, ny, context.width))
+      const lockHit = markEmptyLandingSpecials(context, item, nx, ny)
       if (lockHit && removeOne(context, item)) {
         context.moved.add(item.id)
         context.status.anyMoved = true
@@ -610,16 +592,7 @@ export const createSingleMoveRuntime = (
       }
     }
 
-    for (const target of swapTargets) {
-      if (context.moved.has(target.id) || context.removed.has(target.id))
-        continue
-      const targetLive = context.byId.get(target.id)
-      if (!targetLive) continue
-      if (moveOne(context, targetLive, oldX, oldY)) {
-        context.moved.add(targetLive.id)
-        context.status.anyMoved = true
-      }
-    }
+    drainSwapTargets()
 
     queueAllPulls()
   }

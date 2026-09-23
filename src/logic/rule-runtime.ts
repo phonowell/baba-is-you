@@ -57,6 +57,9 @@ export type RuleRuntime = {
   // reparsing rules. Rebound runtimes carry the previous value forward;
   // any position-affecting change re-collects before the step ends.
   overriddenTextIds: ReadonlySet<number>
+  // Text ids in any active rule — the lit cards. Same provenance as
+  // `overriddenTextIds`: the partition yields both marks in one scan.
+  activeTextIds: ReadonlySet<number>
   rules: Rule[]
   width: number
 }
@@ -66,7 +69,7 @@ export type RuleRuntime = {
 // named `level`, and `empty` never matches an item at all.
 const WILDCARD_SUBJECT_WORDS = new Set(['all', 'group', 'group2', 'group3'])
 
-export const createRuleBuckets = (rules: Rule[]): RuleBuckets => {
+const createRuleBuckets = (rules: Rule[]): RuleBuckets => {
   const buckets: RuleBuckets = {
     eat: [],
     has: [],
@@ -121,6 +124,7 @@ export const createRuleRuntime = (
   width: number,
   height: number,
   overriddenTextIds: ReadonlySet<number>,
+  activeTextIds: ReadonlySet<number>,
   extras?: { idle?: boolean; turn?: number },
   ruleCounts?: ReadonlyMap<string, number>,
 ): RuleRuntime => ({
@@ -128,6 +132,7 @@ export const createRuleRuntime = (
   context: createRuleMatchContext(items, rules, width, height, extras),
   height,
   overriddenTextIds,
+  activeTextIds,
   ruleCounts: ruleCounts ?? new Map(),
   rules,
   width,
@@ -161,12 +166,14 @@ export const collectRuleRuntime = (
       seen.add(key)
       rules.push(rule)
     }
+    const marks = textRuleMarksFromPartition(partition)
     const runtime = createRuleRuntime(
       items,
       expandMimicRules(rules),
       width,
       height,
-      textRuleMarksFromPartition(partition).overridden,
+      marks.overridden,
+      marks.active,
       extras,
       ruleCounts,
     )

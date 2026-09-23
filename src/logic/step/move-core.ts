@@ -1,5 +1,19 @@
-import { matchesRuleObjectWord, matchesRuleSubject } from '../rule-match.js'
-import { hasLatchedFloat, hasProp, keyFor, MOVE_DELTAS } from './shared.js'
+import { appendEmptyHasSpawns, resolveEmptyPropsByCell } from '../empty.js'
+import {
+  matchesRuleObjectWord,
+  matchesRuleSubject,
+  subjectRuleCandidates,
+} from '../rule-match.js'
+import {
+  appendHasSpawns,
+  hasLatchedFloat,
+  hasProp,
+  isLevelConditionPositionFree,
+  keyFor,
+  LOCKED_PROPS,
+  MOVE_DELTAS,
+  resolveLevelProps,
+} from './shared.js'
 
 import type { RuleMatchContext } from '../rule-match.js'
 import type { Direction, Item, Rule } from '../types.js'
@@ -60,16 +74,27 @@ export type MoveCoreContext = {
   width: number
 }
 
-// `locked*` blocks any move in that direction — self-propelled or pushed.
-export const LOCKED_PROPS: Record<Direction, Item['props'][number]> = {
-  up: 'lockedup',
-  right: 'lockedright',
-  down: 'lockeddown',
-  left: 'lockedleft',
-}
-
 export const isLockedFor = (item: Item, direction: Direction): boolean =>
   hasProp(item, LOCKED_PROPS[direction])
+
+// The frozen-board bookkeeping fields both engines seed identically —
+// one pass's movelist state (see MoveCoreContext for the semantics).
+export const createFrozenPassState = (): Pick<
+  MoveCoreContext,
+  | 'movePass'
+  | 'passMoved'
+  | 'passDeparted'
+  | 'passOrigins'
+  | 'pushQueued'
+  | 'deferredIds'
+> => ({
+  movePass: 0,
+  passMoved: new Set(),
+  passDeparted: new Map(),
+  passOrigins: new Map(),
+  pushQueued: new Set(),
+  deferredIds: new Set(),
+})
 
 // `x eat y` is evaluated at move time in the official engine: the eater
 // consumes each same-float-layer, non-`safe` target it steps onto, and an
@@ -90,7 +115,7 @@ export const createEatsPredicates = (
     // `hasfeature` evaluates the rule's conditions at the destination
     // cell (`x+ox,y+oy`), not the mover's current position.
     const atTarget = { ...mover, x: target.x, y: target.y }
-    for (const rule of eatRules) {
+    for (const rule of subjectRuleCandidates(eatRules, mover)) {
       if (rule.subjectNegated) continue
       if (!matchesRuleSubject(atTarget, rule, context)) continue
       const matched = matchesRuleObjectWord(
@@ -111,7 +136,7 @@ export const createEatsPredicates = (
     if (props.has('safe')) return false
     if (hasLatchedFloat(mover) !== props.has('float')) return false
     const atCell = { ...mover, x, y }
-    for (const rule of eatRules) {
+    for (const rule of subjectRuleCandidates(eatRules, mover)) {
       if (rule.subjectNegated || rule.objectNegated) continue
       if (rule.object !== 'empty') continue
       if (matchesRuleSubject(atCell, rule, context)) return true
@@ -121,13 +146,48 @@ export const createEatsPredicates = (
   return { eats, eatsEmpty }
 }
 
+// Official `canmove` empty branch, per cell: `still`/`locked<dir>`
+// cancels `swap` first; a cell with no remaining push/swap is enterable
+// unless `stop`/`pull` walls it off, while a still `push`/`swap` empty
+// can't be displaced and blocks outright.
+export const emptyBlocked = (
+  emptyPropsAt: (x: number, y: number) => ReadonlySet<string>,
+  x: number,
+  y: number,
+  dir: Direction,
+): boolean => {
+  const props = emptyPropsAt(x, y)
+  const estill = props.has('still') || props.has(LOCKED_PROPS[dir])
+  const eswap = props.has('swap') && !estill
+  if (!props.has('push') && !eswap)
+    return props.has('pull') || props.has('stop')
+  return estill
+}
+
+// A pushable empty forwards the push along `dir` until the chain lands
+// on a non-push empty, real units, or the board edge (which blocks).
+export const emptyForwardsPush = (
+  emptyPropsAt: (x: number, y: number) => ReadonlySet<string>,
+  x: number,
+  y: number,
+  dir: Direction,
+): boolean => {
+  const props = emptyPropsAt(x, y)
+  return (
+    props.has('push') &&
+    !props.has('swap') &&
+    !props.has('still') &&
+    !props.has(LOCKED_PROPS[dir])
+  )
+}
+
 export const inBounds = (
   context: MoveCoreContext,
   x: number,
   y: number,
 ): boolean => x >= 0 && y >= 0 && x < context.width && y < context.height
 
-export const isOpenShutPair = (
+const isOpenShutPair = (
   context: MoveCoreContext,
   a: Item,
   b: Item,
@@ -171,6 +231,238 @@ export const emptyWeakHit = (
   emptyProps.has('weak') &&
   !emptyProps.has('safe') &&
   hasLatchedFloat(mover) === emptyProps.has('float')
+
+// Official check() empty branch shared by both engines: the landing
+// cell's empty pseudo-unit dies for `x eat empty`, an open/shut lock
+// pair, or `empty is weak` — returns the lock verdict so the caller can
+// kill an unsafe mover at its origin (`gone` skips the position update).
+export const markEmptyLandingSpecials = (
+  context: MoveCoreContext & {
+    emptyPropsAt: (x: number, y: number) => ReadonlySet<string>
+  },
+  item: Item,
+  x: number,
+  y: number,
+): boolean => {
+  const emptyProps = context.emptyPropsAt(x, y)
+  const lockHit = emptyLockHit(context, item, emptyProps)
+  if (
+    context.eatsEmpty(item, x, y) ||
+    lockHit ||
+    emptyWeakHit(item, emptyProps)
+  )
+    context.deadEmptyCells.add(keyFor(x, y, context.width))
+  return lockHit
+}
+
+export type MovementSets = {
+  byId: Map<number, Item>
+  movers: Array<{ id: number; x: number; y: number }>
+  moverIds: Set<number>
+  pushIds: Set<number>
+  stopIds: Set<number>
+  pullIds: Set<number>
+  swapIds: Set<number>
+  openIds: Set<number>
+  shutIds: Set<number>
+  weakIds: Set<number>
+  stillIds: Set<number>
+  phantomIds: Set<number>
+  // `level is hold` pins — unlike `still`, a pinned unit can't move under
+  // its own power either. Filled by pinLevelHeldUnits.
+  pinnedIds: Set<number>
+  // `x is hold` carrying needs a pre-move seat snapshot — the flag lets
+  // callers skip building it when no unit carries the prop.
+  hasHolder: boolean
+}
+
+// Bucket the board's movement props into id sets once — every downstream
+// check (push/pull verdicts, specials, carry) reads the same sets.
+// `word` units stay soft objects — the prop lets them stand in for their
+// noun in rules only; it does not grant push. `isMover` additionally
+// registers self-driven movers in creation order.
+export const collectMovementSets = (
+  items: Item[],
+  isMover?: (item: Item) => boolean,
+): MovementSets => {
+  const sets: MovementSets = {
+    byId: new Map(),
+    movers: [],
+    moverIds: new Set(),
+    pushIds: new Set(),
+    stopIds: new Set(),
+    pullIds: new Set(),
+    swapIds: new Set(),
+    openIds: new Set(),
+    shutIds: new Set(),
+    weakIds: new Set(),
+    stillIds: new Set(),
+    phantomIds: new Set(),
+    pinnedIds: new Set(),
+    hasHolder: false,
+  }
+  for (const item of items) {
+    sets.byId.set(item.id, item)
+    if (isMover?.(item)) {
+      sets.movers.push({ id: item.id, x: item.x, y: item.y })
+      sets.moverIds.add(item.id)
+    }
+    for (const prop of item.props) {
+      if (prop === 'push') sets.pushIds.add(item.id)
+      else if (prop === 'stop') sets.stopIds.add(item.id)
+      else if (prop === 'pull') sets.pullIds.add(item.id)
+      else if (prop === 'swap') sets.swapIds.add(item.id)
+      else if (prop === 'open') sets.openIds.add(item.id)
+      else if (prop === 'shut') sets.shutIds.add(item.id)
+      else if (prop === 'weak') sets.weakIds.add(item.id)
+      else if (prop === 'still') sets.stillIds.add(item.id)
+      else if (prop === 'phantom') sets.phantomIds.add(item.id)
+      else if (prop === 'hold') sets.hasHolder = true
+    }
+  }
+  return sets
+}
+
+// `still` units cannot be moved by external forces; `phantom` units
+// neither block nor get carried — both strip the affected ids from the
+// movement-prop sets so every downstream check sees it uniformly. `swap`
+// is stripped too: a blocked mover must not trade places either.
+export const stripBlockedMoveProps = (sets: MovementSets): void => {
+  for (const id of sets.stillIds) {
+    sets.pushIds.delete(id)
+    sets.pullIds.delete(id)
+    sets.swapIds.delete(id)
+  }
+  for (const id of sets.phantomIds) {
+    sets.pushIds.delete(id)
+    sets.pullIds.delete(id)
+    sets.swapIds.delete(id)
+    sets.stopIds.delete(id)
+    sets.openIds.delete(id)
+    sets.shutIds.delete(id)
+    sets.weakIds.delete(id)
+  }
+}
+
+// `level is hold` pins every unit touching the map frame (the official
+// `cantmove` levelhold check) — held units can't move or be carried.
+// Conditions evaluate at each unit's contact cell.
+export const pinLevelHeldUnits = (
+  levelRules: Rule[],
+  context: RuleMatchContext,
+  items: Item[],
+  width: number,
+  height: number,
+  sets: MovementSets,
+): void => {
+  const hasLevelHoldRule = levelRules.some(
+    (rule) => !rule.objectNegated && rule.object === 'hold',
+  )
+  if (!hasLevelHoldRule) return
+  // Position-independent level rules resolve identically at every
+  // contact cell — one resolve serves all border units.
+  const sharedLevelProps = levelRules.every(
+    (rule) =>
+      !rule.condition || isLevelConditionPositionFree(rule.condition),
+  )
+    ? resolveLevelProps(levelRules, context, 0, 0)
+    : undefined
+  for (const item of items) {
+    const atBorder =
+      item.x === 0 ||
+      item.y === 0 ||
+      item.x === width - 1 ||
+      item.y === height - 1
+    if (!atBorder) continue
+    const levelProps =
+      sharedLevelProps ??
+      resolveLevelProps(levelRules, context, item.x, item.y)
+    if (hasLatchedFloat(item) !== levelProps.has('float')) continue
+    if (!levelProps.has('hold')) continue
+    sets.pinnedIds.add(item.id)
+    sets.stillIds.add(item.id)
+    sets.pushIds.delete(item.id)
+    sets.pullIds.delete(item.id)
+    sets.swapIds.delete(item.id)
+  }
+}
+
+// Shared opening of a movement pass: collect the per-cell prop sets for
+// the working items, strip props whose carriers can no longer move,
+// then pin units the level still holds. Both engines start here before
+// their orchestration diverges.
+export const openMovementSets = (
+  levelRules: Rule[],
+  context: RuleMatchContext,
+  items: Item[],
+  width: number,
+  height: number,
+  isMover?: (item: Item) => boolean,
+): MovementSets => {
+  const sets = collectMovementSets(items, isMover)
+  stripBlockedMoveProps(sets)
+  pinLevelHeldUnits(levelRules, context, items, width, height, sets)
+  return sets
+}
+
+// Per-cell `empty is <prop>` resolution for the move engines plus the
+// shared board-edge fallback for cell queries.
+export const createEmptyPropLookup = (
+  rules: Rule[],
+  items: Item[],
+  width: number,
+  height: number,
+  context: RuleMatchContext,
+): {
+  emptyPropsByCell: ReadonlyMap<number, ReadonlySet<string>>
+  emptyPropsAt: (x: number, y: number) => ReadonlySet<string>
+} => {
+  const emptyPropsByCell = resolveEmptyPropsByCell(
+    rules,
+    items,
+    width,
+    height,
+    context,
+  )
+  const EMPTY_PROPS: ReadonlySet<string> = new Set()
+  return {
+    emptyPropsByCell,
+    emptyPropsAt: (x, y) =>
+      emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS,
+  }
+}
+
+// Post-move drops: removed units release their `x has y` contents, and
+// each empty cell destroyed by an entry special drops its `empty has x`
+// contents on the vacated cell.
+export const appendMovementSpawns = (
+  survivors: Item[],
+  removedItems: Item[],
+  deadEmptyCells: Set<number>,
+  buckets: { has: Rule[]; isProperty: Rule[] },
+  width: number,
+  height: number,
+  sourceItems: Item[],
+): { items: Item[]; changed: boolean } => {
+  const spawned = appendHasSpawns(
+    survivors,
+    removedItems,
+    buckets.has,
+    width,
+    height,
+    sourceItems,
+  )
+  if (!deadEmptyCells.size) return spawned
+  const dropped = appendEmptyHasSpawns(
+    spawned.items,
+    deadEmptyCells,
+    buckets.has,
+    buckets.isProperty,
+    width,
+    height,
+  )
+  return { items: dropped.items, changed: spawned.changed || dropped.changed }
+}
 
 export const removeOne = (context: MoveCoreContext, item: Item): boolean => {
   if (context.removed.has(item.id)) return false

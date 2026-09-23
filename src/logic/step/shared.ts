@@ -1,11 +1,21 @@
-import { keyFor as gridKeyFor, resolveRuleTargets } from '../helpers.js'
-import { createRuleMatchContext, matchesRuleSubject } from '../rule-match.js'
+import {
+  keyFor as gridKeyFor,
+  MOVE_DELTAS,
+  resolveRuleTargets,
+} from '../helpers.js'
+import {
+  createRuleMatchContext,
+  matchesRuleSubject,
+  subjectRuleCandidates,
+} from '../rule-match.js'
 
 import type { RuleMatchContext } from '../rule-match.js'
 
 import { DIRECTIONS } from '../types.js'
 
 import type { Direction, Item, Property, Rule } from '../types.js'
+
+export { MOVE_DELTAS }
 
 export const keyFor = (x: number, y: number, width: number): number =>
   gridKeyFor(x, y, width)
@@ -29,6 +39,11 @@ const YOU_LIKE_PROPS = new Set(['you', 'you2', '3d'])
 export const isYouLike = (item: Item): boolean =>
   item.props.some((prop) => YOU_LIKE_PROPS.has(prop))
 
+// Same you-layer check on a resolved prop set (empty cells, the level
+// entity) — those carry no Item, so they can't go through isYouLike.
+export const hasYouLikeProp = (props: ReadonlySet<string>): boolean =>
+  props.has('you') || props.has('you2') || props.has('3d')
+
 export const buildGrid = (
   items: Item[],
   width: number,
@@ -41,13 +56,6 @@ export const buildGrid = (
     grid.set(key, list)
   }
   return grid
-}
-
-export const MOVE_DELTAS: Record<Direction, [number, number]> = {
-  up: [0, -1],
-  right: [1, 0],
-  down: [0, 1],
-  left: [-1, 0],
 }
 
 export const reverseDirection = (direction: Direction): Direction => {
@@ -98,44 +106,116 @@ export const resolveLevelProps = (
 }
 
 // Global level-prop evaluation (official `testcond(conds,1)` on the
-// virtual level entity): unconditional rules resolve once; conditional
-// rules are OR'd across every border cell, since the level entity spans
-// the whole map frame and a condition met on any edge applies to it.
+// virtual level entity): each rule's condition is OR'd across every
+// border cell — the level entity spans the whole map frame, so a rule
+// whose condition holds at any edge applies to it. Verdicts accumulate
+// per rule into one yes-set and one no-set, then `yes − no` decides the
+// props — a matched negation vetoes the prop outright, wherever its
+// positive counterpart matched.
+//
+// Two prune passes keep the border sweep proportional to what can still
+// change the verdicts:
+// - Conditions that never read the pseudo-item's position (`idle`,
+//   `powered*`, `without`, direction-only `facing`) produce the same
+//   verdict at every cell, so they resolve once against the (0,0)
+//   pseudo-item instead of per cell.
+// - Once a rule's verdict is recorded (`yes` for positives, `no` for
+//   negatives), later cells can't undo it — OR only ever adds verdicts —
+//   so decided rules skip further evaluation entirely. A positive is
+//   also moot once its object is buried in `no`.
+const POSITION_INDEPENDENT_CONDITIONS = new Set([
+  'idle',
+  'powered',
+  'powered2',
+  'powered3',
+  'without',
+])
+
+// A level-rule condition that returns the same verdict at every contact
+// cell — callers holding many border positions can then resolve the
+// rule set once instead of per cell.
+export const isLevelConditionPositionFree = (
+  condition: NonNullable<Rule['condition']>,
+): boolean =>
+  'direction' in condition ||
+  POSITION_INDEPENDENT_CONDITIONS.has(condition.kind)
+
 export const resolveLevelPropsGlobal = (
   levelRules: Rule[],
   context: RuleMatchContext,
   width: number,
   height: number,
 ): Set<Property> => {
-  const props = resolveLevelProps(levelRules, context, 0, 0)
-  const hasConditional = levelRules.some(
-    (rule) => rule.condition !== undefined,
-  )
-  if (!hasConditional) return props
-  for (let y = 0; y < height; y += 1) {
+  const yes = new Set<string>()
+  const no = new Set<string>()
+  const pending: Rule[] = []
+  const levelItem = { id: -1, name: 'level', x: 0, y: 0, isText: false }
+  // Whether this rule's verdict can no longer change the outcome: a
+  // positive is moot once its object sits in either set (yes is
+  // idempotent; no already buries the prop), while a negative must keep
+  // evaluating until its object lands in `no` — `yes` alone does not
+  // seal it, since the veto is exactly what could still flip the prop.
+  const decided = (rule: Rule): boolean =>
+    rule.objectNegated
+      ? no.has(rule.object)
+      : yes.has(rule.object) || no.has(rule.object)
+
+  // Unconditional rules always apply; position-free conditionals get
+  // their one verdict here — matched or not, they contribute nothing
+  // further at other cells.
+  for (const rule of levelRules) {
+    if (rule.condition && !isLevelConditionPositionFree(rule.condition)) {
+      pending.push(rule)
+      continue
+    }
+    if (rule.condition && !matchesRuleSubject(levelItem, rule, context))
+      continue
+    if (rule.objectNegated) no.add(rule.object)
+    else yes.add(rule.object)
+  }
+
+  for (let y = 0; y < height && pending.length; y += 1) {
     for (let x = 0; x < width; x += 1) {
       if (x !== 0 && y !== 0 && x !== width - 1 && y !== height - 1)
         continue
-      for (const prop of resolveLevelProps(levelRules, context, x, y))
-        props.add(prop)
+      if (pending.every(decided)) {
+        y = height
+        break
+      }
+      levelItem.x = x
+      levelItem.y = y
+      for (const rule of pending) {
+        if (decided(rule)) continue
+        if (!matchesRuleSubject(levelItem, rule, context)) continue
+        if (rule.objectNegated) no.add(rule.object)
+        else yes.add(rule.object)
+      }
     }
   }
+
+  const props = new Set<Property>()
+  for (const prop of yes) if (!no.has(prop)) props.add(prop as Property)
   return props
 }
 
-const LEVEL_LOCKED_DIRS: Record<Direction, string> = {
+// `locked*` blocks any move in that direction — self-propelled or pushed.
+export const LOCKED_PROPS: Record<Direction, Property> = {
   right: 'lockedright',
   up: 'lockedup',
   left: 'lockedleft',
   down: 'lockeddown',
 }
 
-const LEVEL_NUDGE_DIRS: Array<[string, Direction]> = [
-  ['nudgeright', 'right'],
-  ['nudgeup', 'up'],
-  ['nudgeleft', 'left'],
-  ['nudgedown', 'down'],
-]
+// `nudge*` props are self-movement in a fixed direction — the official
+// `findallfeature(is nudge*)` feeds them into `moving_units` like `move`.
+export const NUDGE_DIRS: Record<string, Direction> = {
+  nudgeright: 'right',
+  nudgeup: 'up',
+  nudgeleft: 'left',
+  nudgedown: 'down',
+}
+
+const LEVEL_NUDGE_DIRS = Object.entries(NUDGE_DIRS)
 
 // `level is you/move/…` scrolls the whole room — official `MF_scrollroom`
 // only shifts the render offset (`Xoffset`/`Yoffset`), so logical
@@ -184,7 +264,7 @@ export const advanceLevelRoom = (
   let dy = 0
   let changed = false
   const scroll = (scrollDir: Direction, amount: number): boolean => {
-    if (still || levelProps.has(LEVEL_LOCKED_DIRS[scrollDir] as Property))
+    if (still || levelProps.has(LOCKED_PROPS[scrollDir]))
       return false
     const [ox, oy] = MOVE_DELTAS[scrollDir]
     dx += ox * amount
@@ -280,7 +360,7 @@ export const levelPushPullDelta = (
   const beforeById = new Map<number, Item>()
   for (const item of before) beforeById.set(item.id, item)
   const [dx, dy] = MOVE_DELTAS[direction]
-  const lockedProp = LEVEL_LOCKED_DIRS[direction]
+  const lockedProp = LOCKED_PROPS[direction]
   let outX = 0
   let outY = 0
 
@@ -290,7 +370,7 @@ export const levelPushPullDelta = (
       hasProp(item, 'sleep') ||
       hasProp(item, 'broken') ||
       hasProp(item, 'still') ||
-      (lockedProp ? hasProp(item, lockedProp as Property) : false)
+      (lockedProp ? hasProp(item, lockedProp) : false)
     )
       continue
     const prev = beforeById.get(item.id)
@@ -408,8 +488,10 @@ export const appendHasSpawns = (
   const spawned: Item[] = []
 
   for (const item of removedItems) {
-    const targets = resolveRuleTargets(item, hasRules, (candidate, rule) =>
-      matchesRuleSubject(candidate, rule, context),
+    const targets = resolveRuleTargets(
+      item,
+      subjectRuleCandidates(hasRules, item),
+      (candidate, rule) => matchesRuleSubject(candidate, rule, context),
     )
     if (!targets.length) continue
 

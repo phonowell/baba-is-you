@@ -1,7 +1,16 @@
-import { keyFor } from './helpers.js'
+import {
+  fnvChar,
+  fnvInt,
+  fnvText,
+  forEachDelta,
+  keyFor,
+  MOVE_DELTAS,
+  NEIGHBOR_DELTAS,
+  ORTHOGONAL_DELTAS,
+} from './helpers.js'
 import { isPropertyRule } from './types.js'
 
-import type { Direction, Item, LevelItem, Property, Rule } from './types.js'
+import type { Item, LevelItem, Property, Rule } from './types.js'
 
 type MatchItem = LevelItem | Item
 
@@ -18,6 +27,11 @@ export type RuleMatchContext = {
   // (officially cached per turn, cleared by smallclear — for us the
   // context lifetime is one rule pass, which is shorter).
   poweredStatus: Map<string, boolean>
+  // `without` verdicts only differ per item when exactly one unit matches
+  // the object test (the matcher itself sees "no other"), so the matcher
+  // id set is a per-context constant — computed once on first use instead
+  // of rescanning `items` for every (item, rule) pair.
+  withoutMatchers: Map<string, ReadonlySet<number>>
   rules: Rule[]
   width: number
   // Turn-level extras for postfix conditions: `idle` is the official
@@ -114,6 +128,7 @@ export const createRuleMatchContext = (
     height,
     items,
     poweredStatus: new Map(),
+    withoutMatchers: new Map(),
     rules,
     width,
     ...(extras?.idle !== undefined ? { idle: extras.idle } : {}),
@@ -180,7 +195,7 @@ const matchesSeeing = (
   if ((object === 'empty' || object === 'level') && !objectNegated)
     return false
   const direction = item.dir ?? 'right'
-  const [dx, dy] = DIRECTION_DELTAS[direction]
+  const [dx, dy] = MOVE_DELTAS[direction]
   let x = item.x
   let y = item.y
   while (true) {
@@ -216,23 +231,24 @@ const matchesFacedBy = (
   objectNegated: boolean,
   context: RuleMatchContext,
 ): boolean => {
-  for (const [dx, dy] of ORTHOGONAL_DELTAS) {
-    const x = item.x + dx
-    const y = item.y + dy
-    if (!inBounds(context, x, y)) continue
+  let matched = false
+  forEachDelta(context, item.x, item.y, ORTHOGONAL_DELTAS, (x, y, dx, dy) => {
+    if (matched) return
     for (const candidate of cellItems(context, x, y)) {
       if (candidate.id === item.id) continue
       const dir = candidate.dir ?? 'right'
-      const [cdx, cdy] = DIRECTION_DELTAS[dir]
+      const [cdx, cdy] = MOVE_DELTAS[dir]
       if (cdx !== -dx || cdy !== -dy) continue
       if (
         matchesRuleObjectWord(candidate, object, context.groupMembers) !==
         objectNegated
-      )
-        return true
+      ) {
+        matched = true
+        return
+      }
     }
-  }
-  return false
+  })
+  return matched
 }
 
 // `without` is a global absence check, not a neighbourhood one: the rule
@@ -248,11 +264,24 @@ const matchesWithout = (
     return objectNegated
       ? context.byCell.size === 0
       : context.byCell.size >= context.width * context.height
-  return !context.items.some(
-    (candidate) =>
-      candidate.id !== item.id &&
-      matchesRuleObjectWord(candidate, object, context.groupMembers) !==
-        objectNegated,
+  const cacheKey = `${object}:${objectNegated ? '1' : '0'}`
+  let matchers = context.withoutMatchers.get(cacheKey)
+  if (matchers === undefined) {
+    const collected = new Set<number>()
+    for (const candidate of context.items)
+      if (
+        matchesRuleObjectWord(candidate, object, context.groupMembers) !==
+        objectNegated
+      )
+        collected.add(candidate.id)
+    matchers = collected
+    context.withoutMatchers.set(cacheKey, matchers)
+  }
+  // No other unit satisfies the object test: true when no matcher exists,
+  // or when the sole matcher is this item itself (it is not its own
+  // "other"). Two or more matchers make the check fail for every item.
+  return (
+    matchers.size === 0 || (matchers.size === 1 && matchers.has(item.id))
   )
 }
 
@@ -289,28 +318,20 @@ const rollCondition = (
   sides: number,
   hits: number,
 ): boolean => {
-  const turn = context.turn ?? 0
+  // Hashes the same `${turn}:${id}:${x},${y}:${kind}` byte sequence the
+  // original string seed produced — kept allocation-free because this
+  // runs per (item, conditional rule) in the property pass.
   let hash = 2166136261
-  const seed = `${turn}:${item.id}:${item.x},${item.y}:${kind}`
-  for (let i = 0; i < seed.length; i += 1) {
-    hash ^= seed.charCodeAt(i)
-    hash = Math.imul(hash, 16777619)
-  }
+  hash = fnvInt(hash, context.turn ?? 0)
+  hash = fnvChar(hash, 58)
+  hash = fnvInt(hash, item.id)
+  hash = fnvChar(hash, 58)
+  hash = fnvInt(hash, item.x)
+  hash = fnvChar(hash, 44)
+  hash = fnvInt(hash, item.y)
+  hash = fnvChar(hash, 58)
+  hash = fnvText(hash, kind)
   return hash >>> 0 === 0 ? true : (hash >>> 0) % sides < hits
-}
-
-const ORTHOGONAL_DELTAS: ReadonlyArray<readonly [number, number]> = [
-  [0, -1],
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-]
-
-const DIRECTION_DELTAS: Record<Direction, readonly [number, number]> = {
-  up: [0, -1],
-  right: [1, 0],
-  down: [0, 1],
-  left: [-1, 0],
 }
 
 const POWERED_PROPS: Record<string, string> = {
@@ -413,45 +434,36 @@ const matchesCondition = (
 
   if (condition.kind === 'nextto') {
     let matched = false
-    for (const [dx, dy] of ORTHOGONAL_DELTAS) {
-      if (matched) break
-      const x = item.x + dx
-      const y = item.y + dy
-      if (!inBounds(context, x, y)) continue
+    forEachDelta(context, item.x, item.y, ORTHOGONAL_DELTAS, (x, y) => {
+      if (matched) return
       const cell = cellItems(context, x, y)
       if (condition.object === 'empty') {
         if (emptyMatches(!cell.length)) matched = true
       } else if (cell.some((candidate) => termMatches(candidate)))
         matched = true
-    }
+    })
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'near') {
     let matched = false
-    for (let dy = -1; dy <= 1 && !matched; dy += 1) {
-      for (let dx = -1; dx <= 1 && !matched; dx += 1) {
-        const nx = item.x + dx
-        const ny = item.y + dy
-        if (!inBounds(context, nx, ny))
-          continue
-
-        const neighbors = cellItems(context, nx, ny)
-        const self = dx === 0 && dy === 0
-        if (condition.object === 'empty') {
-          const occupied = self
-            ? neighbors.some((candidate) => candidate.id !== item.id)
-            : neighbors.length > 0
-          if (emptyMatches(!occupied)) matched = true
-        } else if (
-          neighbors.some(
-            (candidate) =>
-              (!self || candidate.id !== item.id) && termMatches(candidate),
-          )
+    forEachDelta(context, item.x, item.y, NEIGHBOR_DELTAS, (nx, ny, dx, dy) => {
+      if (matched) return
+      const neighbors = cellItems(context, nx, ny)
+      const self = dx === 0 && dy === 0
+      if (condition.object === 'empty') {
+        const occupied = self
+          ? neighbors.some((candidate) => candidate.id !== item.id)
+          : neighbors.length > 0
+        if (emptyMatches(!occupied)) matched = true
+      } else if (
+        neighbors.some(
+          (candidate) =>
+            (!self || candidate.id !== item.id) && termMatches(candidate),
         )
-          matched = true
-      }
-    }
+      )
+        matched = true
+    })
     return condition.negated ? !matched : matched
   }
 
@@ -501,7 +513,7 @@ const matchesCondition = (
   }
 
   const direction = item.dir ?? 'right'
-  const delta = DIRECTION_DELTAS[direction]
+  const delta = MOVE_DELTAS[direction]
   const x = item.x + delta[0]
   const y = item.y + delta[1]
   if (!inBounds(context, x, y))
@@ -512,6 +524,64 @@ const matchesCondition = (
       ? emptyMatches(inFront.length === 0)
       : inFront.some((candidate) => termMatches(candidate))
   return condition.negated ? !matched : matched
+}
+
+// Subject pre-index for per-item evaluation over a fixed rule set — the
+// same partition `matchesRuleSubject` implies: a non-text item can only
+// satisfy same-name concrete subjects plus the wildcard rules (`all`,
+// `group*`, every negated subject), and a text item only `text`
+// subjects. Candidates merge back in source order once per name, so
+// consumers that rely on rule order (transform's first variant, target
+// lists) keep it while skipping rules that can never match.
+type SubjectRuleIndex = {
+  byName: Map<string, Rule[]>
+  text: Rule[]
+  wildcard: Set<Rule>
+  source: readonly Rule[]
+  merged: Map<string, Rule[]>
+}
+
+const subjectRuleIndexes = new WeakMap<readonly Rule[], SubjectRuleIndex>()
+
+export const subjectRuleCandidates = (
+  rules: readonly Rule[],
+  item: { name: string; isText: boolean },
+): readonly Rule[] => {
+  let index = subjectRuleIndexes.get(rules)
+  if (index === undefined) {
+    index = {
+      byName: new Map(),
+      text: [],
+      wildcard: new Set(),
+      source: rules,
+      merged: new Map(),
+    }
+    for (const rule of rules) {
+      if (
+        rule.subjectNegated === true ||
+        rule.subject === 'all' ||
+        GROUP_NOUNS.has(rule.subject)
+      )
+        index.wildcard.add(rule)
+      else if (rule.subject === 'text') index.text.push(rule)
+      else {
+        const list = index.byName.get(rule.subject) ?? []
+        list.push(rule)
+        index.byName.set(rule.subject, list)
+      }
+    }
+    subjectRuleIndexes.set(rules, index)
+  }
+  if (item.isText) return index.text
+  let merged = index.merged.get(item.name)
+  if (merged === undefined) {
+    const named = new Set(index.byName.get(item.name) ?? [])
+    merged = index.source.filter(
+      (rule) => index.wildcard.has(rule) || named.has(rule),
+    )
+    index.merged.set(item.name, merged)
+  }
+  return merged
 }
 
 export const matchesRuleSubject = (

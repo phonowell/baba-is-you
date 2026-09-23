@@ -1,4 +1,4 @@
-import { spawnByRules } from './spawn-by-rule.js'
+import { spawnByRules, spawnedItem } from './spawn-by-rule.js'
 
 import type { RuleRuntime } from '../rule-runtime.js'
 import type { Item } from '../types.js'
@@ -16,17 +16,7 @@ export const applyWrite = (
     existingSignature: (item) => (item.isText ? signatureFor(item.name) : null),
     spawn: (source, target, id) => {
       if (target === 'empty') return null
-      return {
-        id,
-        name: target,
-        x: source.x,
-        y: source.y,
-        isText: true,
-        props: [],
-        converted: true,
-        spawned: true,
-        ...(source.dir ? { dir: source.dir } : {}),
-      }
+      return spawnedItem(source, target, true, id)
     },
     spawnedSignature: (item) => signatureFor(item.name),
   })

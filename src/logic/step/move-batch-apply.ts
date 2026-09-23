@@ -1,12 +1,10 @@
 import {
-  emptyLockHit,
-  emptyWeakHit,
   getLiveCellItems,
   isLockCollision,
+  markEmptyLandingSpecials,
   moveOne,
   removeOne,
 } from './move-core.js'
-import { keyFor } from './shared.js'
 
 import type { Arrow, BatchMoveContext } from './move-batch-runtime.js'
 import type { Direction, Item } from '../types.js'
@@ -79,14 +77,7 @@ export const applyBatchMovement = (
     // `empty is weak` destroy the empty pseudo-unit — and an unsafe lock
     // mover dies at its origin instead of landing.
     if (!getLiveCellItems(context, nx, ny).length) {
-      const emptyProps = context.emptyPropsAt(nx, ny)
-      const lockHit = emptyLockHit(context, item, emptyProps)
-      if (
-        context.eatsEmpty(item, nx, ny) ||
-        lockHit ||
-        emptyWeakHit(item, emptyProps)
-      )
-        context.deadEmptyCells.add(keyFor(nx, ny, context.width))
+      const lockHit = markEmptyLandingSpecials(context, item, nx, ny)
       if (lockHit && removeOne(context, item)) {
         context.status.changed = true
         continue

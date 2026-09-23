@@ -1239,6 +1239,51 @@ test('step LEVEL IS WEAK WITHOUT stays alive while the unit exists', () => {
   assert.equal(alive.state.status, 'playing')
 })
 
+test('step LEVEL ON IS NOT vetoes the prop across the whole frame', () => {
+  // `level on rock is not weak` holds at the rock's edge cell — and the
+  // level entity spans the whole frame, so the veto applies to the
+  // entity, not just that contact point: the unconditional
+  // `level is weak` cannot re-assert itself at rock-free edges.
+  // (Rule rows hug the bottom edge so baba's move never shoves a word
+  // into the `baba is you` row and rewrites it.)
+  const level: LevelData = {
+    title: 'level-weak-veto',
+    width: 7,
+    height: 6,
+    items: [
+      createItem(1, 'baba', 3, 3, false),
+      createItem(2, 'rock', 5, 0, false),
+      ...innerRow(3, 1, 1, ['baba', 'is', 'you']),
+      ...innerRow(7, 1, 4, ['level', 'is', 'weak']),
+      ...innerRow(12, 1, 5, ['level', 'on', 'rock', 'is', 'not', 'weak']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'up')
+  assert.notEqual(findObject(result.state, 'baba'), undefined)
+  assert.equal(result.state.status, 'playing')
+})
+
+test('step LEVEL WITHOUT IS NOT vetoes at every border cell', () => {
+  // `level on rock is weak` fires at the rock's edge cell, but
+  // `level without flag is not weak` is a board-wide verdict — its veto
+  // is not local to the (0,0) contact cell.
+  const level: LevelData = {
+    title: 'level-weak-without-veto',
+    width: 7,
+    height: 6,
+    items: [
+      createItem(1, 'baba', 3, 3, false),
+      createItem(2, 'rock', 5, 0, false),
+      ...innerRow(3, 1, 1, ['baba', 'is', 'you']),
+      ...innerRow(7, 1, 4, ['level', 'on', 'rock', 'is', 'weak']),
+      ...innerRow(13, 1, 5, ['level', 'without', 'flag', 'is', 'not', 'weak']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'up')
+  assert.notEqual(findObject(result.state, 'baba'), undefined)
+  assert.equal(result.state.status, 'playing')
+})
+
 test('step LEVEL IS YOU scrolls the room offset without moving units', () => {
   const level: LevelData = {
     title: 'level-you-scroll',

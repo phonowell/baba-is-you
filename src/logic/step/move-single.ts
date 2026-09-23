@@ -1,8 +1,13 @@
-import { appendEmptyHasSpawns, resolveEmptyPropsByCell } from '../empty.js'
-
-import { createEatsPredicates, isLockedFor } from './move-core.js'
+import {
+  appendMovementSpawns,
+  createEatsPredicates,
+  createEmptyPropLookup,
+  createFrozenPassState,
+  isLockedFor,
+  openMovementSets,
+} from './move-core.js'
 import { createSingleMoveRuntime } from './move-single-runtime.js'
-import { appendHasSpawns, buildGrid, carryHeldRiders, hasLatchedFloat, MOVE_DELTAS, resolveLevelProps } from './shared.js'
+import { buildGrid, carryHeldRiders, hasYouLikeProp, MOVE_DELTAS } from './shared.js'
 import { keyFor } from '../helpers.js'
 
 import type { RuleRuntime } from '../rule-runtime.js'
@@ -21,16 +26,13 @@ export const moveItems = (
   fallMode = false,
 ): { items: Item[]; moved: boolean } => {
   const { height, rules, width } = runtime
-  const emptyPropsByCell = resolveEmptyPropsByCell(
+  const { emptyPropsByCell, emptyPropsAt } = createEmptyPropLookup(
     rules,
     items,
     width,
     height,
     runtime.context,
   )
-  const EMPTY_PROPS: ReadonlySet<string> = new Set()
-  const emptyPropsAt = (x: number, y: number): ReadonlySet<string> =>
-    emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS
   // `empty is you`: each qualifying empty cell becomes a pseudo-unit
   // (official unitid 2) that moves with the player input, pushing the
   // unit in its target cell — or swapping places under `empty is swap`.
@@ -41,7 +43,7 @@ export const moveItems = (
     reversePass === props.has('reverse') &&
     !props.has('still') &&
     !props.has('sleep') &&
-    (props.has('you') || props.has('you2') || props.has('3d'))
+    hasYouLikeProp(props)
   const emptyYou =
     !isMovePhase &&
     !fallMode &&
@@ -49,97 +51,30 @@ export const moveItems = (
   if (!items.some(isMover) && !emptyYou) return { items, moved: false }
 
   const next = items.map((item) => ({ ...item }))
-  const byId = new Map<number, Item>()
-  // Movers carry their sort key (row-major y,x,id) so ordering needs no
-  // per-comparison map lookups.
-  const movers: Array<{ id: number; x: number; y: number }> = []
-  const moverIds = new Set<number>()
-  const pushIds = new Set<number>()
-  const stopIds = new Set<number>()
-  const pullIds = new Set<number>()
-  const swapIds = new Set<number>()
-  const openIds = new Set<number>()
-  const shutIds = new Set<number>()
-  const weakIds = new Set<number>()
-  const stillIds = new Set<number>()
-  const phantomIds = new Set<number>()
-  // `level is hold` pins — unlike `still` (which allows self-movement),
-  // a pinned unit can't move under its own power either.
-  const pinnedIds = new Set<number>()
-  // `x is hold` carrying needs a pre-move seat snapshot — skip building
-  // it entirely when no unit carries the prop (the common case).
-  let hasHolder = false
-
-  for (const item of next) {
-    byId.set(item.id, item)
-    if (isMover(item)) {
-      movers.push({ id: item.id, x: item.x, y: item.y })
-      moverIds.add(item.id)
-    }
-    for (const prop of item.props) {
-      // `word` units stay soft objects — the prop lets them stand in
-      // for their noun in rules only; it does not grant push.
-      if (prop === 'push') pushIds.add(item.id)
-      else if (prop === 'stop') stopIds.add(item.id)
-      else if (prop === 'pull') pullIds.add(item.id)
-      else if (prop === 'swap') swapIds.add(item.id)
-      else if (prop === 'open') openIds.add(item.id)
-      else if (prop === 'shut') shutIds.add(item.id)
-      else if (prop === 'weak') weakIds.add(item.id)
-      else if (prop === 'still') stillIds.add(item.id)
-      else if (prop === 'phantom') phantomIds.add(item.id)
-      else if (prop === 'hold') hasHolder = true
-    }
-  }
-
-  // `still` units cannot be moved by external forces; `phantom` units
-  // neither block nor get carried — both strip the affected ids from the
-  // movement-prop sets so every downstream check sees it uniformly.
-  for (const id of stillIds) {
-    pushIds.delete(id)
-    pullIds.delete(id)
-    swapIds.delete(id)
-  }
-  for (const id of phantomIds) {
-    pushIds.delete(id)
-    pullIds.delete(id)
-    swapIds.delete(id)
-    stopIds.delete(id)
-    openIds.delete(id)
-    shutIds.delete(id)
-    weakIds.delete(id)
-  }
-
-  // `level is hold` pins every unit touching the map frame (the official
-  // `cantmove` levelhold check) — held units can't move or be carried.
-  // Conditions evaluate at each unit's contact cell.
-  const levelRules = runtime.buckets.level
-  const hasLevelHoldRule = levelRules.some(
-    (rule) => !rule.objectNegated && rule.object === 'hold',
+  const sets = openMovementSets(
+    runtime.buckets.level,
+    runtime.context,
+    next,
+    width,
+    height,
+    isMover,
   )
-  if (hasLevelHoldRule) {
-    for (const item of next) {
-      const atBorder =
-        item.x === 0 ||
-        item.y === 0 ||
-        item.x === width - 1 ||
-        item.y === height - 1
-      if (!atBorder) continue
-      const levelProps = resolveLevelProps(
-        levelRules,
-        runtime.context,
-        item.x,
-        item.y,
-      )
-      if (hasLatchedFloat(item) !== levelProps.has('float')) continue
-      if (!levelProps.has('hold')) continue
-      pinnedIds.add(item.id)
-      stillIds.add(item.id)
-      pushIds.delete(item.id)
-      pullIds.delete(item.id)
-      swapIds.delete(item.id)
-    }
-  }
+  const {
+    byId,
+    hasHolder,
+    moverIds,
+    movers,
+    openIds,
+    phantomIds,
+    pinnedIds,
+    pullIds,
+    pushIds,
+    shutIds,
+    stillIds,
+    stopIds,
+    swapIds,
+    weakIds,
+  } = sets
 
   const moved = new Set<number>()
   const removed = new Set<number>()
@@ -164,12 +99,7 @@ export const moveItems = (
     height,
     moverIds,
     moved,
-    movePass: 0,
-    passMoved: new Set<number>(),
-    passDeparted: new Map<number, Item[]>(),
-    passOrigins: new Map<number, number>(),
-    pushQueued: new Set<string>(),
-    deferredIds: new Set<number>(),
+    ...createFrozenPassState(),
     openIds,
     phantomIds,
     pullIds,
@@ -335,27 +265,15 @@ export const moveItems = (
     status.anyMoved = true
 
   const survivors = next.filter((item) => !removed.has(item.id))
-  const spawned = appendHasSpawns(
+  const dropped = appendMovementSpawns(
     survivors,
     removedItems,
-    runtime.buckets.has,
+    deadEmptyCells,
+    runtime.buckets,
     width,
     height,
     next,
   )
-  const dropped = deadEmptyCells.size
-    ? appendEmptyHasSpawns(
-        spawned.items,
-        deadEmptyCells,
-        runtime.buckets.has,
-        runtime.buckets.isProperty,
-        width,
-        height,
-      )
-    : spawned
 
-  return {
-    items: dropped.items,
-    moved: status.anyMoved || spawned.changed || dropped.changed,
-  }
+  return { items: dropped.items, moved: status.anyMoved || dropped.changed }
 }

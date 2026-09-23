@@ -174,8 +174,6 @@ export const SPECIAL_NOUN_WORDS = [
 ] as const
 
 export type RuleOperatorWord = (typeof RULE_OPERATOR_WORDS)[number]
-export type RuleConnectorWord = (typeof RULE_CONNECTOR_WORDS)[number]
-export type RuleConditionWord = (typeof RULE_CONDITION_WORDS)[number]
 export type SpecialNounWord = (typeof SPECIAL_NOUN_WORDS)[number]
 declare const SUBJECT_WORD_BRAND: unique symbol
 declare const OBJECT_WORD_BRAND: unique symbol
@@ -189,7 +187,6 @@ export type ObjectWord = string & {
 export type ConditionObjectWord = string & {
   readonly [CONDITION_OBJECT_WORD_BRAND]: 'ConditionObjectWord'
 }
-export type RuleWord = SubjectWord | ObjectWord
 
 export type PostfixConditionKind = (typeof POSTFIX_CONDITION_WORDS)[number]
 export type InfixConditionKind = (typeof INFIX_CONDITION_WORDS)[number]
@@ -298,11 +295,3 @@ export const ruleOperatorForKind = (kind: RuleKind): RuleOperatorWord => {
   if (kind === 'is-property' || kind === 'is-transform') return 'is'
   return kind
 }
-
-export const TEXT_WORDS = new Set<string>([
-  ...CORE_PROPERTIES,
-  ...RULE_OPERATOR_WORDS,
-  ...RULE_CONNECTOR_WORDS,
-  ...RULE_CONDITION_WORDS,
-  ...SPECIAL_NOUN_WORDS,
-])

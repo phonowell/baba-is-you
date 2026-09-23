@@ -92,6 +92,11 @@ export type GameState = {
   // states built outside step (fixtures) leave it undefined and callers
   // fall back to `collectOverriddenTextIds`.
   overriddenTextIds?: ReadonlySet<number>
+  // Ids of text items participating in any active rule — the lit cards.
+  // Same provenance as `overriddenTextIds`: the rule partition already
+  // computes both marks, so renderers diff active membership without
+  // reparsing the text grid.
+  activeTextIds?: ReadonlySet<number>
   // The items array `rules`/`overriddenTextIds` were last parsed from.
   // Rule collection reads only id/name/x/y/isText and the `word` prop, so a
   // later step whose items match those fields element-wise can reuse the

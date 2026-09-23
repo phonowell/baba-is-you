@@ -5,7 +5,10 @@ import {
 } from './empty.js'
 import { resolveRuleTargets } from './helpers.js'
 import { isLetterName } from './letter-words.js'
-import { GROUP_NOUNS, matchesRuleSubject } from './rule-match.js'
+import {
+  matchesRuleSubject,
+  subjectRuleCandidates,
+} from './rule-match.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
 import {
@@ -145,25 +148,15 @@ export const applyTransforms = (
     (rule) => rule.kind === 'become',
   )
 
-  // Candidate prefilter by subject kind: negated and `all`/`group*`
-  // subjects are wildcards the matcher must see; concrete subjects can
-  // only match a same-named non-text item, `text` subject only text.
-  // Filtering in source order matters — the first collected variant
-  // becomes the source's new identity.
-  const couldBeSubjectOf = (item: LevelItem, rule: Rule): boolean => {
-    if (
-      rule.subjectNegated === true ||
-      rule.subject === 'all' ||
-      GROUP_NOUNS.has(rule.subject)
-    )
-      return true
-    if (item.isText) return rule.subject === 'text'
-    return rule.subject === item.name
-  }
-  const isCandidatesFor = (item: LevelItem): Rule[] =>
-    isTransformRules.filter((rule) => couldBeSubjectOf(item, rule))
-  const becomeCandidatesFor = (item: LevelItem): Rule[] =>
-    becomeRules.filter((rule) => couldBeSubjectOf(item, rule))
+  // Candidate prefilter by subject kind (the `subjectRuleCandidates`
+  // partition): negated and `all`/`group*` subjects are wildcards the
+  // matcher must see; concrete subjects can only match a same-named
+  // non-text item, `text` subject only text. Source order is preserved —
+  // the first collected variant becomes the source's new identity.
+  const isCandidatesFor = (item: LevelItem): readonly Rule[] =>
+    subjectRuleCandidates(isTransformRules, item)
+  const becomeCandidatesFor = (item: LevelItem): readonly Rule[] =>
+    subjectRuleCandidates(becomeRules, item)
   // Only object-negated rules can self-delete or protect an `x is all`
   // spawn — precompute so items without any skip the scans outright.
   const negatedIsRules = isTransformRules.filter(
@@ -208,7 +201,7 @@ export const applyTransforms = (
     // `empty`/`level`/`all`/`group` subjects take different official
     // branches (destroylevel / no unitlist) and stay unmodelled; `text is
     // not text` wipes every text unit via the shared unitlists["text"].
-    const selfDeleted = (rules: Rule[]) =>
+    const selfDeleted = (rules: readonly Rule[]) =>
       rules.some((rule) => {
         if (!matchesRuleSubject(item, rule, context)) return false
         // `not s is not o` expands officially (rules.lua addoption) into
@@ -230,7 +223,8 @@ export const applyTransforms = (
       })
     if (
       (negatedIsRules.length || negatedBecomeRules.length) &&
-      (selfDeleted(negatedIsRules) || selfDeleted(negatedBecomeRules))
+      (selfDeleted(subjectRuleCandidates(negatedIsRules, item)) ||
+        selfDeleted(subjectRuleCandidates(negatedBecomeRules, item)))
     ) {
       changed = true
       continue
@@ -268,7 +262,7 @@ export const applyTransforms = (
         if (resolved === 'all') {
           if (!negated) {
             negated = new Set()
-            for (const rule of negatedIsRules)
+            for (const rule of subjectRuleCandidates(negatedIsRules, item))
               if (matchesRuleSubject(item, rule, context))
                 negated.add(rule.object)
           }

@@ -1,7 +1,12 @@
 import { keyForLayer } from '../helpers.js'
 import { matchesRuleObjectWord } from '../rule-match.js'
 
-import { hasLatchedFloat, isYouLike, resolveLevelPropsGlobal } from './shared.js'
+import {
+  hasLatchedFloat,
+  hasYouLikeProp,
+  isYouLike,
+  resolveLevelPropsGlobal,
+} from './shared.js'
 
 import type { RuleRuntime } from '../rule-runtime.js'
 import type { Item, Property } from '../types.js'
@@ -40,8 +45,7 @@ export const checkWin = (
   for (const key of youLayers) if (winLayers.has(key)) return true
 
   for (const props of emptyPropsByCell.values()) {
-    const you = props.has('you') || props.has('you2') || props.has('3d')
-    if (you) {
+    if (hasYouLikeProp(props)) {
       for (const prop of WIN_LIKE_PROPS)
         if (props.has(prop)) return true
     }
@@ -66,8 +70,7 @@ export const checkWin = (
   if (WIN_LIKE_PROPS_LIST.some((prop) => levelProps.has(prop))) return true
 
   const levelFloat = levelProps.has('float')
-  const levelYou =
-    levelProps.has('you') || levelProps.has('you2') || levelProps.has('3d')
+  const levelYou = hasYouLikeProp(levelProps)
   const floatOk = (item: Item): boolean =>
     hasLatchedFloat(item) === levelFloat
 
@@ -103,7 +106,6 @@ export const hasAnyYou = (
 ): boolean => {
   for (const item of items) if (isYouLike(item)) return true
   for (const props of emptyPropsByCell.values())
-    if (props.has('you') || props.has('you2') || props.has('3d'))
-      return true
+    if (hasYouLikeProp(props)) return true
   return false
 }

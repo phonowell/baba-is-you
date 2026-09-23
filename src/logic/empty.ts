@@ -1,6 +1,14 @@
-import { keyFor } from './helpers.js'
+import {
+  fnvChar,
+  fnvInt,
+  fnvText,
+  forEachDelta,
+  keyFor,
+  MOVE_DELTAS,
+  NEIGHBOR_DELTAS,
+  ORTHOGONAL_DELTAS,
+} from './helpers.js'
 import { createRuleMatchContext, matchesRuleObjectWord } from './rule-match.js'
-import { isPropertyRule } from './types.js'
 
 import type { GroupMembers, RuleMatchContext } from './rule-match.js'
 
@@ -23,6 +31,10 @@ type EmptyMatchContext = {
   width: number
   idle?: boolean
   turn?: number
+  // Shared with the unit-side match context when one is supplied — the
+  // `without` matcher set is the same scan either way (the empty branch
+  // reads the positive-match set under the `:0` key).
+  withoutMatchers: Map<string, ReadonlySet<number>>
 }
 
 const itemsAt = (
@@ -48,13 +60,6 @@ const matchesObjectAtCell = (
     matchesRuleObjectWord(item, object, context.groupMembers),
   )
 }
-
-const EMPTY_LINE_DELTAS: ReadonlyArray<readonly [number, number]> = [
-  [0, -1],
-  [1, 0],
-  [0, 1],
-  [-1, 0],
-]
 
 const scanEmptyLine = (
   context: EmptyMatchContext,
@@ -96,12 +101,16 @@ const matchesEmptyCondition = (
     else if (condition.kind === 'often' || condition.kind === 'seldom') {
       const sides = condition.kind === 'often' ? 4 : 6
       const hits = condition.kind === 'often' ? 3 : 1
+      // Same `${turn}:empty:${x},${y}:${kind}` byte sequence as the
+      // original string seed — see fnv* helpers.
       let hash = 2166136261
-      const seed = `${context.turn ?? 0}:empty:${x},${y}:${condition.kind}`
-      for (let i = 0; i < seed.length; i += 1) {
-        hash ^= seed.charCodeAt(i)
-        hash = Math.imul(hash, 16777619)
-      }
+      hash = fnvInt(hash, context.turn ?? 0)
+      hash = fnvText(hash, ':empty:')
+      hash = fnvInt(hash, x)
+      hash = fnvChar(hash, 44)
+      hash = fnvInt(hash, y)
+      hash = fnvChar(hash, 58)
+      hash = fnvText(hash, condition.kind)
       matched = (hash >>> 0) % sides < hits
     }
     return condition.negated ? !matched : matched
@@ -120,29 +129,21 @@ const matchesEmptyCondition = (
 
   if (condition.kind === 'nextto') {
     let matched = false
-    for (const [dx, dy] of EMPTY_LINE_DELTAS) {
-      const nx = x + dx
-      const ny = y + dy
-      if (nx < 0 || ny < 0 || nx >= context.width || ny >= context.height)
-        continue
+    forEachDelta(context, x, y, ORTHOGONAL_DELTAS, (nx, ny) => {
+      if (matched) return
       if (matchesObjectAtCell(context, nx, ny, condition.object))
         matched = true
-    }
+    })
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'near') {
     let matched = false
-    for (let dy = -1; dy <= 1 && !matched; dy += 1) {
-      for (let dx = -1; dx <= 1 && !matched; dx += 1) {
-        const nx = x + dx
-        const ny = y + dy
-        if (nx < 0 || ny < 0 || nx >= context.width || ny >= context.height)
-          continue
-        if (matchesObjectAtCell(context, nx, ny, condition.object))
-          matched = true
-      }
-    }
+    forEachDelta(context, x, y, NEIGHBOR_DELTAS, (nx, ny) => {
+      if (matched) return
+      if (matchesObjectAtCell(context, nx, ny, condition.object))
+        matched = true
+    })
     return condition.negated ? !matched : matched
   }
 
@@ -163,43 +164,40 @@ const matchesEmptyCondition = (
     if (condition.object === 'empty') {
       matched = context.byCell.size >= context.width * context.height
     } else {
-      matched = true
-      for (const list of context.byCell.values()) {
-        if (
-          list.some((item) =>
-            matchesRuleObjectWord(item, condition.object, context.groupMembers),
-          )
-        ) {
-          matched = false
-          break
-        }
+      // Same matcher set the unit-side `without` memoizes — empty cells
+      // ask "does any unit match" (the negated-object quirk below is
+      // preserved: objectNegated is not part of the object test here).
+      let matchers = context.withoutMatchers.get(`${condition.object}:0`)
+      if (matchers === undefined) {
+        const collected = new Set<number>()
+        for (const list of context.byCell.values())
+          for (const item of list)
+            if (
+              matchesRuleObjectWord(
+                item,
+                condition.object,
+                context.groupMembers,
+              )
+            )
+              collected.add(item.id)
+        matchers = collected
+        context.withoutMatchers.set(`${condition.object}:0`, matchers)
       }
+      matched = matchers.size === 0
     }
     return condition.negated ? !matched : matched
   }
 
   if (condition.kind === 'facedby') {
     let matched = false
-    for (const [dx, dy] of EMPTY_LINE_DELTAS) {
-      const nx = x + dx
-      const ny = y + dy
-      if (nx < 0 || ny < 0 || nx >= context.width || ny >= context.height)
-        continue
+    forEachDelta(context, x, y, ORTHOGONAL_DELTAS, (nx, ny, dx, dy) => {
       for (const item of itemsAt(context, nx, ny)) {
-        const dir = item.dir ?? 'right'
-        const delta =
-          dir === 'up'
-            ? ([0, -1] as const)
-            : dir === 'down'
-              ? ([0, 1] as const)
-              : dir === 'left'
-                ? ([-1, 0] as const)
-                : ([1, 0] as const)
-        if (delta[0] === -dx && delta[1] === -dy)
+        const [cdx, cdy] = MOVE_DELTAS[item.dir ?? 'right']
+        if (cdx === -dx && cdy === -dy)
           if (matchesRuleObjectWord(item, condition.object, context.groupMembers))
             matched = true
       }
-    }
+    })
     return condition.negated ? !matched : matched
   }
 
@@ -207,7 +205,7 @@ const matchesEmptyCondition = (
     // Empty cells have no facing — treat sight as scanning all four
     // directions, stopping at hidden-free solid cells like the unit path.
     let matched = false
-    for (const [dx, dy] of EMPTY_LINE_DELTAS) {
+    for (const [dx, dy] of ORTHOGONAL_DELTAS) {
       let nx = x
       let ny = y
       while (true) {
@@ -257,23 +255,34 @@ const matchesEmptyCondition = (
   return condition.negated ? !matched : matched
 }
 
+// Adapts a unit-side match context to the empty-cell view: same board
+// index, same group/without caches — only the item shape narrows.
+const toEmptyMatchContext = (
+  context: RuleMatchContext,
+  width: number,
+  height: number,
+): EmptyMatchContext => ({
+  byCell: context.byCell as Map<number, EmptyMatchItem[]>,
+  groupMembers: context.groupMembers,
+  height,
+  width,
+  withoutMatchers: context.withoutMatchers,
+  ...(context.idle !== undefined ? { idle: context.idle } : {}),
+  ...(context.turn !== undefined ? { turn: context.turn } : {}),
+})
+
 export const createEmptyMatchContext = (
   items: EmptyMatchItem[],
   rules: Rule[],
   width: number,
   height: number,
   extras?: { idle?: boolean; turn?: number },
-): EmptyMatchContext => {
-  const context = createRuleMatchContext(items, rules, width, height, extras)
-  return {
-    byCell: context.byCell as Map<number, EmptyMatchItem[]>,
-    groupMembers: context.groupMembers,
-    height,
+): EmptyMatchContext =>
+  toEmptyMatchContext(
+    createRuleMatchContext(items, rules, width, height, extras),
     width,
-    ...(context.idle !== undefined ? { idle: context.idle } : {}),
-    ...(context.turn !== undefined ? { turn: context.turn } : {}),
-  }
-}
+    height,
+  )
 
 const collectEmptyRuleTargetsAt = (
   rules: Rule[],
@@ -319,8 +328,7 @@ export const resolveEmptyNegatedObjectsAt = (
 ): Set<string> =>
   collectEmptyRuleTargetsAt(rules, context, x, y, kind).no
 
-
-export const hasAnyEmptyCell = (
+const hasAnyEmptyCell = (
   items: Array<{ x: number; y: number }>,
   width: number,
   height: number,
@@ -328,25 +336,6 @@ export const hasAnyEmptyCell = (
   const occupied = new Set<number>()
   for (const item of items) occupied.add(keyFor(item.x, item.y, width))
   return occupied.size < width * height
-}
-
-export const resolveEmptyProperties = (rules: Rule[]): Set<Property> => {
-  const yes = new Set<Property>()
-  const no = new Set<Property>()
-
-  for (const rule of rules) {
-    if (!isPropertyRule(rule)) continue
-    if (rule.subject !== 'empty') continue
-    if (rule.subjectNegated) continue
-    if (rule.condition) continue
-
-    if (rule.objectNegated) no.add(rule.object)
-    else yes.add(rule.object)
-  }
-
-  const result = new Set<Property>()
-  for (const prop of yes) if (!no.has(prop)) result.add(prop)
-  return result
 }
 
 const hasEmptyPropertyRules = (rules: Rule[]): boolean =>
@@ -375,7 +364,34 @@ const emptySubjectRules = (
 // own `empty is <prop>` rules decide how movers interact with it, so a
 // conditional rule like `empty near water is push` only applies where the
 // condition holds. This map carries cellKey → that cell's props.
+//
+// When a match context is supplied the occupancy input is its frozen
+// `byCell`, so every call on the same (context, rules) pair returns an
+// identical map — the memo keeps the per-stage move/spawn checks from
+// re-walking the whole board. Callers only read the result.
+const emptyPropsByCellCache = new WeakMap<
+  RuleMatchContext,
+  Map<number, Set<string>>
+>()
+
 export const resolveEmptyPropsByCell = (
+  rules: Rule[],
+  items: EmptyMatchItem[],
+  width: number,
+  height: number,
+  context?: RuleMatchContext,
+): Map<number, Set<string>> => {
+  if (context && context.rules === rules) {
+    const cached = emptyPropsByCellCache.get(context)
+    if (cached !== undefined) return cached
+    const computed = computeEmptyPropsByCell(rules, items, width, height, context)
+    emptyPropsByCellCache.set(context, computed)
+    return computed
+  }
+  return computeEmptyPropsByCell(rules, items, width, height, context)
+}
+
+const computeEmptyPropsByCell = (
   rules: Rule[],
   items: EmptyMatchItem[],
   width: number,
@@ -394,14 +410,7 @@ export const resolveEmptyPropsByCell = (
   if (!hasEmpty) return byCell
 
   const emptyContext: EmptyMatchContext = context
-    ? {
-        byCell: context.byCell as Map<number, EmptyMatchItem[]>,
-        groupMembers: context.groupMembers,
-        height,
-        width,
-        ...(context.idle !== undefined ? { idle: context.idle } : {}),
-        ...(context.turn !== undefined ? { turn: context.turn } : {}),
-      }
+    ? toEmptyMatchContext(context, width, height)
     : createEmptyMatchContext(items, rules, width, height)
   const emptyRules = emptySubjectRules(rules, 'is-property')
   for (let y = 0; y < height; y += 1) {

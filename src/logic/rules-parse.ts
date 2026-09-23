@@ -14,13 +14,6 @@ import {
 export { inBounds, keyFor, parseTermChains, parseTermChainsWithNext, uniqueTerms }
 export type { ParsedTerm, ParsedTermChain } from './rules-parse-terms.js'
 
-export const getWordsAt = (
-  grid: Map<number, string[]>,
-  width: number,
-  x: number,
-  y: number,
-): string[] => grid.get(keyFor(x, y, width)) ?? []
-
 export const isSubjectWord = (word: string): boolean => isCanonicalSubjectWord(word)
 
 export const isPredicateWordForIs = (word: string): boolean =>

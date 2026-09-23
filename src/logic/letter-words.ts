@@ -7,7 +7,7 @@ import type { LevelItem } from './types.js'
 // defines as level-local type-5 objects. Unlike ordinary text they never act
 // as standalone words — they only become rule words when a contiguous run of
 // letter cells spells a dictionary word (rules.lua `formlettermap`).
-export const LETTER_WORDS = new Set<string>([
+const LETTER_WORDS = new Set<string>([
   ...'abcdefghijklmnopqrstuvwxyz',
   ...'0123456789',
   'sharp',
@@ -21,7 +21,7 @@ export const LETTER_WORDS = new Set<string>([
 // In the base world `findletterwords` accepts any `unitreference` name — the
 // palette check only applies outside it — so the dictionary is level
 // independent. Level-local names are unioned in at collect time.
-export const SPELLABLE_WORDS = new Set<string>([
+const SPELLABLE_WORDS = new Set<string>([
   '3d', 'above', 'algae', 'all', 'and', 'angry', 'arm', 'arrow', 'auto',
   'baba', 'back', 'badbad', 'banana', 'bat', 'bean', 'become', 'bed', 'bee',
   'below', 'belt', 'besideleft', 'besideright', 'best', 'bird', 'black',
@@ -68,7 +68,7 @@ export const isLetterName = (name: string): boolean => LETTER_WORDS.has(name)
 // already count as one-cell words and runs are culled to note names only
 // (rules.lua `cullnotes`). Note words: a-g plus sharp/flat and the octave
 // suffixes 3-6 that `text_play` declares.
-export const NOTE_WORDS = (() => {
+const NOTE_WORDS = (() => {
   const words = new Set<string>()
   const bases = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
   const suffixes = ['', 'sharp', 'flat']

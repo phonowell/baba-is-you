@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import {
   collectOverriddenTextIds,
+  collectTextRuleMarks,
   partitionRuleInstances,
 } from './rules-override.js'
 import { collectRuleInstances } from './rules.js'
@@ -178,6 +179,18 @@ test('state carries overridden text ids that track the live board', () => {
     [...collectOverriddenTextIds(initial.items, 6, 6)].sort(),
   )
   assert.deepEqual([...(initial.overriddenTextIds ?? [])].sort(), [6, 7, 8])
+  // The active marks ride the same provenance: rule source cells of
+  // live rules — `baba is you` (9,10,11) plus the veto phrase's own
+  // sources (2,3,5; the `not` modifiers are not rule cells) — are lit,
+  // the vetoed `keke is push` row is not.
+  assert.deepEqual(
+    [...(initial.activeTextIds ?? [])].sort((a, b) => a - b),
+    [...collectTextRuleMarks(initial.items, 6, 6).active].sort((a, b) => a - b),
+  )
+  assert.deepEqual(
+    [...(initial.activeTextIds ?? [])].sort((a, b) => a - b),
+    [2, 3, 5, 9, 10, 11],
+  )
 
   // Pushing the `push` text out of the veto column dissolves the veto —
   // the marks on the produced state must reflect the new board, not the
@@ -189,6 +202,11 @@ test('state carries overridden text ids that track the live board', () => {
     [...collectOverriddenTextIds(moved.state.items, 6, 6)].sort(),
   )
   assert.deepEqual([...(moved.state.overriddenTextIds ?? [])], [])
+  // `keke is push` un-vetoed: its three cards join the active marks.
+  assert.deepEqual(
+    [...(moved.state.activeTextIds ?? [])].sort(),
+    [...collectTextRuleMarks(moved.state.items, 6, 6).active].sort(),
+  )
   assert.ok(
     moved.state.rules.some(
       (rule) => rule.subject === 'keke' && rule.object === 'push',

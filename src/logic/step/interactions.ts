@@ -1,12 +1,17 @@
 import { resolveActiveEmptyProps } from '../empty.js'
 import { keyFor } from '../helpers.js'
-import { matchesRuleObjectWord, matchesRuleSubject } from '../rule-match.js'
+import {
+  matchesRuleObjectWord,
+  matchesRuleSubject,
+  subjectRuleCandidates,
+} from '../rule-match.js'
 
 import {
   appendHasSpawns,
   buildGrid,
   hasLatchedFloat,
   hasProp,
+  hasYouLikeProp,
   isYouLike,
   resolveLevelPropsGlobal,
   splitByFloatLayer,
@@ -271,7 +276,7 @@ export const applyInteractions = (
       if (eatRules.length) {
         for (const eater of layer) {
           if (removed.has(eater.id)) continue
-          for (const rule of eatRules) {
+          for (const rule of subjectRuleCandidates(eatRules, eater)) {
             if (!matchesRuleSubject(eater, rule, ruleContext)) continue
 
             for (const target of layer) {
@@ -316,8 +321,7 @@ export const applyInteractions = (
     // level pseudo-unit's float stays a fresh rule read.
     const floatOk = (item: Item): boolean =>
       hasLatchedFloat(item) === levelFloat
-    const levelYou =
-      levelProps.has('you') || levelProps.has('you2') || levelProps.has('3d')
+    const levelYou = hasYouLikeProp(levelProps)
     const eProps = resolveActiveEmptyProps(
       runtime.rules,
       items,

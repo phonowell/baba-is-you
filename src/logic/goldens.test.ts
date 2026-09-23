@@ -4,6 +4,7 @@ import { join, relative } from 'node:path'
 import test from 'node:test'
 
 import { levels } from '../levels.js'
+import { layoutSignature } from './helpers.js'
 import { parseLevel } from './parse-level.js'
 import { replayLevel } from './replay.js'
 
@@ -32,22 +33,6 @@ type Golden = {
   final: string
   status: string
 }
-
-// Layout identity for consistency checks: the same signature the web
-// binding uses (name, text flag, cell — facing/dupes collapse). An
-// embedded `levelData` must match its real source or the golden replays
-// against a ghost board while the campaign level drifts away from it.
-const layoutSignature = (level: LevelData): string =>
-  `${level.width}x${level.height}|` +
-  [
-    ...new Set(
-      level.items.map(
-        (item) => `${item.isText ? '!' : ''}${item.name}@${item.x},${item.y}`,
-      ),
-    ),
-  ]
-    .sort()
-    .join(';')
 
 const goldenFiles = walk(GOLDENS_DIR).filter((path) =>
   path.endsWith('.json'),
