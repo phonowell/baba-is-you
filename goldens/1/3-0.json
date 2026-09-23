@@ -1,6 +1,6 @@
 {
  "level": "levels/1-the-lake/3-affection.txt",
- "inputs": "wwwwwwwwwwwwwwwwrrruurrruudrrrddddluuuullluuurdlldlddrrrrllluuuuurrrllrrrddwwwwwwwdrdlddlluurdrudwwwwwwwwwwwwdduurd",
+ "inputs": "wwwwwwwwwwwwwwwwrrruurrruudrrrddddluuuullluuurdlldlddrrrrllluuuuurrrllrrrddwwwwwwwdrdlddlluurdrudwwwwwwwwwwwwdduu",
  "initial": "playing|algae@14,5(defeat);algae@15,5(defeat);algae@16,5(defeat);algae@17,5(defeat);algae@18,5(defeat);algae@14,6(defeat);algae@18,6(defeat);algae@14,7(defeat);algae@18,7(defeat);algae@14,8(defeat);algae@18,8(defeat);algae@14,9(defeat);algae@15,9(defeat);algae@16,9(defeat);algae@17,9(defeat);algae@18,9(defeat);algae!@0,0(push);baba@3,9(you);baba!@21,13(push);brick@14,4();brick@4,6();brick@3,7();brick@4,7();brick@15,7();brick@13,8();brick@15,8();brick@16,8();brick@17,8();brick@12,9();brick@13,9();brick@19,9();brick@6,10();brick@7,10();brick@13,10();brick@14,10();brick@15,10();brick@5,11();brick@6,11();brick@7,11();defeat!@2,0(push);is!@1,0(push);is!@10,5(push);is!@10,9(push);is!@0,12(push);is!@22,13(push);keke@6,3(move);keke!@9,5(push);keke@down@12,10(move);keke@up@7,7(move);love@16,7(push+win);love!@9,9(push);love!@0,11(push);move!@11,5(push);push!@11,9(push);win!@0,13(push);you!@23,13(push)",
  "hashes": [
   "403fa1251924ee70",
@@ -113,12 +113,10 @@
   "024bbb5afba2a15d",
   "e53a3e55ec4c0940",
   "e87dd2a2c518d263",
-  "34ee4e15701ca72b",
-  "f5644c5aa116830c",
-  "9213cee0c8bb1c72",
-  "d7d4790376e9e5c6",
-  "13676f71dc37f374"
+  "3389b2f5475269ca",
+  "1fa3024b2ecfabf1",
+  "1951c1f32f601d4a"
  ],
- "final": "win|algae@14,5(defeat);algae@15,5(defeat);algae@16,5(defeat);algae@17,5(defeat);algae@18,5(defeat);algae@14,6(defeat);algae@18,6(defeat);algae@14,7(defeat);algae@18,7(defeat);algae@14,8(defeat);algae@18,8(defeat);algae@14,9(defeat);algae@15,9(defeat);algae@16,9(defeat);algae@17,9(defeat);algae@18,9(defeat);algae!@0,0(push);baba@down@12,8(you);baba!@21,13(push);brick@14,4();brick@4,6();brick@3,7();brick@4,7();brick@15,7();brick@13,8();brick@15,8();brick@16,8();brick@17,8();brick@12,9();brick@13,9();brick@19,9();brick@6,10();brick@7,10();brick@13,10();brick@14,10();brick@15,10();brick@5,11();brick@6,11();brick@7,11();defeat!@2,0(push);is!@1,0(push);is!@10,5(push);is!@10,9(push);is!@0,12(push);is!@22,13(push);keke@right@13,3(move);keke@down!@9,5(push);keke@down@12,11(move);keke@left@8,7(move);love@down@12,8(win);love!@9,9(push);love!@0,11(push);move@up!@11,5(push);push@down!@11,10(push);win!@0,13(push);you!@23,13(push)",
+ "final": "win|algae@14,5(defeat);algae@15,5(defeat);algae@16,5(defeat);algae@17,5(defeat);algae@18,5(defeat);algae@14,6(defeat);algae@18,6(defeat);algae@14,7(defeat);algae@18,7(defeat);algae@14,8(defeat);algae@18,8(defeat);algae@14,9(defeat);algae@15,9(defeat);algae@16,9(defeat);algae@17,9(defeat);algae@18,9(defeat);algae!@0,0(push);baba@up@11,7(you);baba!@21,13(push);brick@14,4();brick@4,6();brick@3,7();brick@4,7();brick@15,7();brick@13,8();brick@15,8();brick@16,8();brick@17,8();brick@12,9();brick@13,9();brick@19,9();brick@6,10();brick@7,10();brick@13,10();brick@14,10();brick@15,10();brick@5,11();brick@6,11();brick@7,11();defeat!@2,0(push);is!@1,0(push);is!@10,5(push);is!@10,9(push);is!@0,12(push);is!@22,13(push);keke@right@11,3(move);keke@down!@9,5(push);keke@down@12,9(move);keke@left@10,7(move);love@left@11,7(win);love!@9,9(push);love!@0,11(push);move@up!@11,5(push);push@down!@11,10(push);win!@0,13(push);you!@23,13(push)",
  "status": "win"
 }

@@ -133,8 +133,8 @@
   "7ae45051dedfc17f",
   "7116530fb90cbc22",
   "383d6a24cbdaadb3",
-  "3a8e3a4fa798a5f6"
+  "d629a95d8dabf0f1"
  ],
- "final": "win|baba!@3,1(push+win);baba!@0,3(push+win);baba@down@1,1(you);defeat!@0,1(push+win);flag!@1,0(push+win);baba@up@1,2(you);is!@0,0(push+win);is!@2,1(push+win);is!@3,2(push+win);is@up!@1,1(push+win);not!@0,2(push+win);push!@3,0(push+win);swap!@2,3(push+win);text!@2,0(push+win);win!@2,2(push+win);you!@3,3(push+win)",
+ "final": "win|baba!@3,1(push+win);baba!@0,3(push+win);baba@up@1,1(you);defeat!@0,1(push+win);flag!@1,0(push+win);baba@up@1,2(you);is!@0,0(push+win);is!@2,1(push+win);is!@3,2(push+win);is@up!@1,1(push+win);not!@0,2(push+win);push!@3,0(push+win);swap!@2,3(push+win);text!@2,0(push+win);win!@2,2(push+win);you!@3,3(push+win)",
  "status": "win"
 }
