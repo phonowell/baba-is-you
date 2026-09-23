@@ -5,7 +5,6 @@ import {
   renderReferenceControlsHtml,
   renderRulesLinesHtml,
 } from '../view/render-html.js'
-import { statusLine } from '../view/status-line.js'
 
 import type { GameState } from '../logic/types.js'
 import type { BoardHoverTipElements } from './app-hover.js'
@@ -143,7 +142,7 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   )
   replayButtonEl.setAttribute('aria-haspopup', 'dialog')
   // Left cluster names the stage and offers its answer verb; the right
-  // cluster carries the hint/status line and the panel verb.
+  // cluster carries the elastic status line and the panel verb.
   toolbar.append(
     levelBadgeEl,
     ...(hasGoldenReplay ? [replayButtonEl] : []),
@@ -348,7 +347,9 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
       // history behind it.
       const replayActive = replay !== null
       undoBtn.disabled = replayActive || !canUndo
-      waitBtn.disabled = replayActive || state.status !== 'playing'
+      // Waiting past a defeat is real input — the world keeps turning
+      // and can still reach a win. Only a cleared board seals it.
+      waitBtn.disabled = replayActive || state.status === 'win'
       restartBtn.disabled = replayActive
       outcomeNextBtn.disabled = replayActive
       outcomeUndoBtn.disabled = replayActive || !canUndo
@@ -357,10 +358,11 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
       levelBadgeNumEl.textContent = String(levelMenuNum).padStart(3, '0')
       levelBadgeNameEl.textContent = state.title
 
+      // The line stays empty outside Solution playback — it is the bar's
+      // elastic spacer first and the replay progress readout second.
       statusEl.textContent = replay
         ? `SOLUTION ${replay.name} — ${replay.cursor}/${replay.total}`
-        : statusLine(state.status)
-      statusEl.dataset.status = state.status
+        : ''
 
       const showOutcome = state.status === 'win' || state.status === 'lose'
       outcomeBackdropEl.toggleAttribute('hidden', !showOutcome)

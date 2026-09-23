@@ -34,10 +34,10 @@ const toRuleKeys = (
               : rule.kind
         const condition = !rule.condition
           ? ''
-          : !('object' in rule.condition)
-            ? `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}]`
-            : 'direction' in rule.condition
-              ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
+          : 'direction' in rule.condition
+            ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
+            : !('object' in rule.condition)
+              ? `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}]`
               : `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}:${'objectNegated' in rule.condition && rule.condition.objectNegated ? '!' : ''}${rule.condition.object}]`
         return (
         `${rule.subjectNegated ? '!' : ''}${rule.subject}:${kind}:${
@@ -222,6 +222,87 @@ test('collectRules binds NOT after a condition word to its object', () => {
   const keys = toRuleKeys(items, 6, 1)
 
   assert.deepEqual(keys, ['baba:property:win[on:!skull]'])
+})
+
+// Infix conditions other than `feeling` officially take noun parameters
+// (argtype {0}) — `stop` fails, and since a property word can never
+// start its own sentence the whole phrase dies.
+test('collectRules rejects a property word as condition object', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'on', 1, 0),
+    createText(3, 'stop', 2, 0),
+    createText(4, 'is', 3, 0),
+    createText(5, 'you', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, [])
+})
+
+// `feeling` is the infix condition whose parameter is a property word
+// (official argtype {2}).
+test('collectRules accepts a property parameter for FEELING', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'feeling', 1, 0),
+    createText(3, 'stop', 2, 0),
+    createText(4, 'is', 3, 0),
+    createText(5, 'you', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, ['baba:property:you[feeling:stop]'])
+})
+
+// `feeling` rejects nouns; officially the failed parameter reparses as
+// its own sentence start, so `baba feeling keke is you` still yields
+// `keke is you`.
+test('collectRules reparses a noun after FEELING as a new sentence', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'feeling', 1, 0),
+    createText(3, 'keke', 2, 0),
+    createText(4, 'is', 3, 0),
+    createText(5, 'you', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, ['keke:property:you'])
+})
+
+// `facing` officially accepts direction names on top of noun objects
+// (argtype {0} + argextra right/up/left/down).
+test('collectRules accepts a direction parameter for FACING', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'facing', 1, 0),
+    createText(3, 'right', 2, 0),
+    createText(4, 'is', 3, 0),
+    createText(5, 'you', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, ['baba:property:you[facing:right]'])
+})
+
+// Postfix conditions still demand a noun subject — `lonely stop is you`
+// officially dies at `stop`.
+test('collectRules rejects a property subject before a postfix condition', () => {
+  const items = [
+    createText(1, 'lonely', 0, 0),
+    createText(2, 'stop', 1, 0),
+    createText(3, 'is', 2, 0),
+    createText(4, 'you', 3, 0),
+  ]
+
+  const keys = toRuleKeys(items, 4, 1)
+
+  assert.deepEqual(keys, [])
 })
 
 // `{cond|noun} noun is prop` with no subject ahead of the condition

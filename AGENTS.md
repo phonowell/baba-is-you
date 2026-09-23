@@ -1,5 +1,7 @@
 # AGENTS.md
 
+@/Users/mimiko/.codex/RTK.md
+
 ## 关键约束
 - 保持分层：`src/logic` 只做规则与状态推进；Web 输入输出在 `src/view/*`、`src/web/*`
 - 依赖方向单向：`logic` 不依赖任何外层；`view` → `logic`；`web` → `view`/`logic`；`tools/` 为顶层入口，`levels*.ts` 由入口装配，禁止内层反向依赖
@@ -75,6 +77,7 @@
 - 构建链路改动：至少执行 `pnpm build` 验证输出可打开
 - 验收优先探针而非浏览器：以测试、脚本、命令输出等可断言手段验证行为；浏览器预览仅用于探针覆盖不到的视觉确认
 - 涉及 3 步以上任务：在 `plans/task_plan_{suffix}.md` 维护计划与状态
+- shell 命令一律经 `rtk` 代理执行（`rtk git status`、`rtk pnpm check` 等），用其压缩输出节省 token；需要原始未过滤输出时用 `rtk proxy <cmd>`，`rtk gain` 查看节省统计
 
 ## 代码规范
 - 倾向函数表达式：`const fn = (...) => {}`

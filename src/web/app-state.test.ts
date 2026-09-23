@@ -4,6 +4,7 @@ import test from 'node:test'
 import { parseLevel } from '../logic/parse-level.js'
 import { mapGameCommandToAction } from './app-commands.js'
 import { createWebAppController } from './app-controller.js'
+import { reduceWebAppState } from './app-model.js'
 import { createWebAppStore } from './app-store.js'
 
 import type { WebAppEnvironment } from './app-model.js'
@@ -270,6 +271,59 @@ test('game-mode moves push history and undo rewinds it', () => {
   const undone = store.getState()
   assert.equal(undone.state.turn, 0)
   assert.equal(undone.history.length, 0)
+})
+
+test('a lost board still simulates turns; a won board ignores input', () => {
+  // BABA IS YOU + SKULL IS DEFEAT kills the only `you` on the first
+  // step, while KEKE IS MOVE keeps a mover walking — the post-defeat
+  // wait must still advance the world (official levels like 82 win
+  // this way). The DEFEAT flag also never blocks undo.
+  const loseEnv: WebAppEnvironment = {
+    levels: [
+      parseLevel(
+        'title Linger; size 6x3; ' +
+          'baba 0,0; skull 1,0; keke@left 5,0; ' +
+          'Baba 0,1; Is 1,1; You 2,1; ' +
+          'Skull 3,1; Is 4,1; Defeat 5,1; ' +
+          'Keke 0,2; Is 1,2; Move 2,2',
+      ),
+    ],
+  }
+  const store = createWebAppStore(loseEnv)
+  store.dispatch({ type: 'enter-game', index: 0 })
+
+  store.dispatch({ type: 'move', direction: 'right' })
+  const lost = store.getState()
+  assert.equal(lost.state.status, 'lose')
+  assert.equal(lost.history.length, 1)
+
+  store.dispatch({ type: 'move', direction: null })
+  const waited = store.getState()
+  assert.equal(waited.state.status, 'lose')
+  assert.equal(waited.state.turn, 2)
+  assert.equal(waited.history.length, 2)
+  assert.equal(
+    waited.state.items.some(
+      (item) => item.name === 'keke' && item.x === 3 && item.y === 0,
+    ),
+    true,
+  )
+
+  store.dispatch({ type: 'undo' })
+  assert.equal(store.getState().state.turn, 1)
+
+  // The win flag does seal the board — the outcome card's "next" is
+  // the only way forward from a clear.
+  const won = {
+    ...store.getState(),
+    state: { ...store.getState().state, status: 'win' as const },
+  }
+  const same = reduceWebAppState(
+    won,
+    { type: 'move', direction: null },
+    loseEnv,
+  )
+  assert.equal(same, won)
 })
 
 test('return-to-menu clears history, dialog, and replay state', () => {

@@ -215,8 +215,8 @@ body.game-3d-fullscreen .reference-backdrop::before {
   overflow: hidden;
   text-overflow: ellipsis;
   color: #e9edf2;
-  /* Bare text on the board — the shadow keeps the hint line readable
-     over light terrain where the dark bar used to sit. */
+  /* Bare text on the board — the shadow keeps the replay readout
+     readable over light terrain where the dark bar used to sit. */
   text-shadow: 0 1px 3px rgb(10 14 22 / 70%), 0 0 10px rgb(10 14 22 / 35%);
 }
 
@@ -269,16 +269,6 @@ body.game-3d-fullscreen .reference-backdrop::before {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
-}
-
-/* Outcome states tint the HUD line; the win text keeps a soft gold pulse. */
-.game-toolbar .status[data-status='win'] {
-  color: #f0d68a;
-  animation: status-win-glow 1.4s ease-in-out infinite;
-}
-
-.game-toolbar .status[data-status='lose'] {
-  color: #e8a5a0;
 }
 
 .reference-btn {
@@ -946,11 +936,6 @@ body.game-3d-fullscreen .board.board-3d {
   0% { transform: translateY(100%); }
   70% { transform: translateY(-3px); }
   100% { transform: none; }
-}
-
-@keyframes status-win-glow {
-  0%, 100% { text-shadow: 0 0 5px rgb(240 214 138 / 40%); }
-  50% { text-shadow: 0 0 14px rgb(240 214 138 / 85%); }
 }
 
 /* Selected menu plaque: the aura breathes between a candle and a lamp.
@@ -1739,8 +1724,11 @@ body.game-3d-fullscreen .reference-header .btn {
 }
 
 /* Narrow windows: preview leads as the compact "current level" card,
-   the grid keeps full width underneath with its own scroll bound. */
-@media (max-width: 720px) {
+   the grid keeps full width underneath with its own scroll bound.
+   Fine pointers only — coarse-pointer screens always present landscape
+   (portrait phones are rotated into it), where the side-by-side layout
+   still fits but `max-width` would misread the unrotated viewport. */
+@media (max-width: 720px) and (pointer: fine) {
   .menu-main {
     grid-template-columns: 1fr;
     grid-template-rows: none;

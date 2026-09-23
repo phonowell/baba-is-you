@@ -34,10 +34,10 @@ const toRuleKeys = (
               : rule.kind
         const condition = !rule.condition
           ? ''
-          : !('object' in rule.condition)
-            ? `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}]`
-            : 'direction' in rule.condition
-              ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
+          : 'direction' in rule.condition
+            ? `[facing:${rule.condition.negated ? '!' : ''}${rule.condition.direction}]`
+            : !('object' in rule.condition)
+              ? `[${rule.condition.negated ? '!' : ''}${rule.condition.kind}]`
               : `[${rule.condition.kind}:${rule.condition.negated ? '!' : ''}${rule.condition.object}]`
         return (
         `${rule.subjectNegated ? '!' : ''}${rule.subject}:${kind}:${
@@ -168,4 +168,75 @@ test('collectRules supports WRITE operator', () => {
   const keys = toRuleKeys(items, 3, 1)
 
   assert.deepEqual(keys, ['baba:write:win'])
+})
+
+// Officially only type-0 noun words can open a sentence — property words
+// (type 2) like `stop` fail at sentence start, so the rule never forms.
+test('collectRules rejects a property word as subject', () => {
+  const items = [
+    createText(1, 'stop', 0, 0),
+    createText(2, 'is', 1, 0),
+    createText(3, 'wall', 2, 0),
+  ]
+
+  const keys = toRuleKeys(items, 3, 1)
+
+  assert.deepEqual(keys, [])
+})
+
+// `not x` subjects match every non-x non-text item, so a bogus negated
+// subject would transform the whole board — not just pollute the HUD.
+test('collectRules rejects a NOT property word as subject', () => {
+  const items = [
+    createText(1, 'not', 0, 0),
+    createText(2, 'stop', 1, 0),
+    createText(3, 'is', 2, 0),
+    createText(4, 'wall', 3, 0),
+  ]
+
+  const keys = toRuleKeys(items, 4, 1)
+
+  assert.deepEqual(keys, [])
+})
+
+// A property conjunct kills the whole AND chain — officially the
+// sentence dies at `stop` and `stop` itself can never start a sentence.
+test('collectRules rejects a property conjunct in an AND subject chain', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'and', 1, 0),
+    createText(3, 'stop', 2, 0),
+    createText(4, 'is', 3, 0),
+    createText(5, 'you', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, [])
+})
+
+// `is`/`write` are the only verbs whose object may be a property
+// (official argtype {0,2}); every other verb takes nouns only ({0}).
+test('collectRules keeps a property object after IS', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'is', 1, 0),
+    createText(3, 'stop', 2, 0),
+  ]
+
+  const keys = toRuleKeys(items, 3, 1)
+
+  assert.deepEqual(keys, ['baba:property:stop'])
+})
+
+test('collectRules rejects a property object after HAS', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'has', 1, 0),
+    createText(3, 'stop', 2, 0),
+  ]
+
+  const keys = toRuleKeys(items, 3, 1)
+
+  assert.deepEqual(keys, [])
 })

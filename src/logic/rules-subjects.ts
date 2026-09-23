@@ -1,4 +1,8 @@
-import { isSubjectWord, parseTermChainsWithNext } from './rules-parse.js'
+import {
+  isConditionParamWord,
+  isSubjectWord,
+  parseTermChainsWithNext,
+} from './rules-parse.js'
 
 import type { ParsedTerm } from './rules-parse.js'
 
@@ -108,10 +112,14 @@ export const collectSubjectPatterns = (
     }
   }
 
+  // The chain before the operator is either the subject list or — when a
+  // condition word follows — its parameter list, which officially may
+  // hold properties (`feeling`) or directions (`facing`). Parse broadly
+  // (`isObjectWord` = type 0/2) and validate once the role is known.
   const subjectOrConditionChains = parseTermChainsWithNext(
     readTermsAt,
     1,
-    isSubjectWord,
+    isObjectWord,
     0,
     maxDepth,
     true,
@@ -125,6 +133,9 @@ export const collectSubjectPatterns = (
       POSTFIX_CONDITION_WORD_SET.has(term.word),
     )
     if (postfixTerm) {
+      // Postfix conditions attach to a subject — every conjunct must be a
+      // noun (`stop lonely is you` officially dies at `stop`).
+      if (!chain.terms.every((term) => isSubjectWord(term.word))) continue
       const nots = countConsecutiveNot(
         readTermsAt,
         chain.next + postfixTerm.span,
@@ -154,9 +165,33 @@ export const collectSubjectPatterns = (
         chain.next + conditionTerm.span,
       )
       const conditionNegated = nots.count % 2 === 1
+      const paramStart = chain.next + conditionTerm.span + nots.offset
+
+      // Officially a parameter must satisfy the condition word's
+      // argtype; the first failure ends the sentence and the failed word
+      // itself reparses as a new sentence — `baba feeling keke is you`
+      // yields `keke is you`, while `baba on stop is you` yields nothing
+      // (`stop` can never be a subject). Emit the failed tail's
+      // subject-shaped words as bare subjects, dropping their `not`s —
+      // they belong to the dead sentence's extra ids.
+      const firstBadParam = chain.terms.findIndex(
+        (term) => !isConditionParamWord(conditionKind, term.word),
+      )
+      if (firstBadParam !== -1) {
+        for (const term of chain.terms.slice(firstBadParam)) {
+          if (!isSubjectWord(term.word)) continue
+          addPattern({
+            subject: asSubjectWord(term.word),
+            span: { start: 1, end: chain.next },
+            subjectSourceIds: term.sourceIds,
+          })
+        }
+        continue
+      }
+
       const subjectChains = parseTermChainsWithNext(
         readTermsAt,
-        chain.next + conditionTerm.span + nots.offset,
+        paramStart,
         isSubjectWord,
         0,
         maxDepth,
@@ -169,12 +204,19 @@ export const collectSubjectPatterns = (
       // scans each featureindex entry separately).
       const subjects = subjectChains.chains.flatMap((chain) => chain.terms)
       const conditionTerms = chain.terms
-      // No resolvable condition object: the phrase fails at the same
-      // point a stacked dead word's resume would land, and official
-      // `finals` dedupes identical sentences (same unit ids), so the
-      // bare `x is y` is emitted once here for both cases.
+      // No resolvable subject beyond the condition: the phrase fails at
+      // the same point a stacked dead word's resume would land, and
+      // official `finals` dedupes identical sentences (same unit ids), so
+      // the bare `x is y` is emitted once here for both cases. Only
+      // subject-shaped parameter words reparse — officially every type-0
+      // word is a potential firstword (`stop near keke is you` still
+      // yields `keke is you`), while a direction/property parameter like
+      // `facing right is you` dies with the sentence.
       if (!subjects.length) {
-        addSubjectTerms(conditionTerms, { start: 1, end: chain.next })
+        addSubjectTerms(
+          conditionTerms.filter((term) => isSubjectWord(term.word)),
+          { start: 1, end: chain.next },
+        )
         continue
       }
       // Officially every word stacked on the condition cell spawns its
@@ -232,6 +274,9 @@ export const collectSubjectPatterns = (
       continue
     }
 
+    // Subjects are nouns only — officially a non-subject word ends the
+    // sentence (`stop is wall`, `baba and stop is you` form nothing).
+    if (!chain.terms.every((term) => isSubjectWord(term.word))) continue
     addSubjectTerms(chain.terms, { start: 1, end: chain.next })
   }
 

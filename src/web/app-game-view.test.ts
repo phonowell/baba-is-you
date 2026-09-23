@@ -202,7 +202,7 @@ test('game view hides the rules HUD when no rules exist', () => {
   assert.equal(hud.attributes.has('hidden'), true)
 })
 
-test('game view pairs Solution with the level badge and trails with hint + Controls plus a confirm modal', () => {
+test('game view pairs Solution with the level badge and trails with status + Controls plus a confirm modal', () => {
   const view = createGameView({
     document: createFakeDocument(),
     hasGoldenReplay: true,

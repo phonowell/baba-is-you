@@ -6,8 +6,8 @@ import {
 import type { SpelledWord } from './letter-words.js'
 import {
   inBounds,
-  isPredicateWordForHas,
   isPredicateWordForIs,
+  isPredicateWordForNoun,
   keyFor,
   parseTermChainsWithNext,
 } from './rules-parse.js'
@@ -264,7 +264,11 @@ export const collectRuleInstances = (
       const objectChains = parseTermChainsWithNext(
         readObjectTermsAt,
         1,
-        anchor.word === 'is' ? isPredicateWordForIs : isPredicateWordForHas,
+        // Officially `is`/`write` take a noun or property object
+        // (argtype {0,2}); every other verb takes nouns only ({0}).
+        anchor.word === 'is' || anchor.word === 'write'
+          ? isPredicateWordForIs
+          : isPredicateWordForNoun,
         0,
         maxDepth,
         false,

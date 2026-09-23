@@ -129,7 +129,8 @@ store plus called on resize (60 ms debounce) and initial mount.
   replay-confirm modal, hover tip. The toolbar splits into two
   clusters — level badge + the bulb-marked Solution verb (when a golden
   is bound)
-  on the left, the elastic status/hint line + Controls on the right.
+  on the left, the elastic status line (empty unless a Solution replay
+  is running) + Controls on the right.
   Rebuilt on board signature change; cheap fields update in place.
 - **Board 3D**: `mountAndSyncBoard3d` (`board-3d-mount.ts`) is the lazy seam:
   it `import()`s `board-3d-lazy.ts` (the chunk that pulls in Three.js +

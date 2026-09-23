@@ -305,7 +305,12 @@ export const reduceWebAppState = (
     case 'move': {
       if (stateData.mode !== 'game') return stateData
       if (stateData.replay) return stateData
-      if (stateData.state.status !== 'playing') return stateData
+      // A lost board still accepts turns: the world keeps simulating
+      // (move/shift run without a `you`), and a respawned `you` or a
+      // late win flips the status back — official levels like 82
+      // (Baba Fields) rely on waiting past the defeat flag. Only a won
+      // board is sealed.
+      if (stateData.state.status === 'win') return stateData
 
       const result = step(stateData.state, action.direction)
       if (!result.changed) return stateData

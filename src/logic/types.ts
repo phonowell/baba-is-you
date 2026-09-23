@@ -260,8 +260,16 @@ export const isSpecialNounWord = (
   word: string,
 ): word is SpecialNounWord => SPECIAL_NOUN_WORD_SET.has(word)
 
+// Officially only type-0 words can open a sentence: object nouns plus the
+// special nouns (`text`/`empty`/`all`/`level`/`group*` are type 0 in the
+// object table). Type-2 words — properties like `stop` and direction names
+// like `right` — can only sit after a verb or as a `facing`/`feeling`
+// parameter: `stop is wall` and `right is you` form no rule.
 export const isSubjectWord = (word: string): word is SubjectWord =>
-  isSpecialNounWord(word) || !RULE_SYNTAX_WORDS.has(word)
+  isSpecialNounWord(word) ||
+  (!RULE_SYNTAX_WORDS.has(word) &&
+    !PROPERTY_WORDS.has(word) &&
+    !DIRECTION_WORDS.has(word))
 
 export const isObjectWord = (word: string): word is ObjectWord =>
   isPropertyWord(word) || isSpecialNounWord(word) || !RULE_SYNTAX_WORDS.has(word)
