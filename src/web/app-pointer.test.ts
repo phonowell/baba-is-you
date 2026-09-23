@@ -53,6 +53,7 @@ const pointerEvent = (
 type ContextOptions = {
   mode?: 'menu' | 'game'
   dialogOpen?: boolean
+  confirmOpen?: boolean
   canHandle?: () => boolean
   handled?: (cmd: GameCommand) => boolean
   mapViewportDelta?: (dx: number, dy: number) => { dx: number; dy: number }
@@ -69,6 +70,7 @@ const createContext = (options: ContextOptions = {}) => {
     viewState: {
       getMode: () => state.mode,
       isReferenceDialogOpen: () => options.dialogOpen ?? false,
+      isReplayConfirmOpen: () => options.confirmOpen ?? false,
     },
     canHandleGameAction: options.canHandle ?? (() => true),
     markGameActionHandled: () => {
@@ -168,11 +170,17 @@ test('pointer gestures are ignored with a dialog open and off the board', () => 
   dialogCtx.handlers.onPointerDown(pointerEvent())
   dialogCtx.handlers.onPointerUp(pointerEvent())
 
+  // The replay confirm modal blocks the board the same way.
+  const confirmCtx = createContext({ confirmOpen: true })
+  confirmCtx.handlers.onPointerDown(pointerEvent())
+  confirmCtx.handlers.onPointerUp(pointerEvent())
+
   const offBoardCtx = createContext()
   offBoardCtx.handlers.onPointerDown(pointerEvent({ target: offSurface() }))
   offBoardCtx.handlers.onPointerUp(pointerEvent({ target: offSurface() }))
 
   assert.deepEqual(dialogCtx.commands, [])
+  assert.deepEqual(confirmCtx.commands, [])
   assert.deepEqual(offBoardCtx.commands, [])
 })
 

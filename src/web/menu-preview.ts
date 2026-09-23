@@ -22,7 +22,8 @@ const PREVIEW_BOARD_BACKGROUND = '#1b2433'
 const MIN_LABEL_FONT_PX = 3.5
 
 // A card label's advance width per character, in font-size units —
-// Courier-bold-ish, matching the app font stack.
+// Courier-bold approximates the chunky pixel glyphs the in-game word
+// cards wear (the UI chrome font is unrelated to card text).
 const LABEL_CHAR_WIDTH = 0.62
 
 type PreviewCell = { x: number; y: number; items: Item[] }
@@ -86,6 +87,7 @@ const drawItem = (
     item,
     CLAY_PRESET.readability.minContrastRatio,
     state.overriddenTextIds?.has(item.id) ?? false,
+    state.activeTextIds?.has(item.id) ?? false,
   )
   const sprite = orientedSpriteForSpec(spec)
   const frame = sprite?.frames[0]

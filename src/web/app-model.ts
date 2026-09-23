@@ -30,6 +30,10 @@ export type WebAppSnapshot = {
   levelIndex: number
   state: GameState
   showReferenceDialog: boolean
+  // The Solution button's confirmation modal — replay playback rebuilds
+  // the board from the golden, so the click asks before it discards the
+  // player's progress.
+  showReplayConfirm: boolean
   replay: ReplayProgress | null
   // Undo is only a live verb with history behind it — the view disables
   // the button instead of offering a dead press.
@@ -51,9 +55,11 @@ export type WebAppStateData = Omit<
 
 export type WebAppAction =
   | { type: 'close-reference-dialog' }
+  | { type: 'close-replay-confirm' }
   | { type: 'enter-game'; index: number }
   | { type: 'mark-game-action-handled'; nowMs: number }
   | { type: 'move'; direction: Direction | null }
+  | { type: 'open-replay-confirm' }
   | { type: 'replay-step' }
   | { type: 'reset-level'; index: number; level?: LevelData }
   | { type: 'return-to-menu' }
@@ -106,6 +112,7 @@ export const createInitialWebAppState = (
     levelCount: env.levels.length,
     state: createInitialState(firstLevel, 0),
     showReferenceDialog: false,
+    showReplayConfirm: false,
     replay: null,
     customLevel: null,
     lastGameActionMs: 0,
@@ -120,6 +127,7 @@ export const toWebAppSnapshot = (
   levelIndex: stateData.levelIndex,
   state: stateData.state,
   showReferenceDialog: stateData.showReferenceDialog,
+  showReplayConfirm: stateData.showReplayConfirm,
   replay: stateData.replay
     ? {
         name: stateData.replay.name,
@@ -139,6 +147,7 @@ export const hasViewStateChanged = (
   previous.levelIndex !== next.levelIndex ||
   previous.state !== next.state ||
   previous.showReferenceDialog !== next.showReferenceDialog ||
+  previous.showReplayConfirm !== next.showReplayConfirm ||
   previous.replay !== next.replay
 
 export const reduceWebAppState = (
@@ -169,6 +178,23 @@ export const reduceWebAppState = (
       return {
         ...stateData,
         showReferenceDialog: !stateData.showReferenceDialog,
+        // One modal at a time — the confirm cannot stack under it.
+        showReplayConfirm: false,
+      }
+    case 'open-replay-confirm':
+      if (stateData.mode !== 'game' || stateData.showReplayConfirm) {
+        return stateData
+      }
+      return {
+        ...stateData,
+        showReferenceDialog: false,
+        showReplayConfirm: true,
+      }
+    case 'close-replay-confirm':
+      if (!stateData.showReplayConfirm) return stateData
+      return {
+        ...stateData,
+        showReplayConfirm: false,
       }
     case 'enter-game': {
       // `action.index` is a menu grid slot — resolve the campaign level
@@ -200,6 +226,7 @@ export const reduceWebAppState = (
         ),
         history: [],
         showReferenceDialog: false,
+        showReplayConfirm: false,
         replay: null,
         customLevel: null,
       }
@@ -216,6 +243,7 @@ export const reduceWebAppState = (
         levelIndex: nextIndex,
         history: [],
         showReferenceDialog: false,
+        showReplayConfirm: false,
         replay: null,
         customLevel: custom,
         state: createInitialState(
@@ -232,6 +260,7 @@ export const reduceWebAppState = (
         mode: 'game',
         history: [],
         showReferenceDialog: false,
+        showReplayConfirm: false,
         customLevel: action.level,
         state: createInitialState(action.level, stateData.levelIndex),
         replay: {

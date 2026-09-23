@@ -3,6 +3,7 @@ import type { GameCommand } from '../view/input.js'
 type AppEventViewState = {
   getMode: () => 'menu' | 'game'
   isReferenceDialogOpen: () => boolean
+  isReplayConfirmOpen: () => boolean
 }
 
 // HUD buttons and the outcome overlay share the keyboard command pipeline:
@@ -19,6 +20,11 @@ type RootClickHandlerContext = {
   viewState: AppEventViewState
   toggleReferenceDialog: () => void
   closeReferenceDialog: () => void
+  // The Solution button's confirmation modal: `play-replay` opens it,
+  // `confirm-replay` commits (close + play), `cancel-replay` and the
+  // backdrop dismiss it.
+  openReplayConfirm?: () => void
+  closeReplayConfirm?: () => void
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
   handleGameCommand: (cmd: GameCommand) => boolean
@@ -38,6 +44,8 @@ export const createRootClickHandler = (
     viewState,
     toggleReferenceDialog,
     closeReferenceDialog,
+    openReplayConfirm,
+    closeReplayConfirm,
     canHandleGameAction,
     markGameActionHandled,
     handleGameCommand,
@@ -48,6 +56,7 @@ export const createRootClickHandler = (
   return (event: MouseEvent): void => {
     const mode = viewState.getMode()
     const showReferenceDialog = viewState.isReferenceDialogOpen()
+    const showReplayConfirm = viewState.isReplayConfirmOpen()
     const target = event.target
     if (!(target instanceof HTMLElement)) return
 
@@ -64,8 +73,21 @@ export const createRootClickHandler = (
         return
       }
 
+      // Playback rebuilds the board from the golden — the button asks
+      // first; only the dialog's own confirm runs the replay.
       if (action === 'play-replay') {
+        openReplayConfirm?.()
+        return
+      }
+
+      if (action === 'confirm-replay') {
+        closeReplayConfirm?.()
         playReplay?.()
+        return
+      }
+
+      if (action === 'cancel-replay') {
+        closeReplayConfirm?.()
         return
       }
 
@@ -75,13 +97,24 @@ export const createRootClickHandler = (
         return
       }
 
-      if (!showReferenceDialog && action) {
+      if (!showReferenceDialog && !showReplayConfirm && action) {
         const cmd = GAME_ACTION_COMMANDS[action]
         if (cmd && canHandleGameAction() && handleGameCommand(cmd)) {
           markGameActionHandled()
         }
       }
 
+      return
+    }
+
+    if (showReplayConfirm) {
+      const backdrop = target.closest<HTMLElement>(
+        '[data-role="replay-confirm-backdrop"]',
+      )
+      const dialog = target.closest<HTMLElement>(
+        '[data-role="replay-confirm-dialog"]',
+      )
+      if (backdrop && !dialog) closeReplayConfirm?.()
       return
     }
 
@@ -133,6 +166,10 @@ export const createMenuHoverHandler = (
 type WindowKeydownHandlerContext = {
   viewState: AppEventViewState
   closeReferenceDialog: () => void
+  // Replay confirm modal keys: Escape cancels, Enter commits — the same
+  // pair the dialog's own buttons fire.
+  closeReplayConfirm?: () => void
+  playReplay?: () => void
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
   handleMenuEvent: (event: KeyboardEvent) => boolean
@@ -145,6 +182,8 @@ export const createWindowKeydownHandler = (
   const {
     viewState,
     closeReferenceDialog,
+    closeReplayConfirm,
+    playReplay,
     canHandleGameAction,
     markGameActionHandled,
     handleMenuEvent,
@@ -153,6 +192,18 @@ export const createWindowKeydownHandler = (
 
   return (event: KeyboardEvent): void => {
     const mode = viewState.getMode()
+
+    if (viewState.isReplayConfirmOpen()) {
+      if (event.key === 'Escape') {
+        closeReplayConfirm?.()
+        event.preventDefault()
+      } else if (event.key === 'Enter') {
+        closeReplayConfirm?.()
+        playReplay?.()
+        event.preventDefault()
+      }
+      return
+    }
 
     if (viewState.isReferenceDialogOpen()) {
       if (event.key === 'Escape') {

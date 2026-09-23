@@ -7,7 +7,7 @@
 type ScheduleTimer = (callback: () => void, ms: number) => number
 type CancelTimer = (handle: number) => void
 
-export const REPLAY_STEP_MS = 500
+const REPLAY_STEP_MS = 500
 
 type CreateReplayDriverOptions = {
   isReplaying: () => boolean

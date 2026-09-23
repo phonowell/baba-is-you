@@ -12,12 +12,17 @@ const escapeHtml = (value: string): string =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;')
 
-export const renderReferenceRulesHtml = (state: GameState): string => {
-  const rules = renderRules(state.rules).map(
-    (line) => `<li>${escapeHtml(line)}</li>`,
-  )
-  return rules.length ? rules.join('') : '<li>(no rules)</li>'
-}
+export const renderRulesLinesHtml = (lines: readonly string[]): string =>
+  lines
+    .map((line) =>
+      line === '(no rules)'
+        ? '<li class="rules-empty">(no rules)</li>'
+        : `<li>${escapeHtml(line)}</li>`,
+    )
+    .join('')
+
+export const renderRulesListHtml = (state: GameState): string =>
+  renderRulesLinesHtml(renderRules(state.rules))
 
 export const renderReferenceControlsHtml = (
   entries: readonly GameControlEntry[] = GAME_CONTROLS,

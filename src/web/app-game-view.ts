@@ -1,8 +1,9 @@
 import { GAMEPAD_CONTROLS } from '../view/input-gamepad.js'
 import { GAME_CONTROLS, GAME_TOUCH_CONTROLS } from '../view/input.js'
+import { renderRules } from '../view/render-helpers.js'
 import {
   renderReferenceControlsHtml,
-  renderReferenceRulesHtml,
+  renderRulesLinesHtml,
 } from '../view/render-html.js'
 import { statusLine } from '../view/status-line.js'
 
@@ -12,8 +13,12 @@ import type { ReplayProgress } from './app-model.js'
 
 export type GameViewUpdate = {
   showReferenceDialog: boolean
+  showReplayConfirm: boolean
   replay: ReplayProgress | null
   canUndo: boolean
+  // Menu-order number for the level plate — the same numeral the grid
+  // cell showed, so "level 7" means the same thing in both modes.
+  levelMenuNum: number
 }
 
 type CreateGameViewOptions = {
@@ -40,31 +45,6 @@ const createElement = <K extends keyof HTMLElementTagNameMap>(
   return element
 }
 
-const SVG_ATTRS =
-  'xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"'
-
-const HUD_ICONS = {
-  undo: `<svg ${SVG_ATTRS}><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>`,
-  wait: `<svg ${SVG_ATTRS}><path d="M6 5l8 7-8 7"/><path d="M17 5v14"/></svg>`,
-  restart: `<svg ${SVG_ATTRS}><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>`,
-  menu: `<svg ${SVG_ATTRS}><path d="M9 6h11M9 12h11M9 18h11"/><path d="M5 6h.01M5 12h.01M5 18h.01"/></svg>`,
-} as const
-
-const createIconButton = (
-  document: Document,
-  action: string,
-  label: string,
-  icon: string,
-): HTMLButtonElement => {
-  const button = document.createElement('button')
-  button.className = 'btn icon-btn'
-  button.dataset.action = action
-  button.setAttribute('aria-label', label)
-  button.title = label
-  button.innerHTML = icon
-  return button
-}
-
 const createOutcomeButton = (
   document: Document,
   action: string,
@@ -78,6 +58,36 @@ const createOutcomeButton = (
   return button
 }
 
+// A pixel-drawn bulb for the reveal-the-answer verb — the game's own
+// chunky grid language, tinted by the button's ink via currentColor.
+const SOLUTION_ICON_SVG =
+  '<svg viewBox="0 0 7 10" shape-rendering="crispEdges">' +
+  '<path fill="currentColor" d="M2 0h3v1H2zM1 1h1v1H1zM5 1h1v1H5zM0 2h1v3H0zM6 2h1v3H6zM3 2h1v2H3zM1 5h1v1H1zM5 5h1v1H5zM2 6h1v1H2zM4 6h1v1H4zM2 7h3v2H2zM3 9h1v1H3z"/>' +
+  '</svg>'
+
+// A glyph button: the icon names the verb's domain (a pixel bulb
+// reveals a recorded answer, ▶ runs it); the text labels the target.
+// Icons arrive as inner markup — an inline SVG or a bare glyph.
+const createGlyphButton = (
+  document: Document,
+  action: string,
+  label: string,
+  className: string,
+  iconHtml: string,
+): HTMLButtonElement => {
+  const button = document.createElement('button')
+  button.className = `btn replay-btn ${className}`
+  button.dataset.action = action
+  const icon = document.createElement('span')
+  icon.className = 'btn-icon'
+  icon.setAttribute('aria-hidden', 'true')
+  icon.innerHTML = iconHtml
+  const text = document.createElement('span')
+  text.textContent = label
+  button.append(icon, text)
+  return button
+}
+
 const outcomeTitleFor = (status: GameState['status']): string =>
   status === 'win' ? 'Level Clear' : 'Defeat'
 
@@ -88,48 +98,57 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   root.setAttribute('aria-label', 'Game')
 
   const toolbar = createElement(document, 'div', 'game-toolbar')
+  // Persistent stage plate: the menu's cell number plus the level title,
+  // so the HUD always names what is on the board — the same "domain
+  // plate" games pin beside the objective line.
+  const levelBadgeEl = createElement(document, 'span', 'level-badge')
+  const levelBadgeNumEl = createElement(document, 'span', 'level-badge-num')
+  const levelBadgeNameEl = createElement(document, 'span', 'level-badge-name')
+  levelBadgeEl.append(levelBadgeNumEl, levelBadgeNameEl)
   const statusEl = createElement(document, 'span', 'status')
   statusEl.setAttribute('aria-live', 'polite')
 
+  // Mid-game verbs for pointer users — the same commands the keyboard
+  // map fires (Undo/Wait/Restart/Menu), so a mouse-only session can
+  // still leave the board and rewind a mistake.
   const actionsEl = createElement(document, 'div', 'game-actions')
-  const undoBtn = createIconButton(
-    document,
-    'game-undo',
-    'Undo (U)',
-    HUD_ICONS.undo,
-  )
-  const waitBtn = createIconButton(
-    document,
-    'game-wait',
-    'Wait (Space)',
-    HUD_ICONS.wait,
-  )
-  const restartBtn = createIconButton(
-    document,
-    'game-restart',
-    'Restart (R)',
-    HUD_ICONS.restart,
-  )
-  actionsEl.append(
-    undoBtn,
-    waitBtn,
-    restartBtn,
-    createIconButton(document, 'game-menu', 'Menu (Q)', HUD_ICONS.menu),
-  )
+  const createActionButton = (action: string, label: string, hint: string) => {
+    const button = createElement(document, 'button', 'btn action-btn')
+    button.dataset.action = action
+    button.textContent = label
+    button.title = hint
+    button.setAttribute('aria-label', hint)
+    return button
+  }
+  const undoBtn = createActionButton('game-undo', 'Undo', 'Undo (U)')
+  const waitBtn = createActionButton('game-wait', 'Wait', 'Wait (Space)')
+  const restartBtn = createActionButton('game-restart', 'Restart', 'Restart (R)')
+  const menuBtn = createActionButton('game-menu', 'Menu', 'Menu (Q)')
+  actionsEl.append(undoBtn, waitBtn, restartBtn, menuBtn)
 
   const referenceButtonEl = createElement(document, 'button', 'btn reference-btn')
   referenceButtonEl.dataset.action = 'toggle-reference'
   referenceButtonEl.setAttribute('aria-haspopup', 'dialog')
-  referenceButtonEl.textContent = 'Controls & Rules'
-  // One-click golden playback for the level on screen — a plain action,
-  // not a dialog: the click starts the recording straight away.
-  const replayButtonEl = createElement(document, 'button', 'btn reference-btn')
-  replayButtonEl.dataset.action = 'play-replay'
-  replayButtonEl.textContent = 'Solution'
+  referenceButtonEl.textContent = 'Controls'
+  // Golden playback for the level on screen: the bulb marks it as the
+  // reveal-the-answer verb, and because a run discards the board's
+  // progress the click asks through the confirm modal below before
+  // starting.
+  const replayButtonEl = createGlyphButton(
+    document,
+    'play-replay',
+    'Solution',
+    'reference-btn',
+    SOLUTION_ICON_SVG,
+  )
+  replayButtonEl.setAttribute('aria-haspopup', 'dialog')
+  // Left cluster names the stage and offers its answer verb; the right
+  // cluster carries the hint/status line and the panel verb.
   toolbar.append(
+    levelBadgeEl,
+    ...(hasGoldenReplay ? [replayButtonEl] : []),
     statusEl,
     actionsEl,
-    ...(hasGoldenReplay ? [replayButtonEl] : []),
     referenceButtonEl,
   )
 
@@ -143,7 +162,19 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   const hoverTipCoordEl = createElement(document, 'span', 'board-hover-coord')
   const hoverTipNamesEl = createElement(document, 'span', 'board-hover-names')
   hoverTipEl.append(hoverTipCoordEl, hoverTipNamesEl)
-  boardWrap.append(boardEl, hoverTipEl)
+
+  // Live rules tracker — the translucent HUD panel floating on the
+  // board. Fresh rules flash in; broken ones linger one beat as struck-
+  // out ghosts so a collapsed rule is felt, not just absent.
+  const rulesHudEl = createElement(document, 'aside', 'rules-hud')
+  rulesHudEl.setAttribute('aria-label', 'Active rules')
+  rulesHudEl.setAttribute('hidden', '')
+  const rulesHudTitle = createElement(document, 'h3', 'rules-hud-title')
+  rulesHudTitle.textContent = 'Rules'
+  const rulesHudListEl = createElement(document, 'ul', 'rules-hud-list')
+  const rulesGhostListEl = createElement(document, 'ul', 'rules-ghosts')
+  rulesHudEl.append(rulesHudTitle, rulesHudListEl, rulesGhostListEl)
+  boardWrap.append(boardEl, hoverTipEl, rulesHudEl)
 
   const referenceBackdropEl = createElement(document, 'div', 'reference-backdrop')
   referenceBackdropEl.dataset.role = 'reference-backdrop'
@@ -151,14 +182,16 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   referenceDialogEl.dataset.role = 'reference-dialog'
   referenceDialogEl.setAttribute('role', 'dialog')
   referenceDialogEl.setAttribute('aria-modal', 'true')
-  referenceDialogEl.setAttribute('aria-label', 'Controls and rules')
+  referenceDialogEl.setAttribute('aria-label', 'Controls')
 
   const referenceHeader = createElement(document, 'header', 'reference-header')
+  const referenceTitle = createElement(document, 'h2', 'reference-title')
+  referenceTitle.textContent = 'Controls'
   const closeButton = createElement(document, 'button', 'btn reference-close')
   closeButton.dataset.action = 'close-reference'
   closeButton.setAttribute('aria-label', 'Close controls and rules')
-  closeButton.textContent = 'Close'
-  referenceHeader.append(closeButton)
+  closeButton.textContent = '✕'
+  referenceHeader.append(referenceTitle, closeButton)
 
   // Keyboard and touch sections trade places via CSS: coarse-pointer
   // devices see touch controls instead of the WASD table.
@@ -176,24 +209,21 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   touchListEl.innerHTML = renderReferenceControlsHtml(GAME_TOUCH_CONTROLS)
   touchControlsEl.append(touchTitle, touchListEl)
 
+  const gamepadControlsEl = createElement(document, 'div', 'gamepad-controls')
   const gamepadTitle = createElement(document, 'h3', 'reference-subtitle')
   gamepadTitle.textContent = 'Gamepad'
   const gamepadListEl = createElement(document, 'ul', 'controls-list')
   gamepadListEl.innerHTML = renderReferenceControlsHtml(GAMEPAD_CONTROLS)
+  gamepadControlsEl.append(gamepadTitle, gamepadListEl)
 
-  const rulesTitle = createElement(document, 'h3', 'reference-subtitle')
-  rulesTitle.textContent = 'Rules'
-  const rulesListEl = createElement(document, 'ul', 'rules-list')
+  // Single column — the live rules moved out to the board HUD, only the
+  // input schemes stay in the dialog.
+  const referenceBody = createElement(document, 'div', 'reference-body')
+  const controlsColEl = createElement(document, 'div', 'reference-col')
+  controlsColEl.append(keyControlsEl, touchControlsEl, gamepadControlsEl)
+  referenceBody.append(controlsColEl)
 
-  referenceDialogEl.append(
-    referenceHeader,
-    keyControlsEl,
-    touchControlsEl,
-    gamepadTitle,
-    gamepadListEl,
-    rulesTitle,
-    rulesListEl,
-  )
+  referenceDialogEl.append(referenceHeader, referenceBody)
   referenceBackdropEl.append(referenceDialogEl)
 
   // Result card for win/lose/complete. The backdrop lets clicks through
@@ -203,6 +233,10 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   const outcomeCardEl = createElement(document, 'section', 'outcome-card')
   outcomeCardEl.setAttribute('aria-label', 'Level result')
   const outcomeTitleEl = createElement(document, 'h2', 'outcome-title')
+  // Gilded flourish between the verdict and its verbs — the same
+  // divider ornament the result panels in big-budget games draw.
+  const outcomeOrnamentEl = createElement(document, 'div', 'outcome-ornament')
+  outcomeOrnamentEl.setAttribute('aria-hidden', 'true')
   const outcomeActionsEl = createElement(document, 'div', 'outcome-actions')
   const outcomeNextBtn = createOutcomeButton(
     document,
@@ -223,13 +257,75 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
     outcomeRestartBtn,
     outcomeMapBtn,
   )
-  outcomeCardEl.append(outcomeTitleEl, outcomeActionsEl)
+  outcomeCardEl.append(outcomeTitleEl, outcomeOrnamentEl, outcomeActionsEl)
   outcomeBackdropEl.append(outcomeCardEl)
 
-  root.append(toolbar, boardWrap, outcomeBackdropEl, referenceBackdropEl)
+  // Second-thought modal for the Solution button: playback rebuilds the
+  // board from the golden, so the confirm names the cost (lost progress)
+  // before it commits. Backdrop blocks the board while it asks.
+  const replayConfirmBackdropEl = createElement(
+    document,
+    'div',
+    'replay-confirm-backdrop',
+  )
+  replayConfirmBackdropEl.dataset.role = 'replay-confirm-backdrop'
+  replayConfirmBackdropEl.setAttribute('hidden', '')
+  const replayConfirmDialogEl = createElement(
+    document,
+    'section',
+    'replay-confirm-dialog',
+  )
+  replayConfirmDialogEl.dataset.role = 'replay-confirm-dialog'
+  replayConfirmDialogEl.setAttribute('role', 'dialog')
+  replayConfirmDialogEl.setAttribute('aria-modal', 'true')
+  replayConfirmDialogEl.setAttribute('aria-label', 'Play solution')
+  const replayConfirmTitle = createElement(
+    document,
+    'h2',
+    'replay-confirm-title',
+  )
+  replayConfirmTitle.textContent = 'Play Solution?'
+  const replayConfirmText = createElement(document, 'p', 'replay-confirm-text')
+  replayConfirmText.textContent =
+    'The recorded solution plays out on this board — current progress is lost.'
+  const replayConfirmActions = createElement(
+    document,
+    'div',
+    'replay-confirm-actions',
+  )
+  const replayConfirmPlayEl = createGlyphButton(
+    document,
+    'confirm-replay',
+    'Play',
+    'replay-confirm-btn primary',
+    '▶',
+  )
+  const replayConfirmCancelEl = createElement(
+    document,
+    'button',
+    'btn replay-confirm-btn',
+  )
+  replayConfirmCancelEl.dataset.action = 'cancel-replay'
+  replayConfirmCancelEl.textContent = 'Cancel'
+  replayConfirmActions.append(replayConfirmPlayEl, replayConfirmCancelEl)
+  replayConfirmDialogEl.append(
+    replayConfirmTitle,
+    replayConfirmText,
+    replayConfirmActions,
+  )
+  replayConfirmBackdropEl.append(replayConfirmDialogEl)
+
+  root.append(
+    toolbar,
+    boardWrap,
+    outcomeBackdropEl,
+    referenceBackdropEl,
+    replayConfirmBackdropEl,
+  )
 
   let lastBoardWidth = -1
   let lastBoardHeight = -1
+  let prevRuleLines: string[] = []
 
   return {
     root,
@@ -240,10 +336,16 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
       names: hoverTipNamesEl,
     },
     update: (state: GameState, view: GameViewUpdate): void => {
-      const { showReferenceDialog, replay, canUndo } = view
+      const {
+        showReferenceDialog,
+        showReplayConfirm,
+        replay,
+        canUndo,
+        levelMenuNum,
+      } = view
       // Verbs the command layer would drop are disabled instead of left
-      // clickable: replay spectating only honours back, a finished board
-      // takes no more turns, and undo needs history behind it.
+      // clickable: replay spectating only honours back, and undo needs
+      // history behind it.
       const replayActive = replay !== null
       undoBtn.disabled = replayActive || !canUndo
       waitBtn.disabled = replayActive || state.status !== 'playing'
@@ -251,6 +353,9 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
       outcomeNextBtn.disabled = replayActive
       outcomeUndoBtn.disabled = replayActive || !canUndo
       outcomeRestartBtn.disabled = replayActive
+
+      levelBadgeNumEl.textContent = String(levelMenuNum).padStart(3, '0')
+      levelBadgeNameEl.textContent = state.title
 
       statusEl.textContent = replay
         ? `SOLUTION ${replay.name} — ${replay.cursor}/${replay.total}`
@@ -272,20 +377,58 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
         showReferenceDialog ? 'true' : 'false',
       )
       referenceBackdropEl.toggleAttribute('hidden', !showReferenceDialog)
-      // The modal dialog sits over the board — a parked cursor's tip would
+      replayButtonEl.setAttribute(
+        'aria-expanded',
+        showReplayConfirm ? 'true' : 'false',
+      )
+      replayConfirmBackdropEl.toggleAttribute('hidden', !showReplayConfirm)
+      // A modal dialog sits over the board — a parked cursor's tip would
       // linger underneath it otherwise.
-      if (showReferenceDialog) hoverTipEl.setAttribute('hidden', '')
+      if (showReferenceDialog || showReplayConfirm) {
+        hoverTipEl.setAttribute('hidden', '')
+      }
       if (state.width !== lastBoardWidth || state.height !== lastBoardHeight) {
         lastBoardWidth = state.width
         lastBoardHeight = state.height
         boardEl.style.setProperty('--board-width', String(state.width))
         boardEl.style.setProperty('--board-height', String(state.height))
       }
-      // The dialog is hidden in normal play — rebuilding its DOM every turn
-      // is wasted work; it is (re)filled on the same update that opens it.
-      if (showReferenceDialog) {
-        rulesListEl.innerHTML = renderReferenceRulesHtml(state)
+      // Rules tracker: rebuilt every turn — a handful of <li>s, cheap.
+      // Lines that just formed get a .rules-fresh flash; lines that just
+      // collapsed drop into the ghost list as struck-out rows fading out
+      // over ~1s, so a broken rule is felt rather than silently absent.
+      const ruleLines = renderRules(state.rules)
+      const activeLines =
+        ruleLines.length === 1 && ruleLines[0] === '(no rules)'
+          ? []
+          : ruleLines
+      const freshLines = new Set(
+        activeLines.filter((line) => !prevRuleLines.includes(line)),
+      )
+      const brokenLines = prevRuleLines.filter(
+        (line) => !activeLines.includes(line),
+      )
+      prevRuleLines = activeLines
+
+      rulesHudListEl.innerHTML = renderRulesLinesHtml(ruleLines)
+      for (const li of Array.from(rulesHudListEl.children ?? [])) {
+        if (li.textContent && freshLines.has(li.textContent)) {
+          li.classList.add('rules-fresh')
+        }
       }
+      for (const line of brokenLines) {
+        const ghost = createElement(document, 'li', 'rules-broken')
+        ghost.textContent = line
+        rulesGhostListEl.append(ghost)
+        // Fake-DOM tests lack Element.remove — the optional call keeps
+        // the sweep harmless there while browsers drop the faded row.
+        setTimeout(() => ghost.remove?.(), 1100)
+      }
+      rulesHudEl.toggleAttribute(
+        'hidden',
+        activeLines.length === 0 &&
+          (rulesGhostListEl.children?.length ?? 0) === 0,
+      )
     },
   }
 }

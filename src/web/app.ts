@@ -21,6 +21,8 @@ import { applyWithTransition, computeCellSizeForState } from './app-view-helpers
 import { createLazyBoard3d } from './board-3d-mount.js'
 import { paintLevelPreview } from './menu-preview.js'
 import { resolveHostLockMessage } from './host-gate.js'
+
+import type { LevelData } from '../logic/types.js'
 import type { DrawState } from './app-draw.js'
 
 const APP_DISPOSE_KEY = '__baba_is_you_web_dispose__'
@@ -29,8 +31,39 @@ type AppGlobal = typeof globalThis & {
   __baba_is_you_web_dispose__?: () => void
 }
 
-const levelData = levels.map((level) => parseLevel(level))
+// Campaign boards parse on first index access: the menu only needs
+// titles, and every downstream consumer (`env.levels`, golden
+// resolution, previews) reaches boards through `levelData[index]`, so a
+// session pays the full parse only for levels it actually enters or
+// previews. The slots are real array elements once filled — iteration
+// still sees the complete list.
+const parsedLevels: Array<LevelData | undefined> = new Array(levels.length)
+const levelData = new Proxy(parsedLevels, {
+  get: (target, prop, receiver) => {
+    if (typeof prop === 'string' && /^\d+$/.test(prop)) {
+      const index = Number(prop)
+      const source = levels[index]
+      if (source !== undefined) return (target[index] ??= parseLevel(source))
+    }
+    return Reflect.get(target, prop, receiver)
+  },
+}) as LevelData[]
 if (!levelData[0]) throw new Error('No levels available.')
+
+// Menu metadata can't wait for full parses, but it also can't afford
+// them — scan the `title` statement only (same grammar `parseLevel`
+// applies: first `;`-separated part whose head token is `title`, last
+// one wins).
+const parseLevelTitle = (levelText: string): string => {
+  let title = 'Untitled'
+  for (const part of levelText.split(';')) {
+    const tokens = part.trim().split(/\s+/)
+    if (tokens[0]?.toLowerCase() !== 'title') continue
+    const next = tokens.slice(1).join(' ').trim()
+    title = next.length ? next : 'Untitled'
+  }
+  return title
+}
 
 const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
 
@@ -59,8 +92,8 @@ const goldenStore = createGoldenStore(
 // calls "has a solution". menuOrder maps each grid slot back to its
 // campaign level index; the reducer does the same translation on
 // enter-game/return-to-menu.
-const menuLevelsByLevel = levelData.map((level, index) => ({
-  title: level.title,
+const menuLevelsByLevel = levels.map((source, index) => ({
+  title: parseLevelTitle(source),
   hasSolution: goldenStore.nameForLevelIndex(index) !== undefined,
 }))
 const menuOrder = orderMenuLevels(menuLevelsByLevel)
@@ -144,7 +177,9 @@ const boardHover = createBoardHover({
   },
   getTip: () => drawState.gameView?.hoverTip ?? null,
   getRenderer: () => board3d.renderer(),
-  isBlocked: appController.isReferenceDialogOpen,
+  isBlocked: () =>
+    appController.isReferenceDialogOpen() ||
+    appController.isReplayConfirmOpen(),
   // The same inverse rotation as mapViewportDelta below, applied to the
   // point itself (the rotated frame's pivot sits at viewport 0,0).
   mapViewportPoint: (x, y) =>
@@ -174,38 +209,44 @@ const handleMenuHover = createMenuHoverHandler({
   },
 })
 
+// The confirmed Solution run: decode the recordings payload on this
+// first request; by the time it resolves the user may have backed out —
+// re-verify the board still shows the same replay before dispatching.
+const playReplay = (): void => {
+  const name = goldenNameForCurrentBoard()
+  if (!name) return
+  void goldenStore
+    .loadByName(name)
+    .then((golden) => {
+      if (golden && goldenNameForCurrentBoard() === name) {
+        appController.startReplay(golden.name, golden.inputs, golden.level)
+      }
+    })
+    .catch(() => undefined)
+}
+
 const handleRootClick = createRootClickHandler({
   viewState: appController,
   toggleReferenceDialog: appController.toggleReferenceDialog,
   closeReferenceDialog: appController.closeReferenceDialog,
+  openReplayConfirm: appController.openReplayConfirm,
+  closeReplayConfirm: appController.closeReplayConfirm,
   canHandleGameAction: appController.canHandleGameAction,
   markGameActionHandled: appController.markGameActionHandled,
   handleGameCommand: appController.handleGameCommand,
   enterLevel: appController.enterLevel,
-  playReplay: () => {
-    const name = goldenNameForCurrentBoard()
-    if (!name) return
-    // The recordings payload decodes on this first click; by the time it
-    // resolves the user may have backed out — re-verify the board still
-    // shows the same replay before dispatching.
-    void goldenStore
-      .loadByName(name)
-      .then((golden) => {
-        if (golden && goldenNameForCurrentBoard() === name) {
-          appController.startReplay(golden.name, golden.inputs, golden.level)
-        }
-      })
-      .catch(() => undefined)
-  },
+  playReplay,
 })
 
 const gamepadRuntime = createGamepadRuntime({
   viewState: {
     getMode: appController.getMode,
     isReferenceDialogOpen: appController.isReferenceDialogOpen,
+    isReplayConfirmOpen: appController.isReplayConfirmOpen,
     getStatus: () => appController.getState().state.status,
   },
   closeReferenceDialog: appController.closeReferenceDialog,
+  closeReplayConfirm: appController.closeReplayConfirm,
   toggleReferenceDialog: appController.toggleReferenceDialog,
   canHandleGameAction: appController.canHandleGameAction,
   markGameActionHandled: appController.markGameActionHandled,
@@ -215,6 +256,8 @@ const gamepadRuntime = createGamepadRuntime({
 const handleWindowKeydown = createWindowKeydownHandler({
   viewState: appController,
   closeReferenceDialog: appController.closeReferenceDialog,
+  closeReplayConfirm: appController.closeReplayConfirm,
+  playReplay,
   canHandleGameAction: appController.canHandleGameAction,
   markGameActionHandled: appController.markGameActionHandled,
   handleMenuEvent: appController.handleMenuKeyboardEvent,

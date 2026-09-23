@@ -286,3 +286,48 @@ test('return-to-menu clears history, dialog, and replay state', () => {
   assert.equal(state.showReferenceDialog, false)
   assert.equal(state.replay, null)
 })
+
+test('replay confirm opens only in game, stays exclusive with the reference dialog, and clears on start-replay', () => {
+  const store = createWebAppStore(env)
+
+  // The ask belongs to the board — the menu ignores it entirely.
+  const inMenu = store.getState()
+  store.dispatch({ type: 'open-replay-confirm' })
+  assert.equal(store.getState(), inMenu)
+
+  store.dispatch({ type: 'enter-game', index: 0 })
+  store.dispatch({ type: 'toggle-reference-dialog' })
+  store.dispatch({ type: 'open-replay-confirm' })
+  const asking = store.getState()
+  // One modal at a time: opening the confirm evicts the controls dialog.
+  assert.equal(asking.showReplayConfirm, true)
+  assert.equal(asking.showReferenceDialog, false)
+
+  // Re-asking is a same-state no-op; closing returns to a clean board.
+  store.dispatch({ type: 'open-replay-confirm' })
+  assert.equal(store.getState(), asking)
+  store.dispatch({ type: 'close-replay-confirm' })
+  assert.equal(store.getState().showReplayConfirm, false)
+  const closed = store.getState()
+  store.dispatch({ type: 'close-replay-confirm' })
+  assert.equal(store.getState(), closed)
+
+  // The reference dialog and the confirm never stack either way.
+  store.dispatch({ type: 'open-replay-confirm' })
+  store.dispatch({ type: 'toggle-reference-dialog' })
+  assert.equal(store.getState().showReplayConfirm, false)
+  assert.equal(store.getState().showReferenceDialog, true)
+
+  // Committing to playback dismisses the ask itself.
+  store.dispatch({ type: 'open-replay-confirm' })
+  const level = levels[0]
+  assert.ok(level)
+  store.dispatch({
+    type: 'start-replay',
+    name: 'g',
+    inputs: 'r',
+    level,
+  })
+  assert.equal(store.getState().showReplayConfirm, false)
+  assert.notEqual(store.getState().replay, null)
+})

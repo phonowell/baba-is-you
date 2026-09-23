@@ -89,6 +89,14 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
     // on the selection so a click enters the highlighted board.
     const preview = container.querySelector<HTMLElement>('.menu-preview')
     if (preview?.dataset) preview.dataset.levelIndex = String(clamped)
+    if (preview && current !== target) {
+      // Page-turn dip on the framed thumbnail. Re-adding the class alone
+      // would be coalesced mid-animation, so force a style pass first —
+      // fast cursor travel restarts the dip instead of skipping it.
+      preview.classList.remove('preview-swap')
+      void preview.offsetWidth
+      preview.classList.add('preview-swap')
+    }
     positionEl.innerHTML = menuPositionHtml(menuLevels, clamped)
     return true
   }
@@ -126,10 +134,17 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
       levelIndex,
       state,
       showReferenceDialog,
+      showReplayConfirm,
       replay,
       canUndo,
     } = snapshot
-    const viewUpdate = { showReferenceDialog, replay, canUndo }
+    const viewUpdate = {
+      showReferenceDialog,
+      showReplayConfirm,
+      replay,
+      canUndo,
+      levelMenuNum: levelMenuNumber(levelIndex),
+    }
 
     document.title =
       mode === 'game'

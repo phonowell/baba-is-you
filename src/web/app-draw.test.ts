@@ -162,6 +162,7 @@ test('createDraw mounts 3d board after deferred transition callback builds game 
         levelIndex: 0,
         state,
         showReferenceDialog: false,
+        showReplayConfirm: false,
         replay: null,
         canUndo: false,
       }),
@@ -234,6 +235,7 @@ test('createDraw repaints the menu preview on both render paths', () => {
     levelIndex: 0,
     state,
     showReferenceDialog: false,
+    showReplayConfirm: false,
     replay: null,
     canUndo: false,
   }

@@ -1,3 +1,8 @@
+import {
+  levelItemSignature,
+  normalizeLevelTitle,
+} from '../logic/helpers.js'
+
 import type { LevelData } from '../logic/types.js'
 
 // The slice of a golden the binding needs — the manifest's GoldenReplay
@@ -9,30 +14,12 @@ type GoldenWithLevel = {
   levelIndex?: number
 }
 
-// Level identity for golden binding. Campaign titles keep punctuation the
-// recorded fixtures dropped ('BRIDGE BUILDING?' recorded as 'BRIDGE
-// BUILDING Q'), so titles normalize to alphanumerics; the item signature
-// is the layout's (text-flagged name, cell) set — facing and duplicated
-// entities collapse, which is what lets it bind a renamed or re-exported
-// version of the same board.
-const normalizeTitle = (title: string): string =>
-  title.toLowerCase().replace(/[^a-z0-9]+/g, '')
-
 const titleKey = (level: LevelData): string =>
-  `${normalizeTitle(level.title)}|${level.width}x${level.height}`
+  `${normalizeLevelTitle(level.title)}|${level.width}x${level.height}`
 
 // Exported for the golden store's loadedForLevel signature fallback —
 // the binding itself is a build-time/test-side tool now.
-export const itemSignature = (level: LevelData): string =>
-  [
-    ...new Set(
-      level.items.map(
-        (item) => `${item.isText ? '!' : ''}${item.name}@${item.x},${item.y}`,
-      ),
-    ),
-  ]
-    .sort()
-    .join(';')
+export const itemSignature = levelItemSignature
 
 export type GoldenLevelBinding<G> = {
   // Campaign board entered from a map icon — the index is the level's

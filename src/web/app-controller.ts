@@ -27,6 +27,9 @@ export const createWebAppController = (
   const isReferenceDialogOpen = (): boolean =>
     store.getState().showReferenceDialog
 
+  const isReplayConfirmOpen = (): boolean =>
+    store.getState().showReplayConfirm
+
   const getViewState = (): WebAppSnapshot => store.snapshot()
 
   const canHandleGameAction = (): boolean =>
@@ -51,11 +54,16 @@ export const createWebAppController = (
     getState: store.getState,
     getMode,
     isReferenceDialogOpen,
+    isReplayConfirmOpen,
     getViewState,
     canHandleGameAction,
     markGameActionHandled,
     closeReferenceDialog: (): void =>
       dispatch({ type: 'close-reference-dialog' }),
+    openReplayConfirm: (): void =>
+      dispatch({ type: 'open-replay-confirm' }),
+    closeReplayConfirm: (): void =>
+      dispatch({ type: 'close-replay-confirm' }),
     startReplay: (name: string, inputs: string, level: LevelData): void =>
       dispatch({ type: 'start-replay', name, inputs, level }),
     replayStep: (): void => dispatch({ type: 'replay-step' }),

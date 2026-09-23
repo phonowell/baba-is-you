@@ -46,6 +46,7 @@ const NO_INPUTS: ReadonlySet<GamepadLogicalInput> = new Set()
 type GamepadViewState = {
   getMode: () => 'menu' | 'game'
   isReferenceDialogOpen: () => boolean
+  isReplayConfirmOpen: () => boolean
   getStatus: () => GameStatus
 }
 
@@ -71,6 +72,9 @@ type GamepadRuntimeContext = {
   // Optional so older test fixtures keep compiling; absent keeps Select
   // a no-op.
   toggleReferenceDialog?: () => void
+  // Optional like the toggle above: absent keeps B inert on the replay
+  // confirm modal.
+  closeReplayConfirm?: () => void
   canHandleGameAction: () => boolean
   markGameActionHandled: () => void
   handleGameCommand: (cmd: GameCommand) => boolean
@@ -96,6 +100,7 @@ export const createGamepadRuntime = (
     viewState,
     closeReferenceDialog,
     toggleReferenceDialog,
+    closeReplayConfirm,
     canHandleGameAction,
     markGameActionHandled,
     handleGameCommand,
@@ -224,7 +229,8 @@ export const createGamepadRuntime = (
     }
 
     const mode = viewState.getMode()
-    const dialogOpen = viewState.isReferenceDialogOpen()
+    const confirmOpen = viewState.isReplayConfirmOpen()
+    const dialogOpen = viewState.isReferenceDialogOpen() || confirmOpen
 
     // Select toggles the controls reference — checked before the dialog
     // gate so it also closes the overlay it opened.
@@ -235,7 +241,8 @@ export const createGamepadRuntime = (
     if (dialogOpen) {
       // B is the cancel convention — Escape's counterpart on a pad.
       if (inputs.has('b') && !prevInputs.has('b')) {
-        closeReferenceDialog()
+        if (confirmOpen) closeReplayConfirm?.()
+        else closeReferenceDialog()
       }
       prevInputs = inputs
       heldDir = null

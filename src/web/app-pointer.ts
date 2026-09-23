@@ -5,6 +5,7 @@ import type { GameCommand } from '../view/input.js'
 type AppPointerViewState = {
   getMode: () => 'menu' | 'game'
   isReferenceDialogOpen: () => boolean
+  isReplayConfirmOpen: () => boolean
 }
 
 // Structural subset of PointerEvent so tests can drive the handlers with
@@ -80,7 +81,8 @@ export const createAppPointerHandlers = (
     return target.closest(selector)
   }
 
-  const boardReady = (): boolean => !viewState.isReferenceDialogOpen()
+  const boardReady = (): boolean =>
+    !viewState.isReferenceDialogOpen() && !viewState.isReplayConfirmOpen()
 
   const dispatchGameCommand = (cmd: GameCommand): void => {
     if (!canHandleGameAction()) return

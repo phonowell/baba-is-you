@@ -10,6 +10,7 @@ import {
 type MutableViewState = {
   mode: 'menu' | 'game'
   showReferenceDialog: boolean
+  showReplayConfirm?: boolean
 }
 
 class TestHTMLElement {
@@ -34,6 +35,7 @@ if (!('HTMLElement' in globalThis)) {
 const createViewState = (state: MutableViewState) => ({
   getMode: () => state.mode,
   isReferenceDialogOpen: () => state.showReferenceDialog,
+  isReplayConfirmOpen: () => state.showReplayConfirm ?? false,
 })
 
 const createActionElement = (
@@ -52,11 +54,21 @@ const createEventTarget = (matches: {
   actionElement?: HTMLElement | null
   backdrop?: HTMLElement | null
   dialog?: HTMLElement | null
+  confirmBackdrop?: HTMLElement | null
+  confirmDialog?: HTMLElement | null
 }): HTMLElement => {
   const element = new TestHTMLElement()
   element.setClosest('[data-action]', matches.actionElement ?? null)
   element.setClosest('[data-role="reference-backdrop"]', matches.backdrop ?? null)
   element.setClosest('[data-role="reference-dialog"]', matches.dialog ?? null)
+  element.setClosest(
+    '[data-role="replay-confirm-backdrop"]',
+    matches.confirmBackdrop ?? null,
+  )
+  element.setClosest(
+    '[data-role="replay-confirm-dialog"]',
+    matches.confirmDialog ?? null,
+  )
   return element as unknown as HTMLElement
 }
 
@@ -254,29 +266,121 @@ test('createRootClickHandler ignores game actions while a dialog is open', () =>
   assert.deepEqual(commands, [])
 })
 
-test('createRootClickHandler fires playReplay on the replay action', () => {
+test('createRootClickHandler asks before playing: play-replay opens the confirm, confirm-replay commits', () => {
   const state: MutableViewState = {
     mode: 'game',
     showReferenceDialog: false,
   }
+  let opens = 0
+  let closes = 0
   let plays = 0
   const handler = createRootClickHandler({
     viewState: createViewState(state),
     toggleReferenceDialog: () => {},
     closeReferenceDialog: () => {},
+    openReplayConfirm: () => {
+      opens += 1
+      state.showReplayConfirm = true
+    },
+    closeReplayConfirm: () => {
+      closes += 1
+      state.showReplayConfirm = false
+    },
     ...noopGameDeps,
     playReplay: () => {
       plays += 1
     },
   })
 
+  // The bare Solution click only asks — playback must not start yet.
   handler({
     target: createEventTarget({
       actionElement: createActionElement('play-replay'),
     }),
   } as unknown as MouseEvent)
+  assert.equal(opens, 1)
+  assert.equal(plays, 0)
 
+  // The dialog's own commit closes the ask and runs the replay.
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('confirm-replay'),
+    }),
+  } as unknown as MouseEvent)
+  assert.equal(closes, 1)
   assert.equal(plays, 1)
+
+  // Cancel asks nothing further — it only dismisses.
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('cancel-replay'),
+    }),
+  } as unknown as MouseEvent)
+  assert.equal(closes, 2)
+  assert.equal(plays, 1)
+})
+
+test('createRootClickHandler dismisses the replay confirm on backdrop clicks only', () => {
+  const state: MutableViewState = {
+    mode: 'game',
+    showReferenceDialog: false,
+    showReplayConfirm: true,
+  }
+  let closes = 0
+  const confirmBackdrop = {} as HTMLElement
+  const confirmDialog = {} as HTMLElement
+  const handler = createRootClickHandler({
+    viewState: createViewState(state),
+    toggleReferenceDialog: () => {
+      throw new Error('should not toggle dialog')
+    },
+    closeReferenceDialog: () => {},
+    closeReplayConfirm: () => {
+      closes += 1
+    },
+    ...noopGameDeps,
+  })
+
+  // Dialog interior clicks keep the ask open; the dim behind it cancels.
+  handler({
+    target: createEventTarget({ confirmBackdrop, confirmDialog }),
+  } as unknown as MouseEvent)
+  handler({
+    target: createEventTarget({ confirmBackdrop, confirmDialog: null }),
+  } as unknown as MouseEvent)
+
+  assert.equal(closes, 1)
+})
+
+test('createRootClickHandler ignores game actions while the replay confirm is open', () => {
+  const state: MutableViewState = {
+    mode: 'game',
+    showReferenceDialog: false,
+    showReplayConfirm: true,
+  }
+  const commands: string[] = []
+  const handler = createRootClickHandler({
+    viewState: createViewState(state),
+    toggleReferenceDialog: () => {
+      throw new Error('should not toggle dialog')
+    },
+    closeReferenceDialog: () => {},
+    canHandleGameAction: () => true,
+    markGameActionHandled: () => {},
+    handleGameCommand: (cmd) => {
+      commands.push(cmd.type)
+      return true
+    },
+    enterLevel: () => {},
+  })
+
+  handler({
+    target: createEventTarget({
+      actionElement: createActionElement('game-restart'),
+    }),
+  } as unknown as MouseEvent)
+
+  assert.deepEqual(commands, [])
 })
 
 test('createMenuHoverHandler selects the hovered cell in menu mode only', () => {
@@ -412,6 +516,67 @@ test('createWindowKeydownHandler closes open dialogs on Escape only', () => {
   assert.equal(closes, 1)
   assert.equal(prevented, 1)
   assert.equal(menuCalls, 0)
+  assert.equal(gameCalls, 0)
+})
+
+test('createWindowKeydownHandler answers the replay confirm with Escape and Enter only', () => {
+  const state: MutableViewState = {
+    mode: 'game',
+    showReferenceDialog: false,
+    showReplayConfirm: true,
+  }
+  let closes = 0
+  let plays = 0
+  let prevented = 0
+  let gameCalls = 0
+  const handler = createWindowKeydownHandler({
+    viewState: createViewState(state),
+    closeReferenceDialog: () => {
+      throw new Error('should not close reference dialog')
+    },
+    closeReplayConfirm: () => {
+      closes += 1
+    },
+    playReplay: () => {
+      plays += 1
+    },
+    canHandleGameAction: () => true,
+    markGameActionHandled: () => {
+      throw new Error('confirm keys should not mark game action handled')
+    },
+    handleMenuEvent: () => {
+      throw new Error('confirm swallows menu keys')
+    },
+    handleGameEvent: () => {
+      gameCalls += 1
+      return true
+    },
+  })
+
+  // Escape cancels the ask; Enter commits to playback; anything else is
+  // swallowed — no game input leaks under the modal.
+  handler({
+    key: 'Escape',
+    preventDefault: () => {
+      prevented += 1
+    },
+  } as KeyboardEvent)
+  handler({
+    key: 'ArrowRight',
+    preventDefault: () => {
+      prevented += 1
+    },
+  } as KeyboardEvent)
+  handler({
+    key: 'Enter',
+    preventDefault: () => {
+      prevented += 1
+    },
+  } as KeyboardEvent)
+
+  assert.equal(closes, 2)
+  assert.equal(plays, 1)
+  assert.equal(prevented, 2)
   assert.equal(gameCalls, 0)
 })
 

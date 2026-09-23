@@ -6,15 +6,15 @@ import { createInitialState } from '../logic/state.js'
 
 import {
   renderReferenceControlsHtml,
-  renderReferenceRulesHtml,
+  renderRulesListHtml,
 } from './render-html.js'
 
-test('reference rules list renders active rules', () => {
+test('rules list renders active rules', () => {
   const level = parseLevel(
     'title Dialog; size 3x1; Baba 0,0; Is 1,0; You 2,0; Flag 0,0; Is 1,0; Win 2,0',
   )
   const state = createInitialState(level, 0)
-  const output = renderReferenceRulesHtml(state)
+  const output = renderRulesListHtml(state)
 
   assert.match(output, /<li>BABA IS YOU<\/li>/)
   assert.match(output, /<li>FLAG IS WIN<\/li>/)

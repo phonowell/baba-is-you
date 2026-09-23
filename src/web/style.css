@@ -2,6 +2,16 @@
   color-scheme: light;
   /* Genshin-style chrome: parchment pills + navy tiles + gold diamonds. */
   --bg: #242e3e;
+
+  /* Two voice families: a refined serif carries titles, level numerals
+     and rule text (the "storybook" register); a humanist sans carries
+     buttons, HUD and hints (the "chrome" register). Serif stack lands on
+     Palatino on macOS/Windows, Palladio/Georgia elsewhere; the CJK
+     fallbacks keep Songti's comparable elegance. */
+  --font-display: 'Palatino Linotype', Palatino, 'Book Antiqua',
+    'URW Palladio L', Georgia, 'Songti SC', 'STSong', serif;
+  --font-ui: 'Avenir Next', 'Segoe UI', 'Helvetica Neue', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', system-ui, sans-serif;
   --panel: #f0e9d6;
   --panel-soft: #e6dcc4;
   --panel-strong: #c9a86a;
@@ -54,7 +64,7 @@ body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Courier New', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+  font-family: var(--font-ui);
 }
 
 body {
@@ -82,9 +92,16 @@ button,
   border-radius: 999px;
   background: linear-gradient(180deg, var(--cream-hi), var(--cream));
   color: var(--text);
-  box-shadow: var(--shadow-raised-soft);
-  padding: 6px 14px;
-  font: inherit;
+  /* Candy-button depth: light pooled on the top edge, a darker rim
+     along the bottom — the pill reads as glazed, not stamped-flat. */
+  box-shadow:
+    var(--shadow-raised-soft),
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    inset 0 -2px 0 rgb(138 109 58 / 16%);
+  padding: 6px 16px;
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  letter-spacing: 0.04em;
   cursor: pointer;
   transition: box-shadow var(--motion-duration) ease-out, transform var(--motion-duration) ease-out;
 }
@@ -94,13 +111,14 @@ button,
     background: linear-gradient(180deg, #fdf8ea, var(--cream-hi));
     border-color: var(--accent);
     color: var(--accent-dark);
+    transform: translateY(-1px);
   }
 }
 
 .btn:active,
 .btn[aria-pressed='true'] {
   box-shadow: var(--shadow-inset-soft);
-  transform: translateY(1px);
+  transform: translateY(1px) scale(0.96);
 }
 
 /* Disabled verbs (e.g. undo with empty history, controls during a
@@ -135,18 +153,20 @@ body.game-3d-fullscreen .game-screen {
 }
 
 body.game-3d-fullscreen .btn {
-  box-shadow: none;
-  /* HUD chip over the bright board: translucent glass on the dark bar,
-     matching Genshin's in-game HUD buttons. */
-  background: rgb(255 255 255 / 12%);
-  border-color: rgb(255 255 255 / 20%);
+  box-shadow: 0 2px 7px rgb(10 14 22 / 22%);
+  /* HUD chip floating bare over the board: each button is its own navy
+     glass chip — there is no bar behind it anymore. */
+  background: rgb(18 26 38 / 55%);
+  -webkit-backdrop-filter: blur(8px) saturate(1.25);
+  backdrop-filter: blur(8px) saturate(1.25);
+  border-color: rgb(201 168 106 / 32%);
   color: #e8e4d8;
 }
 
 @media (hover: hover) {
   body.game-3d-fullscreen .btn:hover {
-    background: rgb(255 255 255 / 24%);
-    border-color: rgb(255 255 255 / 34%);
+    background: rgb(18 26 38 / 72%);
+    border-color: rgb(201 168 106 / 55%);
     color: #f6f1e7;
   }
 }
@@ -158,7 +178,9 @@ body.game-3d-fullscreen .reference-backdrop::before {
 .status {
   margin: 8px 0;
   color: var(--muted);
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: color 320ms ease-out;
 }
 
 .game-toolbar {
@@ -174,22 +196,79 @@ body.game-3d-fullscreen .reference-backdrop::before {
   padding-right: calc(16px + env(safe-area-inset-right, 0px));
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   padding-left: calc(16px + env(safe-area-inset-left, 0px));
-  background: rgb(30 42 58 / 70%);
-  -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  backdrop-filter: blur(14px) saturate(1.4);
+  /* No bar: the row floats bare over the board like the rules HUD —
+     badge, status line and buttons each carry their own chip. */
   z-index: 100;
   /* Slides up when the game view mounts (mode or board change). */
-  animation: toolbar-in 220ms ease-out;
+  animation: toolbar-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .game-toolbar .status {
   margin: 0;
   font-size: 0.88rem;
   flex: 1;
+  min-width: 0;
+  /* The line elastic-spaces the bar and hugs the Controls chip on the
+     right, leaving level badge + Solution as the left cluster. */
+  text-align: right;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: #cfd4da;
+  color: #e9edf2;
+  /* Bare text on the board — the shadow keeps the hint line readable
+     over light terrain where the dark bar used to sit. */
+  text-shadow: 0 1px 3px rgb(10 14 22 / 70%), 0 0 10px rgb(10 14 22 / 35%);
+}
+
+/* Stage plate at the bar's left edge: a slim glass pill carrying the
+   level's menu number in gold serif and its name in italics — the HUD's
+   answer to a domain banner. */
+.level-badge {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-shrink: 0;
+  min-width: 0;
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid rgb(201 168 106 / 40%);
+  background: rgb(18 26 38 / 55%);
+  -webkit-backdrop-filter: blur(8px) saturate(1.25);
+  backdrop-filter: blur(8px) saturate(1.25);
+  box-shadow:
+    0 2px 7px rgb(10 14 22 / 22%),
+    inset 0 1px 0 rgb(255 255 255 / 10%);
+  /* The plate pops in a beat after the bar lands. */
+  animation: badge-in 320ms cubic-bezier(0.34, 1.4, 0.64, 1) 120ms backwards;
+}
+
+.level-badge-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: 0.1em;
+  color: #f0d68a;
+  font-variant-numeric: tabular-nums;
+}
+
+.level-badge-name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  color: #d9dde5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 30vw;
+}
+
+/* In-game verb cluster between the status line and the Controls chip —
+   the pointer path for the keyboard commands. */
+.game-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 /* Outcome states tint the HUD line; the win text keeps a soft gold pulse. */
@@ -207,28 +286,6 @@ body.game-3d-fullscreen .reference-backdrop::before {
   flex-shrink: 0;
 }
 
-.game-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  padding: 0;
-}
-
-.icon-btn svg {
-  width: 17px;
-  height: 17px;
-  display: block;
-}
-
 /* Result card for win/lose/complete. The backdrop lets clicks fall through
    so the board keeps taking swipes; only the card itself is interactive. */
 .outcome-backdrop {
@@ -237,8 +294,12 @@ body.game-3d-fullscreen .reference-backdrop::before {
   display: grid;
   place-items: center;
   padding: 18px;
+  /* Stage-dim: the board stays clickable through the backdrop, but the
+     edges fall dark so the verdict owns the spotlight. */
+  background: radial-gradient(ellipse 70% 62% at 50% 46%, transparent 46%, rgb(14 20 30 / 42%));
   pointer-events: none;
   z-index: 1100;
+  animation: backdrop-in 280ms ease-out;
 }
 
 .outcome-backdrop[hidden] {
@@ -247,26 +308,72 @@ body.game-3d-fullscreen .reference-backdrop::before {
 
 .outcome-card {
   pointer-events: auto;
+  position: relative;
   min-width: min(340px, 90vw);
-  background: linear-gradient(180deg, rgb(38 50 68 / 92%), rgb(30 42 58 / 92%));
   -webkit-backdrop-filter: blur(12px) saturate(1.3);
   backdrop-filter: blur(12px) saturate(1.3);
   border: 1px solid rgb(201 168 106 / 55%);
   border-radius: var(--radius);
+  /* Warm light pooled at the top of the card, as if the verdict were
+     lit from above — same lamp-over-panel trick as the menu halo. */
+  background:
+    radial-gradient(ellipse 75% 42% at 50% 0%, rgb(201 168 106 / 15%), transparent 72%),
+    linear-gradient(180deg, rgb(38 50 68 / 92%), rgb(30 42 58 / 92%));
   box-shadow: var(--shadow-dialog), inset 0 0 0 1px rgb(201 168 106 / 30%);
-  padding: 22px 26px 20px;
+  padding: 26px 30px 22px;
   text-align: center;
-  animation: dialog-in var(--motion-duration) ease-out;
+  /* The verdict arrives ceremonially — a rise that settles with a
+     small overshoot, slower than the utility dialog. */
+  animation: outcome-in 460ms cubic-bezier(0.22, 1.15, 0.36, 1) backwards;
+}
+
+/* Gold diamond studded astride the top border — the rivet Genshin hangs
+   on its framed panels (same motif as the menu preview). */
+.outcome-card::after {
+  content: '◆';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--accent);
+  font-size: 9px;
+  line-height: 1;
+  text-shadow: 0 0 6px rgb(201 168 106 / 70%);
+}
+
+/* Fine inner keyline — the double-frame every Genshin result panel
+   wears. Purely decorative, so it never intercepts clicks. */
+.outcome-card::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border: 1px solid rgb(201 168 106 / 28%);
+  border-radius: calc(var(--radius) - 7px);
+  pointer-events: none;
 }
 
 .outcome-title {
-  margin: 0 0 16px;
+  margin: 0;
   color: #f0d68a;
-  font-size: 1.35rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-indent: 0.14em;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-indent: 0.16em;
   text-shadow: 0 0 12px rgb(240 214 138 / 45%);
+  /* Tracking tightens and the blur lifts as the verdict "stamps" in. */
+  animation: verdict-in 520ms ease-out 60ms backwards;
+}
+
+/* Gilded flourish between verdict and verbs — a drawn ornament (thin
+   rules, curled ends, center diamond) replacing plain divider lines. */
+.outcome-ornament {
+  height: 15px;
+  margin: 8px 0 16px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 15'%3E%3Cg fill='none' stroke='%23c9a86a' stroke-width='1' stroke-linecap='round'%3E%3Cpath d='M14 7.5h48'/%3E%3Cpath d='M88 7.5h48'/%3E%3Cpath d='M62 7.5c-4-4.5-10-4.5-13-1.5'/%3E%3Cpath d='M88 7.5c4-4.5 10-4.5 13-1.5'/%3E%3Cpath d='M75 2l5.5 5.5L75 13l-5.5-5.5z'/%3E%3C/g%3E%3Ccircle cx='6' cy='7.5' r='1.5' fill='%23c9a86a'/%3E%3Ccircle cx='144' cy='7.5' r='1.5' fill='%23c9a86a'/%3E%3C/svg%3E") center / auto 15px no-repeat;
+  opacity: 0.85;
+  /* The flourish unrolls from its center diamond once the title lands. */
+  animation: ornament-in 380ms ease-out 220ms backwards;
 }
 
 .outcome-card[data-status='lose'] .outcome-title {
@@ -281,13 +388,150 @@ body.game-3d-fullscreen .reference-backdrop::before {
   gap: 10px;
 }
 
+/* Verbs pop in sequence after the ornament — the staggered button row
+   every result screen uses to lead the eye to the primary verb. */
+.outcome-actions .outcome-btn {
+  animation: btn-in 280ms cubic-bezier(0.34, 1.45, 0.64, 1) backwards;
+}
+
+.outcome-actions .outcome-btn:nth-child(1) { animation-delay: 300ms; }
+.outcome-actions .outcome-btn:nth-child(2) { animation-delay: 360ms; }
+.outcome-actions .outcome-btn:nth-child(3) { animation-delay: 420ms; }
+.outcome-actions .outcome-btn:nth-child(4) { animation-delay: 480ms; }
+
 .outcome-btn[hidden] {
   display: none;
 }
 
-.outcome-btn.primary {
-  border-color: var(--accent);
+.outcome-actions .outcome-btn.primary {
+  border-color: var(--accent-dark);
+  background: linear-gradient(180deg, #ecd7a8, var(--accent));
+  color: #43340f;
+  font-weight: 700;
+  /* The recommended verb breathes a soft aura — an invite, not a
+     strobe; joins the pop-in once the row stagger reaches it. */
+  animation:
+    btn-in 280ms cubic-bezier(0.34, 1.45, 0.64, 1) backwards,
+    primary-breathe 2.4s ease-in-out infinite;
+  animation-delay: 300ms, 800ms;
+}
+
+/* In fullscreen the glass-chip rule beats the plain primary colors on
+   specificity — restate the gold fill so "Next Level"/"Play" keep rank. */
+body.game-3d-fullscreen .outcome-btn.primary,
+body.game-3d-fullscreen .replay-confirm-btn.primary {
+  background: linear-gradient(180deg, #ecd7a8, var(--accent));
+  border-color: rgb(138 109 58 / 70%);
+  color: #43340f;
+}
+
+@media (hover: hover) {
+  body.game-3d-fullscreen .outcome-btn.primary:hover,
+  body.game-3d-fullscreen .replay-confirm-btn.primary:hover {
+    background: linear-gradient(180deg, #f4e3ba, #d4b478);
+    border-color: var(--accent-dark);
+    color: #33270a;
+  }
+}
+
+/* Glyph buttons (Solution's pixel bulb, the confirm's ▶ Play): the
+   icon names the verb's domain — reveal the answer vs. run it. */
+.replay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.btn-icon {
+  font-size: 0.78em;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Pixel icons draw at the glyph size and pick up the button's ink. */
+.btn-icon svg {
+  display: block;
+  height: 1em;
+  width: auto;
+}
+
+/* Solution's second-thought modal — a blocking dim like the reference
+   layer (clicks can't reach the board), topped by a compact card. */
+.replay-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  padding: 18px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(ellipse 70% 62% at 50% 46%, transparent 46%, rgb(14 20 30 / 42%));
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  /* Above the reference dialog — asking costs nothing to stack. */
+  z-index: 1250;
+  animation: backdrop-in 240ms ease-out;
+}
+
+.replay-confirm-backdrop[hidden] {
+  display: none;
+}
+
+/* The card wears the reference dialog's cream panel — the app's idiom
+   for "it asks before it does" — at a smaller footprint. */
+.replay-confirm-dialog {
+  position: relative;
+  min-width: min(320px, 90vw);
+  max-width: 92vw;
+  background: linear-gradient(180deg, var(--cream-hi), var(--panel));
+  border: 1px solid rgb(201 168 106 / 65%);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-dialog), inset 0 0 0 1px rgb(201 168 106 / 45%);
+  padding: 22px 26px 20px;
+  text-align: center;
+  animation: dialog-in 340ms cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+/* Same gold rivet the framed panels wear — shared by the confirm and
+   reference dialogs. */
+.replay-confirm-dialog::before,
+.reference-dialog::before {
+  content: '◆';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
   color: var(--accent-dark);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.replay-confirm-title {
+  margin: 0;
+  color: var(--navy);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.replay-confirm-text {
+  margin: 10px 0 18px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.replay-confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* The committing verb takes the result card's primary gold fill. */
+.replay-confirm-btn.primary {
+  border-color: var(--accent-dark);
+  background: linear-gradient(180deg, #ecd7a8, var(--accent));
+  color: #43340f;
   font-weight: 700;
 }
 
@@ -344,6 +588,9 @@ body.game-3d-fullscreen .board.board-3d {
   width: 100%;
   height: 100%;
   border-radius: 0;
+  /* Camera-settle on entry: a breath of zoom relaxes into the board —
+     cheap transform on the mounted canvas, replays each level mount. */
+  animation: board-in 480ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .board.board-3d::before,
@@ -385,6 +632,132 @@ body.game-3d-fullscreen .board.board-3d {
   display: none;
 }
 
+/* ── Rules tracker HUD ───────────────────────────────────────────
+   Bare quest-tracker slot floating top-left on the board — the
+   container carries no panel; each rule row is its own glass chip.
+   pointer-events stays off so the board keeps every swipe; long rule
+   sets dissolve at the bottom edge instead of clipping mid-row. */
+.rules-hud {
+  position: absolute;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: calc(14px + env(safe-area-inset-left, 0px));
+  z-index: 30;
+  width: max-content;
+  max-width: min(250px, 48vw);
+  max-height: min(58vh, 430px);
+  overflow: hidden;
+  padding: 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 84%, transparent 100%);
+  /* Slides in from the board edge when rules (re)appear — unhiding
+     replays it, so a returning tracker re-announces itself. */
+  animation: hud-in 380ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.rules-hud[hidden] {
+  display: none;
+}
+
+.rules-hud-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 7px;
+  padding: 0 2px;
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  /* The label floats bare on the board — the shadow does the
+     panel's old job of keeping it readable on any terrain. */
+  text-shadow: 0 1px 3px rgb(10 14 22 / 60%);
+}
+
+.rules-hud-title::before {
+  content: '◆';
+  font-size: 0.8em;
+}
+
+.rules-hud-title::after {
+  content: '';
+  flex: 1;
+  min-width: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, rgb(201 168 106 / 45%), transparent);
+}
+
+.rules-hud-list,
+.rules-ghosts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Rule rows keep the serif voice the dialog list had — incantations,
+   not log lines. With no panel behind them, each row carries the
+   glass chip itself so it stays readable over any board texture. */
+.rules-hud-list li {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgb(18 26 38 / 55%);
+  -webkit-backdrop-filter: blur(6px) saturate(1.25);
+  backdrop-filter: blur(6px) saturate(1.25);
+  box-shadow: 0 2px 7px rgb(10 14 22 / 25%);
+  color: #f2ecdc;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgb(10 14 22 / 50%);
+}
+
+/* A rule that just formed: gold wash sweeps in from the left edge. */
+.rules-hud-list li.rules-fresh {
+  animation: rule-in 550ms ease-out;
+}
+
+@keyframes rule-in {
+  0% {
+    background: rgb(240 214 138 / 60%);
+    color: #fff8e8;
+    transform: translateX(-5px);
+    box-shadow: 0 0 14px rgb(240 214 138 / 55%);
+  }
+}
+
+.rules-ghosts {
+  margin-top: 4px;
+}
+
+/* Broken rules linger one beat: struck-out chips fading left, matching
+   the "rule collapsed" feedback the board's word tiles give in-world. */
+.rules-ghosts li.rules-broken {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgb(18 26 38 / 42%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  color: rgb(205 175 160 / 85%);
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  text-decoration: line-through;
+  animation: rule-out 1.1s ease-in forwards;
+}
+
+@keyframes rule-out {
+  60% { opacity: 0.55; }
+  100% { opacity: 0; transform: translateX(-6px); }
+}
+
 .board-hover-coord {
   color: #c9a86a;
   font-variant-numeric: tabular-nums;
@@ -396,64 +769,48 @@ body.game-3d-fullscreen .board.board-3d {
   margin-left: 0.6em;
 }
 
+/* The two pseudo-elements paint the same dashed grid lines rotated 90°
+   apart; the direction lives in a custom property so the gradient and
+   the mask body are written once. */
 .board::before,
 .board::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
+  background-image: repeating-linear-gradient(
+    to var(--grid-dir),
+    var(--grid-line) 0 var(--grid-dash-size),
+    transparent var(--grid-dash-size) calc(var(--grid-dash-size) * 2)
+  );
+  -webkit-mask-image: repeating-linear-gradient(
+    to var(--mask-dir),
+    transparent 0,
+    transparent var(--cell-size),
+    #000 var(--cell-size),
+    #000 calc(var(--cell-size) + var(--gap)),
+    transparent calc(var(--cell-size) + var(--gap)),
+    transparent var(--slot)
+  );
+  mask-image: repeating-linear-gradient(
+    to var(--mask-dir),
+    transparent 0,
+    transparent var(--cell-size),
+    #000 var(--cell-size),
+    #000 calc(var(--cell-size) + var(--gap)),
+    transparent calc(var(--cell-size) + var(--gap)),
+    transparent var(--slot)
+  );
 }
 
 .board::before {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--grid-line) 0 var(--grid-dash-size),
-    transparent var(--grid-dash-size) calc(var(--grid-dash-size) * 2)
-  );
-  -webkit-mask-image: repeating-linear-gradient(
-    to right,
-    transparent 0,
-    transparent var(--cell-size),
-    #000 var(--cell-size),
-    #000 calc(var(--cell-size) + var(--gap)),
-    transparent calc(var(--cell-size) + var(--gap)),
-    transparent var(--slot)
-  );
-  mask-image: repeating-linear-gradient(
-    to right,
-    transparent 0,
-    transparent var(--cell-size),
-    #000 var(--cell-size),
-    #000 calc(var(--cell-size) + var(--gap)),
-    transparent calc(var(--cell-size) + var(--gap)),
-    transparent var(--slot)
-  );
+  --grid-dir: bottom;
+  --mask-dir: right;
 }
 
 .board::after {
-  background-image: repeating-linear-gradient(
-    to right,
-    var(--grid-line) 0 var(--grid-dash-size),
-    transparent var(--grid-dash-size) calc(var(--grid-dash-size) * 2)
-  );
-  -webkit-mask-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent var(--cell-size),
-    #000 var(--cell-size),
-    #000 calc(var(--cell-size) + var(--gap)),
-    transparent calc(var(--cell-size) + var(--gap)),
-    transparent var(--slot)
-  );
-  mask-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent var(--cell-size),
-    #000 var(--cell-size),
-    #000 calc(var(--cell-size) + var(--gap)),
-    transparent calc(var(--cell-size) + var(--gap)),
-    transparent var(--slot)
-  );
+  --grid-dir: right;
+  --mask-dir: bottom;
 }
 
 @keyframes backdrop-in {
@@ -461,9 +818,120 @@ body.game-3d-fullscreen .board.board-3d {
   to { opacity: 1; }
 }
 
+/* Panels spring open past their rest pose, then settle — the small
+   overshoot is what makes a panel feel placed, not faded in. */
 @keyframes dialog-in {
-  from { opacity: 0; transform: scale(0.93) translateY(-8px); }
-  to { opacity: 1; transform: none; }
+  0% { opacity: 0; transform: scale(0.88) translateY(-10px); }
+  55% { opacity: 1; transform: scale(1.015) translateY(1px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The verdict card rises further and lands harder than a utility
+   dialog — it is the level's epilogue, not a settings sheet. */
+@keyframes outcome-in {
+  0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+  55% { opacity: 1; transform: translateY(-3px) scale(1.012); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* Verdict stamp: wide tracking and a haze that tighten into focus. */
+@keyframes verdict-in {
+  0% { opacity: 0; letter-spacing: 0.5em; filter: blur(4px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+
+/* The divider flourish unrolls outward from its center diamond. */
+@keyframes ornament-in {
+  0% { opacity: 0; transform: scaleX(0.25); }
+  100% { opacity: 0.85; transform: none; }
+}
+
+/* Result verbs pop like the menu tiles they echo. */
+@keyframes btn-in {
+  0% { opacity: 0; transform: translateY(8px) scale(0.86); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The primary verb's aura breathes between dim and candlelit — pairs
+   with the btn-in pop via a delay, so the glow starts after landing. */
+@keyframes primary-breathe {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgb(255 246 220 / 55%),
+      inset 0 -2px 0 rgb(138 109 58 / 22%),
+      0 0 0 rgb(201 168 106 / 0%);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgb(255 246 220 / 55%),
+      inset 0 -2px 0 rgb(138 109 58 / 22%),
+      0 0 18px rgb(201 168 106 / 60%);
+  }
+}
+
+/* Controls rows cascade once the dialog is up — scanning order. */
+@keyframes row-in {
+  0% { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The rules tracker slides out of the board's left edge. */
+@keyframes hud-in {
+  0% { opacity: 0; transform: translateX(-16px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The stage plate pops like a pinned badge. */
+@keyframes badge-in {
+  0% { opacity: 0; transform: scale(0.72) translateY(7px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* A newly selected plaque lands with a small squash-and-flash. */
+@keyframes plaque-land {
+  0% { transform: scale(1.14); filter: brightness(1.35); }
+  100% { transform: none; filter: none; }
+}
+
+/* Level mount: the board relaxes from a breath of zoom — the camera
+   settling onto the puzzle. */
+@keyframes board-in {
+  0% { opacity: 0.35; transform: scale(1.03); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* Preview swap: the framed thumbnail turns the page on a selection
+   move — a quick dip, not a wipe, so fast cursor travel stays snappy. */
+@keyframes preview-swap {
+  0% { transform: scale(0.982); }
+  100% { transform: none; }
+}
+
+@keyframes canvas-swap {
+  0% { opacity: 0.2; transform: scale(0.965); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes caption-swap {
+  0% { opacity: 0; transform: translateY(4px); }
+  100% { opacity: 1; transform: none; }
+}
+
+/* The ✦ crest drifts gently above the wordmark — a slow float that
+   keeps the header alive between sheen passes. */
+@keyframes crest-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* Mode-switch view transitions: the old screen sinks and dims while
+   the new one settles in from a slight lift — a dissolve with weight. */
+@keyframes vt-out {
+  to { opacity: 0; transform: scale(0.985); }
+}
+
+@keyframes vt-in {
+  from { opacity: 0; transform: scale(1.02); }
 }
 
 /* Menu entrance: soft rise used by the header, each list item (staggered
@@ -475,13 +943,33 @@ body.game-3d-fullscreen .board.board-3d {
 }
 
 @keyframes toolbar-in {
-  from { transform: translateY(100%); }
-  to { transform: none; }
+  0% { transform: translateY(100%); }
+  70% { transform: translateY(-3px); }
+  100% { transform: none; }
 }
 
 @keyframes status-win-glow {
   0%, 100% { text-shadow: 0 0 5px rgb(240 214 138 / 40%); }
   50% { text-shadow: 0 0 14px rgb(240 214 138 / 85%); }
+}
+
+/* Selected menu plaque: the aura breathes between a candle and a lamp.
+   Only the outermost shadow animates — the inset keylines stay still. */
+@keyframes plaque-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgb(138 109 58 / 55%),
+      inset 0 1px 0 rgb(255 246 220 / 60%),
+      0 1px 3px rgb(15 20 30 / 30%),
+      0 0 12px rgb(201 168 106 / 40%);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgb(138 109 58 / 55%),
+      inset 0 1px 0 rgb(255 246 220 / 60%),
+      0 1px 3px rgb(15 20 30 / 30%),
+      0 0 24px rgb(201 168 106 / 70%);
+  }
 }
 
 .reference-backdrop {
@@ -496,7 +984,7 @@ body.game-3d-fullscreen .board.board-3d {
   -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
   z-index: 1200;
-  animation: backdrop-in var(--motion-duration) ease-out;
+  animation: backdrop-in 240ms ease-out;
 }
 
 .reference-backdrop[hidden] {
@@ -519,25 +1007,88 @@ body.game-3d-fullscreen .board.board-3d {
 
 .reference-dialog {
   position: relative;
-  width: min(560px, 90vw);
-  max-height: min(80vh, 760px);
-  max-height: min(80dvh, 760px);
-  overflow: auto;
+  /* Controls-only now that rules moved to the board HUD — a slimmer
+     single-column panel fits the remaining content. */
+  width: min(520px, 92vw);
+  max-height: min(82vh, 720px);
+  max-height: min(82dvh, 720px);
+  /* Column flex pins the header; the body carries the scroll so the
+     title and close button stay put while the controls list moves. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: linear-gradient(180deg, var(--cream-hi), var(--panel));
   border: 1px solid rgb(201 168 106 / 65%);
   border-radius: var(--radius);
   /* Hairline gold keyline inside the edge — the fine filigree Genshin
      panels use instead of chunky borders. */
   box-shadow: var(--shadow-dialog), inset 0 0 0 1px rgb(201 168 106 / 45%);
-  padding: 16px;
-  animation: dialog-in var(--motion-duration) ease-out;
+  animation: dialog-in 340ms cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
+/* Gold rivet astride the top edge — the same panel motif the confirm
+   dialog wears (the shared rule lives with it). */
 .reference-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
+  flex-shrink: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(201 168 106 / 45%);
+  background: linear-gradient(
+    180deg,
+    rgb(201 168 106 / 24%),
+    rgb(201 168 106 / 10%)
+  );
+}
+
+.reference-title {
+  margin: 0;
+  color: var(--navy);
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.reference-title::before {
+  content: '◆';
+  margin-right: 10px;
+  color: var(--accent);
+  font-size: 0.75em;
+}
+
+/* Round X close — keeps the navy fill the fullscreen .btn override
+   below supplies, just shrunk to an icon target. */
+.reference-close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.reference-body {
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 18px 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px 24px;
+  align-items: start;
+}
+
+.reference-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 /* Close reads as the dark Genshin-style X control on the cream panel.
@@ -555,38 +1106,62 @@ body.game-3d-fullscreen .reference-header .btn {
   }
 }
 
+/* Section captions: small caps with a gold diamond and a fading
+   hairline, like the dividers under Genshin panel headers. */
 .reference-subtitle {
-  margin: 12px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 9px;
   color: var(--accent-dark);
-  font-size: 15px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
 .reference-subtitle::before {
   content: '◆';
-  margin-right: 6px;
   color: var(--accent);
   font-size: 0.8em;
 }
 
-.rules-list {
-  margin: 0;
-  padding-left: 18px;
+.reference-subtitle::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgb(201 168 106 / 55%),
+    rgb(201 168 106 / 0%)
+  );
 }
 
 /* Controls list reuses the menu's kbd-chip hint items, recolored for the
-   cream dialog: gold-tinted chips with dark gold text. */
+   cream dialog: each row becomes a card, the chip keeps gold-on-cream. */
 .controls-list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   font-size: 13px;
   color: var(--text);
 }
 
+.controls-list .hint-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  background: rgb(255 255 255 / 34%);
+  border: 1px solid rgb(138 109 58 / 16%);
+}
+
 .controls-list .hint-item kbd {
+  flex-shrink: 0;
   font: inherit;
   font-size: 11px;
   padding: 1px 8px;
@@ -595,7 +1170,21 @@ body.game-3d-fullscreen .reference-header .btn {
   background: rgb(201 168 106 / 18%);
   color: var(--accent-dark);
   white-space: nowrap;
+  box-shadow: inset 0 -1.5px 0 rgb(138 109 58 / 22%);
 }
+
+/* Rows cascade in reading order once the dialog springs open — the
+   delay sits past the panel's own overshoot so they don't compete. */
+.reference-dialog .controls-list .hint-item {
+  animation: row-in 240ms ease-out backwards;
+}
+
+.reference-dialog .controls-list .hint-item:nth-child(1) { animation-delay: 120ms; }
+.reference-dialog .controls-list .hint-item:nth-child(2) { animation-delay: 160ms; }
+.reference-dialog .controls-list .hint-item:nth-child(3) { animation-delay: 200ms; }
+.reference-dialog .controls-list .hint-item:nth-child(4) { animation-delay: 240ms; }
+.reference-dialog .controls-list .hint-item:nth-child(5) { animation-delay: 280ms; }
+.reference-dialog .controls-list .hint-item:nth-child(n+6) { animation-delay: 320ms; }
 
 /* Touch controls section in the reference dialog — coarse pointers swap
    it in for the keyboard table (media block below). */
@@ -619,6 +1208,10 @@ body.game-3d-fullscreen .reference-header .btn {
   border: 1px solid rgb(201 168 106 / 45%);
   background: rgb(248 242 226 / 8%);
   color: var(--cream);
+  /* Keycap rim — the chip reads as a pressable key, not a text label. */
+  box-shadow:
+    inset 0 -1.5px 0 rgb(0 0 0 / 25%),
+    inset 0 1px 0 rgb(255 255 255 / 9%);
 }
 
 /* ── Menu screen ────────────────────────────────────────────────
@@ -632,20 +1225,59 @@ body.game-3d-fullscreen .reference-header .btn {
   padding: 44px 20px 32px;
 }
 
-/* Faint gold pinstripe + cool glow from the top edge — the same
-   diagonal weave the reference backdrop wears, kept whisper-quiet. */
+/* Layered atmosphere behind the menu: a warm halo crowning the title,
+   the faint diagonal weave the reference backdrop wears, and a soft
+   vignette pinning the eye to the centered column. All static — one
+   paint, no animation cost. */
 .menu-screen::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   background:
+    radial-gradient(ellipse 56% 34% at 50% -2%, rgb(201 168 106 / 15%), transparent 70%),
     radial-gradient(ellipse 75% 45% at 50% 0%, rgb(150 180 220 / 9%), transparent 70%),
     repeating-linear-gradient(
       135deg,
       rgb(211 188 142 / 4%) 0 1px,
       transparent 1px 11px
-    );
+    ),
+    radial-gradient(ellipse 105% 90% at 50% 42%, transparent 58%, rgb(8 12 20 / 45%));
+}
+
+/* Drifting stardust — sparse gold motes on an oversized layer so the
+   slow translate never exposes an edge. Compositor transform only; the
+   menu has no other ambient motion, this is what makes it feel lit. */
+.menu-screen::after {
+  content: '';
+  position: fixed;
+  inset: -64px;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.3px 1.3px at 8% 18%, rgb(240 228 190 / 55%), transparent 100%),
+    radial-gradient(1px 1px at 15% 64%, rgb(220 210 190 / 40%), transparent 100%),
+    radial-gradient(1.6px 1.6px at 22% 38%, rgb(240 228 190 / 50%), transparent 100%),
+    radial-gradient(1px 1px at 31% 80%, rgb(210 200 180 / 35%), transparent 100%),
+    radial-gradient(1.2px 1.2px at 38% 12%, rgb(240 228 190 / 45%), transparent 100%),
+    radial-gradient(1px 1px at 45% 55%, rgb(220 210 190 / 38%), transparent 100%),
+    radial-gradient(1.5px 1.5px at 52% 28%, rgb(240 228 190 / 52%), transparent 100%),
+    radial-gradient(1px 1px at 58% 70%, rgb(215 205 185 / 36%), transparent 100%),
+    radial-gradient(1.3px 1.3px at 66% 16%, rgb(240 228 190 / 48%), transparent 100%),
+    radial-gradient(1px 1px at 72% 48%, rgb(220 210 190 / 40%), transparent 100%),
+    radial-gradient(1.4px 1.4px at 79% 84%, rgb(240 228 190 / 44%), transparent 100%),
+    radial-gradient(1px 1px at 85% 32%, rgb(215 205 185 / 38%), transparent 100%),
+    radial-gradient(1.2px 1.2px at 91% 60%, rgb(240 228 190 / 46%), transparent 100%),
+    radial-gradient(1px 1px at 6% 78%, rgb(210 200 180 / 34%), transparent 100%),
+    radial-gradient(1.4px 1.4px at 27% 90%, rgb(240 228 190 / 42%), transparent 100%),
+    radial-gradient(1px 1px at 63% 92%, rgb(215 205 185 / 35%), transparent 100%),
+    radial-gradient(1.3px 1.3px at 88% 12%, rgb(240 228 190 / 40%), transparent 100%),
+    radial-gradient(1px 1px at 48% 85%, rgb(220 210 190 / 36%), transparent 100%);
+  animation: star-drift 110s linear infinite alternate;
+}
+
+@keyframes star-drift {
+  from { transform: translate3d(0, 0, 0); opacity: 0.7; }
+  to { transform: translate3d(-46px, 26px, 0); opacity: 1; }
 }
 
 /* margin:auto centers the column on both axes and collapses to 0 when
@@ -662,13 +1294,54 @@ body.game-3d-fullscreen .reference-header .btn {
   margin-bottom: 26px;
 }
 
+/* A spark above the wordmark — the small heraldic crest that keeps the
+   title block reading as a logo, not a heading. */
+.menu-header::before {
+  content: '✦';
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 12px;
+  line-height: 1;
+  text-shadow: 0 0 10px rgb(201 168 106 / 70%);
+  animation: crest-bob 5.5s ease-in-out infinite;
+}
+
 .title {
   margin: 0;
-  color: #f8f2e2;
-  font-size: clamp(30px, 5.5vw, 46px);
-  letter-spacing: 0.24em;
-  text-indent: 0.24em;
-  text-shadow: 0 2px 10px rgb(15 25 40 / 60%);
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5.8vw, 50px);
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+  /* Warm gilt lettering with a slow sheen sweep — the logo gleam every
+     Genshin title treatment carries. background-clip turns the glyphs
+     into the gradient's mask; drop-shadow filters (not text-shadow,
+     which would ghost through the transparent fill) cast depth behind. */
+  background: linear-gradient(
+    110deg,
+    #efe3c2 36%,
+    #fbf3dc 46%,
+    #e3c383 50%,
+    #fbf3dc 54%,
+    #efe3c2 64%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 2px 8px rgb(10 16 28 / 70%))
+    drop-shadow(0 0 22px rgb(201 168 106 / 28%));
+  animation: title-sheen 7s ease-in-out infinite;
+}
+
+/* One narrow bright band slides through the gilt, then rests — the
+   pauses keep it a shimmer, not a marquee. */
+@keyframes title-sheen {
+  0%, 20% { background-position: 130% 0; }
+  62%, 100% { background-position: -60% 0; }
 }
 
 .menu-flourish {
@@ -697,9 +1370,10 @@ body.game-3d-fullscreen .reference-header .btn {
 .menu-count {
   margin: 0;
   color: var(--accent);
-  font-size: 12px;
-  letter-spacing: 0.34em;
-  text-indent: 0.34em;
+  font-family: var(--font-display);
+  font-size: 12.5px;
+  letter-spacing: 0.38em;
+  text-indent: 0.38em;
 }
 
 /* The level list is a numbered checkerboard — dense parchment tiles,
@@ -720,6 +1394,9 @@ body.game-3d-fullscreen .reference-header .btn {
      targets clear of the band too. */
   padding: 22px 6px 22px 0;
   scroll-padding-block: 22px;
+  /* Keyboard/Page jumps glide to the revealed cell instead of snapping
+     — reduced-motion still forces auto through the global rule. */
+  scroll-behavior: smooth;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgb(201 168 106 / 45%) transparent;
@@ -752,15 +1429,25 @@ body.game-3d-fullscreen .reference-header .btn {
      work; the fixed row height makes their intrinsic size exact. */
   content-visibility: auto;
   contain-intrinsic-size: auto 54px;
-  /* Squared parchment tiles, same keyline the pill rows wore. */
+  /* Squared parchment tiles with glazed-candy depth: light on the top
+     lip, a darker rim along the bottom, one soft drop shadow. */
   border-radius: var(--radius-sm);
-  background: linear-gradient(180deg, var(--cream), #e2d7bd);
+  border: 1px solid rgb(138 109 58 / 20%);
+  background: linear-gradient(180deg, var(--cream), #e4d9c0);
   color: var(--muted);
-  box-shadow: inset 0 0 0 1px rgb(201 168 106 / 32%), var(--shadow-raised-soft);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 50%),
+    inset 0 -2px 0 rgb(138 109 58 / 14%),
+    0 1px 3px rgb(15 20 30 / 30%);
   cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 15.5px;
+  letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
+  /* The transform springs past its target — the overshoot is the
+     difference between a hovered tile and a popped one. */
   transition:
-    transform var(--motion-duration) ease-out,
+    transform 170ms cubic-bezier(0.34, 1.5, 0.64, 1),
     box-shadow var(--motion-duration) ease-out,
     color var(--motion-duration) ease-out,
     opacity var(--motion-duration) ease-out;
@@ -776,22 +1463,71 @@ body.game-3d-fullscreen .reference-header .btn {
   background: linear-gradient(180deg, #e2d8bf, #d6c9aa);
 }
 
+/* Shared glaze — every tile carries the same top sheen as the selected
+   plaque (which adds a stronger layer on top). */
+.menu-cell::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  top: 1px;
+  height: 42%;
+  border-radius: 7px 7px 12px 12px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 22%), transparent);
+  pointer-events: none;
+}
+
 .menu-cell:not(.selected):hover {
   background: linear-gradient(180deg, var(--cream-hi), var(--cream));
+  border-color: rgb(201 168 106 / 70%);
   color: var(--accent-dark);
-  transform: translateY(-1px);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 55%),
+    inset 0 -2px 0 rgb(138 109 58 / 14%),
+    0 4px 12px rgb(15 20 30 / 35%),
+    0 0 12px rgb(201 168 106 / 30%);
+}
+
+/* Press squash — the tile gives under the pointer before the level
+   starts, the same give the buttons have. */
+.menu-cell:not(.selected):active,
+.menu-cell.selected:active {
+  transform: scale(0.94);
 }
 
 .menu-cell.selected {
   /* Lit gold plaque against the parchment grid — bright = selected,
-     dim = no-solution, so the two states never compete. */
+     dim = no-solution, so the two states never compete. A slow pulse on
+     the aura keeps the plaque feeling alive (keyframes only, no RAF). */
   color: #43340f;
   font-weight: 700;
   background: linear-gradient(180deg, #ecd7a8, var(--accent));
+  border-color: rgb(138 109 58 / 55%);
   box-shadow:
-    inset 0 0 0 1.5px rgb(138 109 58 / 65%),
-    var(--shadow-raised-soft),
+    inset 0 0 0 1px rgb(138 109 58 / 55%),
+    inset 0 1px 0 rgb(255 246 220 / 60%),
+    0 1px 3px rgb(15 20 30 / 30%),
     0 0 18px rgb(201 168 106 / 55%);
+  /* plaque-land pops the tile once as the selection arrives (replays
+     on every in-place move); the glow then breathes on its own loop. */
+  animation:
+    plaque-land 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    plaque-glow 2.4s ease-in-out infinite;
+}
+
+/* Gloss pooled on the plaque's upper half — the glazed-candy finish the
+   plain tiles only hint at. */
+.menu-cell.selected::after {
+  content: '';
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 2px;
+  height: 48%;
+  border-radius: 7px 7px 12px 12px;
+  background: linear-gradient(180deg, rgb(255 246 220 / 42%), transparent);
+  pointer-events: none;
 }
 
 /* A selected unsolvable cell keeps the gold plaque but tarnished — the
@@ -821,17 +1557,70 @@ body.game-3d-fullscreen .reference-header .btn {
    the panel never resizes while the selection moves. Clicking it starts
    the level. */
 .menu-preview {
+  position: relative;
   margin: 0;
   padding: 10px;
   display: flex;
   flex-direction: column;
   border-radius: var(--radius);
-  background: rgb(18 25 38 / 78%);
+  border: 1px solid rgb(201 168 106 / 38%);
+  background: linear-gradient(180deg, rgb(24 33 48 / 82%), rgb(15 21 33 / 82%));
   box-shadow:
-    inset 0 0 0 1px rgb(201 168 106 / 32%),
+    inset 0 0 0 1px rgb(201 168 106 / 20%),
     var(--shadow-raised-soft);
   cursor: pointer;
   transition: box-shadow var(--motion-duration) ease-out;
+}
+
+/* Selection moves re-arm this class from the draw loop: the frame dips
+   and the fresh thumbnail develops inside it — a page turn, kept quick
+   so rapid cursor travel never queues up. */
+.menu-preview.preview-swap {
+  animation: preview-swap 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.menu-preview.preview-swap .menu-preview-canvas {
+  animation: canvas-swap 300ms ease-out;
+}
+
+.menu-preview.preview-swap .menu-position {
+  animation: caption-swap 300ms ease-out;
+}
+
+/* A gold diamond studded on the top edge — the rivet Genshin hangs on
+   framed panels. It sits astride the border, so no cut-out is needed. */
+.menu-preview::before {
+  content: '◆';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--accent);
+  font-size: 9px;
+  line-height: 1;
+  text-shadow: 0 0 6px rgb(201 168 106 / 60%);
+}
+
+/* Sheen + corner brackets in one overlay: the diagonal glass streak,
+   then eight thin bars forming an L at each inner corner — the pinned-
+   filigree signature Genshin frames carry. */
+.menu-preview::after {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: calc(var(--radius) - 6px);
+  background:
+    linear-gradient(150deg, rgb(255 255 255 / 6%), transparent 30%),
+    linear-gradient(to right, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) left 0 top 0 / 11px 1.5px,
+    linear-gradient(to bottom, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) left 0 top 0 / 1.5px 11px,
+    linear-gradient(to right, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) right 0 top 0 / 11px 1.5px,
+    linear-gradient(to bottom, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) right 0 top 0 / 1.5px 11px,
+    linear-gradient(to right, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) left 0 bottom 0 / 11px 1.5px,
+    linear-gradient(to bottom, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) left 0 bottom 0 / 1.5px 11px,
+    linear-gradient(to right, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) right 0 bottom 0 / 11px 1.5px,
+    linear-gradient(to bottom, rgb(201 168 106 / 60%), rgb(201 168 106 / 60%)) right 0 bottom 0 / 1.5px 11px;
+  background-repeat: no-repeat;
+  pointer-events: none;
 }
 
 @media (hover: hover) {
@@ -852,20 +1641,30 @@ body.game-3d-fullscreen .reference-header .btn {
   min-height: 0;
   border-radius: var(--radius-sm);
   background: #1b2433;
+  /* Soft inner shade at the frame's lip — the thumbnail sits *inside*
+     the frame, not flush on it. */
+  box-shadow: inset 0 0 26px rgb(8 12 20 / 45%);
 }
 
 /* The position readout captions the preview figure instead of standing
-   alone — same aria-live announcements, tighter margin. */
+   alone — same aria-live announcements, tighter margin. Serif italics
+   read like a plate inscription; the gold count stays upright. */
 .menu-position {
-  margin: 10px 2px 0;
-  font-size: 13px;
-  color: #a5aec0;
-  letter-spacing: 0.06em;
+  margin: 11px 4px 2px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-style: italic;
+  color: #aeb8ca;
+  letter-spacing: 0.1em;
+  text-align: center;
 }
 
 .menu-position strong {
   color: var(--accent);
-  margin-right: 10px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-right: 12px;
 }
 
 .menu-hints {
@@ -916,6 +1715,19 @@ body.game-3d-fullscreen .reference-header .btn {
   animation-delay: min(calc(180ms + var(--row-i, 0) * 16ms), 560ms);
 }
 
+/* The entrance shorthand would otherwise displace the plaque's glow
+   loop for as long as .menu-enter stays on the screen — restate both,
+   the glow starting once the tile has risen. Selection moves replay
+   the small rise as their land cue. */
+.menu-enter .menu-cell.selected {
+  animation:
+    menu-item-in 260ms ease-out backwards,
+    plaque-glow 2.4s ease-in-out infinite;
+  animation-delay:
+    min(calc(180ms + var(--row-i, 0) * 16ms), 560ms),
+    calc(min(calc(180ms + var(--row-i, 0) * 16ms), 560ms) + 320ms);
+}
+
 .menu-enter .menu-preview {
   animation: menu-item-in 260ms ease-out backwards;
   animation-delay: 560ms;
@@ -952,7 +1764,11 @@ body.game-3d-fullscreen .reference-header .btn {
 
 @media (max-width: 640px) {
   .reference-dialog {
-    width: min(420px, 92vw);
+    width: min(430px, 92vw);
+  }
+
+  .reference-body {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -960,16 +1776,6 @@ body.game-3d-fullscreen .reference-header .btn {
    Bigger tap targets, and the keyboard-centric hints trade places
    with the touch ones. */
 @media (pointer: coarse) {
-  .icon-btn {
-    width: 44px;
-    height: 44px;
-  }
-
-  .icon-btn svg {
-    width: 20px;
-    height: 20px;
-  }
-
   .btn {
     padding: 10px 16px;
   }
@@ -1025,13 +1831,24 @@ body.game-3d-fullscreen .reference-header .btn {
     max-height: min(80%, 760px);
   }
 
+  .reference-body {
+    grid-template-columns: 1fr;
+  }
+
   .outcome-card {
     min-width: min(340px, 90%);
   }
 
   /* App edges land on different physical edges once rotated: the
      toolbar's bottom is the physical left, its right is the physical
-     bottom (home bar), its left is the physical top (notch). */
+     bottom (home bar), its left is the physical top (notch). The rules
+     HUD's top/left map the same way: app top → physical right, app
+     left → physical top. */
+  .rules-hud {
+    top: calc(14px + env(safe-area-inset-right, 0px));
+    left: calc(14px + env(safe-area-inset-top, 0px));
+  }
+
   .game-toolbar {
     padding-top: calc(10px + env(safe-area-inset-right, 0px));
     padding-right: calc(16px + env(safe-area-inset-bottom, 0px));
@@ -1040,14 +1857,16 @@ body.game-3d-fullscreen .reference-header .btn {
   }
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation: none;
+/* Menu↔game dissolve: the leaving screen sinks a touch while the
+   arriving one settles from a slight lift — a scene change with
+   weight instead of a hard cut. Only full re-renders take this path;
+   in-place selection updates skip the snapshot entirely. */
+::view-transition-old(root) {
+  animation: vt-out 240ms ease-in both;
 }
 
-::view-transition-group(*) {
-  animation-duration: var(--motion-duration);
-  animation-timing-function: ease-out;
+::view-transition-new(root) {
+  animation: vt-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -25,6 +25,7 @@ const pad = (
 type RuntimeOptions = {
   mode?: 'menu' | 'game'
   dialogOpen?: boolean
+  confirmOpen?: boolean
   status?: GameStatus
   canHandle?: () => boolean
   handled?: (cmd: GameCommand) => boolean
@@ -38,6 +39,7 @@ const createRuntime = (options: RuntimeOptions = {}) => {
   let pads: (GamepadSource | null)[] = []
   let marks = 0
   let closes = 0
+  let confirmCloses = 0
   let toggles = 0
   let dialogOpen = options.dialogOpen ?? false
 
@@ -45,6 +47,7 @@ const createRuntime = (options: RuntimeOptions = {}) => {
     viewState: {
       getMode: () => options.mode ?? 'game',
       isReferenceDialogOpen: () => dialogOpen,
+      isReplayConfirmOpen: () => options.confirmOpen ?? false,
       getStatus: () => options.status ?? 'playing',
     },
     closeReferenceDialog: () => {
@@ -52,6 +55,9 @@ const createRuntime = (options: RuntimeOptions = {}) => {
     },
     toggleReferenceDialog: () => {
       toggles += 1
+    },
+    closeReplayConfirm: () => {
+      confirmCloses += 1
     },
     canHandleGameAction: options.canHandle ?? (() => true),
     markGameActionHandled: () => {
@@ -90,6 +96,9 @@ const createRuntime = (options: RuntimeOptions = {}) => {
     },
     get closes() {
       return closes
+    },
+    get confirmCloses() {
+      return confirmCloses
     },
     get toggles() {
       return toggles
@@ -180,6 +189,25 @@ test('gamepad dialog state ignores all input except B to close', () => {
 
   assert.deepEqual(ctx.commands, [])
   assert.equal(ctx.closes, 1)
+})
+
+test('gamepad replay confirm blocks input and B cancels it', () => {
+  const ctx = createRuntime({ confirmOpen: true })
+  ctx.step(0)
+  ctx.setPads([pad()])
+  ctx.connect()
+  ctx.step(16)
+
+  // Directional presses stay swallowed while the confirm is open.
+  ctx.setPads([pad([15])])
+  ctx.step(32)
+  ctx.setPads([pad([1])])
+  ctx.step(48)
+  ctx.step(64) // held B must not cancel twice
+
+  assert.deepEqual(ctx.commands, [])
+  assert.equal(ctx.confirmCloses, 1)
+  assert.equal(ctx.closes, 0)
 })
 
 test('gamepad menu mode moves the selection and A starts the level', () => {
