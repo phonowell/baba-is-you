@@ -1,11 +1,11 @@
 import {
   menuPositionHtml,
-  menuWindowRange,
   renderMenuHtml,
 } from '../view/render-menu-html.js'
 import { createGameView } from './app-game-view.js'
 
 import type { GameState } from '../logic/types.js'
+import type { MenuLevel } from '../view/render-menu-html.js'
 import type { AppMode, WebAppSnapshot } from './app-model.js'
 
 export type DrawState = {
@@ -18,13 +18,19 @@ export type DrawState = {
 
 type CreateDrawOptions = {
   root: HTMLElement
-  menuLevels: Array<{ title: string }>
+  menuLevels: ReadonlyArray<MenuLevel>
   drawState: DrawState
   getSnapshot: () => WebAppSnapshot
   // Asked once per board build: the Replay button only renders when the
   // level on screen has a recorded golden.
   hasGoldenReplay?: () => boolean
+  // A level's number as the menu shows it — the grid's display order,
+  // not the campaign index. Defaults to campaign order (index + 1).
+  levelMenuNumber?: (levelIndex: number) => number
   computeCellSize: (state: GameState) => number
+  // Repaints the menu's level-preview canvas for the highlighted index —
+  // injected because the sprite painter lives in the web layer.
+  paintMenuPreview?: (canvas: HTMLCanvasElement, levelIndex: number) => void
   applyWithTransition: (fn: () => void) => void
   unmountBoard3d: () => void
   mountAndSyncBoard3d: (board: HTMLElement, state: GameState) => void
@@ -37,52 +43,79 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
     drawState,
     getSnapshot,
     hasGoldenReplay = () => false,
+    levelMenuNumber = (index) => index + 1,
     computeCellSize,
+    paintMenuPreview,
     applyWithTransition,
     unmountBoard3d,
     mountAndSyncBoard3d,
   } = options
 
-  // Same-window selection moves flip row classes and the position readout
-  // in place instead of rebuilding the list — full innerHTML re-renders
-  // would restart the row entrance cascade and the marker's idle wiggle
-  // on every keypress.
+  // Selection moves flip the selected cell's classes, the position readout
+  // and the preview's start-index in place — full innerHTML re-renders
+  // would restart the entrance cascade and reset the grid's scroll. Every
+  // cell is always in the DOM (the grid scrolls internally), so the only
+  // fallback trigger is a missing piece of menu DOM.
   const updateMenuInPlace = (
     container: HTMLElement,
     selected: number,
   ): boolean => {
-    if (typeof container.querySelectorAll !== 'function') return false
-    const rows = container.querySelectorAll<HTMLElement>(
-      '.menu-row[data-level-index]',
-    )
-    const positionEl = container.querySelector<HTMLElement>('.menu-position')
-    if (rows.length === 0 || !positionEl) return false
+    if (typeof container.querySelector !== 'function') return false
 
     // Same clamp renderMenuHtml applies, so both paths agree on the index.
     const clamped = Math.min(
       Math.max(selected, 0),
       Math.max(0, menuLevels.length - 1),
     )
-    const [start, end] = menuWindowRange(menuLevels.length, clamped)
-    const firstIndex = Number(rows[0]?.dataset.levelIndex)
-    const lastIndex = Number(rows[rows.length - 1]?.dataset.levelIndex)
-    if (
-      rows.length !== end - start ||
-      firstIndex !== start ||
-      lastIndex !== end - 1
-    ) {
-      return false
-    }
+    const target = container.querySelector<HTMLElement>(
+      `.menu-cell[data-level-index="${clamped}"]`,
+    )
+    const positionEl = container.querySelector<HTMLElement>('.menu-position')
+    if (!target || !positionEl) return false
 
-    for (const row of Array.from(rows)) {
-      const isSelected = Number(row.dataset.levelIndex) === clamped
-      row.classList.toggle('selected', isSelected)
-      row.setAttribute('aria-selected', isSelected ? 'true' : 'false')
-      const marker = row.querySelector('.marker')
-      if (marker) marker.innerHTML = isSelected ? '&#9670;' : '&nbsp;'
+    const current = container.querySelector<HTMLElement>('.menu-cell.selected')
+    if (current !== target) {
+      current?.classList.remove('selected')
+      current?.setAttribute('aria-selected', 'false')
+      target.classList.add('selected')
+      target.setAttribute('aria-selected', 'true')
     }
+    // Arrow/Page keys can land the selection off-screen — keep it visible
+    // with the smallest scroll that does so (jsdom-style fakes lack it).
+    if (typeof target.scrollIntoView === 'function') {
+      target.scrollIntoView({ block: 'nearest' })
+    }
+    // The preview panel doubles as a start button — keep its level index
+    // on the selection so a click enters the highlighted board.
+    const preview = container.querySelector<HTMLElement>('.menu-preview')
+    if (preview?.dataset) preview.dataset.levelIndex = String(clamped)
     positionEl.innerHTML = menuPositionHtml(menuLevels, clamped)
     return true
+  }
+
+  const revealSelectedCell = (
+    container: HTMLElement,
+    selected: number,
+  ): void => {
+    if (typeof container.querySelector !== 'function') return
+    const cell = container.querySelector<HTMLElement>(
+      `.menu-cell[data-level-index="${selected}"]`,
+    )
+    if (cell && typeof cell.scrollIntoView === 'function') {
+      cell.scrollIntoView({ block: 'nearest' })
+    }
+  }
+
+  const paintPreviewCanvas = (
+    container: HTMLElement,
+    levelIndex: number,
+  ): void => {
+    if (!paintMenuPreview || typeof container.querySelector !== 'function')
+      return
+    const canvas = container.querySelector<HTMLCanvasElement>(
+      '.menu-preview-canvas',
+    )
+    if (canvas) paintMenuPreview(canvas, levelIndex)
   }
 
   return (): void => {
@@ -100,7 +133,7 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
 
     document.title =
       mode === 'game'
-        ? `${levelIndex + 1}. ${state.title} – Baba Is You`
+        ? `${levelMenuNumber(levelIndex)}. ${state.title} – Baba Is You`
         : 'Baba Is You'
     document.body.classList.toggle('game-3d-fullscreen', mode === 'game')
 
@@ -124,22 +157,32 @@ export const createDraw = (options: CreateDrawOptions): (() => void) => {
     drawState.prevBoardSignature = nextBoardSignature
 
     if (modeChanged || mode === 'menu' || boardChanged) {
+      // Selection moves patch a few classes and repaint one canvas — cheap
+      // enough that wrapping them in a document view transition (a full-
+      // page snapshot per keypress or hover) would be pure overhead.
+      if (
+        mode === 'menu' &&
+        !modeChanged &&
+        updateMenuInPlace(root, menuSelectedLevelIndex)
+      ) {
+        paintPreviewCanvas(root, menuSelectedLevelIndex)
+        drawState.gameView = null
+        return
+      }
+
       if (mode !== 'game' || modeChanged || boardChanged) unmountBoard3d()
 
       applyWithTransition(() => {
         if (mode === 'menu') {
-          if (
-            !modeChanged &&
-            updateMenuInPlace(root, menuSelectedLevelIndex)
-          ) {
-            drawState.gameView = null
-            return
-          }
           root.innerHTML = renderMenuHtml({
             levels: menuLevels,
             selectedLevelIndex: menuSelectedLevelIndex,
             animateEntrance: modeChanged,
           })
+          // A fresh grid mounts scrolled to the top — re-reveal the
+          // selection (e.g. returning from a deep level).
+          revealSelectedCell(root, menuSelectedLevelIndex)
+          paintPreviewCanvas(root, menuSelectedLevelIndex)
           drawState.gameView = null
           return
         }

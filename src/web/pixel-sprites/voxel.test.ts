@@ -175,16 +175,22 @@ test('voxelDrawRect centers content bounds at uniform texel scale', () => {
   assert.ok(Math.abs(half.drawY - (0.5 + 6 / 12)) < 1e-6)
 })
 
-test('advanceNodeGeometries swaps mesh geometry through the frame cycle', () => {
+test('advanceNodeGeometries swaps mesh and outline geometry through the frame cycle', () => {
   const g0 = { id: 'g0' }
   const g1 = { id: 'g1' }
   const g2 = { id: 'g2' }
   const animated = {
     mesh: { geometry: g0 },
+    outline: { geometry: g0 },
     frameGeometries: [g0, g1, g2],
     idleFrameOffset: 0,
   }
-  const still = { mesh: { geometry: g0 }, frameGeometries: [g0], idleFrameOffset: 0 }
+  const still = {
+    mesh: { geometry: g0 },
+    outline: { geometry: g0 },
+    frameGeometries: [g0],
+    idleFrameOffset: 0,
+  }
   const nodes = new Map([
     [1, animated],
     [2, still],
@@ -192,9 +198,11 @@ test('advanceNodeGeometries swaps mesh geometry through the frame cycle', () => 
 
   assert.equal(advanceNodeGeometries(nodes, 1), 1)
   assert.equal(animated.mesh.geometry, g1)
+  assert.equal(animated.outline.geometry, g1)
   assert.equal(advanceNodeGeometries(nodes, 1), 0)
   assert.equal(advanceNodeGeometries(nodes, 2), 1)
   assert.equal(animated.mesh.geometry, g2)
+  assert.equal(animated.outline.geometry, g2)
 })
 
 test('advanceNodeGeometries staggers the cycle per node frame offset', () => {
@@ -203,11 +211,13 @@ test('advanceNodeGeometries staggers the cycle per node frame offset', () => {
   const g2 = { id: 'g2' }
   const inPhase = {
     mesh: { geometry: g0 },
+    outline: { geometry: g0 },
     frameGeometries: [g0, g1, g2],
     idleFrameOffset: 0,
   }
   const aheadTwo = {
     mesh: { geometry: g0 },
+    outline: { geometry: g0 },
     frameGeometries: [g0, g1, g2],
     idleFrameOffset: 2,
   }

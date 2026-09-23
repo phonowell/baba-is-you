@@ -1,11 +1,15 @@
-import { MENU_WINDOW_SIZE } from '../view/render-menu-html.js'
+import {
+  MENU_GRID_COLUMNS,
+  MENU_PAGE_ROWS,
+} from '../view/render-menu-html.js'
 
 import type { GameCommand } from '../view/input.js'
 import type { WebAppAction, WebAppStateData } from './app-model.js'
 
 // One command pipeline for both modes: the menu reuses direction verbs
-// for list navigation (up/down step, left/right page), `enter` starts
-// the highlighted level, and `next` on a won board advances the list.
+// for grid navigation (left/right step a cell, up/down step a row),
+// `page` jumps rows, `enter` starts the highlighted level, and `next`
+// on a won board advances the list.
 export const mapGameCommandToAction = (
   cmd: GameCommand,
   state: WebAppStateData,
@@ -18,21 +22,35 @@ export const mapGameCommandToAction = (
   }
 
   if (state.mode === 'menu') {
+    // The list is circular — stepping past either end re-enters on the
+    // far side. Vertical movement wraps inside the same column (the
+    // short last row means columns can differ by one cell), so a
+    // wrapped step can land back on the start cell: that maps to no
+    // action rather than a selection that changes nothing.
+    const total = state.levelCount
+    const index = state.menuSelectedLevelIndex
+    const column = index % MENU_GRID_COLUMNS
+    const row = Math.floor(index / MENU_GRID_COLUMNS)
+    const columnRows = Math.ceil((total - column) / MENU_GRID_COLUMNS)
+    const wrapRow = (rowDelta: number): number =>
+      ((((row + rowDelta) % columnRows) + columnRows) % columnRows) *
+        MENU_GRID_COLUMNS +
+      column
+    const select = (next: number): WebAppAction | null =>
+      next === index ? null : { type: 'select-menu-level', index: next }
+
     switch (cmd.type) {
       case 'move': {
-        const step =
-          cmd.direction === 'up'
-            ? -1
-            : cmd.direction === 'down'
-              ? 1
-              : cmd.direction === 'left'
-                ? -MENU_WINDOW_SIZE
-                : MENU_WINDOW_SIZE
-        return {
-          type: 'select-menu-level',
-          index: state.menuSelectedLevelIndex + step,
+        if (cmd.direction === 'left' || cmd.direction === 'right') {
+          const step = cmd.direction === 'left' ? -1 : 1
+          return select((index + step + total) % total)
         }
+        return select(wrapRow(cmd.direction === 'up' ? -1 : 1))
       }
+      case 'page':
+        return select(
+          wrapRow(cmd.direction === 'up' ? -MENU_PAGE_ROWS : MENU_PAGE_ROWS),
+        )
       case 'enter':
       case 'next':
         return { type: 'enter-game', index: state.menuSelectedLevelIndex }
@@ -71,6 +89,7 @@ export const mapGameCommandToAction = (
       return null
     case 'back':
       return { type: 'return-to-menu' }
+    case 'page':
     case 'noop':
       return null
   }

@@ -6,6 +6,16 @@ export const BOARD3D_RULE_VISUAL_CONFIG = {
   BELT_DIRECTION_GLYPH_DOWN: '\u2b07\ufe0f',
   BELT_DIRECTION_GLYPH_LEFT: '\u2b05\ufe0f',
   FACING_ARROW_PROPS: new Set<Property>(['you', 'move', 'shift']),
+  // Control-layer cards (you/you2/3d) wear an inverted-hull rim tinted by
+  // the card's own palette turned negative — "this answers input" reads as
+  // the card's photographic negative ringing its silhouette. The shell is
+  // the card's geometry inflated around its origin, so ~scale-1 × half the
+  // card width lands just over one sprite texel proud of the silhouette.
+  // The rim breathes on the idle tick: tint sweeps card colour↔its inverse
+  // while the shell swells by SCALE_SWELL, in lockstep across the board.
+  YOU_OUTLINE_SCALE: 1.09,
+  YOU_OUTLINE_SCALE_SWELL: 0.05,
+  YOU_OUTLINE_PULSE_MS: 1100,
 } as const
 
 // Text plates wear the level-select menu's chrome: parchment pill faces

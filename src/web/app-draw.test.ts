@@ -191,3 +191,96 @@ test('createDraw mounts 3d board after deferred transition callback builds game 
     globalThis.document = previousDocument
   }
 })
+
+test('createDraw repaints the menu preview on both render paths', () => {
+  const state = createState()
+  const fakeDocument = createFakeDocument()
+  const root = createFakeElement(fakeDocument, 'main')
+  const previousDocument = globalThis.document
+
+  // In-place update needs a DOM the updater recognizes: cells the
+  // selector lookups resolve, a position readout, the preview figure,
+  // and its canvas.
+  const canvas = createFakeElement(fakeDocument, 'canvas')
+  const preview = createFakeElement(fakeDocument, 'figure')
+  const positionEl = createFakeElement(fakeDocument, 'p')
+  const scrolledTo: number[] = []
+  const rows = [0, 1].map((index) => {
+    const row = createFakeElement(fakeDocument, 'li')
+    row.dataset.levelIndex = String(index)
+    ;(row as unknown as { scrollIntoView: () => void }).scrollIntoView =
+      () => {
+        scrolledTo.push(index)
+      }
+    return row
+  })
+  root.querySelector = ((selector: string) => {
+    if (selector === '.menu-preview-canvas') return canvas
+    if (selector === '.menu-preview') return preview
+    if (selector === '.menu-position') return positionEl
+    if (selector === '.menu-cell.selected') {
+      return rows.find((row) => row.classList.contains('selected')) ?? null
+    }
+    const cellMatch = /^\.menu-cell\[data-level-index="(\d+)"\]$/.exec(selector)
+    if (cellMatch) return rows[Number(cellMatch[1])] ?? null
+    return null
+  }) as HTMLElement['querySelector']
+
+  const transitionCallbacks: Array<() => void> = []
+  const paintCalls: number[] = []
+  const snapshot = {
+    mode: 'menu' as const,
+    menuSelectedLevelIndex: 0,
+    levelIndex: 0,
+    state,
+    showReferenceDialog: false,
+    replay: null,
+    canUndo: false,
+  }
+
+  globalThis.document = fakeDocument
+
+  try {
+    const draw = createDraw({
+      root,
+      drawState: {
+        prevMode: null,
+        prevShowDialog: false,
+        prevBoardSignature: null,
+        prevCellSize: null,
+        gameView: null,
+      },
+      menuLevels: [{ title: 'one' }, { title: 'two' }],
+      getSnapshot: () => snapshot,
+      computeCellSize: () => 44,
+      paintMenuPreview: (target, index) => {
+        assert.equal(target, canvas)
+        paintCalls.push(index)
+      },
+      applyWithTransition: (fn) => {
+        transitionCallbacks.push(fn)
+      },
+      unmountBoard3d: () => undefined,
+      mountAndSyncBoard3d: () => undefined,
+    })
+
+    // Fresh entry → full innerHTML render, then a first paint.
+    draw()
+    transitionCallbacks[0]?.()
+    assert.deepEqual(paintCalls, [0])
+
+    // Selection move → in-place update repaints, the clickable preview
+    // figure tracks the new selection, and the target cell is scrolled
+    // into view (keyboard moves can land off-screen in the full grid).
+    snapshot.menuSelectedLevelIndex = 1
+    draw()
+    transitionCallbacks[1]?.()
+    assert.deepEqual(paintCalls, [0, 1])
+    assert.equal(preview.dataset.levelIndex, '1')
+    assert.equal(rows[1]?.classList.contains('selected'), true)
+    // The fresh render already revealed index 0; the move reveals 1.
+    assert.deepEqual(scrolledTo, [0, 1])
+  } finally {
+    globalThis.document = previousDocument
+  }
+})

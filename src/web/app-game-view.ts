@@ -7,6 +7,7 @@ import {
 import { statusLine } from '../view/status-line.js'
 
 import type { GameState } from '../logic/types.js'
+import type { BoardHoverTipElements } from './app-hover.js'
 import type { ReplayProgress } from './app-model.js'
 
 export type GameViewUpdate = {
@@ -25,6 +26,7 @@ type CreateGameViewOptions = {
 export type GameView = {
   root: HTMLElement
   boardEl: HTMLElement
+  hoverTip: BoardHoverTipElements
   update: (state: GameState, view: GameViewUpdate) => void
 }
 
@@ -134,7 +136,14 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   const boardWrap = createElement(document, 'div', 'board-wrap')
   const boardEl = createElement(document, 'div', 'board')
   boardEl.setAttribute('role', 'grid')
-  boardWrap.append(boardEl)
+  // Hover chip lives next to the board, not inside it — mounting the 3D
+  // canvas clears the board element's children.
+  const hoverTipEl = createElement(document, 'div', 'board-hover-tip')
+  hoverTipEl.setAttribute('hidden', '')
+  const hoverTipCoordEl = createElement(document, 'span', 'board-hover-coord')
+  const hoverTipNamesEl = createElement(document, 'span', 'board-hover-names')
+  hoverTipEl.append(hoverTipCoordEl, hoverTipNamesEl)
+  boardWrap.append(boardEl, hoverTipEl)
 
   const referenceBackdropEl = createElement(document, 'div', 'reference-backdrop')
   referenceBackdropEl.dataset.role = 'reference-backdrop'
@@ -225,6 +234,11 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   return {
     root,
     boardEl,
+    hoverTip: {
+      root: hoverTipEl,
+      coord: hoverTipCoordEl,
+      names: hoverTipNamesEl,
+    },
     update: (state: GameState, view: GameViewUpdate): void => {
       const { showReferenceDialog, replay, canUndo } = view
       // Verbs the command layer would drop are disabled instead of left
@@ -258,6 +272,9 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
         showReferenceDialog ? 'true' : 'false',
       )
       referenceBackdropEl.toggleAttribute('hidden', !showReferenceDialog)
+      // The modal dialog sits over the board — a parked cursor's tip would
+      // linger underneath it otherwise.
+      if (showReferenceDialog) hoverTipEl.setAttribute('hidden', '')
       if (state.width !== lastBoardWidth || state.height !== lastBoardHeight) {
         lastBoardWidth = state.width
         lastBoardHeight = state.height

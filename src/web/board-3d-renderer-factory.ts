@@ -5,6 +5,7 @@ import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { createBoard3dEffects } from './board-3d-effects.js'
 import { updateLightShadowCamera } from './board-3d-ground.js'
+import { createBoardHoverVisual } from './board-3d-hover.js'
 import {
   advanceNodeGeometries,
   createBoard3dRendererMaterialStore,
@@ -106,12 +107,15 @@ export const createBoard3dRendererFactoryDeps = () => {
     createNode: (item: Item, nowMs: number, spawnDelayMs?: number, tileMask?: number): EntityNode =>
       createEntityNode(createNodeDeps, item, nowMs, spawnDelayMs, tileMask),
     effects,
+    hover: createBoardHoverVisual(world),
     camera,
     // Sprite animation advances along two paths: textured faces swap material
-    // maps, voxel meshes swap geometries. The runtime only needs the count.
+    // maps, voxel meshes swap geometries. The control-layer rim pulses on the
+    // same idle tick. The runtime only needs the count.
     advanceSpriteFrames: (frameIx: number): number =>
       materialStore.advanceSpriteFrames(frameIx) +
-      advanceNodeGeometries(nodes, frameIx),
+      advanceNodeGeometries(nodes, frameIx) +
+      materialStore.advanceYouOutline(nodes, performance.now()),
     viewController,
     disposeResources: (groundVisuals: Parameters<
       typeof disposeBoard3dRendererResources

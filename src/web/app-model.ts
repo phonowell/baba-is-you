@@ -24,6 +24,8 @@ export type ReplayProgress = {
 
 export type WebAppSnapshot = {
   mode: AppMode
+  // A slot in the menu's display order — not necessarily the level's
+  // campaign index (env.menuOrder translates between the two).
   menuSelectedLevelIndex: number
   levelIndex: number
   state: GameState
@@ -60,15 +62,34 @@ export type WebAppAction =
   | { type: 'toggle-reference-dialog' }
   | { type: 'undo' }
 
-// Reducer environment: just the campaign level list — menu select needs
-// no map lookup anymore.
+// Reducer environment: the campaign level list plus the menu's display
+// order — a permutation mapping each grid slot to its campaign level
+// index. Omitted means the menu shows campaign order verbatim.
 export type WebAppEnvironment = {
   levels: LevelData[]
+  menuOrder?: readonly number[]
 }
 
 const clampLevelIndex = (levelCount: number, index: number): number => {
   if (levelCount <= 0) return 0
   return Math.max(0, Math.min(levelCount - 1, index))
+}
+
+// Menu-facing indexes are grid slots; the campaign level behind a slot
+// resolves through the display order.
+const levelIndexForMenuIndex = (
+  env: WebAppEnvironment,
+  menuIndex: number,
+): number => env.menuOrder?.[menuIndex] ?? menuIndex
+
+// Reverse lookup — returning from a board reselects the slot that shows
+// the played level.
+const menuIndexForLevelIndex = (
+  env: WebAppEnvironment,
+  levelIndex: number,
+): number => {
+  const menuIndex = env.menuOrder?.indexOf(levelIndex) ?? -1
+  return menuIndex >= 0 ? menuIndex : levelIndex
 }
 
 export const createInitialWebAppState = (
@@ -150,11 +171,16 @@ export const reduceWebAppState = (
         showReferenceDialog: !stateData.showReferenceDialog,
       }
     case 'enter-game': {
+      // `action.index` is a menu grid slot — resolve the campaign level
+      // behind it before resetting.
       const resetState = reduceWebAppState(
         stateData,
         {
           type: 'reset-level',
-          index: clampLevelIndex(stateData.levelCount, action.index),
+          index: levelIndexForMenuIndex(
+            env,
+            clampLevelIndex(stateData.levelCount, action.index),
+          ),
         },
         env,
       )
@@ -168,7 +194,10 @@ export const reduceWebAppState = (
       return {
         ...stateData,
         mode: 'menu',
-        menuSelectedLevelIndex: stateData.levelIndex,
+        menuSelectedLevelIndex: menuIndexForLevelIndex(
+          env,
+          stateData.levelIndex,
+        ),
         history: [],
         showReferenceDialog: false,
         replay: null,

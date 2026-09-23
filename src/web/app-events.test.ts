@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  createMenuHoverHandler,
   createRootClickHandler,
   createWindowKeydownHandler,
 } from './app-events.js'
@@ -276,6 +277,98 @@ test('createRootClickHandler fires playReplay on the replay action', () => {
   } as unknown as MouseEvent)
 
   assert.equal(plays, 1)
+})
+
+test('createMenuHoverHandler selects the hovered cell in menu mode only', () => {
+  const state: MutableViewState = { mode: 'menu', showReferenceDialog: false }
+  const selected: number[] = []
+  const handler = createMenuHoverHandler({
+    viewState: createViewState(state),
+    selectLevel: (index) => {
+      selected.push(index)
+    },
+  })
+
+  const overCellIndex = (index: string): HTMLElement => {
+    const cell = new TestHTMLElement()
+    cell.dataset = { levelIndex: index }
+    const target = new TestHTMLElement()
+    target.setClosest('.menu-cell[data-level-index]', cell as unknown as Element)
+    return target as unknown as HTMLElement
+  }
+
+  handler({
+    target: overCellIndex('4'),
+    clientX: 10,
+    clientY: 10,
+  } as unknown as PointerEvent)
+
+  // Non-cell targets and non-integer indexes never select.
+  const overNothing = new TestHTMLElement()
+  overNothing.setClosest('.menu-cell[data-level-index]', null)
+  handler({
+    target: overNothing,
+    clientX: 20,
+    clientY: 20,
+  } as unknown as PointerEvent)
+  handler({
+    target: overCellIndex('x'),
+    clientX: 30,
+    clientY: 30,
+  } as unknown as PointerEvent)
+
+  // Game mode ignores hover entirely — cells aren't on screen anyway,
+  // but the mode guard is what keeps the handler cheap.
+  state.mode = 'game'
+  handler({
+    target: overCellIndex('7'),
+    clientX: 40,
+    clientY: 40,
+  } as unknown as PointerEvent)
+
+  assert.deepEqual(selected, [4])
+})
+
+test('createMenuHoverHandler ignores pointerover without real movement', () => {
+  const state: MutableViewState = { mode: 'menu', showReferenceDialog: false }
+  const selected: number[] = []
+  const handler = createMenuHoverHandler({
+    viewState: createViewState(state),
+    selectLevel: (index) => {
+      selected.push(index)
+    },
+  })
+
+  const overCellIndex = (index: string): HTMLElement => {
+    const cell = new TestHTMLElement()
+    cell.dataset = { levelIndex: index }
+    const target = new TestHTMLElement()
+    target.setClosest('.menu-cell[data-level-index]', cell as unknown as Element)
+    return target as unknown as HTMLElement
+  }
+
+  handler({
+    target: overCellIndex('4'),
+    clientX: 10,
+    clientY: 10,
+  } as unknown as PointerEvent)
+
+  // Keyboard navigation scrolled the grid: a different cell slides under
+  // the stationary pointer — same coordinates, so it must not reselect.
+  handler({
+    target: overCellIndex('9'),
+    clientX: 10,
+    clientY: 10,
+  } as unknown as PointerEvent)
+
+  // A real move to that same cell does select it.
+  handler({
+    target: overCellIndex('9'),
+    clientX: 12,
+    clientY: 10,
+  } as unknown as PointerEvent)
+
+  assert.deepEqual(selected, [4, 9])
 })
 
 test('createWindowKeydownHandler closes open dialogs on Escape only', () => {

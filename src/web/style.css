@@ -359,6 +359,43 @@ body.game-3d-fullscreen .board.board-3d {
   display: block;
 }
 
+/* Cell hover chip: quiet dark glass trailing the cursor. pointer-events
+   stay off so the board keeps owning every gesture underneath it. */
+.board-hover-tip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  /* Moves via translate3d, not left/top — keep it on its own layer so a
+     tracking cursor stays compositor work, not layout + repaint. */
+  will-change: transform;
+  pointer-events: none;
+  padding: 4px 9px;
+  border-radius: 7px;
+  background: rgb(30 42 58 / 72%);
+  color: #e8e4d8;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: min(260px, 80%);
+  box-shadow: 0 2px 8px rgb(18 24 32 / 28%);
+}
+
+.board-hover-tip[hidden],
+.board-hover-names[hidden] {
+  display: none;
+}
+
+.board-hover-coord {
+  color: #c9a86a;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Gap lives on the names side so an empty (hidden) names span leaves no
+   trailing space after the coordinate. */
+.board-hover-names {
+  margin-left: 0.6em;
+}
+
 .board::before,
 .board::after {
   content: '';
@@ -435,18 +472,6 @@ body.game-3d-fullscreen .board.board-3d {
 @keyframes menu-item-in {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: none; }
-}
-
-/* Baba-style idle wiggle: a two-frame squash-stretch flip, same rhythm as
-   the board's sprite wobble. steps(1) holds each pose for half a cycle. */
-@keyframes marker-wiggle {
-  0%, 100% { transform: scale(1, 1); }
-  50% { transform: scale(1.14, 0.86); }
-}
-
-@keyframes menu-more-pulse {
-  0%, 100% { opacity: 0.35; }
-  50% { opacity: 1; }
 }
 
 @keyframes toolbar-in {
@@ -629,7 +654,7 @@ body.game-3d-fullscreen .reference-header .btn {
 .menu-inner {
   position: relative;
   margin: auto;
-  width: min(560px, 100%);
+  width: min(880px, 100%);
   text-align: center;
 }
 
@@ -677,80 +702,162 @@ body.game-3d-fullscreen .reference-header .btn {
   text-indent: 0.34em;
 }
 
-/* Genshin menus float pill rows on the dimmed scene — no containing
-   panel, each row is its own parchment bar. */
-.menu-list {
+/* The level list is a numbered checkerboard — dense parchment tiles,
+   alternating tint on (row+col) parity like a board. */
+.menu-grid {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  /* Every level is rendered; the grid itself scrolls inside the stretched
+     column instead of windowing rows. */
+  grid-auto-rows: 54px;
   gap: 8px;
+  /* The block padding is the dissolve runway: cells travel through the
+     mask's transparent band before they join the readable grid, so a
+     resting row is never half-faded. scroll-padding keeps scrollIntoView
+     targets clear of the band too. */
+  padding: 22px 6px 22px 0;
+  scroll-padding-block: 22px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(201 168 106 / 45%) transparent;
+  /* Scrolled cells dissolve at both edges — the fade doubles as the
+     affordance that the grid continues past the fold. */
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 22px,
+    #000 calc(100% - 22px),
+    transparent 100%
+  );
 }
 
-.menu-row {
-  display: grid;
-  grid-template-columns: 18px 40px 1fr;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 18px;
-  /* Parchment pill rows like the Genshin settings list, with a faint gold
-     keyline inside the edge. */
+.menu-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.menu-grid::-webkit-scrollbar-thumb {
   border-radius: 999px;
+  background: rgb(201 168 106 / 40%);
+}
+
+.menu-cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 566 cells but ~30 on screen — skipped cells cost no paint/layout
+     work; the fixed row height makes their intrinsic size exact. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 54px;
+  /* Squared parchment tiles, same keyline the pill rows wore. */
+  border-radius: var(--radius-sm);
   background: linear-gradient(180deg, var(--cream), #e2d7bd);
-  color: var(--text);
+  color: var(--muted);
   box-shadow: inset 0 0 0 1px rgb(201 168 106 / 32%), var(--shadow-raised-soft);
   cursor: pointer;
-  text-align: left;
+  font-variant-numeric: tabular-nums;
   transition:
     transform var(--motion-duration) ease-out,
     box-shadow var(--motion-duration) ease-out,
-    color var(--motion-duration) ease-out;
+    color var(--motion-duration) ease-out,
+    opacity var(--motion-duration) ease-out;
 }
 
-.menu-row:not(.selected):hover {
+/* No recorded solution — the cell stays selectable but reads dimmed. */
+.menu-cell.no-solution {
+  opacity: 0.4;
+}
+
+/* Checkerboard parity: alternate cells sit one parchment shade deeper. */
+.menu-cell.alt {
+  background: linear-gradient(180deg, #e2d8bf, #d6c9aa);
+}
+
+.menu-cell:not(.selected):hover {
   background: linear-gradient(180deg, var(--cream-hi), var(--cream));
   color: var(--accent-dark);
   transform: translateY(-1px);
 }
 
-.menu-row.selected {
-  color: var(--accent-dark);
-  background: linear-gradient(180deg, #fbf4df, var(--cream-hi));
+.menu-cell.selected {
+  /* Lit gold plaque against the parchment grid — bright = selected,
+     dim = no-solution, so the two states never compete. */
+  color: #43340f;
+  font-weight: 700;
+  background: linear-gradient(180deg, #ecd7a8, var(--accent));
   box-shadow:
-    inset 0 0 0 1.5px var(--accent),
+    inset 0 0 0 1.5px rgb(138 109 58 / 65%),
     var(--shadow-raised-soft),
-    0 0 16px rgb(201 168 106 / 35%);
+    0 0 18px rgb(201 168 106 / 55%);
 }
 
-.menu-row .num {
-  text-align: right;
-  color: var(--muted);
+/* A selected unsolvable cell keeps the gold plaque but tarnished — the
+   selection is still unmistakable, just visibly "lesser" than a solved
+   level's bright tile. */
+.menu-cell.no-solution.selected {
+  opacity: 0.75;
 }
 
-.menu-row.selected .num {
-  color: var(--accent-dark);
+/* List and preview sit side by side: the level list scrolls its window on
+   the left while the selected board's thumbnail fills the matching height
+   on the right. */
+.menu-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  /* One height declaration owns both columns: the single row is a fixed
+     fraction of the viewport, both items stretch to it, and the full
+     level grid scrolls inside its cell — tops and bottoms can't drift. */
+  grid-template-rows: minmax(0, 1fr);
+  height: clamp(320px, 52vh, 440px);
+  gap: 16px;
+  align-items: stretch;
 }
 
-.menu-row.selected .marker {
-  color: var(--accent);
-  text-shadow: 0 0 6px rgb(201 168 106 / 70%);
-  /* Selected tile keeps the board's two-frame idle wobble. */
-  animation: marker-wiggle 480ms steps(1) infinite;
+/* Selected-level preview: a navy well beside the list, framed by the same
+   gold keyline the cells wear. Height comes from the stretched row, so
+   the panel never resizes while the selection moves. Clicking it starts
+   the level. */
+.menu-preview {
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  background: rgb(18 25 38 / 78%);
+  box-shadow:
+    inset 0 0 0 1px rgb(201 168 106 / 32%),
+    var(--shadow-raised-soft);
+  cursor: pointer;
+  transition: box-shadow var(--motion-duration) ease-out;
 }
 
-/* Edge-of-window marker: the list is a sliding window over all levels. */
-.menu-more {
-  text-align: center;
-  color: #7d8698;
-  font-size: 13px;
-  line-height: 1.2;
-  letter-spacing: 0.2em;
-  animation: menu-more-pulse 1.6s ease-in-out infinite;
+@media (hover: hover) {
+  .menu-preview:hover {
+    box-shadow:
+      inset 0 0 0 1.5px var(--accent),
+      var(--shadow-raised-soft),
+      0 0 16px rgb(201 168 106 / 30%);
+  }
 }
 
+/* The canvas absorbs whatever the fixed-height figure leaves after the
+   caption — the painter letterboxes inside. */
+.menu-preview-canvas {
+  display: block;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  border-radius: var(--radius-sm);
+  background: #1b2433;
+}
+
+/* The position readout captions the preview figure instead of standing
+   alone — same aria-live announcements, tighter margin. */
 .menu-position {
-  margin: 16px 0 0;
+  margin: 10px 2px 0;
   font-size: 13px;
   color: #a5aec0;
   letter-spacing: 0.06em;
@@ -802,31 +909,41 @@ body.game-3d-fullscreen .reference-header .btn {
   animation-delay: 150ms;
 }
 
-.menu-enter .menu-row {
+/* All levels render at once, so the stagger saturates: cells above the
+   fold wave in, deeper cells share the capped delay. */
+.menu-enter .menu-cell {
   animation: menu-item-in 260ms ease-out backwards;
-  animation-delay: calc(200ms + var(--row-i, 0) * 38ms);
+  animation-delay: min(calc(180ms + var(--row-i, 0) * 16ms), 560ms);
 }
 
-/* The ⋮ indicator keeps its idle pulse while riding the same stagger —
-   listing both animations so the pulse isn't overridden for the whole
-   menu visit. */
-.menu-enter .menu-more {
-  animation:
-    menu-item-in 260ms ease-out backwards,
-    menu-more-pulse 1.6s ease-in-out infinite;
-  animation-delay:
-    calc(200ms + var(--row-i, 0) * 38ms),
-    0s;
-}
-
-.menu-enter .menu-position {
+.menu-enter .menu-preview {
   animation: menu-item-in 260ms ease-out backwards;
-  animation-delay: calc(280ms + var(--rows, 10) * 38ms);
+  animation-delay: 560ms;
 }
 
 .menu-enter .menu-hints {
   animation: menu-item-in 260ms ease-out backwards;
-  animation-delay: calc(340ms + var(--rows, 10) * 38ms);
+  animation-delay: 620ms;
+}
+
+/* Narrow windows: preview leads as the compact "current level" card,
+   the grid keeps full width underneath with its own scroll bound. */
+@media (max-width: 720px) {
+  .menu-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    height: auto;
+  }
+  .menu-preview {
+    order: -1;
+  }
+  .menu-preview-canvas {
+    flex: none;
+    height: clamp(140px, 22vh, 180px);
+  }
+  .menu-grid {
+    max-height: 44vh;
+  }
 }
 
 ::selection {

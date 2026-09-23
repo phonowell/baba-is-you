@@ -60,8 +60,10 @@ type ContextOptions = {
 
 const createContext = (options: ContextOptions = {}) => {
   const commands: GameCommand[] = []
+  const hovers: Array<{ board: HTMLElement; x: number; y: number }> = []
   let marks = 0
   let buzzes = 0
+  let hoverEnds = 0
   const state = { mode: options.mode ?? 'game' }
   const handlers = createAppPointerHandlers({
     viewState: {
@@ -82,10 +84,17 @@ const createContext = (options: ContextOptions = {}) => {
     onHandledAction: () => {
       buzzes += 1
     },
+    onBoardHover: (board, x, y) => {
+      hovers.push({ board, x, y })
+    },
+    onBoardHoverEnd: () => {
+      hoverEnds += 1
+    },
   })
   return {
     handlers,
     commands,
+    hovers,
     setMode: (mode: 'menu' | 'game') => {
       state.mode = mode
     },
@@ -94,6 +103,9 @@ const createContext = (options: ContextOptions = {}) => {
     },
     get buzzes() {
       return buzzes
+    },
+    get hoverEnds() {
+      return hoverEnds
     },
   }
 }
@@ -229,4 +241,53 @@ test('a mode change mid-drag invalidates the gesture instead of retargeting it',
   handlers.onPointerUp(pointerEvent({ clientX: 100, clientY: 40 }))
 
   assert.deepEqual(commands, [])
+})
+
+test('hover reports the board cell while no press is captured', () => {
+  const ctx = createContext()
+
+  ctx.handlers.onPointerMove(pointerEvent({ clientX: 33, clientY: 44 }))
+
+  assert.equal(ctx.hovers.length, 1)
+  assert.equal(ctx.hovers[0]?.board, boardEl)
+  assert.deepEqual({ x: ctx.hovers[0]?.x, y: ctx.hovers[0]?.y }, { x: 33, y: 44 })
+  assert.equal(ctx.hoverEnds, 0)
+})
+
+test('hover stays quiet for touch moves, off-board moves, and the menu', () => {
+  const ctx = createContext()
+
+  ctx.handlers.onPointerMove(pointerEvent({ pointerType: 'touch' }))
+  ctx.handlers.onPointerMove(pointerEvent({ target: offSurface() }))
+
+  const menuCtx = createContext({ mode: 'menu' })
+  menuCtx.handlers.onPointerMove(pointerEvent())
+
+  assert.equal(ctx.hovers.length, 0)
+  assert.equal(menuCtx.hovers.length, 0)
+  assert.equal(ctx.hoverEnds, 2)
+})
+
+test('a swipe consumes the gesture and ends hover reporting', () => {
+  const ctx = createContext()
+
+  ctx.handlers.onPointerMove(pointerEvent({ clientX: 30, clientY: 30 }))
+  ctx.handlers.onPointerDown(pointerEvent({ clientX: 30, clientY: 30 }))
+  // Below-threshold drag: no hover reports while a press is captured.
+  ctx.handlers.onPointerMove(pointerEvent({ clientX: 38, clientY: 32 }))
+  ctx.handlers.onPointerMove(pointerEvent({ clientX: 90, clientY: 34 }))
+  ctx.handlers.onPointerUp(pointerEvent({ clientX: 90, clientY: 34 }))
+
+  assert.equal(ctx.hovers.length, 1)
+  assert.equal(ctx.hoverEnds, 1)
+  assert.deepEqual(ctx.commands, [{ type: 'move', direction: 'right' }])
+})
+
+test('pointerleave ends hover', () => {
+  const ctx = createContext()
+
+  ctx.handlers.onPointerMove(pointerEvent())
+  ctx.handlers.onPointerLeave()
+
+  assert.equal(ctx.hoverEnds, 1)
 })

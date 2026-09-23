@@ -48,10 +48,10 @@ export const mapGameKeyboardEvent = (
   }
 }
 
-// Menu list navigation: W/S and arrows step the selection, A/D and
-// left/right page a window at a time, Enter/Space starts the highlighted
-// level. The command layer reuses the shared direction verbs — the menu
-// interprets `move` as list navigation.
+// Menu grid navigation: WASD/arrows step the selection (rows via
+// up/down), PgUp/PgDn page several rows at once, Enter/Space starts the
+// highlighted level. The command layer reuses the shared direction
+// verbs — the menu interprets `move` as grid navigation.
 export const mapMenuKeyboardEvent = (
   event: BrowserKeyboardEvent,
 ): GameCommand => {
@@ -70,6 +70,10 @@ export const mapMenuKeyboardEvent = (
     case 'ArrowRight':
     case 'd':
       return { type: 'move', direction: 'right' }
+    case 'PageUp':
+      return { type: 'page', direction: 'up' }
+    case 'PageDown':
+      return { type: 'page', direction: 'down' }
     case 'n':
     case 'Enter':
     case ' ':

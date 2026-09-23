@@ -95,6 +95,41 @@ export const createRootClickHandler = (
   }
 }
 
+type MenuHoverHandlerContext = {
+  viewState: AppEventViewState
+  // Hover moves the highlight (and the preview with it) but never starts
+  // a level — entering still needs a click or Enter.
+  selectLevel: (index: number) => void
+}
+
+// Grid cells preview on hover: the pointer lands on a cell, its level
+// paints on the right — browsing the board without committing to it.
+export const createMenuHoverHandler = (
+  context: MenuHoverHandlerContext,
+): ((event: PointerEvent) => void) => {
+  const { viewState, selectLevel } = context
+  // Keyboard/gamepad navigation scrolls the grid under a stationary
+  // pointer, which fires pointerover on whatever cell slides beneath it —
+  // with unchanged client coordinates. Only a real pointer move may steal
+  // the selection, so the last seen position gates every event.
+  let lastX = Number.NaN
+  let lastY = Number.NaN
+
+  return (event: PointerEvent): void => {
+    if (viewState.getMode() !== 'menu') return
+    if (event.clientX === lastX && event.clientY === lastY) return
+    lastX = event.clientX
+    lastY = event.clientY
+
+    const target = event.target
+    if (!(target instanceof HTMLElement)) return
+
+    const cell = target.closest<HTMLElement>('.menu-cell[data-level-index]')
+    const index = Number(cell?.dataset.levelIndex)
+    if (cell && Number.isInteger(index)) selectLevel(index)
+  }
+}
+
 type WindowKeydownHandlerContext = {
   viewState: AppEventViewState
   closeReferenceDialog: () => void

@@ -1,4 +1,5 @@
 import {
+  BackSide,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
@@ -11,12 +12,14 @@ import {
 } from 'three'
 
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
+import { BOARD3D_RULE_VISUAL_CONFIG } from './board-3d-config-visuals.js'
 import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
 import {
   cardSpecForItem,
   fxColorsForSpec,
   orientedSpriteForSpec,
 } from './board-3d-shared-item.js'
+import { youOutlinePulse } from './board-3d-shared-math.js'
 import { createCardTextures, getToonGradientMap } from './board-3d-textures.js'
 import { autotileAppliesTo, autotileSprite } from './pixel-sprites/autotile.js'
 import {
@@ -73,6 +76,11 @@ const VOXEL_SHADE = {
   back: VOXEL_SHADE_BACK,
 }
 
+const {
+  YOU_OUTLINE_SCALE,
+  YOU_OUTLINE_SCALE_SWELL,
+} = BOARD3D_RULE_VISUAL_CONFIG
+
 // The whole sprite grid in cell units — the draw rect every ground-hug tile
 // shares so 24px of sprite art always lands on the same world-space spot.
 const FULL_GRID_BOUNDS = {
@@ -88,6 +96,8 @@ const FULL_GRID_BOUNDS = {
 // board and turn with the item's direction; flat visuals leave it undefined
 // and keep the camera-facing card orientation. fxColors feeds spawn/despawn
 // particle bursts — fully spec-derived, so it rides the same cache entry.
+// The rim shell paints in the card's own palette turned negative: per-spec
+// material + the base/inverse endpoints the idle pulse lerps between.
 export type EntityVisual = {
   key: string
   geometry: BufferGeometry
@@ -95,6 +105,16 @@ export type EntityVisual = {
   frameGeometries: BufferGeometry[]
   facingYaw: number | undefined
   fxColors: readonly string[]
+  outlineMaterial: MeshBasicMaterial
+  outlineTint: EntityOutlineTint
+}
+
+// The rim's pulse endpoints: the card's representative colour and its sRGB
+// channel complement — the outline breathes between the card colour and
+// its photographic negative.
+export type EntityOutlineTint = {
+  base: Color
+  inverse: Color
 }
 
 type CreateBoard3dRendererMaterialStoreArgs = {
@@ -122,11 +142,12 @@ export const advanceFrameMaps = <M extends { map: unknown }, T>(
 // Voxel nodes animate by swapping geometry rather than texture maps; only
 // nodes with multi-frame lists ever change. Each node reads the shared tick
 // through its own frame offset, so cards wobble out of phase with each
-// other. Kept DOM-free for tests.
+// other. The outline shell rides the same swap or a you-card's rim would
+// keep showing last frame's silhouette. Kept DOM-free for tests.
 export const advanceNodeGeometries = (
   nodes: ReadonlyMap<
     number,
-    Pick<EntityNode, 'mesh' | 'frameGeometries' | 'idleFrameOffset'>
+    Pick<EntityNode, 'mesh' | 'outline' | 'frameGeometries' | 'idleFrameOffset'>
   >,
   frameIx: number,
 ): number => {
@@ -137,6 +158,7 @@ export const advanceNodeGeometries = (
     const next = frames[(frameIx + node.idleFrameOffset) % frames.length]
     if (next !== undefined && node.mesh.geometry !== next) {
       node.mesh.geometry = next
+      node.outline.geometry = next
       changed += 1
     }
   }
@@ -148,6 +170,15 @@ export type Board3dRendererMaterialStore = {
   // Swaps every animated material to the given frame; returns how many
   // materials actually changed so the runtime can skip idle renders.
   advanceSpriteFrames: (frameIx: number) => number
+  // Breaths the control-layer rim on the idle tick: each visible shell
+  // lerps its per-spec material between the card colour and its inverse
+  // and swells, all on one shared phase. Returns how many rims are visible
+  // so the runtime renders only when the pulse actually has something to
+  // move.
+  advanceYouOutline: (
+    nodes: ReadonlyMap<number, Pick<EntityNode, 'outline' | 'outlineTint'>>,
+    nowMs: number,
+  ) => number
   dispose: () => void
 }
 
@@ -269,6 +300,38 @@ export const createBoard3dRendererMaterialStore = (
     emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
     emissiveIntensity: preset.materials.objectEmissiveIntensity,
   })
+  // BackSide shell materials for control-layer cards, one per spec: the
+  // inflated copy peeks past the card's silhouette and shows as a rim.
+  // Tinted the card colour's sRGB complement — the pulse lerps it back to
+  // the card colour on the shared wave, so the rim breathes between the
+  // card and its negative. Unlit and unfogged so the rim reads in every
+  // light and in the hazed far rows.
+  const outlineCache = new Map<
+    string,
+    { outlineMaterial: MeshBasicMaterial; outlineTint: EntityOutlineTint }
+  >()
+  const outlineForSpec = (
+    spec: ReturnType<typeof cardSpecForItem>,
+    cardColors: readonly string[],
+  ): { outlineMaterial: MeshBasicMaterial; outlineTint: EntityOutlineTint } => {
+    const cached = outlineCache.get(spec.key)
+    if (cached) return cached
+    // The rim's "card colour" is the same representative colour the spawn
+    // bursts lead with — palette head for sprites, plate background else.
+    const base = new Color(cardColors[0] ?? spec.background)
+    const inverse = new Color(base.getHex() ^ 0xffffff)
+    const outlineMaterial = new MeshBasicMaterial({
+      color: inverse,
+      side: BackSide,
+      fog: false,
+    })
+    const entry = {
+      outlineMaterial,
+      outlineTint: { base, inverse },
+    }
+    outlineCache.set(spec.key, entry)
+    return entry
+  }
   const voxelInnerSize = CARD_WORLD_SIZE * VOXEL_INNER_SIZE_RATIO
   // Plates are silhouette cards too: same depth as the sprite slab
   // (frame layer + back slices, at the canonical 24-texel frame width).
@@ -413,13 +476,15 @@ export const createBoard3dRendererMaterialStore = (
     })
     const geometry = frameGeometries[0]
     if (!geometry) throw new Error(`No voxel geometry for ${spec.key}.`)
+    const fxColors = fxColorsForSpec(spec)
     return {
       key: `vox:${spec.key}${tileMask ? `:${tileMask}` : ''}`,
       geometry,
       material: voxelMaterial,
       frameGeometries,
       facingYaw: rotates && facing ? FACING_YAW[facing] : undefined,
-      fxColors: fxColorsForSpec(spec),
+      fxColors,
+      ...outlineForSpec(spec, fxColors),
     }
   }
 
@@ -438,13 +503,15 @@ export const createBoard3dRendererMaterialStore = (
       ]
       plateMaterialCache.set(key, material)
     }
+    const fxColors = fxColorsForSpec(spec)
     return {
       key,
       geometry: plateGeometry,
       material,
       frameGeometries: [],
       facingYaw: undefined,
-      fxColors: fxColorsForSpec(spec),
+      fxColors,
+      ...outlineForSpec(spec, fxColors),
     }
   }
 
@@ -474,6 +541,28 @@ export const createBoard3dRendererMaterialStore = (
   const advanceSpriteFrames = (frameIx: number): number =>
     advanceFrameMaps(animatedFrames, frameIx)
 
+  const advanceYouOutline = (
+    nodes: ReadonlyMap<number, Pick<EntityNode, 'outline' | 'outlineTint'>>,
+    nowMs: number,
+  ): number => {
+    const wave = youOutlinePulse(nowMs)
+    const scale = YOU_OUTLINE_SCALE * (1 + wave * YOU_OUTLINE_SCALE_SWELL)
+    let visible = 0
+    for (const node of nodes.values()) {
+      if (!node.outline.visible) continue
+      node.outline.scale.setScalar(scale)
+      // Same-spec cards share the rim material — re-lerping it with the
+      // same wave is idempotent, so per-node writes need no dedupe.
+      node.outline.material.color.lerpColors(
+        node.outlineTint.inverse,
+        node.outlineTint.base,
+        wave,
+      )
+      visible += 1
+    }
+    return visible
+  }
+
   const dispose = (): void => {
     for (const material of materialCache.values()) material.dispose()
     materialCache.clear()
@@ -486,6 +575,8 @@ export const createBoard3dRendererMaterialStore = (
     geometryCache.clear()
     for (const material of edgeMaterialCache.values()) material.dispose()
     edgeMaterialCache.clear()
+    for (const entry of outlineCache.values()) entry.outlineMaterial.dispose()
+    outlineCache.clear()
     plateMaterialCache.clear()
     visualCache.clear()
     voxelMaterial.dispose()
@@ -495,6 +586,7 @@ export const createBoard3dRendererMaterialStore = (
   return {
     getVisual,
     advanceSpriteFrames,
+    advanceYouOutline,
     dispose,
   }
 }

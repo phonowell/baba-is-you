@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { MeshToonMaterial } from 'three'
+import { BackSide, MeshToonMaterial } from 'three'
 
 import { advanceFrameMaps, createBoard3dRendererMaterialStore } from './board-3d-renderer-materials.js'
 import { BOARD3D_VOXEL_CONFIG } from './board-3d-config-voxel.js'
@@ -100,6 +100,25 @@ test('getVisual reuses one entity visual per item signature', () => {
     objectItem('baba', { id: 4, dir: 'left', props: ['you'] }),
   )
   assert.notEqual(otherDir, first)
+  store.dispose()
+})
+
+test('visuals carry a back-side rim shell tinted the card colour inverse', () => {
+  const store = createStore()
+  const visual = store.getVisual(objectItem('baba', { id: 1, props: ['you'] }))
+  // BackSide + inflation is what makes the shell render as a rim; the tint
+  // is the card palette's sRGB negative — baba's leading white inverts to
+  // black, and the pulse breathes between the two on the shared wave.
+  assert.equal(visual.outlineMaterial.side, BackSide)
+  assert.equal(visual.outlineMaterial.fog, false)
+  assert.equal(visual.outlineTint.base.getHex(), 0xffffff)
+  assert.equal(visual.outlineTint.inverse.getHex(), 0x000000)
+  assert.equal(visual.outlineMaterial.color.getHex(), 0x000000)
+
+  // A different spec gets its own rim material — rim colours are card
+  // colours, not one shared hue.
+  const other = store.getVisual(objectItem('rock', { id: 2, props: [] }))
+  assert.notEqual(other.outlineMaterial, visual.outlineMaterial)
   store.dispose()
 })
 

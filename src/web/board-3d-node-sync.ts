@@ -23,6 +23,7 @@ import {
   computeEntityBaseTarget,
 } from './board-3d-shared-layout.js'
 import { collectOverriddenTextIds } from '../logic/rules-override.js'
+import { isYouLike } from '../logic/step/shared.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
 import { autotileMaskForItem, buildAutotileCells } from './board-3d-autotile.js'
 
@@ -177,9 +178,13 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       node.specKey = visual.key
       node.mesh.material = visual.material
       node.mesh.geometry = visual.geometry
+      node.outline.geometry = visual.geometry
+      node.outline.material = visual.outlineMaterial
+      node.outlineTint = visual.outlineTint
       node.frameGeometries = visual.frameGeometries
     }
     const groundHug = isGroundHugItem(item)
+    node.outline.visible = isYouLike(item)
     node.idleStretch = idleStretchEnabledForItem(item)
     node.idleFloat = idleFloatEnabledForItem(item)
     node.idlePhaseOffsetMs = idlePhaseOffsetMsForItem(item)

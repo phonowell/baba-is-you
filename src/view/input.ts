@@ -7,6 +7,8 @@ export type GameCommand =
   | { type: 'undo' }
   | { type: 'restart' }
   | { type: 'next' }
+  // Menu-only verb: jumps a full grid window instead of stepping a cell.
+  | { type: 'page'; direction: 'up' | 'down' }
   | { type: 'back' }
   | { type: 'noop' }
 
@@ -50,8 +52,8 @@ export const GAME_CONTROLS: readonly GameControlEntry[] = [
 ]
 
 export const MENU_CONTROLS: readonly GameControlEntry[] = [
-  { keys: 'W/S or ↑/↓', action: 'select' },
-  { keys: 'A/D or ←/→', action: 'page' },
+  { keys: 'WASD/Arrows', action: 'select' },
+  { keys: 'PgUp/PgDn', action: 'page' },
   { keys: 'Enter/N or Click', action: 'start' },
 ]
 

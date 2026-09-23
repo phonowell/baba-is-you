@@ -11,7 +11,10 @@ import type {
 } from 'three'
 
 import type { Item } from '../logic/types.js'
-import type { EntityVisual } from './board-3d-renderer-materials.js'
+import type {
+  EntityOutlineTint,
+  EntityVisual,
+} from './board-3d-renderer-materials.js'
 
 export type CardMaterial = MeshToonMaterial | MeshBasicMaterial
 export type EntityMaterial = Material | Material[]
@@ -24,6 +27,16 @@ export type NodePulseKind = 'hop' | 'slump'
 
 export type EntityNode = {
   mesh: EntityMesh
+  // Inverted-hull rim child of `mesh`: same geometry, per-spec BackSide
+  // material tinted the card colour's inverse, inflated by
+  // YOU_OUTLINE_SCALE — visible only while the item sits on a control
+  // layer (you/you2/3d). Geometry tracks the mesh's (spec swaps and idle
+  // frame steps) so the rim never lags a pose; the idle tick pulses its
+  // scale and tint in lockstep across the board.
+  outline: Mesh<BufferGeometry, MeshBasicMaterial>
+  // Card colour and its inverse — cached per spec like fxColors so the
+  // pulse lerp needs no spec lookup at tick time.
+  outlineTint: EntityOutlineTint
   shadow: Mesh<PlaneGeometry, MeshBasicMaterial>
   shadowMaterial: MeshBasicMaterial
   specKey: string

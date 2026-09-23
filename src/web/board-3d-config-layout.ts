@@ -18,6 +18,13 @@ export const BOARD3D_LAYOUT_CONFIG = {
   // world-space, so these read directly off the board.
   CELL_GRID_DASH_SIZE: 0.08,
   CELL_GRID_GAP_SIZE: 0.05,
+  // Pointer-hover cell marker: a soft inset fill sitting just above the
+  // ground-hug tile layer (-0.219 + 0.001 per stacked tile), quiet enough
+  // to read as a tint rather than an overlay.
+  HOVER_CELL_Z: -0.216,
+  HOVER_CELL_HALF_SIZE: 0.46,
+  HOVER_CELL_COLOR: '#fdf3c8',
+  HOVER_CELL_OPACITY: 0.2,
   PLAY_AREA_CORNER_RADIUS: 0.34,
   CARD_FACE_CAMERA_BLEND: 0.55,
   TEXTURE_ANISOTROPY_CAP: 8,

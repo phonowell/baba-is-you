@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import {
+  Color,
   Group,
   Mesh,
   MeshBasicMaterial,
@@ -34,6 +35,13 @@ import type { EntityNode } from './board-3d-node-types.js'
 const EPSILON = 1e-6
 
 const { CARD_FACE_CAMERA_BLEND } = BOARD3D_LAYOUT_CONFIG
+
+// Rim shell fields every EntityVisual stub needs — opaque to these tests.
+const stubOutlineMaterial = new MeshBasicMaterial()
+const stubOutlineTint = {
+  base: new Color(0x112233),
+  inverse: new Color(0xeeddcc),
+}
 
 const createCamera = (): PerspectiveCamera => {
   const camera = new PerspectiveCamera(50, 1, 0.1, 180)
@@ -221,6 +229,8 @@ const createSyncNode = (entityGroup: Group) => {
           frameGeometries: [],
           facingYaw: undefined,
           fxColors: [],
+          outlineMaterial: stubOutlineMaterial,
+          outlineTint: stubOutlineTint,
         }),
       },
       item,
@@ -246,6 +256,8 @@ test('board-3d sync orients a spawned upright card toward the camera', () => {
         frameGeometries: [],
         facingYaw: undefined,
         fxColors: [],
+        outlineMaterial: stubOutlineMaterial,
+        outlineTint: stubOutlineTint,
       }),
       createNode: createSyncNode(entityGroup),
       camera,
@@ -274,6 +286,8 @@ test('board-3d pose keeps a moving card tilted at the camera', () => {
       frameGeometries: [],
       facingYaw: undefined,
       fxColors: [],
+      outlineMaterial: stubOutlineMaterial,
+      outlineTint: stubOutlineTint,
     }),
     createNode: createSyncNode(entityGroup),
     camera,
@@ -326,6 +340,8 @@ test('board-3d volume model eases into a new facing instead of snapping', () => 
       frameGeometries: [],
       facingYaw,
       fxColors: [],
+      outlineMaterial: stubOutlineMaterial,
+      outlineTint: stubOutlineTint,
     }),
     createNode: createSyncNode(entityGroup),
     camera,

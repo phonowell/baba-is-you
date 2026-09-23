@@ -21,7 +21,9 @@ const normalizeTitle = (title: string): string =>
 const titleKey = (level: LevelData): string =>
   `${normalizeTitle(level.title)}|${level.width}x${level.height}`
 
-const itemSignature = (level: LevelData): string =>
+// Exported for the golden store's loadedForLevel signature fallback —
+// the binding itself is a build-time/test-side tool now.
+export const itemSignature = (level: LevelData): string =>
   [
     ...new Set(
       level.items.map(

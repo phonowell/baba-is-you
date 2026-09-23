@@ -8,6 +8,7 @@ import {
 import {
   BOARD3D_LAYOUT_CONFIG,
 } from './board-3d-config-layout.js'
+import { BOARD3D_RULE_VISUAL_CONFIG } from './board-3d-config-visuals.js'
 import { BOARD3D_SHADOW_CONFIG } from './board-3d-config-shadow.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
 import {
@@ -18,6 +19,8 @@ import {
   idlePhaseOffsetMsForItem,
   idleStretchEnabledForItem,
 } from './board-3d-shared-item.js'
+
+import { isYouLike } from '../logic/step/shared.js'
 
 import type { Item } from '../logic/types.js'
 import type { CreateEntityNodeDeps, EntityNode } from './board-3d-node-types.js'
@@ -37,6 +40,10 @@ const {
   MOVE_ANIM_MS,
 } = BOARD3D_ANIMATION_CONFIG
 
+const {
+  YOU_OUTLINE_SCALE,
+} = BOARD3D_RULE_VISUAL_CONFIG
+
 export const createEntityNode = (
   deps: CreateEntityNodeDeps,
   item: Item,
@@ -51,6 +58,15 @@ export const createEntityNode = (
   mesh.castShadow = true
   mesh.receiveShadow = true
   entityGroup.add(mesh)
+
+  // Child of the card mesh: inherits every pose/scale/orientation write the
+  // pose pass makes, so the rim tracks moves, wobble swaps and spawn/despawn
+  // tweens for free. The idle tick pulses its scale/tint; hidden until sync
+  // marks the item as a control layer.
+  const outline = new Mesh(visual.geometry, visual.outlineMaterial)
+  outline.scale.setScalar(YOU_OUTLINE_SCALE)
+  outline.visible = isYouLike(item)
+  mesh.add(outline)
 
   const shadowMaterial = new MeshBasicMaterial({
     map: shadowTexture,
@@ -69,6 +85,8 @@ export const createEntityNode = (
 
   return {
     mesh,
+    outline,
+    outlineTint: visual.outlineTint,
     shadow,
     shadowMaterial,
     specKey: visual.key,

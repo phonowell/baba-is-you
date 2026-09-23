@@ -58,6 +58,26 @@ test('enter-game starts the selected level and return-to-menu keeps it selected'
   assert.equal(state.menuSelectedLevelIndex, 1)
 })
 
+test('menuOrder translates between grid slots and campaign levels', () => {
+  // Display order swaps the two campaign levels: slot 0 shows level 1.
+  const store = createWebAppStore({ levels, menuOrder: [1, 0] })
+
+  store.dispatch({ type: 'enter-game', index: 0 })
+  assert.equal(store.getState().levelIndex, 1)
+  assert.equal(store.getState().state.title, 'Two')
+
+  // Back on the menu the slot showing the played level is selected.
+  store.dispatch({ type: 'return-to-menu' })
+  assert.equal(store.getState().menuSelectedLevelIndex, 0)
+
+  // Slot 1 shows campaign level 0 — enter resolves it the same way.
+  store.dispatch({ type: 'enter-game', index: 1 })
+  assert.equal(store.getState().levelIndex, 0)
+  assert.equal(store.getState().state.title, 'One')
+  store.dispatch({ type: 'return-to-menu' })
+  assert.equal(store.getState().menuSelectedLevelIndex, 1)
+})
+
 test('menu-mode ignores game actions; game-mode ignores selection moves', () => {
   const store = createWebAppStore(env)
   const inMenu = store.getState()
@@ -75,13 +95,24 @@ test('menu-mode ignores game actions; game-mode ignores selection moves', () => 
 test('mapGameCommandToAction routes menu-mode commands', () => {
   const state = createWebAppStore(env).getState()
 
+  // Two levels form a single row — horizontal steps move (and wrap at
+  // the end), while vertical/page steps wrap onto the same cell and map
+  // to no action.
   assert.deepEqual(
-    mapGameCommandToAction({ type: 'move', direction: 'down' }, state),
+    mapGameCommandToAction({ type: 'move', direction: 'right' }, state),
     { type: 'select-menu-level', index: 1 },
   )
-  assert.deepEqual(
+  assert.equal(
+    mapGameCommandToAction({ type: 'move', direction: 'down' }, state),
+    null,
+  )
+  assert.equal(
     mapGameCommandToAction({ type: 'move', direction: 'up' }, state),
-    { type: 'select-menu-level', index: -1 },
+    null,
+  )
+  assert.equal(
+    mapGameCommandToAction({ type: 'page', direction: 'down' }, state),
+    null,
   )
   assert.deepEqual(mapGameCommandToAction({ type: 'enter' }, state), {
     type: 'enter-game',
@@ -94,6 +125,59 @@ test('mapGameCommandToAction routes menu-mode commands', () => {
   assert.equal(mapGameCommandToAction({ type: 'wait' }, state), null)
   assert.equal(mapGameCommandToAction({ type: 'undo' }, state), null)
   assert.equal(mapGameCommandToAction({ type: 'back' }, state), null)
+})
+
+test('mapGameCommandToAction wraps menu navigation at the list ends', () => {
+  const base = createWebAppStore(env).getState()
+  // 30 levels = six full rows of MENU_GRID_COLUMNS (5).
+  const state = { ...base, levelCount: 30 }
+  const at = (index: number) => ({ ...state, menuSelectedLevelIndex: index })
+
+  // Horizontal wrap: stepping past either end re-enters on the far side.
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'move', direction: 'left' }, state),
+    { type: 'select-menu-level', index: 29 },
+  )
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'move', direction: 'right' }, at(29)),
+    { type: 'select-menu-level', index: 0 },
+  )
+
+  // Vertical wrap stays inside the same column.
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'move', direction: 'up' }, state),
+    { type: 'select-menu-level', index: 25 },
+  )
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'move', direction: 'down' }, at(25)),
+    { type: 'select-menu-level', index: 0 },
+  )
+
+  // Page jumps wrap by whole rows inside the column.
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'page', direction: 'down' }, state),
+    { type: 'select-menu-level', index: 20 },
+  )
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'page', direction: 'up' }, at(10)),
+    { type: 'select-menu-level', index: 20 },
+  )
+
+  // A short last row shrinks only the columns that reach it: index 27
+  // (column 2 of 28 levels) still has six rows, while column 4 has five.
+  const partial = { ...state, levelCount: 28 }
+  const atPartial = (index: number) => ({
+    ...partial,
+    menuSelectedLevelIndex: index,
+  })
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'move', direction: 'down' }, atPartial(27)),
+    { type: 'select-menu-level', index: 2 },
+  )
+  assert.deepEqual(
+    mapGameCommandToAction({ type: 'move', direction: 'down' }, atPartial(24)),
+    { type: 'select-menu-level', index: 4 },
+  )
 })
 
 test('mapGameCommandToAction routes game-mode commands', () => {
@@ -136,9 +220,9 @@ test('createWebAppController reports handled commands by real state change', () 
   const store = createWebAppStore(env)
   const controller = createWebAppController({ store })
 
-  // Menu mode: the down arrow selects level 2 (a real change), a noop
+  // Menu mode: the right arrow selects level 2 (a real change), a noop
   // keypress produces no state change and is reported unhandled.
-  const moved = controller.handleGameCommand({ type: 'move', direction: 'down' })
+  const moved = controller.handleGameCommand({ type: 'move', direction: 'right' })
   const noop = controller.handleGameCommand({ type: 'noop' })
 
   assert.equal(moved, true)

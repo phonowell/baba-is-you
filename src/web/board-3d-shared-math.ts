@@ -2,6 +2,7 @@ import {
   BOARD3D_LAYOUT_CONFIG,
 } from './board-3d-config-layout.js'
 import { BOARD3D_ANIMATION_CONFIG } from './board-3d-config-animation.js'
+import { BOARD3D_RULE_VISUAL_CONFIG } from './board-3d-config-visuals.js'
 
 const {
   CARD_WORLD_SIZE,
@@ -18,6 +19,8 @@ const {
   FLOAT_DRIFT_Y_AMP,
   FLOAT_ROLL_AMP,
 } = BOARD3D_ANIMATION_CONFIG
+
+const { YOU_OUTLINE_PULSE_MS } = BOARD3D_RULE_VISUAL_CONFIG
 
 export const clamp01 = (value: number): number => Math.max(0, Math.min(1, value))
 
@@ -101,4 +104,13 @@ export const idleFloatDrift = (
   out.y = Math.sin(bobPhase) * FLOAT_DRIFT_Y_AMP
   out.roll = Math.cos(driftPhase) * FLOAT_ROLL_AMP
   return out
+}
+
+// Control-layer rim breathing, 0→1→0 over one cycle: every you-card shares
+// this phase so the whole board's outlines pulse in lockstep — the original
+// game's synced white↔pink glow — instead of shimmering per card.
+export const youOutlinePulse = (nowMs: number): number => {
+  const phase =
+    ((nowMs % YOU_OUTLINE_PULSE_MS) / YOU_OUTLINE_PULSE_MS) * Math.PI * 2
+  return 0.5 + 0.5 * Math.sin(phase)
 }

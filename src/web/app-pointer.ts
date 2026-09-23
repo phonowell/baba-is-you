@@ -15,6 +15,9 @@ export type AppPointerEvent = {
   clientY: number
   target: EventTarget | null
   preventDefault: () => void
+  // Optional so test fixtures stay small; touch is the only type filtered
+  // out of hover reporting.
+  pointerType?: string
 }
 
 type AppPointerHandlerContext = {
@@ -28,6 +31,11 @@ type AppPointerHandlerContext = {
   mapViewportDelta?: (dx: number, dy: number) => { dx: number; dy: number }
   // Haptics etc. — fired only when a command actually advanced the game.
   onHandledAction?: () => void
+  // Cell hover: reported only while no press is captured, so a swipe
+  // never reads as hover. `onBoardHoverEnd` fires when the pointer moves
+  // off the board, the mode/dialog blocks hover, or a drag consumes it.
+  onBoardHover?: (board: HTMLElement, clientX: number, clientY: number) => void
+  onBoardHoverEnd?: () => void
 }
 
 export type AppPointerHandlers = {
@@ -35,6 +43,7 @@ export type AppPointerHandlers = {
   onPointerMove: (event: AppPointerEvent) => void
   onPointerUp: (event: AppPointerEvent) => void
   onPointerCancel: (event: AppPointerEvent) => void
+  onPointerLeave: () => void
 }
 
 const IDENTITY_DELTA = (dx: number, dy: number): { dx: number; dy: number } => ({
@@ -52,6 +61,8 @@ export const createAppPointerHandlers = (
     handleGameCommand,
     mapViewportDelta = IDENTITY_DELTA,
     onHandledAction,
+    onBoardHover,
+    onBoardHoverEnd,
   } = context
 
   let activePointerId: number | null = null
@@ -103,10 +114,32 @@ export const createAppPointerHandlers = (
     consumed = false
   }
 
+  const reportHover = (event: AppPointerEvent): void => {
+    if (
+      event.pointerType === 'touch' ||
+      viewState.getMode() !== 'game' ||
+      !boardReady()
+    ) {
+      onBoardHoverEnd?.()
+      return
+    }
+    const board = closestFromTarget(event.target, '.board')
+    if (!board) {
+      onBoardHoverEnd?.()
+      return
+    }
+    onBoardHover?.(board, event.clientX, event.clientY)
+  }
+
   const onPointerMove = (event: AppPointerEvent): void => {
+    if (activePointerId === null) {
+      reportHover(event)
+      return
+    }
     if (event.pointerId !== activePointerId || consumed) return
     if (viewState.getMode() !== 'game' || !boardReady()) {
       resetDrag()
+      onBoardHoverEnd?.()
       return
     }
     const { dx, dy } = mapViewportDelta(
@@ -115,6 +148,8 @@ export const createAppPointerHandlers = (
     )
     if (Math.max(Math.abs(dx), Math.abs(dy)) < SWIPE_MIN_PX) return
     consumed = true
+    // The press turned into a swipe — drop the parked hover marker.
+    onBoardHoverEnd?.()
     dispatchGameCommand(mapBoardGesture({ dx, dy }))
   }
 
@@ -133,6 +168,11 @@ export const createAppPointerHandlers = (
 
   const onPointerCancel = (event: AppPointerEvent): void => {
     if (event.pointerId === activePointerId) resetDrag()
+    onBoardHoverEnd?.()
+  }
+
+  const onPointerLeave = (): void => {
+    onBoardHoverEnd?.()
   }
 
   return {
@@ -140,5 +180,6 @@ export const createAppPointerHandlers = (
     onPointerMove,
     onPointerUp,
     onPointerCancel,
+    onPointerLeave,
   }
 }

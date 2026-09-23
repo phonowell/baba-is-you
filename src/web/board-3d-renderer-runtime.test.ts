@@ -81,6 +81,7 @@ const createNode = (): EntityNode =>
       scale: { set: () => undefined },
     },
     shadowMaterial: { opacity: 1, dispose: () => undefined },
+    outline: { visible: false },
     idleStretch: false,
     idleFloat: false,
     idlePhaseOffsetMs: 0,
@@ -119,6 +120,8 @@ const createRuntime = (overrides: {
   viewUpdateViewport?: RuntimeArgs['viewController']['updateViewport']
   entityGroup?: RuntimeArgs['entityGroup']
   effects?: RuntimeArgs['effects']
+  hover?: RuntimeArgs['hover']
+  pickCell?: RuntimeArgs['pickCell']
   requestFrame?: RuntimeArgs['requestFrame']
   cancelFrame?: RuntimeArgs['cancelFrame']
   advanceSpriteFrames?: RuntimeArgs['advanceSpriteFrames']
@@ -168,6 +171,8 @@ const createRuntime = (overrides: {
     args.applyNodePoseStep = overrides.applyNodePoseStep
   if (overrides.syncNodes) args.syncNodes = overrides.syncNodes
   if (overrides.effects) args.effects = overrides.effects
+  if (overrides.hover) args.hover = overrides.hover
+  if (overrides.pickCell) args.pickCell = overrides.pickCell
   args.requestFrame =
     overrides.requestFrame ??
     ((callback: FrameRequestCallback) => {
@@ -1067,4 +1072,123 @@ test('board-3d runtime clears board effects on unmount and disposes with the ren
   runtime.mount(container)
   runtime.dispose()
   assert.equal(calls.dispose, 1)
+})
+
+type HoverStub = {
+  calls: { setCell: Array<[number, number]>; clears: number; disposes: number }
+  hover: NonNullable<RuntimeArgs['hover']>
+}
+
+const createHoverStub = (): HoverStub => {
+  const calls: HoverStub['calls'] = { setCell: [], clears: 0, disposes: 0 }
+  return {
+    calls,
+    hover: {
+      setCell: (x, y) => {
+        calls.setCell.push([x, y])
+      },
+      clear: () => {
+        calls.clears += 1
+      },
+      dispose: () => {
+        calls.disposes += 1
+      },
+    },
+  }
+}
+
+const HOVER_RECT = { left: 0, top: 0, width: 640, height: 480 }
+
+test('board-3d runtime marks the picked cell and renders one frame', () => {
+  const { calls, hover } = createHoverStub()
+  const callbacks: FrameRequestCallback[] = []
+  const runtime = createRuntime({
+    hover,
+    pickCell: () => ({ x: 2, y: 3 }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+    syncNodes: () => undefined,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  runtime.sync(createState(5, 5))
+  // Drain the mount frame so the next schedule is observable.
+  callbacks.shift()?.(16)
+  assert.equal(callbacks.length, 0)
+
+  const cell = runtime.setHoverAtPoint(100, 80, HOVER_RECT)
+  assert.deepEqual(cell, { x: 2, y: 3 })
+  assert.deepEqual(calls.setCell, [[2, 3]])
+  assert.equal(callbacks.length, 1)
+
+  // Same cell again — no second visual update, no extra frame.
+  callbacks.shift()?.(32)
+  runtime.setHoverAtPoint(101, 81, HOVER_RECT)
+  assert.deepEqual(calls.setCell, [[2, 3]])
+  assert.equal(callbacks.length, 0)
+})
+
+test('board-3d runtime clears hover on miss, clear, unmount and board resize', () => {
+  const { calls, hover } = createHoverStub()
+  let picked: { x: number; y: number } | null = { x: 1, y: 1 }
+  const runtime = createRuntime({
+    hover,
+    pickCell: () => picked,
+    syncNodes: () => undefined,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+  })
+  const container = createContainer()
+
+  // Before mount there is no board to hover.
+  assert.equal(runtime.setHoverAtPoint(1, 1, HOVER_RECT), null)
+  assert.equal(calls.setCell.length, 0)
+
+  runtime.mount(container)
+  runtime.sync(createState(4, 4))
+  // The first sync rebuilds the ground and clears any stale marker.
+  let clears = calls.clears
+  runtime.setHoverAtPoint(10, 10, HOVER_RECT)
+  assert.equal(calls.setCell.length, 1)
+
+  // A miss hides the marker; repeating a miss stays deduped.
+  picked = null
+  assert.equal(runtime.setHoverAtPoint(999, 999, HOVER_RECT), null)
+  assert.equal(calls.clears, clears + 1)
+  runtime.clearHover()
+  assert.equal(calls.clears, clears + 1)
+
+  picked = { x: 0, y: 0 }
+  runtime.setHoverAtPoint(10, 10, HOVER_RECT)
+  runtime.unmount()
+  assert.equal(calls.clears, clears + 2)
+
+  runtime.mount(container)
+  runtime.sync(createState(4, 4))
+  runtime.setHoverAtPoint(10, 10, HOVER_RECT)
+  clears = calls.clears
+  runtime.sync(createState(6, 4))
+  assert.equal(calls.clears, clears + 1)
+})
+
+test('board-3d runtime dispose releases the hover visual once', () => {
+  const { calls, hover } = createHoverStub()
+  const runtime = createRuntime({
+    hover,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  runtime.sync(createState(3, 3))
+  runtime.setHoverAtPoint(5, 5, HOVER_RECT)
+  runtime.dispose()
+  runtime.dispose()
+
+  assert.equal(calls.disposes, 1)
+  // After dispose the surface is dead — no picks, no clears.
+  assert.equal(runtime.setHoverAtPoint(5, 5, HOVER_RECT), null)
 })

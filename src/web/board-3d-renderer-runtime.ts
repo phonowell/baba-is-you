@@ -16,6 +16,8 @@ import type { Board3dRendererViewController } from './board-3d-renderer-view.js'
 
 import type { GameState, GameStatus, Item } from '../logic/types.js'
 import type { Board3dEffects, BoardFxSpot } from './board-3d-effects.js'
+import { pickBoardCell } from './board-3d-hover.js'
+import type { BoardHoverVisual, BoardPickRect } from './board-3d-hover.js'
 import type { CardFacing } from './board-3d-card-facing.js'
 import type { GroundVisuals } from './board-3d-ground.js'
 import type { EntityVisual } from './board-3d-renderer-materials.js'
@@ -67,6 +69,10 @@ type CreateBoard3dRendererRuntimeArgs = {
   syncNodes?: (state: GameState, deps: SyncEntityNodesDeps) => void
   // Pixel-particle + postfx mood layer; optional so tests can run headless.
   effects?: Board3dEffects | null
+  // Hover highlight quad + the screen-point→cell raycast; both optional so
+  // headless tests can stub the seam.
+  hover?: BoardHoverVisual | null
+  pickCell?: typeof pickBoardCell
   requestFrame?: RequestFrame | null
   cancelFrame?: CancelFrame | null
   advanceSpriteFrames?: (frameIx: number) => number
@@ -79,6 +85,15 @@ export type Board3dRendererRuntime = {
   sync: (state: GameState) => void
   unmount: () => void
   dispose: () => void
+  // Pointer hover: returns the board cell under the point and lights it,
+  // or clears the marker when the point misses the grid. `rect` is the
+  // board's app-space rect supplied by the caller.
+  setHoverAtPoint: (
+    clientX: number,
+    clientY: number,
+    rect: BoardPickRect,
+  ) => { x: number; y: number } | null
+  clearHover: () => void
 }
 
 export const createBoard3dRendererRuntime = (
@@ -99,6 +114,8 @@ export const createBoard3dRendererRuntime = (
     applyNodePoseStep = applyNodePose,
     syncNodes = syncEntityNodes,
     effects = null,
+    hover = null,
+    pickCell = pickBoardCell,
     requestFrame = null,
     cancelFrame = null,
     advanceSpriteFrames = null,
@@ -133,6 +150,9 @@ export const createBoard3dRendererRuntime = (
   // Game status the board effects currently reflect — transitions in sync
   // fire the win/lose bursts, pulses and postfx mood.
   let fxStatus: GameStatus = 'playing'
+  // Visual cell currently lit by pointer hover — dedupes the per-move
+  // raycast so an unchanged cell doesn't rebook a render.
+  let hoverCell: { x: number; y: number } | null = null
 
   // Spots the win fountain bursts from: the you/win cards' live positions.
   const celebrationSpots = (state: GameState): BoardFxSpot[] => {
@@ -310,12 +330,13 @@ export const createBoard3dRendererRuntime = (
     if (container.ownerDocument?.hidden) return
     // Idle-motion cards (text stretch, float bob) ride the same slow clock:
     // a board with no animated sprites still needs them re-posed at this
-    // cadence. The check must run before the frame dedupe — their sine needs
-    // a few samples per cycle, and the sprite frame window is coarser than
-    // this timer, so gating on it would collapse them into a two-pose flip.
+    // cadence, and a visible control-layer rim pulses on it too. The check
+    // must run before the frame dedupe — their sine needs a few samples per
+    // cycle, and the sprite frame window is coarser than this timer, so
+    // gating on it would collapse them into a two-pose flip.
     let idleMotionPending = false
     for (const node of nodes.values()) {
-      if (node.idleStretch || node.idleFloat) {
+      if (node.idleStretch || node.idleFloat || node.outline.visible) {
         idleMotionPending = true
         break
       }
@@ -391,6 +412,8 @@ export const createBoard3dRendererRuntime = (
     }
     if (renderer.domElement.parentElement === container) renderer.domElement.remove()
     container = null
+    hoverCell = null
+    hover?.clear()
   }
 
   const sync = (state: GameState): void => {
@@ -410,6 +433,10 @@ export const createBoard3dRendererRuntime = (
       boardHeight = state.height
       groundVisuals = rebuildGround(world, boardWidth, boardHeight, groundVisuals)
       viewController.updateCamera(container, boardWidth, boardHeight)
+      // The parked cursor may now sit on a different cell — drop the stale
+      // marker; the next hover pass re-picks against the new dimensions.
+      hoverCell = null
+      hover?.clear()
     }
 
     viewController.applyReadabilityGuard(state)
@@ -425,11 +452,55 @@ export const createBoard3dRendererRuntime = (
     ensureFrame()
   }
 
+  const setHoverAtPoint = (
+    clientX: number,
+    clientY: number,
+    rect: BoardPickRect,
+  ): { x: number; y: number } | null => {
+    if (
+      disposed ||
+      !container ||
+      !container.isConnected ||
+      boardWidth <= 0 ||
+      boardHeight <= 0
+    ) {
+      if (hoverCell) {
+        hoverCell = null
+        hover?.clear()
+      }
+      return null
+    }
+    const cell = pickCell(
+      camera,
+      rect,
+      clientX,
+      clientY,
+      boardWidth,
+      boardHeight,
+    )
+    if (cell?.x === hoverCell?.x && cell?.y === hoverCell?.y) return cell
+    hoverCell = cell
+    if (cell) hover?.setCell(cell.x, cell.y, boardWidth, boardHeight)
+    else hover?.clear()
+    needsRender = true
+    ensureFrame()
+    return cell
+  }
+
+  const clearHover = (): void => {
+    if (hoverCell === null) return
+    hoverCell = null
+    hover?.clear()
+    needsRender = true
+    ensureFrame()
+  }
+
   const dispose = (): void => {
     if (disposed) return
     disposed = true
     unmount()
     effects?.dispose()
+    hover?.dispose()
     groundVisuals = disposeResources(groundVisuals)
     container = null
   }
@@ -439,5 +510,7 @@ export const createBoard3dRendererRuntime = (
     sync,
     unmount,
     dispose,
+    setHoverAtPoint,
+    clearHover,
   }
 }
