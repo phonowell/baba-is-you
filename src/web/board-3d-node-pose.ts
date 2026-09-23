@@ -55,6 +55,10 @@ const {
   PULSE_HOP_STRETCH,
   PULSE_SLUMP_Y,
   PULSE_SLUMP_X,
+  RULE_PULSE_HOP_HEIGHT,
+  RULE_PULSE_STRETCH,
+  RULE_PULSE_SAG_Y,
+  RULE_PULSE_SAG_X,
 } = BOARD3D_EFFECTS_CONFIG
 
 // Reused per pose call so idle-stretch nodes don't allocate {scaleX,scaleY}
@@ -148,6 +152,17 @@ export const applyNodePose = (
         jump += wave * PULSE_HOP_HEIGHT
         pulseStretchY = 1 + wave * PULSE_HOP_STRETCH
         pulseStretchX = 1 - wave * PULSE_HOP_STRETCH * 0.5
+      } else if (node.pulseKind === 'rule-on') {
+        // A word joining a rule: a lighter hop than the celebration wave
+        // — the card perks up as the golden sparkle rings out.
+        jump += wave * RULE_PULSE_HOP_HEIGHT
+        pulseStretchY = 1 + wave * RULE_PULSE_STRETCH
+        pulseStretchX = 1 - wave * RULE_PULSE_STRETCH * 0.5
+      } else if (node.pulseKind === 'rule-off') {
+        // A word losing its rule: a short sag — the card slumps as its
+        // dim motes drift off.
+        pulseStretchY = 1 - wave * RULE_PULSE_SAG_Y
+        pulseStretchX = 1 + wave * RULE_PULSE_SAG_X
       } else {
         pulseStretchY = 1 - wave * PULSE_SLUMP_Y
         pulseStretchX = 1 + wave * PULSE_SLUMP_X

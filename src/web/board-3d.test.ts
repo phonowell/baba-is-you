@@ -431,6 +431,31 @@ test('board-3d marks overridden rule text with a crossed-out card', () => {
   assert.equal(normal.strikethrough ?? false, false)
 })
 
+test('board-3d lights text cards inside an active rule', () => {
+  const item = { id: 1, name: 'push', x: 0, y: 0, isText: true, props: [] }
+  const normal = cardSpecForItem(item, 0)
+  const lit = cardSpecForItem(item, 0, false, true)
+
+  // The lit face is a distinct spec — the card visibly changes when the
+  // rule forms, not just while the pulse plays.
+  assert.equal(lit.key !== normal.key, true)
+  assert.equal(lit.background !== normal.background, true)
+  assert.equal(lit.strikethrough ?? false, false)
+
+  // A veto strike wins over active — an overridden card never lights.
+  const struck = cardSpecForItem(item, 0, true, true)
+  assert.equal(struck.strikethrough, true)
+
+  // Grammar words keep their ◆ flourish when lit.
+  const litSyntax = cardSpecForItem(
+    { id: 2, name: 'is', x: 0, y: 0, isText: true, props: [] },
+    0,
+    false,
+    true,
+  )
+  assert.equal(typeof litSyntax.diamondColor, 'string')
+})
+
 // Text plates share the level-select menu's pill chrome; only grammar
 // words earn the ◆ flourish, and sprite/object cards stay off the pill.
 test('board-3d text cards wear the menu pill chrome by category', () => {

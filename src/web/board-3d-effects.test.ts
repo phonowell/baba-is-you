@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { Group, PerspectiveCamera } from 'three'
+import { Group, InstancedMesh, PerspectiveCamera } from 'three'
 
 import { BOARD3D_EFFECTS_CONFIG } from './board-3d-config-effects.js'
 import { createBoard3dEffects } from './board-3d-effects.js'
@@ -41,45 +41,67 @@ const createFx = (random?: () => number) => {
   })
   const fxGroup = parent.children[0]
   if (!fxGroup) throw new Error('Effects group missing.')
-  return { fx, moods, parent, fxGroup }
+  const instanced = fxGroup.children.find(
+    (child): child is InstancedMesh => child instanceof InstancedMesh,
+  )
+  if (!instanced) throw new Error('Particle batch missing.')
+  return { fx, moods, parent, fxGroup, instanced }
 }
 
+test('board-3d effects draw every particle through one instanced batch', () => {
+  const { fx, fxGroup, instanced } = createFx(() => 0.5)
+
+  assert.equal(fxGroup.children.length, 1)
+  fx.spawnPuff(1, 2, 0.1, ['#ff0000', '#00ff00'])
+  assert.equal(instanced.count, SPAWN_PUFF_COUNT)
+  // Colour and fade ride instanced attributes, not per-particle materials.
+  assert.ok(instanced.instanceColor)
+  assert.ok(instanced.geometry.getAttribute('aOpacity'))
+
+  const t0 = performance.now()
+  fx.update(t0 + 16)
+  const color = instanced.instanceColor
+  assert.ok(color)
+  const seen = [color.getX(0), color.getX(1)]
+  assert.ok(seen.every((channel) => channel === 1 || channel === 0))
+})
+
 test('board-3d effects spawn puff emits particles that live out their lifetime', () => {
-  const { fx, fxGroup } = createFx(() => 0.5)
+  const { fx, instanced } = createFx(() => 0.5)
   const t0 = performance.now()
 
   fx.spawnPuff(1, 2, 0.1, ['#ff0000', '#00ff00'])
-  assert.equal(fxGroup.children.length > 0, true)
-  const live = fxGroup.children.filter((child) => child.visible)
-  assert.equal(live.length, SPAWN_PUFF_COUNT)
+  assert.equal(instanced.count, SPAWN_PUFF_COUNT)
 
   assert.equal(fx.update(t0 + SPAWN_PUFF_LIFE_MS * 0.5), true)
   assert.equal(fx.update(t0 + SPAWN_PUFF_LIFE_MS * 1.5 + 100), false)
-  assert.equal(fxGroup.children.every((child) => !child.visible), true)
+  assert.equal(instanced.count, 0)
 })
 
 test('board-3d effects particles move and shrink over their life', () => {
-  const { fx, fxGroup } = createFx(() => 0.5)
+  const { fx, instanced } = createFx(() => 0.5)
   const t0 = performance.now()
 
   fx.despawnPoof(0, 0, 0.1, ['#ff0000'])
-  const particle = fxGroup.children[0]
-  assert.ok(particle)
-  const startX = particle.position.x
-  const startZ = particle.position.z
+  fx.update(t0 + 16)
+  const matrix = instanced.instanceMatrix.array
+  const startX = matrix[12]
+  const startZ = matrix[14]
+  assert.ok(startX !== undefined && startZ !== undefined)
 
   fx.update(t0 + DESPAWN_POOF_LIFE_MS * 0.4)
-  assert.notEqual(particle.position.x, startX)
-  assert.notEqual(particle.position.z, startZ)
+  assert.notEqual(matrix[12], startX)
+  assert.notEqual(matrix[14], startZ)
 })
 
 test('board-3d effects pool recycles particles and caps at the max', () => {
-  const { fx, fxGroup } = createFx(() => 0.5)
+  const { fx, instanced } = createFx(() => 0.5)
   const bursts = Math.ceil(PARTICLE_MAX / DESPAWN_POOF_COUNT) + 4
   for (let i = 0; i < bursts; i += 1) {
     fx.despawnPoof(0, 0, 0.1, ['#ff0000'])
   }
-  assert.equal(fxGroup.children.length <= PARTICLE_MAX, true)
+  assert.equal(instanced.count <= PARTICLE_MAX, true)
+  assert.equal(instanced.instanceMatrix.count, PARTICLE_MAX)
 })
 
 test('board-3d effects win pulses bloom and saturation then holds a warm glow', () => {
@@ -103,14 +125,14 @@ test('board-3d effects win pulses bloom and saturation then holds a warm glow', 
 })
 
 test('board-3d effects lose desaturates and darkens the frame', () => {
-  const { fx, moods, fxGroup } = createFx(() => 0.5)
+  const { fx, moods, instanced } = createFx(() => 0.5)
   const t0 = performance.now()
 
   fx.playLose([
     { x: -1, y: 0, z: 0.1 },
     { x: 1, y: 0, z: 0.1 },
   ])
-  assert.equal(fxGroup.children.length, LOSE_ASH_PER_SPOT * 2)
+  assert.equal(instanced.count, LOSE_ASH_PER_SPOT * 2)
 
   fx.update(t0 + LOSE_MOOD_FADE_MS + 50)
   const settled = moods.at(-1)
@@ -131,19 +153,19 @@ test('board-3d effects neutral mood restores the baseline once', () => {
 })
 
 test('board-3d effects clear kills particles and resets mood', () => {
-  const { fx, fxGroup, moods } = createFx(() => 0.5)
+  const { fx, instanced, moods } = createFx(() => 0.5)
   fx.playWin([{ x: 0, y: 0, z: 0.1 }])
   fx.clear()
 
-  assert.equal(fxGroup.children.every((child) => !child.visible), true)
+  assert.equal(instanced.count, 0)
   assert.equal(fx.update(performance.now() + 16), false)
   assert.deepEqual(moods.at(-1), BOARD_FX_MOOD_NEUTRAL)
 })
 
-test('board-3d effects dispose releases meshes and detaches the group', () => {
-  const { fx, parent, fxGroup } = createFx(() => 0.5)
+test('board-3d effects dispose releases the batch and detaches the group', () => {
+  const { fx, parent, instanced } = createFx(() => 0.5)
   fx.despawnPoof(0, 0, 0.1, ['#ff0000'])
-  assert.equal(fxGroup.children.length > 0, true)
+  assert.equal(instanced.count > 0, true)
 
   fx.dispose()
   assert.equal(parent.children.length, 0)

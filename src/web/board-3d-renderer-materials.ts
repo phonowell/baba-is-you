@@ -520,18 +520,29 @@ export const createBoard3dRendererMaterialStore = (
   // minContrastRatio is a fixed preset constant. Same key → identical spec
   // → identical visual, so the per-item sync cost collapses to a lookup
   // after first build.
-  const visualKeyForItem = (item: Item, overridden: boolean, tileMask: number): string => {
-    return `${item.isText ? 1 : 0}|${item.name}|${item.dir ?? ''}|${overridden ? 1 : 0}|${item.props.join(',')}|${tileMask}`
+  const visualKeyForItem = (
+    item: Item,
+    overridden: boolean,
+    tileMask: number,
+    active: boolean,
+  ): string => {
+    return `${item.isText ? 1 : 0}|${item.name}|${item.dir ?? ''}|${overridden ? 1 : 0}|${active ? 1 : 0}|${item.props.join(',')}|${tileMask}`
   }
 
-  const getVisual = (item: Item, overridden = false, tileMask = 0): EntityVisual => {
-    const key = visualKeyForItem(item, overridden, tileMask)
+  const getVisual = (
+    item: Item,
+    overridden = false,
+    tileMask = 0,
+    active = false,
+  ): EntityVisual => {
+    const key = visualKeyForItem(item, overridden, tileMask, active)
     const cached = visualCache.get(key)
     if (cached) return cached
     const spec = cardSpecForItem(
       item,
       preset.readability.minContrastRatio,
       overridden,
+      active,
     )
     const visual = spec.sprite ? voxelVisual(item, spec, tileMask) : plateVisual(spec)
     visualCache.set(key, visual)

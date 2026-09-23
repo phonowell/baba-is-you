@@ -12,7 +12,6 @@ import {
   SPRITE_FRAME_COUNT,
 } from './pixel-sprites/derive.js'
 import { spriteForName } from './pixel-sprites/index.js'
-import { OBJECT_GLYPHS } from '../view/render-config.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
 import { SYNTAX_WORDS } from '../view/syntax-words.js'
 
@@ -26,13 +25,7 @@ const {
 
 const { CARD_TEXTURE_TEXT_MAX_LINE_CHARS } = BOARD3D_CARD_TEXTURE_CONFIG
 
-const {
-  BELT_DIRECTION_GLYPH_UP,
-  BELT_DIRECTION_GLYPH_RIGHT,
-  BELT_DIRECTION_GLYPH_DOWN,
-  BELT_DIRECTION_GLYPH_LEFT,
-  FACING_ARROW_PROPS,
-} = BOARD3D_RULE_VISUAL_CONFIG
+const { FACING_ARROW_PROPS } = BOARD3D_RULE_VISUAL_CONFIG
 
 const {
   TEXT_CARD_SYNTAX_BACKGROUND,
@@ -52,14 +45,13 @@ const {
   TEXT_CARD_OVERRIDDEN_OUTLINE,
   TEXT_CARD_OVERRIDDEN_STRIKE,
   TEXT_CARD_OVERRIDDEN_KEYLINE,
+  TEXT_CARD_ACTIVE_BACKGROUND,
+  TEXT_CARD_ACTIVE_BACKGROUND_TOP,
+  TEXT_CARD_ACTIVE_TEXT,
+  TEXT_CARD_ACTIVE_OUTLINE,
+  TEXT_CARD_ACTIVE_KEYLINE,
+  TEXT_CARD_ACTIVE_DIAMOND,
 } = BOARD3D_TEXT_CARD_STYLE_CONFIG
-
-export const BELT_DIRECTION_GLYPHS: Record<Direction, string> = {
-  up: BELT_DIRECTION_GLYPH_UP,
-  right: BELT_DIRECTION_GLYPH_RIGHT,
-  down: BELT_DIRECTION_GLYPH_DOWN,
-  left: BELT_DIRECTION_GLYPH_LEFT,
-}
 
 const rollForMoveStep = (itemId: number, step: number): number => {
   const seed = fnv1a(`${itemId}:${step}`)
@@ -95,11 +87,10 @@ const facingDirectionForItem = (item: Item): Direction | null => {
   return null
 }
 
-const labelForItem = (item: Item): string => {
-  if (item.isText) return item.name.toUpperCase()
-  if (item.name === 'belt') return BELT_DIRECTION_GLYPHS[item.dir ?? 'right']
-  return OBJECT_GLYPHS[item.name] ?? item.name.slice(0, 2).toUpperCase()
-}
+// Sprite-less objects wear a two-letter tag; every object with a pixel
+// sprite never reaches this paint path, so no glyph table is needed.
+const labelForItem = (item: Item): string =>
+  item.isText ? item.name.toUpperCase() : item.name.slice(0, 2).toUpperCase()
 
 // Wrapped labels break near the middle so both halves stay big. The
 // shorter half rides on top — WA/TER lands on the word's natural
@@ -140,6 +131,7 @@ export const cardSpecForItem = (
   item: Item,
   minContrastRatio: number,
   overridden = false,
+  active = false,
 ): CardSpec => {
   const label = labelForItem(item)
   const facingDirection = facingDirectionForItem(item)
@@ -158,6 +150,25 @@ export const cardSpecForItem = (
         isText: true,
         strikethrough: true,
         strikeColor: TEXT_CARD_OVERRIDDEN_STRIKE,
+      }
+    }
+    if (active) {
+      return {
+        key: `text:active:${item.name}`,
+        label,
+        facingDirection: null,
+        sprite: null,
+        background: TEXT_CARD_ACTIVE_BACKGROUND,
+        backgroundTop: TEXT_CARD_ACTIVE_BACKGROUND_TOP,
+        keylineColor: TEXT_CARD_ACTIVE_KEYLINE,
+        textColor: TEXT_CARD_ACTIVE_TEXT,
+        outlineColor: TEXT_CARD_ACTIVE_OUTLINE,
+        // Grammar words keep their ◆ flourish when lit — the active face
+        // still announces syntax vs noun at a glance.
+        ...(SYNTAX_WORDS.has(item.name)
+          ? { diamondColor: TEXT_CARD_ACTIVE_DIAMOND }
+          : {}),
+        isText: true,
       }
     }
     if (SYNTAX_WORDS.has(item.name)) {

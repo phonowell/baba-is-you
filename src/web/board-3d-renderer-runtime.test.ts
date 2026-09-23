@@ -127,6 +127,9 @@ const createRuntime = (overrides: {
   advanceSpriteFrames?: RuntimeArgs['advanceSpriteFrames']
   scheduleTimer?: RuntimeArgs['scheduleTimer']
   cancelTimer?: RuntimeArgs['cancelTimer']
+  syncBatches?: RuntimeArgs['syncBatches']
+  observeResize?: RuntimeArgs['observeResize']
+  shadowMap?: { enabled: boolean; autoUpdate: boolean; needsUpdate: boolean }
 }) => {
   const scheduledCallbacks: FrameRequestCallback[] = []
   const scheduledTimers: Array<() => void> = []
@@ -138,6 +141,11 @@ const createRuntime = (overrides: {
   }
   const renderer = {
     domElement: rendererDomElement,
+    shadowMap: overrides.shadowMap ?? {
+      enabled: true,
+      autoUpdate: false,
+      needsUpdate: false,
+    },
   } as unknown as Parameters<typeof createBoard3dRendererRuntime>[0]['renderer']
   const composer = {
     render: overrides.composerRender ?? (() => undefined),
@@ -189,6 +197,9 @@ const createRuntime = (overrides: {
       return scheduledTimers.length
     })
   args.cancelTimer = overrides.cancelTimer ?? (() => undefined)
+  if (overrides.syncBatches) args.syncBatches = overrides.syncBatches
+  if (overrides.observeResize !== undefined)
+    args.observeResize = overrides.observeResize
 
   return createBoard3dRendererRuntime(args)
 }
@@ -478,23 +489,33 @@ test('board-3d runtime stops scheduling when mounted container disconnects', () 
 test('board-3d runtime renders the leaving cleanup frame and removes finished nodes', () => {
   const callbacks: FrameRequestCallback[] = []
   const renders: number[] = []
-  let meshRemoved = 0
-  let shadowRemoved = 0
+  let cardReleased = 0
+  let shadowReleased = 0
   let shadowDisposed = 0
   const node = createNode()
   node.despawnStartMs = 5
+  // Off-scene carriers: removal frees the instanced slots and disposes the
+  // opacity carrier rather than detaching meshes from the group.
+  node.cardSlot = {
+    key: 'card',
+    index: 0,
+    release: () => {
+      cardReleased += 1
+    },
+  }
+  node.shadowSlot = {
+    key: 'shadow',
+    index: 0,
+    release: () => {
+      shadowReleased += 1
+    },
+  }
   node.shadowMaterial.dispose = () => {
     shadowDisposed += 1
   }
   const nodes = new Map<number, EntityNode>([[7, node]])
   const runtime = createRuntime({
     nodes,
-    entityGroup: Object.assign(new Group(), {
-      remove: (value: unknown) => {
-        if (value === node.mesh) meshRemoved += 1
-        if (value === node.shadow) shadowRemoved += 1
-      },
-    }) as RuntimeArgs['entityGroup'],
     composerRender: () => {
       renders.push(1)
     },
@@ -516,8 +537,8 @@ test('board-3d runtime renders the leaving cleanup frame and removes finished no
 
   assert.equal(renders.length, 1)
   assert.equal(nodes.size, 0)
-  assert.equal(meshRemoved, 1)
-  assert.equal(shadowRemoved, 1)
+  assert.equal(cardReleased, 1)
+  assert.equal(shadowReleased, 1)
   assert.equal(shadowDisposed, 1)
   assert.equal(callbacks.length, 0)
 })
@@ -834,6 +855,8 @@ test('board-3d runtime skips the sprite timer when no frame advancer is wired', 
 type FxCalls = {
   spawnPuff: unknown[][]
   despawnPoof: unknown[][]
+  ruleSparkle: unknown[][]
+  rulePuff: unknown[][]
   playWin: number
   playLose: number
   neutralMood: number
@@ -845,6 +868,8 @@ const createEffectsStub = (updateResult = false) => {
   const calls: FxCalls = {
     spawnPuff: [],
     despawnPoof: [],
+    ruleSparkle: [],
+    rulePuff: [],
     playWin: 0,
     playLose: 0,
     neutralMood: 0,
@@ -857,6 +882,12 @@ const createEffectsStub = (updateResult = false) => {
     },
     despawnPoof: (...args: unknown[]) => {
       calls.despawnPoof.push(args)
+    },
+    ruleSparkle: (...args: unknown[]) => {
+      calls.ruleSparkle.push(args)
+    },
+    rulePuff: (...args: unknown[]) => {
+      calls.rulePuff.push(args)
     },
     playWin: () => {
       calls.playWin += 1
@@ -1060,6 +1091,62 @@ test('board-3d runtime fires a despawn poof once while leaving', () => {
   assert.equal(calls.despawnPoof.length, 1)
 })
 
+test('board-3d runtime fires rule sparkles and motes once per armed pulse', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const { effects, calls } = createEffectsStub()
+  const onNode = createNode()
+  onNode.pulseStartMs = 100
+  onNode.pulseKind = 'rule-on'
+  onNode.ruleFxDone = false
+  const offNode = createNode()
+  offNode.pulseStartMs = 140
+  offNode.pulseKind = 'rule-off'
+  offNode.ruleFxDone = false
+  const nodes = new Map<number, EntityNode>([
+    [1, onNode],
+    [2, offNode],
+  ])
+  const runtime = createRuntime({
+    effects,
+    nodes,
+    applyNodePoseStep: () => ({
+      animating: true,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+
+  runtime.mount(container)
+  const tick1 = callbacks.shift()
+  assert.ok(tick1)
+  tick1(50)
+  assert.equal(calls.ruleSparkle.length, 0)
+  assert.equal(calls.rulePuff.length, 0)
+
+  // The sparkle fires at its stagger slot; the mote waits for its own.
+  const tick2 = callbacks.shift()
+  assert.ok(tick2)
+  tick2(120)
+  assert.equal(calls.ruleSparkle.length, 1)
+  assert.equal(calls.rulePuff.length, 0)
+
+  const tick3 = callbacks.shift()
+  assert.ok(tick3)
+  tick3(160)
+  assert.equal(calls.ruleSparkle.length, 1)
+  assert.equal(calls.rulePuff.length, 1)
+
+  const tick4 = callbacks.shift()
+  assert.ok(tick4)
+  tick4(200)
+  assert.equal(calls.ruleSparkle.length, 1)
+  assert.equal(calls.rulePuff.length, 1)
+})
+
 test('board-3d runtime clears board effects on unmount and disposes with the renderer', () => {
   const { effects, calls } = createEffectsStub()
   const runtime = createRuntime({ effects })
@@ -1191,4 +1278,163 @@ test('board-3d runtime dispose releases the hover visual once', () => {
   assert.equal(calls.disposes, 1)
   // After dispose the surface is dead — no picks, no clears.
   assert.equal(runtime.setHoverAtPoint(5, 5, HOVER_RECT), null)
+})
+
+test('board-3d runtime refreshes the shadow map only on frames that need it', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const renders: number[] = []
+  const shadowMap = { enabled: true, autoUpdate: false, needsUpdate: false }
+  const nodes = new Map<number, EntityNode>([[1, createNode()]])
+  const runtime = createRuntime({
+    nodes,
+    shadowMap,
+    composerRender: () => {
+      renders.push(1)
+    },
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+  runtime.mount(container)
+
+  const tick = callbacks.shift()
+  assert.ok(tick)
+  tick(16)
+  assert.equal(renders.length, 1)
+  // First rendered frame seeds the map once, then consumes the dirty flag.
+  assert.equal(shadowMap.needsUpdate, true)
+
+  shadowMap.needsUpdate = false
+  tick(32)
+  // Settled board: nothing rendered, nothing re-baked.
+  assert.equal(renders.length, 1)
+  assert.equal(shadowMap.needsUpdate, false)
+})
+
+test('board-3d runtime carries a pending shadow refresh across skipped frames', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const renders: number[] = []
+  const shadowMap = { enabled: true, autoUpdate: false, needsUpdate: false }
+  let structureChanged = false
+  const nodes = new Map<number, EntityNode>([[1, createNode()]])
+  const runtime = createRuntime({
+    nodes,
+    shadowMap,
+    composerRender: () => {
+      renders.push(1)
+    },
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    syncBatches: () => structureChanged,
+    syncNodes: () => undefined,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+  runtime.mount(container)
+
+  const tick = callbacks.shift()
+  assert.ok(tick)
+  tick(16)
+  assert.equal(shadowMap.needsUpdate, true)
+  shadowMap.needsUpdate = false
+
+  // Batch churn without a rendered frame: the dirty flag must survive.
+  structureChanged = true
+  tick(32)
+  assert.equal(renders.length, 1)
+  assert.equal(shadowMap.needsUpdate, false)
+
+  structureChanged = false
+  runtime.sync(createState(4, 4))
+  const nextTick = callbacks.shift()
+  assert.ok(nextTick)
+  nextTick(48)
+  assert.equal(renders.length, 2)
+  assert.equal(shadowMap.needsUpdate, true)
+})
+
+test('board-3d runtime observes resize and re-reads the viewport once per event', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const observed: HTMLElement[] = []
+  const stops: number[] = []
+  const resizeCbs: Array<() => void> = []
+  let viewportReads = 0
+  const runtime = createRuntime({
+    observeResize: (el, cb) => {
+      observed.push(el)
+      resizeCbs.push(cb)
+      return () => {
+        stops.push(1)
+      }
+    },
+    viewUpdateViewport: () => {
+      viewportReads += 1
+      return true
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+  runtime.mount(container)
+  assert.equal(observed.length, 1)
+  assert.equal(viewportReads, 1)
+
+  const tick = callbacks.shift()
+  assert.ok(tick)
+  tick(16)
+  // Observer-driven: no per-tick layout read while quiet.
+  assert.equal(viewportReads, 1)
+
+  resizeCbs[0]?.()
+  const resizeTick = callbacks.shift()
+  assert.ok(resizeTick)
+  resizeTick(32)
+  assert.equal(viewportReads, 2)
+
+  runtime.unmount()
+  assert.equal(stops.length, 1)
+
+  // Remount replaces the observer rather than piling a second one up.
+  runtime.mount(container)
+  assert.equal(observed.length, 2)
+  runtime.unmount()
+  assert.equal(stops.length, 2)
+})
+
+test('board-3d runtime falls back to per-tick viewport reads without an observer', () => {
+  const callbacks: FrameRequestCallback[] = []
+  let viewportReads = 0
+  const runtime = createRuntime({
+    observeResize: () => null,
+    viewUpdateViewport: () => {
+      viewportReads += 1
+      return false
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+  runtime.mount(container)
+
+  const tick = callbacks.shift()
+  assert.ok(tick)
+  tick(16)
+  tick(32)
+  assert.equal(viewportReads, 3)
 })

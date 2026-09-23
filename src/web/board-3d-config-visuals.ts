@@ -1,10 +1,6 @@
 import type { Property } from '../logic/types.js'
 
 export const BOARD3D_RULE_VISUAL_CONFIG = {
-  BELT_DIRECTION_GLYPH_UP: '\u2b06\ufe0f',
-  BELT_DIRECTION_GLYPH_RIGHT: '\u27a1\ufe0f',
-  BELT_DIRECTION_GLYPH_DOWN: '\u2b07\ufe0f',
-  BELT_DIRECTION_GLYPH_LEFT: '\u2b05\ufe0f',
   FACING_ARROW_PROPS: new Set<Property>(['you', 'move', 'shift']),
   // Control-layer cards (you/you2/3d) wear an inverted-hull rim tinted by
   // the card's own palette turned negative — "this answers input" reads as
@@ -40,4 +36,13 @@ export const BOARD3D_TEXT_CARD_STYLE_CONFIG = {
   TEXT_CARD_OVERRIDDEN_OUTLINE: '#1c2434',
   TEXT_CARD_OVERRIDDEN_STRIKE: '#ff6b6b',
   TEXT_CARD_OVERRIDDEN_KEYLINE: 'rgba(201, 168, 106, 0.3)',
+  // Cards inside a live rule light up: brighter parchment, full-strength
+  // gold keyline, warm ink — the "these words are law" face, readable
+  // beside both dormant plates and the darker overridden family.
+  TEXT_CARD_ACTIVE_BACKGROUND: '#efdfae',
+  TEXT_CARD_ACTIVE_BACKGROUND_TOP: '#fbf1d0',
+  TEXT_CARD_ACTIVE_TEXT: '#453407',
+  TEXT_CARD_ACTIVE_OUTLINE: '#fffbe9',
+  TEXT_CARD_ACTIVE_KEYLINE: 'rgba(222, 182, 92, 0.95)',
+  TEXT_CARD_ACTIVE_DIAMOND: '#d9ae4e',
 } as const

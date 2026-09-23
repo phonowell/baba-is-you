@@ -107,6 +107,9 @@ export const createBoard3dRendererScene = (
   renderer.toneMapping = NoToneMapping
   renderer.shadowMap.enabled = true
   renderer.shadowMap.type = PCFSoftShadowMap
+  // The runtime flags `needsUpdate` only on frames that actually posed or
+  // restructured cards — pure sprite/mood frames skip the caster pass.
+  renderer.shadowMap.autoUpdate = false
   renderer.domElement.className = 'board-3d-canvas'
   renderer.domElement.setAttribute('aria-hidden', 'true')
 

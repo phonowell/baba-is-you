@@ -17,6 +17,7 @@ type DisposeBoard3dRendererResourcesArgs = {
   entityGroup: Group
   shadowGeometry: PlaneGeometry
   disposeMaterials: () => void
+  disposeBatches?: () => void
   shadowTexture: CanvasTexture
   world: Group
   groundVisuals: GroundVisuals
@@ -33,6 +34,7 @@ export const disposeBoard3dRendererResources = (
     entityGroup,
     shadowGeometry,
     disposeMaterials,
+    disposeBatches,
     shadowTexture,
     world,
     groundVisuals,
@@ -42,11 +44,13 @@ export const disposeBoard3dRendererResources = (
   } = args
 
   for (const node of nodes.values()) {
-    entityGroup.remove(node.mesh)
-    entityGroup.remove(node.shadow)
+    node.cardSlot?.release()
+    node.shadowSlot?.release()
+    if (node.outlineAnchor?.parent) entityGroup.remove(node.outlineAnchor)
     node.shadowMaterial.dispose()
   }
   nodes.clear()
+  disposeBatches?.()
 
   shadowGeometry.dispose()
   disposeMaterials()

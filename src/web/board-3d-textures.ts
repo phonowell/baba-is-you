@@ -246,7 +246,7 @@ const drawKeylineDiamond = (
   ctx.fill()
 }
 
-export const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture => {
+const createCardTexture = (spec: CardSpec, anisotropy: number): CanvasTexture => {
   const textureSize = CARD_TEXTURE_SIZE
   const canvas = document.createElement('canvas')
   canvas.width = textureSize

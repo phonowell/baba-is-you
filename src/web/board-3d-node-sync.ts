@@ -22,14 +22,14 @@ import {
   buildEntityViews,
   computeEntityBaseTarget,
 } from './board-3d-shared-layout.js'
-import { collectOverriddenTextIds } from '../logic/rules-override.js'
+import { collectTextRuleMarks } from '../logic/rules-override.js'
 import { isYouLike } from '../logic/step/shared.js'
 import { isGroundHugItem } from '../view/stack-policy.js'
 import { autotileMaskForItem, buildAutotileCells } from './board-3d-autotile.js'
 
 import type { Camera, Group, Object3D } from 'three'
 import type { CardFacing } from './board-3d-card-facing.js'
-import type { GameState } from '../logic/types.js'
+import type { GameState, Item } from '../logic/types.js'
 import type {
   EntityBaseTarget,
   EntityNode,
@@ -53,6 +53,8 @@ const {
 
 const {
   SPAWN_STAGGER_MS_PER_CELL,
+  RULE_PULSE_STAGGER_MS,
+  RULE_PULSE_STAGGER_MAX_INDEX,
 } = BOARD3D_EFFECTS_CONFIG
 
 const setNodeIdlePose = (
@@ -109,10 +111,27 @@ export const removeEntityNode = (
 ): void => {
   const node = nodes.get(id)
   if (!node) return
-  entityGroup.remove(node.mesh)
-  entityGroup.remove(node.shadow)
+  // Mesh/shadow are off-scene carriers — freeing means releasing their
+  // instanced slots (zeroed) and unhooking the rim anchor.
+  node.cardSlot?.release()
+  node.cardSlot = null
+  node.shadowSlot?.release()
+  node.shadowSlot = null
+  if (node.outlineAnchor?.parent) entityGroup.remove(node.outlineAnchor)
   node.shadowMaterial.dispose()
   nodes.delete(id)
+}
+
+// Items are immutable between steps — the sorted prop signature is a pure
+// function of the item object, so repeat syncs reuse it by identity.
+const propSigCache = new WeakMap<Item, string>()
+
+const propSignature = (item: Item): string => {
+  const cached = propSigCache.get(item)
+  if (cached !== undefined) return cached
+  const sig = [...item.props].sort().join('|')
+  propSigCache.set(item, sig)
+  return sig
 }
 
 export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): void => {
@@ -121,11 +140,14 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
   const seen = new Set<number>()
   const views = buildEntityViews(state)
   const autotileCells = buildAutotileCells(state)
-  // `step` already partitions rules and carries the marks on the state;
-  // fixture-built states without them fall back to one reparse.
-  const overriddenTextIds =
-    state.overriddenTextIds ??
-    collectOverriddenTextIds(state.items, state.width, state.height)
+  // `step` already partitions rules and carries both text marks on the
+  // state; fixture-built states without them fall back to one reparse.
+  const textMarks =
+    state.overriddenTextIds && state.activeTextIds
+      ? { active: state.activeTextIds, overridden: state.overriddenTextIds }
+      : collectTextRuleMarks(state.items, state.width, state.height)
+  const overriddenTextIds = textMarks.overridden
+  const activeTextIds = textMarks.active
   // Board entry (nothing synced yet) staggers each spawn on a diagonal
   // sweep; mid-game appearances pop immediately.
   const boardEntry = nodes.size === 0
@@ -140,6 +162,9 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     }
     return facing
   }
+  // Rule transitions stagger in view order: a freshly formed rule sweeps
+  // card to card instead of blinking all at once.
+  let rulePulseIndex = 0
 
   for (const view of views) {
     const item = view.item
@@ -151,6 +176,10 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       state.height,
     )
 
+    const target = computeEntityBaseTarget(state, view)
+    const itemOverridden = item.isText && overriddenTextIds.has(item.id)
+    const ruleActive = item.isText && activeTextIds.has(item.id)
+
     let node = nodes.get(item.id)
     const nodeCreated = !node
     if (!node) {
@@ -159,6 +188,8 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
         nowMs,
         boardEntry ? (item.x + item.y) * SPAWN_STAGGER_MS_PER_CELL : 0,
         tileMask,
+        itemOverridden,
+        ruleActive,
       )
       nodes.set(item.id, node)
     } else if (node.despawnStartMs !== null) {
@@ -167,10 +198,10 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       node.spawnFxDone = false
       node.despawnFxDone = true
     }
-
-    const target = computeEntityBaseTarget(state, view)
-    const itemOverridden = item.isText && overriddenTextIds.has(item.id)
-    const visual = getVisual(item, itemOverridden, tileMask)
+    // Sorted so a reordered-but-identical prop list never diffs — only a
+    // real nature change (a wall gaining or losing `stop`) counts.
+    const propSig = propSignature(item)
+    const visual = getVisual(item, itemOverridden, tileMask, ruleActive)
     // Burst colours ride the cached visual — same spec, same palette.
     node.fxColors = visual.fxColors
     const visualChanged = node.specKey !== visual.key
@@ -227,9 +258,54 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
     }
 
     if (nodeCreated) {
+      // First sight of the card records its rule state silently — board
+      // entry already carries a spawn sweep; a rule-pulse storm on top
+      // would read as noise, not as "these words are live".
+      node.ruleActive = ruleActive
+      node.ruleOverridden = itemOverridden
+      node.propSig = propSig
       initializeNodeAtTarget(node, target, camera, nowMs, cardFacingFor(node))
       continue
     }
+
+    // Rule-state crossings announce themselves on the card: joining an
+    // active rule pops it ('rule-on', golden sparkle), leaving one or
+    // being struck overridden sags it ('rule-off', grey motes), and a
+    // card freed from the strike pops back up. Object entities ride the
+    // same channel through their prop set — every wall ripples when
+    // `wall is stop` forms or breaks. Despawning cards skip the
+    // farewell — the poof covers it.
+    if (node.despawnStartMs === null) {
+      let pulseKind: 'rule-on' | 'rule-off' | null = null
+      if (node.ruleActive !== ruleActive) {
+        pulseKind = ruleActive ? 'rule-on' : 'rule-off'
+      } else if (node.ruleOverridden !== itemOverridden) {
+        pulseKind = itemOverridden ? 'rule-off' : 'rule-on'
+      } else if (node.propSig !== propSig) {
+        // Prop-set crossing: gaining a nature pops the entity, losing
+        // one sags it; a swap counts as a gain — the new nature is the
+        // news.
+        const before = new Set(
+          node.propSig === '' ? [] : node.propSig.split('|'),
+        )
+        const after = new Set(propSig === '' ? [] : propSig.split('|'))
+        const gained = [...after].filter((prop) => !before.has(prop)).length
+        const lost = [...before].filter((prop) => !after.has(prop)).length
+        pulseKind = gained >= lost ? 'rule-on' : 'rule-off'
+      }
+      if (pulseKind !== null) {
+        node.pulseStartMs =
+          nowMs +
+          Math.min(rulePulseIndex, RULE_PULSE_STAGGER_MAX_INDEX) *
+            RULE_PULSE_STAGGER_MS
+        node.pulseKind = pulseKind
+        node.ruleFxDone = false
+        rulePulseIndex += 1
+      }
+    }
+    node.ruleActive = ruleActive
+    node.ruleOverridden = itemOverridden
+    node.propSig = propSig
 
     const positionChanged =
       Math.abs(node.toX - target.x) > POSITION_EPSILON ||

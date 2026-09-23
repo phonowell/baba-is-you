@@ -1,3 +1,4 @@
+import { Quaternion, Vector3 } from 'three'
 import type { Camera, Group, WebGLRenderer } from 'three'
 import type { EffectComposer } from 'postprocessing'
 
@@ -50,8 +51,20 @@ type CreateBoard3dRendererRuntimeArgs = {
   entityGroup: Group
   viewController: Board3dRendererViewController
   nodes: Map<number, EntityNode>
-  getVisual: (item: Item, overridden?: boolean, tileMask?: number) => EntityVisual
-  createNode: (item: Item, nowMs: number, spawnDelayMs?: number, tileMask?: number) => EntityNode
+  getVisual: (
+    item: Item,
+    overridden?: boolean,
+    tileMask?: number,
+    active?: boolean,
+  ) => EntityVisual
+  createNode: (
+    item: Item,
+    nowMs: number,
+    spawnDelayMs?: number,
+    tileMask?: number,
+    overridden?: boolean,
+    active?: boolean,
+  ) => EntityNode
   camera: Camera
   disposeResources: (groundVisuals: GroundVisuals) => GroundVisuals
   rebuildGround?: (
@@ -78,6 +91,21 @@ type CreateBoard3dRendererRuntimeArgs = {
   advanceSpriteFrames?: (frameIx: number) => number
   scheduleTimer?: ScheduleTimer | null
   cancelTimer?: CancelTimer | null
+  // Mirrors node transforms into the instanced batches; returns true when
+  // slot↔batch structure changed (the shadow map must re-render for it).
+  // `dirty` scopes matrix uploads: the nodes posed this tick, or null for
+  // a full rewrite (post-sync, when transforms may be written directly).
+  // Optional so headless tests can run without the batch layer.
+  syncBatches?: (
+    nodes: ReadonlyMap<number, EntityNode>,
+    dirty: ReadonlySet<EntityNode> | null,
+  ) => boolean
+  // Viewport size changes arrive via observer instead of per-tick layout
+  // reads; return value unsubscribes, null falls back to per-tick reads.
+  observeResize?: (
+    el: HTMLElement,
+    cb: () => void,
+  ) => (() => void) | null
 }
 
 export type Board3dRendererRuntime = {
@@ -121,6 +149,8 @@ export const createBoard3dRendererRuntime = (
     advanceSpriteFrames = null,
     scheduleTimer = null,
     cancelTimer = null,
+    syncBatches = null,
+    observeResize,
   } = args
 
   const scheduleFrame: RequestFrame =
@@ -131,6 +161,17 @@ export const createBoard3dRendererRuntime = (
     scheduleTimer ?? globalThis.setInterval.bind(globalThis)
   const cancelSpriteTimer: CancelTimer =
     cancelTimer ?? globalThis.clearInterval.bind(globalThis)
+  const observeResizeDefault = (
+    el: HTMLElement,
+    cb: () => void,
+  ): (() => void) | null => {
+    if (typeof ResizeObserver !== 'function') return null
+    const observer = new ResizeObserver(cb)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }
+  const observeResizeImpl =
+    observeResize === undefined ? observeResizeDefault : observeResize
 
   let container: HTMLElement | null = null
   let boardWidth = 0
@@ -153,6 +194,36 @@ export const createBoard3dRendererRuntime = (
   // Visual cell currently lit by pointer hover — dedupes the per-move
   // raycast so an unchanged cell doesn't rebook a render.
   let hoverCell: { x: number; y: number } | null = null
+  // Shadow-map refresh bookkeeping: the map only re-renders when the
+  // frame actually posed nodes or changed instance/batch structure —
+  // sprite texture swaps and pure mood frames skip the whole caster pass.
+  let shadowDirty = true
+  // ResizeObserver-driven viewport checks; per-tick reads are the
+  // fallback when no observer is available.
+  let resizeDirty = true
+  let resizeObserved = false
+  let stopObservingResize: (() => void) | null = null
+  // Camera snapshots: billboard cards derive their facing from the camera,
+  // so any camera move (readability guard, viewport fit) re-poses even
+  // settled nodes once.
+  const lastCameraPos = new Vector3()
+  const lastCameraQuat = new Quaternion()
+  // Batch upload scoping: sync can write node transforms directly (idle
+  // snaps, shadow visibility), so the first flush after a sync rewrites
+  // every slot; between syncs only posed nodes pay the upload.
+  let batchAllDirty = true
+  const posedNodes = new Set<EntityNode>()
+
+  // A particle burst's launch point is the card's live tweened position.
+  const nodeSpot = (node: EntityNode): BoardFxSpot => ({
+    x: node.toX,
+    y: node.toY,
+    z: node.toBaseZ,
+  })
+
+  // Bursts anchor on the board center when nothing produced a spot.
+  const spotsOrCenter = (spots: BoardFxSpot[]): BoardFxSpot[] =>
+    spots.length > 0 ? spots : [{ x: 0, y: 0, z: CARD_BASE_Z }]
 
   // Spots the win fountain bursts from: the you/win cards' live positions.
   const celebrationSpots = (state: GameState): BoardFxSpot[] => {
@@ -162,10 +233,9 @@ export const createBoard3dRendererRuntime = (
       if (!item.props.includes('you') && !item.props.includes('win')) continue
       const node = nodes.get(item.id)
       if (!node) continue
-      spots.push({ x: node.toX, y: node.toY, z: node.toBaseZ })
+      spots.push(nodeSpot(node))
     }
-    if (spots.length === 0) spots.push({ x: 0, y: 0, z: CARD_BASE_Z })
-    return spots
+    return spotsOrCenter(spots)
   }
 
   // Ash motes rise off a spread of the surviving cards on defeat.
@@ -179,10 +249,9 @@ export const createBoard3dRendererRuntime = (
     for (let i = 0; i < alive.length && spots.length < LOSE_ASH_MAX_SPOTS; i += stride) {
       const node = alive[i]
       if (!node) continue
-      spots.push({ x: node.toX, y: node.toY, z: node.toBaseZ })
+      spots.push(nodeSpot(node))
     }
-    if (spots.length === 0) spots.push({ x: 0, y: 0, z: CARD_BASE_Z })
-    return spots
+    return spotsOrCenter(spots)
   }
 
   // Whole-board wave: each card's pulse starts when the ripple reaches it.
@@ -241,17 +310,22 @@ export const createBoard3dRendererRuntime = (
       return
     }
 
-    const viewportChanged = viewController.updateViewport(
-      container,
-      boardWidth,
-      boardHeight,
-    )
+    const viewportChanged =
+      (!resizeObserved || resizeDirty) &&
+      viewController.updateViewport(container, boardWidth, boardHeight)
+    resizeDirty = false
 
     let hasAnimation = false
+    let posedAny = false
     const leavingDoneIds: number[] = []
     // One camera-facing basis serves every card this frame — the pose step
     // receives it lazily so an all-volume board never pays for it.
     let cardFacing: CardFacing | undefined
+    const cameraMoved =
+      !lastCameraPos.equals(camera.position) ||
+      !lastCameraQuat.equals(camera.quaternion)
+    lastCameraPos.copy(camera.position)
+    lastCameraQuat.copy(camera.quaternion)
 
     for (const [id, node] of nodes) {
       // Settled nodes re-pose only when the camera moved (billboard cards
@@ -264,7 +338,17 @@ export const createBoard3dRendererRuntime = (
         node.spawnStartMs === null &&
         node.despawnStartMs === null &&
         node.pulseStartMs === null
-      if (settled && !node.idleStretch && !node.idleFloat && !viewportChanged) continue
+      if (
+        settled &&
+        !node.idleStretch &&
+        !node.idleFloat &&
+        !viewportChanged &&
+        !cameraMoved
+      ) {
+        continue
+      }
+      posedAny = true
+      posedNodes.add(node)
       const step = applyNodePoseStep(
         node,
         nowMs,
@@ -289,6 +373,20 @@ export const createBoard3dRendererRuntime = (
           node.despawnFxDone = true
           effects.despawnPoof(node.toX, node.toY, node.toBaseZ, node.fxColors)
         }
+        // Rule sparkles/motes fire once the armed pulse actually starts —
+        // formation staggers push pulseStartMs into the near future.
+        if (
+          !node.ruleFxDone &&
+          node.pulseStartMs !== null &&
+          nowMs >= node.pulseStartMs
+        ) {
+          node.ruleFxDone = true
+          if (node.pulseKind === 'rule-on') {
+            effects.ruleSparkle(node.toX, node.toY, node.toBaseZ)
+          } else if (node.pulseKind === 'rule-off') {
+            effects.rulePuff(node.toX, node.toY, node.toBaseZ)
+          }
+        }
       }
     }
 
@@ -301,7 +399,21 @@ export const createBoard3dRendererRuntime = (
     // Particles and the mood timeline keep the frame loop alive on their own.
     if (effects?.update(nowMs)) hasAnimation = true
 
+    const structureChanged =
+      syncBatches?.(nodes, batchAllDirty ? null : posedNodes) === true
+    batchAllDirty = false
+    posedNodes.clear()
+    // Accumulate: a frame that skips the render must not drop the flag —
+    // the next rendered frame still has to refresh the map.
+    shadowDirty ||=
+      posedAny || structureChanged || viewportChanged || nodesRemoved
+
     if (needsRender || viewportChanged || hasAnimation || nodesRemoved) {
+      const shadowMap = renderer.shadowMap
+      if (shadowMap && shadowDirty) {
+        shadowMap.needsUpdate = true
+        shadowDirty = false
+      }
       composer.render()
       needsRender = false
     }
@@ -389,6 +501,16 @@ export const createBoard3dRendererRuntime = (
     if (viewController.updateViewport(container, boardWidth, boardHeight)) {
       needsRender = true
     }
+    // The read above already consumed any pending resize — without this the
+    // first tick would re-read the viewport once for nothing.
+    resizeDirty = false
+    // Mount can re-run on the same container — swap observers, don't pile up.
+    stopObservingResize?.()
+    stopObservingResize = observeResizeImpl?.(container, () => {
+      resizeDirty = true
+      ensureFrame()
+    }) ?? null
+    resizeObserved = stopObservingResize !== null
     startSpriteTimer()
     ensureFrame()
   }
@@ -398,6 +520,11 @@ export const createBoard3dRendererRuntime = (
     frameActive = false
     rafId = 0
     needsRender = true
+    stopObservingResize?.()
+    stopObservingResize = null
+    resizeObserved = false
+    resizeDirty = true
+    shadowDirty = true
     stopSpriteTimer()
     effects?.clear()
     // A remount re-syncs the same state object only through the idempotent
@@ -449,6 +576,12 @@ export const createBoard3dRendererRuntime = (
     })
     playStatusFx(state, performance.now())
     needsRender = true
+    // Sync may have re-posed nodes or swapped visuals — the next rendered
+    // frame refreshes the shadow map for whichever actually changed, and
+    // the next flush rewrites every slot since sync can snap transforms
+    // directly (idle snaps, shadow visibility) without posing.
+    shadowDirty = true
+    batchAllDirty = true
     ensureFrame()
   }
 

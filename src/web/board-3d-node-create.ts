@@ -50,14 +50,19 @@ export const createEntityNode = (
   nowMs: number,
   spawnDelayMs = 0,
   tileMask = 0,
+  overridden = false,
+  active = false,
 ): EntityNode => {
   const { entityGroup, shadowGeometry, shadowTexture, getVisual } = deps
   const rollNoise = cardRollForItemStep(item, 0)
-  const visual = getVisual(item, false, tileMask)
+  const visual = getVisual(item, overridden, tileMask, active)
   const mesh = new Mesh(visual.geometry, visual.material)
   mesh.castShadow = true
   mesh.receiveShadow = true
-  entityGroup.add(mesh)
+  // Not added to the scene: the instanced batches draw the card — this
+  // mesh is the node's transform/geometry carrier. `parent` still points
+  // at the entity group because the card-facing basis reads it.
+  mesh.parent = entityGroup
 
   // Child of the card mesh: inherits every pose/scale/orientation write the
   // pose pass makes, so the rim tracks moves, wobble swaps and spawn/despawn
@@ -81,10 +86,13 @@ export const createEntityNode = (
   shadow.position.z = SHADOW_BASE_Z
   shadow.receiveShadow = false
   shadow.castShadow = false
-  entityGroup.add(shadow)
+  // Same off-scene carrier as `mesh` — the shadow batch draws the slot.
 
   return {
     mesh,
+    cardSlot: null,
+    shadowSlot: null,
+    outlineAnchor: null,
     outline,
     outlineTint: visual.outlineTint,
     shadow,
@@ -107,6 +115,10 @@ export const createEntityNode = (
     despawnFxDone: true,
     pulseStartMs: null,
     pulseKind: null,
+    ruleActive: false,
+    ruleOverridden: false,
+    propSig: '',
+    ruleFxDone: true,
     fromX: 0,
     fromY: 0,
     fromBaseZ: CARD_BASE_Z,

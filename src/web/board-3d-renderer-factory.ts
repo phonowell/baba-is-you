@@ -7,6 +7,10 @@ import { createBoard3dEffects } from './board-3d-effects.js'
 import { updateLightShadowCamera } from './board-3d-ground.js'
 import { createBoardHoverVisual } from './board-3d-hover.js'
 import {
+  createEntityBatches,
+  createShadowBatch,
+} from './board-3d-node-batches.js'
+import {
   advanceNodeGeometries,
   createBoard3dRendererMaterialStore,
 } from './board-3d-renderer-materials.js'
@@ -26,10 +30,6 @@ import type { EntityVisual } from './board-3d-renderer-materials.js'
 import type { Item } from '../logic/types.js'
 const { TEXTURE_ANISOTROPY_CAP } = BOARD3D_LAYOUT_CONFIG
 const { SHADOW_GEOMETRY_SIZE } = BOARD3D_SHADOW_CONFIG
-
-export type Board3dRendererFactoryDeps = ReturnType<
-  typeof createBoard3dRendererFactoryDeps
->
 
 export const createBoard3dRendererFactoryDeps = () => {
   const preset = CLAY_PRESET
@@ -97,6 +97,14 @@ export const createBoard3dRendererFactoryDeps = () => {
     setMood: viewController.setFxMood,
   })
 
+  // Instanced draw layer: cards batch by spec, blob shadows draw as one.
+  const cardBatches = createEntityBatches(entityGroup)
+  const shadowBatch = createShadowBatch(
+    entityGroup,
+    shadowGeometry,
+    shadowTexture,
+  )
+
   return {
     renderer,
     composer,
@@ -104,8 +112,23 @@ export const createBoard3dRendererFactoryDeps = () => {
     entityGroup,
     nodes,
     getVisual,
-    createNode: (item: Item, nowMs: number, spawnDelayMs?: number, tileMask?: number): EntityNode =>
-      createEntityNode(createNodeDeps, item, nowMs, spawnDelayMs, tileMask),
+    createNode: (
+      item: Item,
+      nowMs: number,
+      spawnDelayMs?: number,
+      tileMask?: number,
+      overridden?: boolean,
+      active?: boolean,
+    ): EntityNode =>
+      createEntityNode(
+        createNodeDeps,
+        item,
+        nowMs,
+        spawnDelayMs,
+        tileMask,
+        overridden,
+        active,
+      ),
     effects,
     hover: createBoardHoverVisual(world),
     camera,
@@ -116,6 +139,14 @@ export const createBoard3dRendererFactoryDeps = () => {
       materialStore.advanceSpriteFrames(frameIx) +
       advanceNodeGeometries(nodes, frameIx) +
       materialStore.advanceYouOutline(nodes, performance.now()),
+    syncBatches: (
+      nodes: ReadonlyMap<number, EntityNode>,
+      dirty: ReadonlySet<EntityNode> | null,
+    ): boolean => {
+      const changed = cardBatches.flush(nodes, dirty)
+      shadowBatch.flush(nodes, dirty)
+      return changed
+    },
     viewController,
     disposeResources: (groundVisuals: Parameters<
       typeof disposeBoard3dRendererResources
@@ -125,6 +156,10 @@ export const createBoard3dRendererFactoryDeps = () => {
         entityGroup,
         shadowGeometry,
         disposeMaterials: materialStore.dispose,
+        disposeBatches: () => {
+          cardBatches.dispose()
+          shadowBatch.dispose()
+        },
         shadowTexture,
         world,
         groundVisuals,

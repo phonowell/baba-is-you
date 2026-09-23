@@ -29,7 +29,7 @@ import { syncEntityNodes } from './board-3d-node-sync.js'
 import { cardFacesCamera } from './board-3d-shared-item.js'
 
 import type { CanvasTexture } from 'three'
-import type { GameState } from '../logic/types.js'
+import type { GameState, Property } from '../logic/types.js'
 import type { EntityNode } from './board-3d-node-types.js'
 
 const EPSILON = 1e-6
@@ -488,4 +488,208 @@ test('board-3d node roll interpolates along the eased move progress', () => {
   assert.ok(Math.abs(nodeRollAtMs(node, 0)) < EPSILON)
   const mid = nodeRollAtMs(node, 100)
   assert.ok(mid > 0.2 && mid < 0.4)
+})
+
+const ruleState = (
+  items: GameState['items'],
+  activeIds: readonly number[],
+  width = 1,
+  height = 1,
+  overriddenIds: readonly number[] = [],
+): GameState => ({
+  ...createState(items),
+  width,
+  height,
+  activeTextIds: new Set(activeIds),
+  overriddenTextIds: new Set(overriddenIds),
+})
+
+const createRuleSyncDeps = (entityGroup: Group, nodes: Map<number, EntityNode>) => ({
+  nodes,
+  getVisual: () => ({
+    key: 'stub',
+    geometry: new PlaneGeometry(0.88, 0.88),
+    material: new MeshStandardMaterial(),
+    frameGeometries: [],
+    facingYaw: undefined,
+    fxColors: [],
+    outlineMaterial: stubOutlineMaterial,
+    outlineTint: stubOutlineTint,
+  }),
+  createNode: createSyncNode(entityGroup),
+  camera: createCamera(),
+})
+
+test('board-3d sync pulses a text card when it joins or leaves an active rule', () => {
+  const { entityGroup } = createFacingRig()
+  const nodes = new Map<number, EntityNode>()
+  const deps = createRuleSyncDeps(entityGroup, nodes)
+  const item = { id: 1, name: 'baba', x: 0, y: 0, isText: true, props: [] }
+
+  // Board entry records the rule state silently — the spawn sweep already
+  // carries the card in; a pulse storm on top would read as noise.
+  syncEntityNodes(ruleState([item], [1]), deps)
+  const node = nodes.get(1)
+  assert.ok(node)
+  assert.equal(node.ruleActive, true)
+  assert.equal(node.pulseStartMs, null)
+
+  // Same marks re-synced: nothing re-arms.
+  syncEntityNodes(ruleState([item], [1]), deps)
+  assert.equal(node.pulseStartMs, null)
+
+  // Dropping out of the active rule arms the sag once.
+  syncEntityNodes(ruleState([item], []), deps)
+  assert.equal(node.ruleActive, false)
+  assert.equal(node.pulseKind, 'rule-off')
+  assert.equal(node.ruleFxDone, false)
+  const armedAt = node.pulseStartMs
+  assert.ok(armedAt !== null)
+
+  // An unchanged resync must not re-arm or restart the pulse.
+  syncEntityNodes(ruleState([item], []), deps)
+  assert.equal(node.pulseStartMs, armedAt)
+
+  // Rejoining pops the card back up.
+  syncEntityNodes(ruleState([item], [1]), deps)
+  assert.equal(node.pulseKind, 'rule-on')
+  assert.equal(node.ruleFxDone, false)
+
+  // A veto strike (active → overridden-only) sags through the same
+  // boundary crossing; being freed from the strike pops again.
+  node.pulseStartMs = null
+  node.pulseKind = null
+  node.ruleFxDone = true
+  syncEntityNodes(ruleState([item], [], 1, 1, [1]), deps)
+  assert.equal(node.pulseKind, 'rule-off')
+  assert.equal(node.ruleOverridden, true)
+  node.pulseStartMs = null
+  node.pulseKind = null
+  node.ruleFxDone = true
+  syncEntityNodes(ruleState([item], []), deps)
+  assert.equal(node.pulseKind, 'rule-on')
+  assert.equal(node.ruleOverridden, false)
+})
+
+test('board-3d sync staggers simultaneous rule pulses in view order', () => {
+  const { entityGroup } = createFacingRig()
+  const nodes = new Map<number, EntityNode>()
+  const deps = createRuleSyncDeps(entityGroup, nodes)
+  const items = [
+    { id: 1, name: 'baba', x: 0, y: 0, isText: true, props: [] },
+    { id: 2, name: 'is', x: 1, y: 0, isText: true, props: [] },
+    { id: 3, name: 'you', x: 2, y: 0, isText: true, props: [] },
+  ]
+
+  syncEntityNodes(ruleState(items, [], 3, 1), deps)
+  syncEntityNodes(ruleState(items, [1, 2, 3], 3, 1), deps)
+
+  const starts = [1, 2, 3].map((id) => {
+    const node = nodes.get(id)
+    assert.equal(node?.pulseKind, 'rule-on')
+    return node?.pulseStartMs ?? -1
+  })
+  // A formed rule sweeps card to card: every start is distinct and the
+  // spread matches the configured stagger.
+  assert.equal(new Set(starts).size, 3)
+  assert.ok(Math.abs(Math.max(...starts) - Math.min(...starts) - 110) < EPSILON)
+})
+
+test('board-3d sync ripples object entities when rules change their props', () => {
+  const { entityGroup } = createFacingRig()
+  const nodes = new Map<number, EntityNode>()
+  const deps = createRuleSyncDeps(entityGroup, nodes)
+  const wallRow = (props: readonly Property[]): GameState['items'] =>
+    [1, 2, 3].map((id, x) => ({
+      id,
+      name: 'wall',
+      x,
+      y: 0,
+      isText: false,
+      props: [...props],
+    }))
+
+  // Board entry records props silently — no pulse storm on mount.
+  syncEntityNodes(ruleState(wallRow(['stop']), [], 3, 1), deps)
+  for (const id of [1, 2, 3]) {
+    assert.equal(nodes.get(id)?.pulseStartMs, null)
+    assert.equal(nodes.get(id)?.propSig, 'stop')
+  }
+
+  // `wall is stop` broke: every wall sags through the same boundary
+  // crossing — the object layer answers the text row's farewell.
+  syncEntityNodes(ruleState(wallRow([]), [], 3, 1), deps)
+  for (const id of [1, 2, 3]) {
+    const node = nodes.get(id)
+    assert.equal(node?.pulseKind, 'rule-off')
+    assert.ok(node?.pulseStartMs !== null)
+    assert.equal(node?.ruleFxDone, false)
+  }
+
+  // Same props re-synced: nothing re-arms.
+  const armedAt = nodes.get(1)?.pulseStartMs
+  syncEntityNodes(ruleState(wallRow([]), [], 3, 1), deps)
+  assert.equal(nodes.get(1)?.pulseStartMs, armedAt)
+
+  // Re-formed rule pops every wall back up.
+  nodes.forEach((node) => {
+    node.pulseStartMs = null
+    node.pulseKind = null
+    node.ruleFxDone = true
+  })
+  syncEntityNodes(ruleState(wallRow(['stop']), [], 3, 1), deps)
+  for (const id of [1, 2, 3]) {
+    assert.equal(nodes.get(id)?.pulseKind, 'rule-on')
+  }
+})
+
+test('board-3d sync ignores reorder-only prop list churn', () => {
+  const { entityGroup } = createFacingRig()
+  const nodes = new Map<number, EntityNode>()
+  const deps = createRuleSyncDeps(entityGroup, nodes)
+  const wall = (props: readonly Property[]): GameState['items'] => [
+    { id: 1, name: 'wall', x: 0, y: 0, isText: false, props: [...props] },
+  ]
+
+  syncEntityNodes(ruleState(wall(['push', 'stop']), [], 1, 1), deps)
+  const node = nodes.get(1)
+  assert.ok(node)
+  assert.equal(node.pulseStartMs, null)
+
+  // Same set, different array order — the sorted signature is stable.
+  syncEntityNodes(ruleState(wall(['stop', 'push']), [], 1, 1), deps)
+  assert.equal(node.pulseStartMs, null)
+
+  // A same-size swap (stop → pull) reads as a gain: the new nature pops.
+  syncEntityNodes(ruleState(wall(['pull', 'push']), [], 1, 1), deps)
+  assert.equal(node.pulseKind, 'rule-on')
+})
+
+test('board-3d rule pulse pops a joining card and sags a leaving one', () => {
+  const { entityGroup } = createFacingRig()
+  const camera = createCamera()
+  const baseZ = 0.09
+
+  const onNode = createSyncNode(entityGroup)(
+    { id: 1, name: 'baba', x: 0, y: 0, isText: true, props: [] },
+    0,
+  )
+  onNode.spawnStartMs = null
+  onNode.pulseStartMs = 0
+  onNode.pulseKind = 'rule-on'
+  applyNodePose(onNode, 215, camera)
+  assert.ok(onNode.mesh.position.z > baseZ)
+  assert.ok(onNode.mesh.scale.y > 1)
+
+  const offNode = createSyncNode(entityGroup)(
+    { id: 2, name: 'baba', x: 0, y: 0, isText: true, props: [] },
+    0,
+  )
+  offNode.spawnStartMs = null
+  offNode.pulseStartMs = 0
+  offNode.pulseKind = 'rule-off'
+  applyNodePose(offNode, 215, camera)
+  assert.ok(offNode.mesh.scale.y < 1)
+  // A sag does not hop: the card deflates in place.
+  assert.ok(offNode.mesh.position.z <= baseZ + EPSILON)
 })
