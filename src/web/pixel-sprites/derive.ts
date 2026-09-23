@@ -44,7 +44,7 @@ export const contentBounds = (
 }
 
 // Vertical shift inside the same grid; rows outside the grid read as empty.
-export const shiftFrame = (frame: PixelFrame, dy: number): PixelFrame => {
+const shiftFrame = (frame: PixelFrame, dy: number): PixelFrame => {
   if (dy === 0) return frame
   const { width, height } = frameSize(frame)
   return buildFrame(width, height, (x, y) => cellAt(frame, x, y - dy))
@@ -133,7 +133,7 @@ export const spriteContentBounds = (sprite: PixelSprite): FrameBounds | null =>
 
 // All authored depth slices of a volume — the draw rect has to fit the
 // widest slice, not just the front silhouette.
-export const volumeSlices = (volume: PixelVolume): PixelFrame[] => [
+const volumeSlices = (volume: PixelVolume): PixelFrame[] => [
   ...(volume.frontSlices ?? []),
   ...(volume.frame ? [volume.frame] : []),
   ...(volume.backSlices ?? []),

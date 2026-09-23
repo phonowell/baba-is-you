@@ -4,16 +4,22 @@ import type { Direction } from '../../logic/types.js'
 import type { PixelFrame } from './types.js'
 import type { VolumeSlice } from './voxel.js'
 
-// Block arrow pointing right, drawn as the base frame; other directions are
-// derived by rotation/mirror instead of being drawn by hand.
+// Chevron arrowhead pointing right (no shaft); other directions are derived
+// by rotation/mirror instead of being drawn by hand.
 const ARROW_RIGHT: PixelFrame = [
-  '....a......',
-  '....aaa....',
-  'aaaaaaaaa..',
-  'aaaaaaaaaaa',
-  'aaaaaaaaa..',
-  '....aaa....',
-  '....a......',
+  'aa.........',
+  'aaa........',
+  'aaaa.......',
+  '.aaaa......',
+  '..aaaa.....',
+  '...aaaa....',
+  '....aaaa...',
+  '...aaaa....',
+  '..aaaa.....',
+  '.aaaa......',
+  'aaaa.......',
+  'aaa........',
+  'aa.........',
 ]
 
 export const DIRECTION_ARROW_FRAMES: Record<Direction, PixelFrame> = {

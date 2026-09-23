@@ -6,11 +6,14 @@ import { TERRAIN_SPRITES } from './data/terrain.js'
 
 import type { PixelSprite } from './types.js'
 
+// Authored sets override the generated official silhouettes: promoting a
+// sprite means drawing it under the same name in objects/creatures/etc. —
+// the importer's skip-list then stops re-extracting it on the next regen.
 export const PIXEL_SPRITES: Record<string, PixelSprite> = {
+  ...OFFICIAL_OBJECT_SPRITES,
   ...CREATURE_SPRITES,
   ...TERRAIN_SPRITES,
   ...OBJECT_SPRITES,
-  ...OFFICIAL_OBJECT_SPRITES,
   ...MISC_SPRITES,
 }
 

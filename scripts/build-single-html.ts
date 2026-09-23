@@ -8,6 +8,9 @@ import { analyzeMetafile, build, transform } from 'esbuild'
 
 import { levels } from '../src/levels.js'
 import { parseLevel } from '../src/logic/parse-level.js'
+import { frameSize } from '../src/web/pixel-sprites/derive.js'
+import { forEachPixel } from '../src/web/pixel-sprites/blit.js'
+import { PIXEL_SPRITES } from '../src/web/pixel-sprites/index.js'
 import { bindGoldensToLevels } from '../src/web/app-golden-binding.js'
 import { GOLDENS_PAYLOAD, resolveGolden } from '../src/web/app-goldens.js'
 import {
@@ -20,6 +23,7 @@ import {
   rewritePackModule,
   scanPackModuleDeps,
 } from '../src/web/pack-format.js'
+import { encodePng, hexToRgba } from './shared/png.js'
 
 import type { GoldenIndex, GoldenManifestEntry } from '../src/web/app-goldens.js'
 import type { LevelData } from '../src/logic/types.js'
@@ -493,6 +497,42 @@ const renderLoader = (): Promise<string> => {
 const css = await minifyCss(await readFile(stylePath, 'utf8'))
 const loaderCode = await renderLoader()
 
+// ── Favicon ─────────────────────────────────────────────────────────
+// 打包期自动从 PIXEL_SPRITES 注册表光栅化 baba 基帧：forEachPixel 与运行时
+// 绘制同一迭代路径、encodePng 与 sprite 工具同一编码器——sprite 数据或
+// 像素管线改动都会自动同步进 favicon，不存在分叉的静态资源。
+const FAVICON_SCALE = 4
+
+const renderFaviconPng = () => {
+  const sprite = PIXEL_SPRITES.baba
+  const frame = sprite?.frames[0]
+  if (sprite === undefined || frame === undefined) {
+    throw new Error('PIXEL_SPRITES.baba is missing its base frame')
+  }
+  const { width, height } = frameSize(frame)
+  const size = Math.max(width, height) * FAVICON_SCALE
+  const pixels = Buffer.alloc(size * size * 4)
+  const offsetX = Math.floor((size - width * FAVICON_SCALE) / 2)
+  const offsetY = Math.floor((size - height * FAVICON_SCALE) / 2)
+  forEachPixel(frame, sprite.palette, (x, y, color) => {
+    const [r, g, b, a] = hexToRgba(color)
+    const baseX = offsetX + x * FAVICON_SCALE
+    const baseY = offsetY + y * FAVICON_SCALE
+    for (let dy = 0; dy < FAVICON_SCALE; dy += 1) {
+      for (let dx = 0; dx < FAVICON_SCALE; dx += 1) {
+        const i = ((baseY + dy) * size + baseX + dx) * 4
+        pixels[i] = r
+        pixels[i + 1] = g
+        pixels[i + 2] = b
+        pixels[i + 3] = a
+      }
+    }
+  })
+  return encodePng(size, size, pixels)
+}
+
+const faviconHref = `data:image/png;base64,${renderFaviconPng().toString('base64')}`
+
 const renderHtmlDocument = (inlineScript: string) =>
   minifyHtml(
     [
@@ -504,6 +544,7 @@ const renderHtmlDocument = (inlineScript: string) =>
       // safe-area-inset paddings in style.css can do their job.
       '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
       '<meta name="theme-color" content="#242e3e">',
+      `<link rel="icon" type="image/png" href="${faviconHref}">`,
       '<title>Baba Is You</title>',
       `<style>${css}</style>`,
       '</head>',

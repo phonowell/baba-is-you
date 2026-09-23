@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { OBJECT_GLYPHS } from '../../view/render-config.js'
+import { levels } from '../../levels.js'
+import { parseLevel } from '../../logic/parse-level.js'
 import {
   ensureFrames,
   frameSize,
@@ -20,10 +21,14 @@ import { PIXEL_SPRITES, spriteForName } from './index.js'
 
 import type { PixelFrame } from './types.js'
 
-test('pixel sprites cover every renderable object glyph', () => {
-  const missing = Object.keys(OBJECT_GLYPHS).filter(
-    (name) => !spriteForName(name),
-  )
+test('pixel sprites cover every non-text entity used in levels', () => {
+  const names = new Set<string>()
+  for (const rawLevel of levels) {
+    for (const item of parseLevel(rawLevel).items) {
+      if (!item.isText) names.add(item.name)
+    }
+  }
+  const missing = [...names].filter((name) => !spriteForName(name))
   assert.deepEqual(missing, [])
 })
 
@@ -171,14 +176,15 @@ test('direction arrow tips point along each direction', () => {
   const painted = (frame: PixelFrame, x: number, y: number): boolean =>
     frame[y]?.[x] === 'a'
   const right = DIRECTION_ARROW_FRAMES.right
-  assert.ok(painted(right, 10, 3), 'right tip missing')
-  assert.ok(!painted(right, 0, 0), 'right frame paints outside the shaft/head')
+  assert.ok(painted(right, 7, 6), 'right tip missing')
+  assert.ok(!painted(right, 10, 0), 'right frame paints the top-right corner')
+  assert.ok(!painted(right, 0, 6), 'right chevron notch should stay open')
   const down = DIRECTION_ARROW_FRAMES.down
-  assert.ok(painted(down, 3, 10), 'down tip missing')
+  assert.ok(painted(down, 6, 7), 'down tip missing')
   const left = DIRECTION_ARROW_FRAMES.left
-  assert.ok(painted(left, 0, 3), 'left tip missing')
+  assert.ok(painted(left, 3, 6), 'left tip missing')
   const up = DIRECTION_ARROW_FRAMES.up
-  assert.ok(painted(up, 3, 0), 'up tip missing')
+  assert.ok(painted(up, 6, 3), 'up tip missing')
 })
 
 // The vetoed-rule mark must read as an X: symmetric on both axes, painted

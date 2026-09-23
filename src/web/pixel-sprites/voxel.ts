@@ -2,11 +2,11 @@ import { BufferAttribute, BufferGeometry } from 'three'
 
 import {
   WOBBLE_PHASES,
-  frameSize,
   spriteFrames,
   wobbleShift,
   wobbleVolume,
 } from './derive.js'
+import { forEachPixel } from './blit.js'
 
 import type { FrameBounds, PixelFrame, PixelSprite, PixelVolume } from './types.js'
 
@@ -136,18 +136,10 @@ const paintedCells = (
   dx = 0,
   dy = 0,
 ): Map<number, [number, number, number]> => {
-  const { width, height } = frameSize(frame)
   const cells = new Map<number, [number, number, number]>()
-  for (let y = 0; y < height; y += 1) {
-    const row = frame[y] ?? ''
-    for (let x = 0; x < width; x += 1) {
-      const key = row[x] ?? '.'
-      if (key === '.') continue
-      const color = palette[key]
-      if (!color) continue
-      cells.set(cellKey(x + dx, y + dy), hexToLinearRgb(color))
-    }
-  }
+  forEachPixel(frame, palette, (x, y, color) => {
+    cells.set(cellKey(x + dx, y + dy), hexToLinearRgb(color))
+  })
   return cells
 }
 
