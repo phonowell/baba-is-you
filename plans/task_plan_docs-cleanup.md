@@ -24,7 +24,7 @@
 - [x] AGENTS.md 目录结构补 `src/web/pixel-sprites/`；verify 命令补 `data/baba` 依赖
 - [x] 删除 docs/llm-seo-report.md（一次性审计快照，建议项未落地）
 - [x] 删除 .codex/skills/threejs-postprocessing/SKILL.md（通用教程，零项目内容）
-- [ ] `pnpm lint` 校验编码与 lint
+- [x] `pnpm lint` 校验编码与 lint
 
 ## 边界
 - `plans/task_plan_*.md` 为任务记录，完成项保留不改写历史

@@ -86,3 +86,34 @@ Status: in-progress
 - [x] 社区解答复测新增验证：031 Leaf Chamber、101 Floaty Platforms、257 Power Generator
 - [x] 测试：+8 个 eat/lock 回归（step-official-vocabulary + step-open-shut 断言改官方语义），767 全绿
 - reshard-0b（shard 0 栈溢出重跑）跑的是修复前快照；其产出 golden 靠 replay 测试兜底，分歧的删了重解
+
+## 进度更新（五）— 9 个 oracle 回放差距清零 + 新一轮 sweep
+
+- [x] **全部 9 个真实引擎差距修复并 oracle 验证**（`golden-diff` 全程零分叉 win）：54 同名叠词共享推挤判定、70 `empty is pull` 伪单位链、134 `x is word` 不动点级联、197 shift reason 沿推挤链传播+防饿死、214 and 链重复实例/皮带放行计数、215 `not s is not o` 按类型展开、218 float latch 时序 + stacked-word 失败变体提升、222 unstable word-rule 守卫；220 为陈旧记录（本就 parity）
+- [x] `pnpm check` 856 全绿、`pnpm build` 通过；`181`/`2-5-0` 两个 golden 因 float-latch 时序重录并经 oracle 验证
+- [ ] sweep 重跑中（`run-reruns.sh`：shard 0/1/3/0b，15s/关）；定点重解：`527-after-hours` 已解（38 步）、`220`/`368` 仍 cutoff（更深 budget 或 macro 待 sweep）
+- [ ] 6 个双输陈旧录制处置中：定点重解 13/110/154/264（shard 未覆盖的），112/217 由 sweep 覆盖
+
+## 进度更新（六）— powered checkedconds 崩溃修复 + 续跑
+
+- [x] **reshard-0 二次栈溢出的根因修复**：`rule-match.ts` 的 `powered*` 条件分支扫描 `X IS POWER*` 规则并重测其条件，但没有任何访问集——`powered bolt is power` 这类自指规则（或互指环）导致 `matchesCondition`↔`matchesRuleSubject` 无限互递归（[352] ELECTRICITY 必现）。对照官方 `conditions.lua`：`testcond` 入口把当前规则 conds 标进 `checkedconds`，powered/feeling 扫描跳过已标记候选；另有 `poweredstatus[fullname]` 每回合缓存。移植：`matchesRuleSubject`/`matchesCondition`/`matchesFeeling` 贯穿 `visited: Set<Rule>`（替代 feeling 旧的 depth>3 截断），powered 结果按 prop 缓存在 `context.poweredStatus`（仅顶层求值写入，与官方 `checkedconds_ == nil` 门控一致）；powered 候选补上 `!subjectNegated`（官方排除 `not x` 电源）。`feeling` 的 depth>3 守卫被 visited-set 取代（官方对合法深链不截断）。+1 测试，858 全绿，352 四策略不再崩
+- [x] 续跑链 `tools-out/solve/run-resume.sh` 全部跑完（9/22 20:12 → 22:11，~2h）：reshard-1 solved=0/exh=3/cut=39，reshard-3 solved=0/exh=1/cut=37，reshard-0c solved=0/exh=1/cut=25 —— **powered 修复生效，全程零栈溢出**（352 正常 cutoff）；probe-154 cutoff、probe-turns cutoff（states 上限）、probe-220/368 macro-only 300s 仍 cutoff
+- [x] 社区解吸纳收尾：emit-audit3 审计后把 **11 个已验证社区 golden 并入 goldens/**（8 个 gap-fix 关 + 220 + 178/194），campaign-bound 240→251，`pnpm check` 869 全绿；harbor 55 条全部已被覆盖。真未覆盖仅 {13,112,213,217,264} —— 社区输入双引擎皆输 + 求解器 cutoff
+- [ ] 现状：329 goldens（251 campaign-bound + 78 fixture-bound）；剩余 ~315 关无 winning 记录，下一步 = handoff open-task-4 的 cutoff 二轮（更大 depth/预算）
+
+## 进度更新（七）— 工作区审查收尾 + 性能优化
+
+- [x] **审查发现全部处置**：
+  - 恢复 4 个误删 goldens（`4/1-0`、`4/3-0`、`4/8-0`、`4/extra-1-0`）——逐条回放 hash 一致且 win，无替代无文档
+  - `rules-subjects.ts` 双重发射修复：`{near|keke} keke is push` 句首无主语时死词提升 + 空主语回退各发射一次 → `keke is push` ruleCounts=2 双倍堆叠；官方 `finals` 对同 unit-ids 句子去重，合并为单次发射。+2 测试（含 collectRuleInstances multiplicity 断言）
+  - `rules.ts` `pruneUnstableWordInstances` 注释改写——原文夸大 `group` rescue 范围（实际受同主语/all/not-短语门控）
+  - `move-batch-runtime.ts` stamp 语义：推/拉创建的 arrow 继承创建者 visit（首检即「下一迭代」可见已 drain backlog）；未采用全局 tick（会同迭代过度可见，偏离官方 `movelist` 按迭代 drain 的语义）
+- [x] **性能优化（语义无损，bench 89418 steps 平均 0.24→0.207ms/step ~14%，重 transform 关更明显）**：
+  - `rule-match.ts`：无条件规则跳过 `visited` Set 分配（绝大多数调用）
+  - `resolve-transforms.ts`：subject 候选预筛（保序——首变体决定源身份）；`negated`/`namesAtCell` 惰性化（`x is all` 才付 O(items)）；`selfDeleted` 只扫 object-negated 规则；文件自耗 23%→7%
+  - `phases-movement.ts`：`movesOf`/`beltShiftCount` 改用 subject 分桶（与 `createRuleBuckets` 同构），不再全规则扫描
+  - `move-single.ts`/`move-batch.ts`：无 `hold` 单位时跳过 `before` 快照与 `carryHeldRiders`
+  - `teleport.ts`：无 tele 关卡跳过 `resolveLevelProps`；pad<2 时跳过全量 clone；pad 处理改 byCell 索引（pads×items → pads×格内占用）
+- [x] 二轮自审：发现分桶破坏多 transform 目标序（`x is rock` + `all is jelly` 并存时 first 变体漂移）→ 改为保序 field-filter 预筛
+- [x] `pnpm check` 875 全绿（lint 0/0、tsc 净、875/875）、`pnpm build` 通过
+- 剩余热点（结构性，再优化需语义风险）：step 编排闭包 ~20%、move-single fixpoint ~10%、rule-match 条件求值 ~8%

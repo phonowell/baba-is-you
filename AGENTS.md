@@ -19,7 +19,7 @@
   - 操作符：`IS/HAS/MAKE/EAT/WRITE/FEAR/FOLLOW/MIMIC/PLAY/BECOME`
   - 连接与否定：`AND/NOT`
   - 条件：`ON/NEAR/FACING/NEXTTO/FACEDBY/SEEING/WITHOUT/ABOVE/BELOW/BESIDELEFT/BESIDERIGHT/FEELING` + 前缀位 `LONELY/IDLE/OFTEN/SELDOM/POWERED(2/3)`
-  - 特殊名词：`TEXT/EMPTY/ALL/GROUP(2/3)/LEVEL`；字母单位 `a-z/0-9/sharp/flat`（type-5 文字）不单独成词，只在相邻 ≥2 格的字母行/列中拼出词典词参与规则（`letter-words.ts`，对齐官方 `letterunits.lua`）
+  - 特殊名词：`TEXT/EMPTY/ALL/GROUP(2/3)/LEVEL`；字母单位 `a-z/0-9/sharp/flat/ab/ba`（type-5 文字）不单独成词，只在相邻 ≥2 格的字母行/列中拼出词典词参与规则（`letter-words.ts`，对齐官方 `letterunits.lua`；含 `play` 文本时切换为音符词典）
   - 属性词：以 `src/logic/types.ts` 的 `CORE_PROPERTIES` 为准
 - 修改规则词表时同步：`src/logic/types.ts`、`src/logic/rules*.ts`、`src/view/render-config.ts`、相关测试；若已集中导出语法集合，禁止再手写镜像副本
 - Web 渲染约束：入口在 `src/web/app.ts`；3D 渲染使用 `src/web/board-3d-renderer*.ts` 体系，是唯一场景，不实现 2D/无 WebGL 回退；必须保证可释放（`dispose`）
@@ -33,7 +33,8 @@
 ## 核心命令
 - `pnpm check`：lint + type-check + test 一步验证（改动后默认先跑它）
 - `pnpm build`：构建本地预览单文件（`release-local/baba-is-you.html`，无域名锁）
-- `pnpm build:deploy`：构建部署版（`release/` 下壳 HTML + 受门控 bundle，仅 auvya.com 可运行）
+- `pnpm build:fast`：同上但用快速 gzip（watch 循环用；产物仅调试用，勿部署）
+- `pnpm build:deploy`：构建部署版（`release/` 下壳 HTML + 受门控 bundle + `payloads/` 懒加载文件，仅 auvya.com 可运行）
 - `pnpm deploy`：构建部署版并部署到 `auvya.com/baba`（流程与坑位见 `docs/deploy.md`）
 - `pnpm watch`：监听并自动 build
 - `pnpm test`：运行 `src/**/*.test.ts`
@@ -53,8 +54,12 @@
 - `src/logic/rules-override.ts`：规则实例源格溯源与被否决规则划分
 - `goldens/**/*.json`：通关回放快照，由 `src/logic/goldens.test.ts` 全量回放断言；`scripts/port-rust-goldens.ts` 可从 `../baba/goldens` 重新生成
 - `src/tools/import-official-levels.ts`：官方关卡导入/校验（独立脚本入口，只依赖 `logic`）
-- `scripts/build-single-html.mjs`：Web 构建脚本（默认本地单文件；`--deploy` 产壳+锁定 bundle）
-- `docs/logic-architecture.md`：逻辑流水线说明
+- `scripts/build-single-html.ts`：Web 构建脚本（默认本地单文件；`--deploy` 产壳+锁定 bundle+懒加载 payload；`--fast`/`--raw` 跳重压缩）
+- `docs/README.md`：文档索引与维护约定
+- `docs/logic-architecture.md`：逻辑流水线说明（阶段表、规则运行时、empty/level/transform 语义）
+- `docs/web-architecture.md`：Web 应用分层（store/reducer、命令管线、输入源、回放、生命周期）
+- `docs/rendering-3d.md`：3D 渲染体系（`board-3d-*` 与 `pixel-sprites/` 管线、按需渲染与释放）
+- `docs/level-data.md`：关卡数据源与格式、官方导入链、goldens 录制-校验-绑定
 - `docs/solver-handoff.md`：关卡求解器现状与待办（`src/logic/solve.ts` + `src/tools/solve-levels.ts`）
 - `docs/deploy.md`：部署到 `auvya.com/baba` 的流程与边界（`wrangler.toml` + `src/tools/deploy-worker.ts`）
 
@@ -68,6 +73,7 @@
 - 输入/状态管理改动：至少覆盖“有效操作”和“无效操作”两类测试，防止把未生效命令当成已处理
 - 3D runtime/生命周期改动：至少覆盖 RAF 停止、资源释放、尺寸变化同步、dispose 后阻断后续工作
 - 构建链路改动：至少执行 `pnpm build` 验证输出可打开
+- 验收优先探针而非浏览器：以测试、脚本、命令输出等可断言手段验证行为；浏览器预览仅用于探针覆盖不到的视觉确认
 - 涉及 3 步以上任务：在 `plans/task_plan_{suffix}.md` 维护计划与状态
 
 ## 代码规范

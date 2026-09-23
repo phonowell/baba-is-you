@@ -71,4 +71,6 @@
 
 ## 验证
 - `pnpm verify-levels:official`：0 unknown tile key；剩余 mismatch 均为合法 `[tiles]` 覆盖诊断
-- `pnpm check` 全绿（500 tests）；`pnpm build` 通过；goldens 回放不受影响；29 个含 level/empty 规则的真实关卡冒烟 60 步 0 崩溃
+- `pnpm check` 全绿（842 tests / 314 goldens 全绿）；`pnpm build` 通过
+- Oracle 逐帧对齐完成（本轮）：TELE 同名配对+每回合重触发、`x is not x` 自删、faller 朝向保持、`fallblock` 帧末执行、`x is level` 产物规则惰性——全部对照官方 Lua sim 零偏差验证；方法细节与 sim 保真坑位见 `docs/solver-handoff.md`「Official-engine oracle」
+- 回放分歧结案：168=sim 幻影（非引擎 bug）、226=录制于四连通 near 的失效输入（已换 oracle 验证的 55 步解重录）、248=oracle 缺 letterunits 元数据（引擎无误）；094/098/106/176/207/228 过期 hash 已重录

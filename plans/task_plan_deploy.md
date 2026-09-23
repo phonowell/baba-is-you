@@ -20,8 +20,8 @@
 - [x] package.json deploy 脚本 + wrangler devDep
 - [x] pnpm-workspace.yaml allowBuilds
 - [x] 部署上线：`auvya.com/baba`、`/baba/`、任意子路径均 200
-- [ ] `pnpm check` 全绿：worker 文件 lint/type-check 已过；
-  当前卡点是他人在途的 `scripts/build-single-html.mjs`（require-await），与本轮无关
+- [x] `pnpm check` 全绿：当时的卡点 `scripts/build-single-html.mjs`
+  （require-await）已随 `.mjs` → `.ts` 重写解决
 
 ## 备注
 - Workers assets 对 `*.html` 做 canonical 重定向（`/x.html` → `/x`），
