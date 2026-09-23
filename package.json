@@ -17,8 +17,9 @@
   "license": "MIT",
   "name": "baba-is-you",
   "scripts": {
-    "build": "node scripts/build-single-html.mjs",
-    "build:deploy": "node scripts/build-single-html.mjs --deploy",
+    "build": "tsx scripts/build-single-html.ts",
+    "build:deploy": "tsx scripts/build-single-html.ts --deploy",
+    "build:fast": "tsx scripts/build-single-html.ts --fast",
     "check": "pnpm lint && pnpm type-check && pnpm test",
     "deploy": "pnpm build:deploy && wrangler deploy",
     "import-levels:official": "tsx src/tools/import-official-levels.ts",

@@ -34,7 +34,11 @@ test-report.md
 /data
 release/baba-is-you.html
 release/baba-is-you.js
+/release/payloads
 /release-local
 
 # Wrangler local state
 /.wrangler
+
+# CodeGraph index
+/.codegraph

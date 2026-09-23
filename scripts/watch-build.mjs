@@ -9,7 +9,7 @@ const scriptsDirPath = path.dirname(currentFilePath)
 const rootDirPath = path.resolve(scriptsDirPath, '..')
 const watchTargets = [
   path.join(rootDirPath, 'src'),
-  path.join(rootDirPath, 'scripts', 'build-single-html.mjs'),
+  path.join(rootDirPath, 'scripts', 'build-single-html.ts'),
   // The bundle embeds golden replays + their level sources.
   path.join(rootDirPath, 'goldens'),
   path.join(rootDirPath, 'levels'),
@@ -37,12 +37,14 @@ const runBuild = () => {
     return
   }
   building = true
+  // --fast swaps zopfli for plain gzip: a few % larger payload, but the
+  // rebuild loop lands in ~2s instead of ~20s.
   const child = isWindows
-    ? spawn('cmd.exe', ['/d', '/s', '/c', 'pnpm build'], {
+    ? spawn('cmd.exe', ['/d', '/s', '/c', 'pnpm run build:fast'], {
         cwd: rootDirPath,
         stdio: 'inherit',
       })
-    : spawn('pnpm', ['build'], {
+    : spawn('pnpm', ['run', 'build:fast'], {
         cwd: rootDirPath,
         stdio: 'inherit',
       })

@@ -9,6 +9,9 @@ type WorkerEnv = {
 const BASE_PATH = '/baba'
 const ENTRY_PATH = '/baba-is-you'
 const BUNDLE_SEGMENT = '/baba-is-you.js'
+// 懒加载 payload（3D chunk、goldens 数据等）落 release/payloads/，与
+// bundle 同一门控：仅同源子资源请求可拿。
+const PAYLOADS_PREFIX = '/payloads/'
 
 // Workers assets 对 `*.html` 有 canonical 重定向（`/x.html` → `/x`），
 // 取资源必须走无扩展名形式，否则 307 会把请求带出 `/baba` 路由。
@@ -23,14 +26,19 @@ const withSecurityHeaders = (response: Response, cacheControl: string): Response
   return new Response(response.body, { status: response.status, headers })
 }
 
-// 游戏 bundle 只允许被 auvya.com 页面发起的子资源请求加载：
+// 游戏 bundle 与懒加载 payload 只允许被 auvya.com 页面发起的子资源请求加载：
 // 直接访问（none）、外站嵌入（cross-site/same-site）或无该头（curl 等）一律 403。
 // 响应用 private + Vary，防止共享缓存把 200 泄漏给无 header 的请求。
-const serveBundle = async (request: Request, env: WorkerEnv, url: URL): Promise<Response> => {
+const serveGatedAsset = async (
+  request: Request,
+  env: WorkerEnv,
+  url: URL,
+  assetPath: string,
+): Promise<Response> => {
   if (request.headers.get('sec-fetch-site') !== 'same-origin') {
     return new Response('forbidden', { status: 403 })
   }
-  url.pathname = BUNDLE_SEGMENT
+  url.pathname = assetPath
   const response = await env.ASSETS.fetch(new Request(url.toString(), request))
   if (!response.ok) return response
   const gated = withSecurityHeaders(response, 'private, max-age=300')
@@ -48,7 +56,12 @@ const serveApp = async (request: Request, env: WorkerEnv): Promise<Response> => 
   }
 
   const relativePath = url.pathname.slice(BASE_PATH.length) || '/'
-  if (relativePath === BUNDLE_SEGMENT) return serveBundle(request, env, url)
+  if (relativePath === BUNDLE_SEGMENT) {
+    return serveGatedAsset(request, env, url, BUNDLE_SEGMENT)
+  }
+  if (relativePath.startsWith(PAYLOADS_PREFIX)) {
+    return serveGatedAsset(request, env, url, relativePath)
+  }
 
   url.pathname = relativePath === '/' ? ENTRY_PATH : assetPath(relativePath)
   let response = await env.ASSETS.fetch(new Request(url.toString(), request))

@@ -7,8 +7,9 @@
 //   - replay the recorded inputs on the live file; if that reaches a win,
 //     rewrite the golden against the live file (dropping stale levelData
 //     embeds — the live layout is canonical again)
-//   - otherwise, if the golden embeds `levelData`, verify the recorded
-//     layout still wins and leave the file untouched
+//   - otherwise, if the golden embeds `levelData`, replay against the
+//     recorded layout; a still-winning run gets a fresh hash trajectory
+//     on that layout (intermediate snapshots drift with engine fixes)
 //   - otherwise report the failure and leave the file untouched
 //
 // Usage: tsx scripts/resnapshot-goldens.ts [--out goldens]
@@ -37,6 +38,7 @@ const walk = (dir: string): string[] =>
 
 type Golden = {
   level: string
+  levelIndex?: number
   levelData?: LevelData
   inputs: string
   initial: string
@@ -46,7 +48,6 @@ type Golden = {
 }
 
 let rewritten = 0
-let keptEmbed = 0
 let failed = 0
 for (const path of walk(OUT).sort()) {
   if (!path.endsWith('.json')) continue
@@ -60,31 +61,37 @@ for (const path of walk(OUT).sort()) {
     level = undefined
   }
 
-  if (level) {
-    const result = replayLevel(level, golden.inputs)
+  const rewrite = (levelData: LevelData, extra: Record<string, unknown>) => {
+    const result = replayLevel(levelData, golden.inputs)
     const winIx = result.states.findIndex((state) => state.status === 'win')
-    if (winIx >= 0) {
-      // states[] records one entry per consumed input — skip codes push
-      // none — so the winning press is the (winIx + 1)-th non-skip char.
-      let cutLen = 0
-      let consumed = 0
-      for (const code of golden.inputs) {
-        cutLen += 1
-        if (decodeReplayInput(code).kind === 'skip') continue
-        consumed += 1
-        if (consumed > winIx) break
-      }
-      const cutInputs = golden.inputs.slice(0, cutLen)
-      const cut = replayLevel(level, cutInputs)
-      const next = {
-        level: golden.level,
-        inputs: cutInputs,
-        initial: cut.initial,
-        hashes: cut.hashes,
-        final: cut.snapshots[cut.snapshots.length - 1] ?? '',
-        status: cut.finalStatus,
-      }
-      writeFileSync(path, `${JSON.stringify(next, null, 1)}\n`)
+    if (winIx < 0) return false
+    // states[] records one entry per consumed input — skip codes push
+    // none — so the winning press is the (winIx + 1)-th non-skip char.
+    let cutLen = 0
+    let consumed = 0
+    for (const code of golden.inputs) {
+      cutLen += 1
+      if (decodeReplayInput(code).kind === 'skip') continue
+      consumed += 1
+      if (consumed > winIx) break
+    }
+    const cutInputs = golden.inputs.slice(0, cutLen)
+    const cut = replayLevel(levelData, cutInputs)
+    const next = {
+      level: golden.level,
+      ...extra,
+      inputs: cutInputs,
+      initial: cut.initial,
+      hashes: cut.hashes,
+      final: cut.snapshots[cut.snapshots.length - 1] ?? '',
+      status: cut.finalStatus,
+    }
+    writeFileSync(path, `${JSON.stringify(next, null, 1)}\n`)
+    return true
+  }
+
+  if (level) {
+    if (rewrite(level, {})) {
       rewritten += 1
       console.log(
         `✓ ${name}${golden.levelData ? ' (re-pinned to live file)' : ''}`,
@@ -94,11 +101,17 @@ for (const path of walk(OUT).sort()) {
   }
 
   if (golden.levelData) {
-    const result = replayLevel(golden.levelData, golden.inputs)
-    const winIx = result.states.findIndex((state) => state.status === 'win')
-    if (winIx >= 0) {
-      keptEmbed += 1
-      console.log(`· ${name} (kept recorded layout)`)
+    // Embedded-layout goldens still pin their recorded board; when the
+    // replay still wins, refresh the hash trajectory too — intermediate
+    // snapshots drift with engine fixes even when the inputs still solve.
+    if (rewrite(golden.levelData, {
+      ...(golden.levelIndex !== undefined
+        ? { levelIndex: golden.levelIndex }
+        : {}),
+      levelData: golden.levelData,
+    })) {
+      rewritten += 1
+      console.log(`· ${name} (re-hashed on recorded layout)`)
       continue
     }
     console.log(`✗ ${name}: recorded layout no longer wins`)
@@ -109,4 +122,4 @@ for (const path of walk(OUT).sort()) {
   console.log(`✗ ${name}: live file does not win and no recorded layout`)
   failed += 1
 }
-console.log(`rewritten=${rewritten} keptEmbed=${keptEmbed} failed=${failed}`)
+console.log(`rewritten=${rewritten} failed=${failed}`)
