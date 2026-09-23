@@ -134,7 +134,7 @@ record stays valid only because replay uses the embedded board).
   diffs for 54/70/134/197/214/215/218/220/222. `220` turned out to be
   already parity-correct (its old failure record was stale). Fixes are
   items 17–22 in the gap list below.
-- **`pnpm check` green (875 tests), `pnpm build` green.**
+- **`pnpm check` green (900 tests), `pnpm build` green.**
 - Two goldens re-recorded under the new float-latch timing:
   `goldens/2/5-0.json` and `goldens/181-victory-spring.json` — the
   re-record was oracle-verified (`golden-diff 181` zero-diff win).
@@ -184,8 +184,8 @@ record stays valid only because replay uses the embedded board).
 - The earlier flat-file count (~24 suspects) was inflated by variant
   files for already-covered levels and a stale sweep predating the
   `runStages` teleported-guard fix — 95/232 flipped to win on recheck.
-- `pnpm check` green (**875 tests**: +4 restored `goldens/4/*` fixtures,
-  +2 rule-multiplicity regressions over 869), `pnpm build` green.
+- `pnpm check` green (**900 tests** — later dedup/render-perf rounds added
+  coverage over the 875 noted above), `pnpm build` green.
   Step() perf ~14% faster on the 89k-step bench (0.24→0.207 ms/step;
   `resolve-transforms` self-cost 23%→7%) — semantics-preserving passes
   documented in `plans/task_plan_solver-sweep.md` 进度更新（七）.

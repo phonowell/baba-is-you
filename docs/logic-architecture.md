@@ -47,20 +47,25 @@ a single static table, in gameplay order:
 |-------|--------------|------|
 | `player-move` | Input move for `you`/`you2`/`3d` units; `reverse` units run a second pass in the flipped direction | reapply-properties |
 | `auto-move` | `follow` re-aims (aim-only, never moves); then `move`/`auto`/`chill`/`nudge*` self-movers and `fear` flees move through the batch engine; `empty is move/auto` cells push too | reuse-rules |
-| `gravity` | `fall`/`fall*` units drop until blocked (official `fallblock` — resolves each cell through the movement check) | reapply-properties |
 | `shift` | `shift` conveyor pass | recollect-rules |
 | `direction-faces` | `up`/`down`/`left`/`right` props force facing; `turn`/`deturn` rotate a quarter turn | reuse-rules |
 | `transform` | `x is y` noun transforms + `x become y`; `x is x` vetoes the whole transform set for x; `empty is <noun>` spawns into empty cells | recollect-rules |
 | `back` | `x is back` rewinds movers to their pre-step cell (official undo-buffer restore) — after all movement, before interactions, so the restored position still collides | reuse-rules |
-| `interactions` | Destruction & pickup checks: `open`/`shut`, `defeat`, `sink`, `hot`/`melt`, `weak`, `bonus`, `boom`, co-cell `eat` | recollect-rules |
+| `more` | `x is more` grows into free neighbor cells — before the destruction checks (official `block()` order), so a copy landing on a soft hazard resolves in the same turn | recollect-rules |
+| `interactions` | Destruction & pickup checks: `open`/`shut`, `defeat`, `sink`, `hot`/`melt`, `weak`, `boom`, co-cell `eat` | recollect-rules |
 | `teleport` | `tele` pairing, RNG seeded by `turn` | recollect-rules |
 | `make` | `x make y` spawns | recollect-rules |
 | `write` | `x write y` spawns text | recollect-rules |
-| `more` | `x is more` grows into free neighbor cells | recollect-rules |
+| `bonus` | `bonus` self-pickup — the official post-`make` you-sweep, so a unit made onto a `you` this turn is collected immediately | reuse-rules |
+| `gravity` | `fall`/`fall*` units drop until blocked (official `fallblock` — resolves each cell through the movement check) | reapply-properties |
 
-Creation verbs (`make`/`write`/`more`) run at the end on purpose: official
-ordering spawns *after* destruction checks, so a `you` survives one turn on
-the hazard it just made (JAYWALKERS UNITED's grass trail).
+The ordering mirrors the official frame: `more` copies land *before*
+sink/melt/defeat/eat; creation verbs (`make`/`write`) spawn *after* the
+destruction checks, so a `you` survives one turn on the hazard it just made
+(JAYWALKERS UNITED's grass trail); `bonus` pickup runs in the post-`make`
+you-sweep; and `gravity` is `fallblock()` at frame end — a unit shifted
+onto a ledge column falls the same turn, while a faller landing on a
+`defeat` tile survives until the next turn's `block()`.
 
 ## Per-Stage Synchronization
 
@@ -290,13 +295,13 @@ src/logic/
   game-types.ts         GameState/Item/LevelData/LevelMeta
   state.ts              createInitialState (collect → transform → re-collect → props)
   step.ts               step() / prepareStep() — frame resolve + stage loop + win/lose
-  step/phase-list.ts    STEP_STAGES: the 12-stage table + sync kinds
+  step/phase-list.ts    STEP_STAGES: the 13-stage table + sync kinds
   step/phases.ts        direction-faces + more
   step/phases-movement.ts  auto-move (follow/fear/move/auto/chill/nudge/empty), shift, fall, back
   step/move-single*.ts  player-move engine
   step/move-batch*.ts   simultaneous-move engine (auto-move/shift/gravity)
   step/move-core.ts     shared grid/verdict primitives
-  step/interactions.ts  destruction/pickup checks
+  step/interactions.ts  destruction/pickup checks + bonus self-pickup
   step/spawn-by-rule.ts + make.ts/write.ts   rule-driven spawns
   step/teleport.ts      tele pairing (turn-seeded)
   step/win.ts           checkWin / hasAnyYou

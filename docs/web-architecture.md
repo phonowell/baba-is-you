@@ -25,6 +25,13 @@ DOM events ──► app-events / app-pointer / app-gamepad   (raw input → Gam
             app-draw ──► view HTML (menu / game-view) + board-3d runtime mount·sync
 ```
 
+`app.ts` keeps campaign parsing lazy: `levelData` is a `Proxy` that runs
+`parseLevel` on first index access and fills real array slots, so every
+downstream consumer (`env.levels`, golden resolution, previews) sees a
+full `LevelData[]` while a session only pays the parse for boards it
+enters or previews. Menu titles come from a title-only scan of the same
+grammar (~0.2 ms for all 566 levels vs ~18 ms for full parses).
+
 ## State & Actions
 
 `app-model.ts` is a pure reducer:
@@ -32,10 +39,12 @@ DOM events ──► app-events / app-pointer / app-gamepad   (raw input → Gam
 - `WebAppStateData`: `mode` (`menu` | `game`), `menuSelectedLevelIndex`,
   `levelIndex`, `state` (logic `GameState`), `history` (undo stack),
   `replay`, `customLevel` (a golden's recorded board, outside the campaign
-  list), `showReferenceDialog`, `lastGameActionMs`, `levelCount`.
+  list), `showReferenceDialog`, `showReplayConfirm` (the Solution button's
+  confirmation modal), `lastGameActionMs`, `levelCount`.
 - `WebAppAction`: `select-menu-level`, `enter-game`, `return-to-menu`,
   `reset-level`, `move`, `undo`, `replay-step`, `start-replay`,
-  `toggle/close-reference-dialog`, `mark-game-action-handled`.
+  `toggle/close-reference-dialog`, `open/close-replay-confirm`,
+  `mark-game-action-handled`.
 - `toWebAppSnapshot` projects the view-facing slice; `hasViewStateChanged`
   is the store's notify gate — a dispatch that changes nothing notifies
   nobody.
@@ -74,9 +83,11 @@ haptics.
 
 ## Input Sources
 
-- **Keyboard** — `createWindowKeydownHandler` (`app-events.ts`): Esc closes
-  the reference dialog first; otherwise the mode's mapper runs through the
-  cooldown gate; `preventDefault` only on handled commands.
+- **Keyboard** — `createWindowKeydownHandler` (`app-events.ts`): an open
+  replay confirm swallows everything except Esc (cancel) and Enter
+  (commit); Esc closes the reference dialog next; otherwise the mode's
+  mapper runs through the cooldown gate; `preventDefault` only on
+  handled commands.
 - **Pointer** — `createAppPointerHandlers` (`app-pointer.ts`): game-board
   only. One press = at most one command: crossing `SWIPE_MIN_PX` (24)
   consumes the press as a move swipe; release under threshold is a tap →
@@ -87,8 +98,10 @@ haptics.
   (starts on `gamepadconnected`, stops when `getGamepads()` is empty).
   `select` toggles the reference dialog on its press edge; `x`/`start`
   are edge-only; `a`, `b` and held directions repeat on a 300 ms delay /
-  140 ms cadence (still gated by the game cooldown). `rumble()` drives
-  dual-rumble where offered.
+  140 ms cadence (still gated by the game cooldown). While either modal
+  (reference dialog or replay confirm) is open, all input is swallowed
+  except `b`, which cancels it. `rumble()` drives dual-rumble where
+  offered.
 - **Hover** — `createBoardHover` (`app-hover.ts`): in-scene cell marker +
   a small chip listing the cell's coordinates and cards. Recomputes after
   every draw so a parked cursor tracks items moving under it.
@@ -105,10 +118,18 @@ store plus called on resize (60 ms debounce) and initial mount.
 - **Menu** (`view/render-menu-html.ts`): full grid, in-place updates on
   selection change (class flip + position readout + preview start-index —
   full innerHTML re-renders would restart the entrance cascade and reset
-  scroll). The preview canvas is painted by `menu-preview.ts` (pixel-sprite
-  board thumbnail). Cells with no bound golden dim (`hasSolution`).
-- **Game** (`app-game-view.ts`): board container, HUD buttons, status line,
-  outcome overlay, reference dialog (controls + active rules), hover tip.
+  scroll). `orderMenuLevels` sorts solvable-first — a bound replay is what
+  the menu calls "has a solution" — and `menuOrder` maps each grid slot
+  back to its campaign index (the reducer does the same translation on
+  `enter-game`/`return-to-menu`). The preview canvas is painted by
+  `menu-preview.ts` (pixel-sprite board thumbnail). Cells with no bound
+  golden dim (`hasSolution`).
+- **Game** (`app-game-view.ts`): board container, toolbar, outcome
+  overlay, reference dialog (controls + active rules), the
+  replay-confirm modal, hover tip. The toolbar splits into two
+  clusters — level badge + the bulb-marked Solution verb (when a golden
+  is bound)
+  on the left, the elastic status/hint line + Controls on the right.
   Rebuilt on board signature change; cheap fields update in place.
 - **Board 3D**: `mountAndSyncBoard3d` (`board-3d-mount.ts`) is the lazy seam:
   it `import()`s `board-3d-lazy.ts` (the chunk that pulls in Three.js +
@@ -146,6 +167,10 @@ store plus called on resize (60 ms debounce) and initial mount.
   object identity then layout signature (the replay board IS the golden's
   own LevelData). A failed payload read clears the memo so the next
   request retries cleanly.
+- The Solution button never plays directly: `play-replay` opens the
+  `showReplayConfirm` modal (playback rebuilds the board, so the ask
+  names the lost progress); only its `confirm-replay` — or Enter — runs
+  `playReplay` → `start-replay`. Backdrop clicks, Cancel and Esc dismiss.
 - `app-replay.ts` drives playback: one `replay-step` per 500 ms tick while
   `isReplaying()`; the timer exists only during playback and dies on
   finish, back-out, or dispose. `replay-step` consumes one `u/d/l/r/w/z`
@@ -201,6 +226,7 @@ src/web/
   board-3d-mount.ts       async mount guard (pending invalidation, retry, dispose)
   menu-preview.ts         menu preview canvas painter
   host-gate.ts            deploy hostname lock
+  style.css               app stylesheet (menu/game DOM, forced-landscape rotation)
   board-3d-*.ts           3D renderer (see docs/rendering-3d.md)
   pixel-sprites/          sprite data → frames → blit/voxel
   clay-config.ts          single fixed visual preset + readability mix

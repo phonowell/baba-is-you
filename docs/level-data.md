@@ -60,6 +60,11 @@ verify  → -verify.ts                        `pnpm verify-levels:official`
   `Chasm-Extra 1`), which the official engine derives from the hub map's
   `mapid` + entry style — the map lets importers resolve those names to
   campaign indices.
+- Sibling importer `src/tools/import-official-sprites.ts` extracts the
+  official `Data/Sprites/{name}_0_*.png` art into
+  `src/web/pixel-sprites/data/objects-official.ts` (generated — promote a
+  sprite by hand-drawing it under the same name in the authored data
+  files, see [docs/rendering-3d.md](./rendering-3d.md)).
 
 ## Goldens
 
