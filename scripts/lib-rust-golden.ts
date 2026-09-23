@@ -1,7 +1,8 @@
 // Shared helpers for decoding the predecessor Rust project's golden replays
 // (`*.ron.br`: brotli-compressed RON tuple of (screens, inputs, palette)).
 
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { join } from 'node:path'
 import { brotliDecompressSync } from 'node:zlib'
 
 import type { LevelData, LevelItem } from '../src/logic/types.js'
@@ -15,7 +16,7 @@ export type Ron =
 const tokenize = (s: string): string[] =>
   s.match(/"(?:[^"\\]|\\.)*"|[()[\],:]|[\w$]+/g) ?? []
 
-export const parseRon = (s: string): Ron => {
+const parseRon = (s: string): Ron => {
   const tokens = tokenize(s)
   let pos = 0
   const value = (): Ron => {
@@ -157,4 +158,37 @@ export const loadRustGolden = (path: string): RustGolden => {
     return RUST_INPUT_CHARS[tag === 'Go' ? dir : String(tag)] ?? '?'
   })
   return { screens, inputs }
+}
+
+// Strict layout identity for "did the recording match the live file":
+// unlike the dir-blind `layoutSignature` in src/logic/helpers.ts, facing
+// counts — a rotated mover is a different board.
+export const strictLayoutSignature = (level: LevelData): string =>
+  level.items
+    .map(
+      (item) =>
+        `${item.name}${item.isText ? '!' : ''}@${item.x},${item.y}@${item.dir ?? 'right'}`,
+    )
+    .sort()
+    .join(';')
+
+// Maps a `goldens/*.ron.br` name back to its `levels/*.txt` fixture:
+// `12/extra-1.ron.br` → `levels/12-*/extra-1-*.txt`. Returns undefined
+// when the name doesn't parse or no fixture matches.
+export const findLevelFile = (rel: string): string | undefined => {
+  const parsed = /^(?:(\d+)\/)?(extra-\d+|[a-z0-9]+)(?:-\d+)?\.ron\.br$/.exec(rel)
+  if (!parsed) return undefined
+  const [, world, selector] = parsed
+  const dirs = world
+    ? readdirSync('levels').filter((e) => e.startsWith(`${world}-`))
+    : ['']
+  for (const dir of dirs) {
+    const abs = join('levels', dir)
+    if (!statSync(abs).isDirectory()) continue
+    const hit = readdirSync(abs).find(
+      (e) => e.startsWith(`${selector}-`) && e.endsWith('.txt'),
+    )
+    if (hit) return join(abs, hit)
+  }
+  return undefined
 }

@@ -1,24 +1,10 @@
 #!/usr/bin/env node
 import {
-  detectConflictState,
   ensureClean,
-  runGitCapture,
+  ensureNoInProgressState,
+  requireWorktreeBranch,
   runGitFast,
 } from "./git-utils.js";
-
-const ALLOWED_BRANCHES = new Set(["worktree-1", "worktree-2", "worktree-3"]);
-
-const exitWith = (message) => {
-  console.error(message);
-  process.exit(1);
-};
-
-const ensureNoInProgressState = (cwd) => {
-  const state = detectConflictState(cwd);
-  if (state.inMerge) exitWith("merge in progress: resolve or abort first");
-  if (state.inRebase) exitWith("rebase in progress: resolve or abort first");
-  if (state.conflicts) exitWith("conflicts detected: resolve first");
-};
 
 const parseArgs = (argv) => {
   const options = { base: "main" };
@@ -42,10 +28,7 @@ const parseArgs = (argv) => {
 };
 
 const { base } = parseArgs(process.argv.slice(2));
-const currentBranch = runGitCapture(["rev-parse", "--abbrev-ref", "HEAD"]);
-if (currentBranch === "HEAD") exitWith("detached HEAD is not supported");
-if (currentBranch === base) exitWith(`run from a non-${base} branch`);
-if (!ALLOWED_BRANCHES.has(currentBranch)) exitWith("run from worktree-1/2/3 only");
+const currentBranch = requireWorktreeBranch(base);
 
 ensureNoInProgressState();
 ensureClean(process.cwd(), currentBranch);

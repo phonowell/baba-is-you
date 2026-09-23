@@ -3,20 +3,15 @@ import { existsSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 import {
-  detectConflictState,
   ensureClean,
+  ensureNoInProgressState,
+  exitWith,
   parseWorktrees,
+  requireWorktreeBranch,
   runGit,
   runGitCapture,
   runGitFast,
 } from "./git-utils.js";
-
-const ALLOWED_BRANCHES = new Set(["worktree-1", "worktree-2", "worktree-3"]);
-
-const exitWith = (message) => {
-  console.error(message);
-  process.exit(1);
-};
 
 const parseArgs = (argv) => {
   const options = { base: "main", plansDir: "plans" };
@@ -46,13 +41,6 @@ const parseArgs = (argv) => {
   return options;
 };
 
-const ensureNoInProgressState = (cwd) => {
-  const state = detectConflictState(cwd);
-  if (state.inMerge) exitWith("merge in progress: resolve or abort first");
-  if (state.inRebase) exitWith("rebase in progress: resolve or abort first");
-  if (state.conflicts) exitWith("conflicts detected: resolve first");
-};
-
 const clearPlansDirectory = (repoRoot, plansDirName) => {
   const plansDir = join(repoRoot, plansDirName);
   if (!existsSync(plansDir)) return;
@@ -69,11 +57,7 @@ const clearPlansDirectory = (repoRoot, plansDirName) => {
 
 const { base, plansDir } = parseArgs(process.argv.slice(2));
 const repoRoot = runGitCapture(["rev-parse", "--show-toplevel"]);
-const currentBranch = runGitCapture(["rev-parse", "--abbrev-ref", "HEAD"]);
-
-if (currentBranch === "HEAD") exitWith("detached HEAD is not supported");
-if (currentBranch === base) exitWith(`run from a non-${base} branch`);
-if (!ALLOWED_BRANCHES.has(currentBranch)) exitWith("run from worktree-1/2/3 only");
+const currentBranch = requireWorktreeBranch(base);
 
 ensureNoInProgressState();
 clearPlansDirectory(repoRoot, plansDir);

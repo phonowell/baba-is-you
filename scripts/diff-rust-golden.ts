@@ -7,19 +7,20 @@
 //
 // Usage: tsx scripts/diff-rust-golden.ts <golden.ron.br>
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { readFileSync } from 'node:fs'
 
 import { parseLevel } from '../src/logic/parse-level.js'
 import { createInitialState } from '../src/logic/state.js'
 import { step } from '../src/logic/step.js'
 import {
   entityItem,
+  findLevelFile,
   levelFromScreen,
   loadRustGolden,
+  strictLayoutSignature,
 } from './lib-rust-golden.js'
 
-import type { Direction, GameState, LevelData } from '../src/logic/types.js'
+import type { Direction, GameState } from '../src/logic/types.js'
 
 const rustScreenCells = (level: unknown): Map<string, string[]> => {
   const cells = new Map<string, string[]>()
@@ -69,30 +70,6 @@ const diffCells = (
   return out
 }
 
-const layoutOf = (l: LevelData): string =>
-  l.items
-    .map((i) => `${i.name}${i.isText ? '!' : ''}@${i.x},${i.y}@${i.dir ?? 'right'}`)
-    .sort()
-    .join(';')
-
-const findLevelFile = (rel: string): string => {
-  const m = /^(?:(\d+)\/)?(extra-\d+|[a-z0-9]+)(?:-\d+)?\.ron\.br$/.exec(rel)
-  if (!m) throw new Error(`cannot map golden name ${rel}`)
-  const [, world, selector] = m
-  const dirs = world
-    ? readdirSync('levels').filter((e) => e.startsWith(`${world}-`))
-    : ['']
-  for (const dir of dirs) {
-    const abs = join('levels', dir)
-    if (!statSync(abs).isDirectory()) continue
-    const hit = readdirSync(abs).find(
-      (e) => e.startsWith(`${selector}-`) && e.endsWith('.txt'),
-    )
-    if (hit) return join(abs, hit)
-  }
-  throw new Error(`no level for ${rel}`)
-}
-
 const goldenPath = process.argv[2]
 if (!goldenPath) {
   console.error('Usage: tsx scripts/diff-rust-golden.ts <golden.ron.br>')
@@ -101,6 +78,7 @@ if (!goldenPath) {
 
 const rel = goldenPath.replace(/.*goldens\//, '')
 const levelPath = findLevelFile(rel)
+if (!levelPath) throw new Error(`no level for ${rel}`)
 const { screens, inputs } = loadRustGolden(goldenPath)
 
 const parsed = parseLevel(readFileSync(levelPath, 'utf8'))
@@ -108,7 +86,9 @@ const firstScreen = screens[0]
 if (!firstScreen) throw new Error('golden has no screens')
 const recorded = levelFromScreen(firstScreen, parsed.title)
 const level =
-  layoutOf(recorded) !== layoutOf(parsed) ? recorded : parsed
+  strictLayoutSignature(recorded) !== strictLayoutSignature(parsed)
+    ? recorded
+    : parsed
 console.log(
   `golden=${rel} level=${levelPath} inputs=${inputs.length} screens=${screens.length}` +
     (level === recorded ? ' [recorded layout]' : ''),

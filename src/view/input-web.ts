@@ -1,4 +1,5 @@
 import type { GameCommand } from './input.js'
+import type { Direction } from '../logic/types.js'
 
 export type BrowserKeyboardEvent = {
   key: string
@@ -11,24 +12,36 @@ export type BrowserKeyboardEvent = {
 const normalizeKey = (key: string): string =>
   key.length === 1 ? key.toLowerCase() : key
 
+// WASD and arrows both emit the shared direction verbs — in game they
+// move, in the menu they navigate the grid.
+const moveDirectionFor = (key: string): Direction | undefined => {
+  switch (key) {
+    case 'ArrowUp':
+    case 'w':
+      return 'up'
+    case 'ArrowRight':
+    case 'd':
+      return 'right'
+    case 'ArrowDown':
+    case 's':
+      return 'down'
+    case 'ArrowLeft':
+    case 'a':
+      return 'left'
+    default:
+      return undefined
+  }
+}
+
 export const mapGameKeyboardEvent = (
   event: BrowserKeyboardEvent,
 ): GameCommand => {
   if (event.ctrlKey || event.metaKey) return { type: 'noop' }
 
+  const direction = moveDirectionFor(normalizeKey(event.key))
+  if (direction) return { type: 'move', direction }
+
   switch (normalizeKey(event.key)) {
-    case 'ArrowUp':
-    case 'w':
-      return { type: 'move', direction: 'up' }
-    case 'ArrowRight':
-    case 'd':
-      return { type: 'move', direction: 'right' }
-    case 'ArrowDown':
-    case 's':
-      return { type: 'move', direction: 'down' }
-    case 'ArrowLeft':
-    case 'a':
-      return { type: 'move', direction: 'left' }
     case ' ':
     case 'Space':
     case 'Spacebar':
@@ -57,19 +70,10 @@ export const mapMenuKeyboardEvent = (
 ): GameCommand => {
   if (event.ctrlKey || event.metaKey) return { type: 'noop' }
 
+  const direction = moveDirectionFor(normalizeKey(event.key))
+  if (direction) return { type: 'move', direction }
+
   switch (normalizeKey(event.key)) {
-    case 'ArrowUp':
-    case 'w':
-      return { type: 'move', direction: 'up' }
-    case 'ArrowDown':
-    case 's':
-      return { type: 'move', direction: 'down' }
-    case 'ArrowLeft':
-    case 'a':
-      return { type: 'move', direction: 'left' }
-    case 'ArrowRight':
-    case 'd':
-      return { type: 'move', direction: 'right' }
     case 'PageUp':
       return { type: 'page', direction: 'up' }
     case 'PageDown':

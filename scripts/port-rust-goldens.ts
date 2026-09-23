@@ -7,63 +7,31 @@
 //
 // Usage: tsx scripts/port-rust-goldens.ts [--src ../baba] [--out goldens]
 
-import { readdirSync, readFileSync, statSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 
 import { parseLevel } from '../src/logic/parse-level.js'
 import { replayLevel } from '../src/logic/replay.js'
-import { levelFromScreen, loadRustGolden } from './lib-rust-golden.js'
+import { argValue, walkFiles } from '../src/tools/cli.js'
+import {
+  findLevelFile,
+  levelFromScreen,
+  loadRustGolden,
+  strictLayoutSignature,
+} from './lib-rust-golden.js'
 
 import type { LevelData } from '../src/logic/types.js'
 
-const args = process.argv.slice(2)
-const argValue = (name: string, fallback: string): string => {
-  const ix = args.indexOf(name)
-  return ix >= 0 ? (args[ix + 1] ?? fallback) : fallback
-}
-const SRC = argValue('--src', '../baba')
-const OUT = argValue('--out', 'goldens')
-
-const walk = (dir: string): string[] =>
-  readdirSync(dir).flatMap((entry) => {
-    const path = join(dir, entry)
-    return statSync(path).isDirectory() ? walk(path) : [path]
-  })
+const SRC = argValue('src') ?? '../baba'
+const OUT = argValue('out') ?? 'goldens'
 
 // Some recordings predate later level-file edits (e.g. legend orientation
 // nitpicks). When the recorded first screen disagrees with the current file,
 // rebuild the level from the recording itself so the golden stays testable.
 
-const layoutOf = (l: LevelData): string =>
-  l.items
-    .map(
-      (i) =>
-        `${i.name}${i.isText ? '!' : ''}@${i.x},${i.y}@${i.dir ?? 'right'}`,
-    )
-    .sort()
-    .join(';')
-
-const findLevelFile = (rel: string): string | undefined => {
-  const parsed = /^(?:(\d+)\/)?(extra-\d+|[a-z0-9]+)(?:-\d+)?\.ron\.br$/.exec(rel)
-  if (!parsed) return undefined
-  const [, world, selector] = parsed
-  const dirs = world
-    ? readdirSync('levels').filter((e) => e.startsWith(`${world}-`))
-    : ['']
-  for (const dir of dirs) {
-    const abs = join('levels', dir)
-    if (!statSync(abs).isDirectory()) continue
-    const hit = readdirSync(abs).find(
-      (e) => e.startsWith(`${selector}-`) && e.endsWith('.txt'),
-    )
-    if (hit) return join(abs, hit)
-  }
-  return undefined
-}
-
 let recorded = 0
 let skipped = 0
-for (const path of walk(join(SRC, 'goldens')).sort()) {
+for (const path of walkFiles(join(SRC, 'goldens')).sort()) {
   if (!path.endsWith('.ron.br')) continue
   const rel = relative(join(SRC, 'goldens'), path)
   const levelPath = findLevelFile(rel)
@@ -82,7 +50,7 @@ for (const path of walk(join(SRC, 'goldens')).sort()) {
     const firstScreen = golden_.screens[0]
     if (!firstScreen) throw new Error('golden has no screens')
     const recorded = levelFromScreen(firstScreen, levelData.title)
-    if (layoutOf(recorded) !== layoutOf(levelData)) {
+    if (strictLayoutSignature(recorded) !== strictLayoutSignature(levelData)) {
       levelData = recorded
       usedRecordedLayout = true
     }

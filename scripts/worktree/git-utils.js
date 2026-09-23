@@ -85,3 +85,33 @@ export const ensureClean = (cwd, label) => {
     process.exit(1);
   }
 };
+
+export const exitWith = (message) => {
+  console.error(message);
+  process.exit(1);
+};
+
+export const ensureNoInProgressState = (cwd) => {
+  const state = detectConflictState(cwd);
+  if (state.inMerge) exitWith("merge in progress: resolve or abort first");
+  if (state.inRebase) exitWith("rebase in progress: resolve or abort first");
+  if (state.conflicts) exitWith("conflicts detected: resolve first");
+};
+
+export const ALLOWED_BRANCHES = new Set([
+  "worktree-1",
+  "worktree-2",
+  "worktree-3",
+]);
+
+export const requireWorktreeBranch = (base, cwd) => {
+  const currentBranch = runGitCapture(
+    ["rev-parse", "--abbrev-ref", "HEAD"],
+    cwd,
+  );
+  if (currentBranch === "HEAD") exitWith("detached HEAD is not supported");
+  if (currentBranch === base) exitWith(`run from a non-${base} branch`);
+  if (!ALLOWED_BRANCHES.has(currentBranch))
+    exitWith("run from worktree-1/2/3 only");
+  return currentBranch;
+};

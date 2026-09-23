@@ -23,23 +23,18 @@
 //                                              regenerates from ../baba and
 //                                              drops restored tiles
 
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 
 import { parseAsciiLevel } from '../src/logic/parse-ascii-level.js'
 import { parseLevel } from '../src/logic/parse-level.js'
+import { walkFiles } from '../src/tools/cli.js'
 
 import type { LevelData, LevelItem } from '../src/logic/types.js'
 
 const WRITE = process.argv.includes('--write')
 const BABA_LEVELS = new URL('../../baba/levels/', import.meta.url).pathname
 const OUR_LEVELS = new URL('../levels/', import.meta.url).pathname
-
-const walk = (dir: string): string[] =>
-  readdirSync(dir).flatMap((entry) => {
-    const path = join(dir, entry)
-    return statSync(path).isDirectory() ? walk(path) : [path]
-  })
 
 const statementKey = (item: LevelItem): string => {
   const base = item.isText
@@ -103,7 +98,7 @@ const isAddedTile = (key: string): boolean => /^tile[^!]*@/.test(key)
 let converted = 0
 let mismatched = 0
 let matched = 0
-for (const path of walk(OUR_LEVELS).sort()) {
+for (const path of walkFiles(OUR_LEVELS).sort()) {
   if (!path.endsWith('.txt')) continue
   const rel = relative(OUR_LEVELS, path)
   const babaPath = join(BABA_LEVELS, rel)

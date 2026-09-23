@@ -14,27 +14,17 @@
 //
 // Usage: tsx scripts/resnapshot-goldens.ts [--out goldens]
 
-import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
-import { join, relative } from 'node:path'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { relative } from 'node:path'
 
 import { parseLevel } from '../src/logic/parse-level.js'
 import { replayLevel } from '../src/logic/replay.js'
 import { decodeReplayInput } from '../src/logic/replay-input.js'
+import { argValue, walkFiles } from '../src/tools/cli.js'
 
 import type { LevelData } from '../src/logic/types.js'
 
-const args = process.argv.slice(2)
-const argValue = (name: string, fallback: string): string => {
-  const ix = args.indexOf(name)
-  return ix >= 0 ? (args[ix + 1] ?? fallback) : fallback
-}
-const OUT = argValue('--out', 'goldens')
-
-const walk = (dir: string): string[] =>
-  readdirSync(dir).flatMap((entry) => {
-    const path = join(dir, entry)
-    return statSync(path).isDirectory() ? walk(path) : [path]
-  })
+const OUT = argValue('out') ?? 'goldens'
 
 type Golden = {
   level: string
@@ -49,7 +39,7 @@ type Golden = {
 
 let rewritten = 0
 let failed = 0
-for (const path of walk(OUT).sort()) {
+for (const path of walkFiles(OUT).sort()) {
   if (!path.endsWith('.json')) continue
   const name = relative(OUT, path).replace(/\.json$/, '')
   const golden = JSON.parse(readFileSync(path, 'utf8')) as Golden
