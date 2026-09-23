@@ -60,7 +60,7 @@ export const parseLd = (source: string): LdData => {
   return data
 }
 
-export const parseTileKey = (raw: string | undefined): string | null => {
+const parseTileKey = (raw: string | undefined): string | null => {
   if (!raw) return null
   const match = raw.match(/^(\d+),(\d+)$/)
   if (!match) return null

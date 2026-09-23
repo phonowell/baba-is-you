@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { parseLevel } from '../logic/parse-level.js'
+import { runCliMain } from './cli.js'
 import { createInitialState } from '../logic/state.js'
 import { parseLevelBinary } from './import-official-levels-binary.js'
 import { convertOneLevel } from './import-official-levels-convert.js'
@@ -331,16 +331,4 @@ const main = async (): Promise<void> => {
   )
 }
 
-const isDirectRun = (() => {
-  const argvEntry = process.argv[1]
-  if (!argvEntry) return false
-  return pathToFileURL(path.resolve(argvEntry)).href === import.meta.url
-})()
-
-if (isDirectRun) {
-  main().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error)
-    console.error(message)
-    process.exit(1)
-  })
-}
+runCliMain(import.meta.url, main)

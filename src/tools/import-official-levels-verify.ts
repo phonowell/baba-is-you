@@ -4,6 +4,7 @@ import {
   toTileKey,
 } from './import-official-levels-parse.js'
 import { buildLevelTileMap } from './import-official-levels-tile-map.js'
+import { forEachBoardTile } from './import-official-levels-binary.js'
 
 import type { ParsedLayer } from './import-official-levels-binary.js'
 import type { CanonicalObjectTable } from './import-official-levels-object-table.js'
@@ -104,48 +105,29 @@ export const verifyOfficialImportConsistency = (
       }
     }
 
-    const firstLayer = level.layers[0]
-    if (!firstLayer) continue
-    const rawWidth = firstLayer.width
-    const rawHeight = firstLayer.height
-    const crop = rawWidth > 2 && rawHeight > 2
-    const minX = crop ? 1 : 0
-    const minY = crop ? 1 : 0
-    const maxX = crop ? rawWidth - 2 : rawWidth - 1
-    const maxY = crop ? rawHeight - 2 : rawHeight - 1
-
-    for (const layer of level.layers) {
-      if (layer.width !== rawWidth || layer.height !== rawHeight) continue
-      for (let y = minY; y <= maxY; y += 1) {
-        for (let x = minX; x <= maxX; x += 1) {
-          const index = y * rawWidth + x
-          const tileX = layer.main[index * 2] ?? 255
-          const tileY = layer.main[index * 2 + 1] ?? 255
-          if (tileX === 255 && tileY === 255) continue
-          const tileKey = toTileKey(tileX, tileY)
-          const claims = nameClaimsByTile.get(tileKey)
-          if (claims) {
-            usedTileTruthChecks += 1
-            const actual = tileMap.get(tileKey)
-            const anyMatch =
-              actual &&
-              Array.from(claims).some((name) =>
-                tileEquals(actual, {
-                  name: name.replace(/^text_/, ''),
-                  isText: name.startsWith('text_'),
-                }),
-              )
-            if (!anyMatch) usedTileTruthMismatches += 1
-          }
-          if (!tileMap.get(tileKey)) {
-            unknownTileCounts.set(
-              tileKey,
-              (unknownTileCounts.get(tileKey) ?? 0) + 1,
-            )
-          }
-        }
+    forEachBoardTile(level.layers, (_layer, tileX, tileY) => {
+      const tileKey = toTileKey(tileX, tileY)
+      const claims = nameClaimsByTile.get(tileKey)
+      if (claims) {
+        usedTileTruthChecks += 1
+        const actual = tileMap.get(tileKey)
+        const anyMatch =
+          actual &&
+          Array.from(claims).some((name) =>
+            tileEquals(actual, {
+              name: name.replace(/^text_/, ''),
+              isText: name.startsWith('text_'),
+            }),
+          )
+        if (!anyMatch) usedTileTruthMismatches += 1
       }
-    }
+      if (!tileMap.get(tileKey)) {
+        unknownTileCounts.set(
+          tileKey,
+          (unknownTileCounts.get(tileKey) ?? 0) + 1,
+        )
+      }
+    })
   }
 
   const unknownTileKeys = Array.from(unknownTileCounts.entries())

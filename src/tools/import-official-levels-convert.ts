@@ -6,6 +6,10 @@ import {
   toTileKey,
 } from './import-official-levels-parse.js'
 import { buildLevelTileMap } from './import-official-levels-tile-map.js'
+import {
+  croppedBounds,
+  forEachBoardTile,
+} from './import-official-levels-binary.js'
 
 import type { ParsedLayer } from './import-official-levels-binary.js'
 import type { CanonicalObjectTable } from './import-official-levels-object-table.js'
@@ -40,15 +44,8 @@ export const convertOneLevel = (
 ): ConvertOneLevelResult => {
   const firstLayer = layers[0]
   if (!firstLayer) throw new Error(`No layer found in ${fileName}`)
-  const rawWidth = firstLayer.width
-  const rawHeight = firstLayer.height
-  const crop = rawWidth > 2 && rawHeight > 2
-  const width = crop ? rawWidth - 2 : rawWidth
-  const height = crop ? rawHeight - 2 : rawHeight
-  const minX = crop ? 1 : 0
-  const minY = crop ? 1 : 0
-  const maxX = crop ? rawWidth - 2 : rawWidth - 1
-  const maxY = crop ? rawHeight - 2 : rawHeight - 1
+  const bounds = croppedBounds(firstLayer.width, firstLayer.height)
+  const { width, height } = bounds
 
   const tileMap = buildLevelTileMap(ld, global, canon)
   const grouped = new Map<string, Set<string>>()
@@ -57,41 +54,29 @@ export const convertOneLevel = (
   let winTextCount = 0
   let facingTextCount = 0
 
-  for (const layer of layers) {
-    if (layer.width !== rawWidth || layer.height !== rawHeight) continue
-    for (let y = minY; y <= maxY; y += 1) {
-      for (let x = minX; x <= maxX; x += 1) {
-        const index = y * rawWidth + x
-        const tileX = layer.main[index * 2] ?? 255
-        const tileY = layer.main[index * 2 + 1] ?? 255
-        if (tileX === 255 && tileY === 255) continue
-
-        const tileKey = toTileKey(tileX, tileY)
-        let resolved = tileMap.get(tileKey)
-        if (!resolved) {
-          unknownTiles.add(tileKey)
-          resolved = {
-            name: `tile_${tileX}_${tileY}`,
-            isText: false,
-          } satisfies TileDescriptor
-        }
-        if (resolved.isText) {
-          if (resolved.name === 'you') youTextCount += 1
-          if (resolved.name === 'win') winTextCount += 1
-          if (resolved.name === 'facing') facingTextCount += 1
-        }
-
-        const dataValue = layer.data?.[index]
-        const dir = resolved.isText ? undefined : parseDirection(dataValue)
-        const key = toStatementKey(resolved, dir)
-        const xOut = x - minX
-        const yOut = y - minY
-        const coords = grouped.get(key) ?? new Set<string>()
-        coords.add(`${xOut},${yOut}`)
-        grouped.set(key, coords)
-      }
+  forEachBoardTile(layers, (layer, tileX, tileY, x, y, index) => {
+    const tileKey = toTileKey(tileX, tileY)
+    let resolved = tileMap.get(tileKey)
+    if (!resolved) {
+      unknownTiles.add(tileKey)
+      resolved = {
+        name: `tile_${tileX}_${tileY}`,
+        isText: false,
+      } satisfies TileDescriptor
     }
-  }
+    if (resolved.isText) {
+      if (resolved.name === 'you') youTextCount += 1
+      if (resolved.name === 'win') winTextCount += 1
+      if (resolved.name === 'facing') facingTextCount += 1
+    }
+
+    const dataValue = layer.data?.[index]
+    const dir = resolved.isText ? undefined : parseDirection(dataValue)
+    const key = toStatementKey(resolved, dir)
+    const coords = grouped.get(key) ?? new Set<string>()
+    coords.add(`${x - bounds.minX},${y - bounds.minY}`)
+    grouped.set(key, coords)
+  })
 
   const titleRaw =
     ld.general.get('name') ??

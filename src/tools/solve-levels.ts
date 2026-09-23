@@ -1,14 +1,15 @@
 #!/usr/bin/env tsx
 import {
   promises as fs,
-  readdirSync,
   readFileSync,
-  statSync,
 } from 'node:fs'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 
 import { levels } from '../levels.js'
+import {
+  layoutSignature,
+  normalizeLevelTitle,
+} from '../logic/helpers.js'
 import { parseLevel } from '../logic/parse-level.js'
 import { decodeReplayInput } from '../logic/replay-input.js'
 import {
@@ -19,6 +20,7 @@ import {
 import { solveState, solveToLayout } from '../logic/solve.js'
 import { createInitialState } from '../logic/state.js'
 import { step } from '../logic/step.js'
+import { argValue, numArg, runCliMain, walkFiles } from './cli.js'
 
 import type { SolveCaps, SolveResult, SolveStrategy } from '../logic/solve.js'
 import type { GameState, LevelData } from '../logic/types.js'
@@ -47,19 +49,6 @@ type LevelOutcome = {
   ms: number
 }
 
-const argValue = (flag: string): string | undefined => {
-  const index = process.argv.indexOf(`--${flag}`)
-  return index >= 0 ? process.argv[index + 1] : undefined
-}
-
-const numArg = (flag: string, fallback: number): number => {
-  const raw = argValue(flag)
-  if (raw === undefined) return fallback
-  const value = Number(raw)
-  if (!Number.isFinite(value)) throw new Error(`${flag} expects a number`)
-  return value
-}
-
 // Golden record shape mirrors goldens.test.ts: `levelData` embeds the
 // parsed layout so official levels (which have no .txt fixture) replay
 // standalone; `level` stays empty instead of pointing at a missing file.
@@ -83,7 +72,9 @@ export const goldenRecord = (
   }
 }
 
-const slugify = (title: string): string =>
+// Golden/report filenames derive from the level title — exported for the
+// community-solutions importer (import-solutions.ts).
+export const slugify = (title: string): string =>
   title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -104,29 +95,6 @@ const emitGolden = async (
   )
 }
 
-const walkJson = (dir: string): string[] =>
-  readdirSync(dir).flatMap((entry) => {
-    const full = path.join(dir, entry)
-    return statSync(full).isDirectory() ? walkJson(full) : [full]
-  })
-
-// Layout identity matching goldens.test.ts and the web binding —
-// (text-flagged name, cell) set, facing/dupes collapsed.
-const layoutSignature = (level: LevelData): string =>
-  `${level.width}x${level.height}|` +
-  [
-    ...new Set(
-      level.items.map(
-        (item) => `${item.isText ? '!' : ''}${item.name}@${item.x},${item.y}`,
-      ),
-    ),
-  ]
-    .sort()
-    .join(';')
-
-const normalizeTitle = (title: string): string =>
-  title.toLowerCase().replace(/[^a-z0-9]+/g, '')
-
 // Step a state through an input slice — unchanged moves leave the state
 // alone, mirroring replayLevel's history handling without the undo stack
 // (the spliced inputs we generate never contain `z`).
@@ -143,6 +111,29 @@ const replayFrom = (state: GameState, inputs: string): GameState => {
 
 type CampaignEntry = { index: number; data: LevelData }
 
+// Campaign wiring needs two lookup keys per level: a layout signature
+// (dir-blind) and a normalized title. Both the golden resolver and the
+// --skip-goldens filter index the campaign the same way.
+const indexCampaign = (): {
+  campaign: CampaignEntry[]
+  bySignature: Map<string, number[]>
+  byTitle: Map<string, number[]>
+} => {
+  const campaign: CampaignEntry[] = levels.map((source, index) => ({
+    index,
+    data: parseLevel(source),
+  }))
+  const bySignature = new Map<string, number[]>()
+  const byTitle = new Map<string, number[]>()
+  for (const entry of campaign) {
+    const sig = layoutSignature(entry.data)
+    bySignature.set(sig, [...(bySignature.get(sig) ?? []), entry.index])
+    const titleKey = normalizeLevelTitle(entry.data.title)
+    byTitle.set(titleKey, [...(byTitle.get(titleKey) ?? []), entry.index])
+  }
+  return { campaign, bySignature, byTitle }
+}
+
 // Wire a golden to its campaign level. Signature hits are only
 // candidates: the signature ignores `dir`, so an old fixture lacking
 // facings can collide with a campaign board full of directional movers —
@@ -156,7 +147,7 @@ const findCampaignIndex = (
   byTitle: Map<string, number[]>,
 ): number | undefined => {
   const signatureHits = bySignature.get(layoutSignature(level)) ?? []
-  const titleHits = byTitle.get(normalizeTitle(level.title)) ?? []
+  const titleHits = byTitle.get(normalizeLevelTitle(level.title)) ?? []
   const candidates = [
     ...signatureHits,
     ...titleHits.filter((index) => !signatureHits.includes(index)),
@@ -199,20 +190,9 @@ const resolveGoldens = async (
   const segDeadline = numArg('seg-timeout-ms', 8_000)
   const segStates = numArg('seg-max-states', 60_000)
 
-  const campaign: CampaignEntry[] = levels.map((source, index) => ({
-    index,
-    data: parseLevel(source),
-  }))
-  const bySignature = new Map<string, number[]>()
-  const byTitle = new Map<string, number[]>()
-  for (const entry of campaign) {
-    const sig = layoutSignature(entry.data)
-    bySignature.set(sig, [...(bySignature.get(sig) ?? []), entry.index])
-    const title = normalizeTitle(entry.data.title)
-    byTitle.set(title, [...(byTitle.get(title) ?? []), entry.index])
-  }
+  const { campaign, bySignature, byTitle } = indexCampaign()
 
-  const files = walkJson(root)
+  const files = walkFiles(root)
     .filter((file) => file.endsWith('.json'))
     .sort()
   const reports: ResolveReport[] = []
@@ -433,7 +413,7 @@ const main = async (): Promise<void> => {
   // recording was already optimal, `cutoff` stays unknown.
   if (improveDir) {
     const root = path.resolve(process.cwd(), improveDir)
-    const files = walkJson(root).filter((f) => f.endsWith('.json'))
+    const files = walkFiles(root).filter((f) => f.endsWith('.json'))
     let improved = 0
     let optimal = 0
     let unknown = 0
@@ -488,19 +468,8 @@ const main = async (): Promise<void> => {
   const skipIndices = new Set<number>()
   if (skipDir) {
     const root = path.resolve(process.cwd(), skipDir)
-    const campaign: CampaignEntry[] = levels.map((source, index) => ({
-      index,
-      data: parseLevel(source),
-    }))
-    const bySignature = new Map<string, number[]>()
-    const byTitle = new Map<string, number[]>()
-    for (const entry of campaign) {
-      const sig = layoutSignature(entry.data)
-      bySignature.set(sig, [...(bySignature.get(sig) ?? []), entry.index])
-      const titleKey = normalizeTitle(entry.data.title)
-      byTitle.set(titleKey, [...(byTitle.get(titleKey) ?? []), entry.index])
-    }
-    for (const file of walkJson(root).filter((f) => f.endsWith('.json'))) {
+    const { campaign, bySignature, byTitle } = indexCampaign()
+    for (const file of walkFiles(root).filter((f) => f.endsWith('.json'))) {
       const golden = JSON.parse(readFileSync(file, 'utf8')) as {
         level: string
         levelIndex?: number
@@ -647,16 +616,4 @@ const main = async (): Promise<void> => {
   }
 }
 
-const isDirectRun = (() => {
-  const argvEntry = process.argv[1]
-  if (!argvEntry) return false
-  return pathToFileURL(path.resolve(argvEntry)).href === import.meta.url
-})()
-
-if (isDirectRun) {
-  main().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error)
-    console.error(message)
-    process.exit(1)
-  })
-}
+runCliMain(import.meta.url, main)

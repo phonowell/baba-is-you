@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 
 import { levels } from '../levels.js'
+import { runCliMain } from './cli.js'
 import {
   WORLDS,
   isMapFile,
@@ -130,15 +130,4 @@ const main = async (): Promise<void> => {
   console.log(`wrote ${outFile}: ${Object.keys(codeMap).length} codes, ${bound} bound`)
 }
 
-const invokedDirectly = (() => {
-  const argvEntry = process.argv[1]
-  if (!argvEntry) return false
-  return pathToFileURL(path.resolve(argvEntry)).href === import.meta.url
-})()
-
-if (invokedDirectly) {
-  main().catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
-}
+runCliMain(import.meta.url, main)

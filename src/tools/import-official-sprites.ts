@@ -6,8 +6,9 @@
 
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 import zlib from 'node:zlib'
+
+import { argValue, runCliMain } from './cli.js'
 
 type Rgba = readonly [number, number, number, number]
 
@@ -195,16 +196,11 @@ const SPRITE_ALIASES: Record<string, string> = {
   selector: 'hand',
 }
 
-const argValue = (flag: string): string | undefined => {
-  const index = process.argv.indexOf(flag)
-  return index >= 0 ? process.argv[index + 1] : undefined
-}
-
 const main = async (): Promise<void> => {
   const dataDir =
-    argValue('--data-dir') ?? path.join('data', 'Baba Is You', 'Data')
+    argValue('data-dir') ?? path.join('data', 'Baba Is You', 'Data')
   const outPath =
-    argValue('--out') ??
+    argValue('out') ??
     path.join('src', 'web', 'pixel-sprites', 'data', 'objects-official.ts')
   const spritesDir = path.join(dataDir, 'Sprites')
 
@@ -263,9 +259,4 @@ const main = async (): Promise<void> => {
   console.log(`Extracted ${entries.length} sprites → ${outPath}`)
 }
 
-if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  main().catch((error: unknown) => {
-    console.error(error)
-    process.exitCode = 1
-  })
-}
+runCliMain(import.meta.url, main)

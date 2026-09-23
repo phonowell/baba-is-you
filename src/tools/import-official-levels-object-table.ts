@@ -42,7 +42,7 @@ const readPair = (
   return m ? [Number(m[1]), Number(m[2])] : undefined
 }
 
-export const parseCanonicalObjects = (valuesLua: string): CanonicalObjectTable => {
+const parseCanonicalObjects = (valuesLua: string): CanonicalObjectTable => {
   const tableStart = valuesLua.indexOf('tileslist =')
   if (tableStart < 0) throw new Error('values.lua: tileslist not found')
   const body = valuesLua.slice(tableStart)
@@ -76,37 +76,3 @@ export const loadCanonicalObjects = async (
   parseCanonicalObjects(
     await fs.readFile(path.join(dataRoot, 'values.lua'), 'utf8'),
   )
-
-export const canonicalTileKey = (object: CanonicalObject): string =>
-  `${object.tileX},${object.tileY}`
-
-// Reverse lookup: atlas position -> object slot. `default` padding slots
-// share positions with each other and must not shadow real objects.
-const reverseMaps = new WeakMap<CanonicalObjectTable, Map<string, string>>()
-
-export const canonicalObjectIdAt = (
-  canon: CanonicalObjectTable,
-  tileKey: string,
-): string | undefined => {
-  let reverse = reverseMaps.get(canon)
-  if (!reverse) {
-    reverse = new Map<string, string>()
-    const defaults: string[] = []
-    for (const [objectId, object] of canon) {
-      const key = canonicalTileKey(object)
-      if (object.name === 'default') {
-        defaults.push(objectId)
-        continue
-      }
-      if (!reverse.has(key)) reverse.set(key, objectId)
-    }
-    for (const objectId of defaults) {
-      const object = canon.get(objectId)
-      if (!object) continue
-      const key = canonicalTileKey(object)
-      if (!reverse.has(key)) reverse.set(key, objectId)
-    }
-    reverseMaps.set(canon, reverse)
-  }
-  return reverse.get(tileKey)
-}

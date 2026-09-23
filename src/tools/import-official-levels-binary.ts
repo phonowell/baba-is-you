@@ -116,3 +116,67 @@ export const parseLevelBinary = (buffer: Buffer): ParsedLayer[] => {
   state.offset = layrEnd
   return layers
 }
+
+// The .l board carries a one-cell frame around the play area; when the
+// grid is bigger than 2x2 the imported board drops that frame.
+export type CroppedBounds = {
+  crop: boolean
+  minX: number
+  minY: number
+  maxX: number
+  maxY: number
+  width: number
+  height: number
+}
+
+export const croppedBounds = (
+  rawWidth: number,
+  rawHeight: number,
+): CroppedBounds => {
+  const crop = rawWidth > 2 && rawHeight > 2
+  const minX = crop ? 1 : 0
+  const minY = crop ? 1 : 0
+  const maxX = crop ? rawWidth - 2 : rawWidth - 1
+  const maxY = crop ? rawHeight - 2 : rawHeight - 1
+  return {
+    crop,
+    minX,
+    minY,
+    maxX,
+    maxY,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1,
+  }
+}
+
+// Walks every populated tile (atlas pair ≠ 255,255) on the cropped board
+// of each layer matching the first layer's dimensions — the traversal
+// conversion and verification share.
+export const forEachBoardTile = (
+  layers: ParsedLayer[],
+  visit: (
+    layer: ParsedLayer,
+    tileX: number,
+    tileY: number,
+    x: number,
+    y: number,
+    index: number,
+  ) => void,
+): void => {
+  const firstLayer = layers[0]
+  if (!firstLayer) return
+  const { width: rawWidth, height: rawHeight } = firstLayer
+  const bounds = croppedBounds(rawWidth, rawHeight)
+  for (const layer of layers) {
+    if (layer.width !== rawWidth || layer.height !== rawHeight) continue
+    for (let y = bounds.minY; y <= bounds.maxY; y += 1) {
+      for (let x = bounds.minX; x <= bounds.maxX; x += 1) {
+        const index = y * rawWidth + x
+        const tileX = layer.main[index * 2] ?? 255
+        const tileY = layer.main[index * 2 + 1] ?? 255
+        if (tileX === 255 && tileY === 255) continue
+        visit(layer, tileX, tileY, x, y, index)
+      }
+    }
+  }
+}

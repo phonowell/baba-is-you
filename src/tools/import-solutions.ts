@@ -4,12 +4,12 @@ import {
   readdirSync,
 } from 'node:fs'
 import path from 'node:path'
-import { pathToFileURL } from 'node:url'
 
 import { levels } from '../levels.js'
 import { parseLevel } from '../logic/parse-level.js'
 import { replayLevel } from '../logic/replay.js'
-import { goldenRecord } from './solve-levels.js'
+import { argValue, runCliMain, walkFiles } from './cli.js'
+import { goldenRecord, slugify } from './solve-levels.js'
 
 import type { LevelData } from '../logic/types.js'
 
@@ -32,17 +32,6 @@ import type { LevelData } from '../logic/types.js'
 // than the recorded inputs, the golden is emitted under the existing
 // filename so merging the emit dir replaces it. Equal/longer paths and
 // paths that lose keep the incumbent golden untouched.
-
-const argValue = (flag: string): string | undefined => {
-  const index = process.argv.indexOf(`--${flag}`)
-  return index >= 0 ? process.argv[index + 1] : undefined
-}
-
-const slugify = (title: string): string =>
-  title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'level'
 
 const normTitle = (title: string): string =>
   title.toLowerCase().replace(/[^a-z0-9?]+/g, '')
@@ -147,13 +136,7 @@ const main = async (): Promise<void> => {
   const coverageDir = skipDir ?? emitDir
   const covered = new Map<number, { file: string; inputs: number }>()
   if (coverageDir !== undefined) {
-    const walk = (dir: string): string[] =>
-      readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
-        entry.isDirectory()
-          ? walk(path.join(dir, entry.name))
-          : [path.join(dir, entry.name)],
-      )
-    for (const file of walk(coverageDir)) {
+    for (const file of walkFiles(coverageDir)) {
       try {
         const record = JSON.parse(await fs.readFile(file, 'utf8')) as {
           levelIndex?: number
@@ -356,15 +339,4 @@ const main = async (): Promise<void> => {
     console.log(`UNMATCHED titles:\n  ${unmatched.join('\n  ')}`)
 }
 
-const invokedDirectly = (() => {
-  const argvEntry = process.argv[1]
-  if (!argvEntry) return false
-  return pathToFileURL(path.resolve(argvEntry)).href === import.meta.url
-})()
-
-if (invokedDirectly) {
-  main().catch((error) => {
-    console.error(error)
-    process.exit(1)
-  })
-}
+runCliMain(import.meta.url, main)
