@@ -45,7 +45,10 @@ test('step MOVE resolves opposite-direction PUSH movers in one batch', () => {
   const rockA = result.state.items.find((item) => item.id === 2)
   const rockB = result.state.items.find((item) => item.id === 3)
 
-  assert.equal(rockA?.x, 2)
+  // Official movelist order: each rock's push queues the other backward,
+  // then each rock's own move lands — A ends pushed to 0, B's own step
+  // overwrites its queued push (verified against the official engine).
+  assert.equal(rockA?.x, 0)
   assert.equal(rockB?.x, 1)
 })
 
@@ -77,11 +80,11 @@ test('step SHIFT resolves opposite-direction PUSH movers in one batch', () => {
   const rockA = result.state.items.find((item) => item.id === 2)
   const rockB = result.state.items.find((item) => item.id === 3)
 
-  assert.equal(rockA?.x, 2)
+  assert.equal(rockA?.x, 0)
   assert.equal(rockB?.x, 1)
 })
 
-test('step MOVE blocked on both sides keeps original dir', () => {
+test('step MOVE blocked on both sides flips facing', () => {
   const level: LevelData = {
     title: 'move-blocked-keep-dir',
     width: 8,
@@ -106,9 +109,11 @@ test('step MOVE blocked on both sides keeps original dir', () => {
   const result = step(state, 'right')
   const rock = result.state.items.find((item) => item.id === 2)
 
-  assert.equal(result.changed, false)
+  // Official state-3 updatedir() is unconditional: a MOVE mover whose
+  // flip is also blocked still ends facing the reversed direction.
+  assert.equal(result.changed, true)
   assert.equal(rock?.x, 0)
-  assert.equal(rock?.dir, 'right')
+  assert.equal(rock?.dir, 'left')
 })
 
 test('step SHIFT updates dir before movement even when blocked', () => {

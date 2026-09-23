@@ -1,6 +1,6 @@
 import { applyTransforms } from '../resolve.js'
 
-import { applyInteractions } from './interactions.js'
+import { applyBonusPickup, applyInteractions } from './interactions.js'
 import { applyMake } from './make.js'
 import { moveItems } from './move-single.js'
 import {
@@ -50,6 +50,7 @@ type ReuseRulesStage = {
     | 'more'
     | 'back'
     | 'interactions'
+    | 'bonus'
     | 'teleport'
   sync: { kind: 'reuse-rules' }
   run: (
@@ -83,10 +84,20 @@ export const STEP_STAGES: StepStage[] = [
         isYouLike(item) &&
         !hasProp(item, 'sleep') &&
         !hasProp(item, 'broken')
+      // Official take-1 runs `updatedir(v, fdir)` at COLLECTION time:
+      // every non-sleeping you unit's facing becomes the input direction
+      // even when the move itself is cancelled (still/blocked). The
+      // later `is move` take re-reads `unit.values[DIR]` — so a blocked
+      // player's facing is the input direction, not the pre-turn one.
+      const faced = items.map((item) =>
+        isMover(item) && item.dir !== direction
+          ? { ...item, dir: direction }
+          : item,
+      )
       // `reverse` flips the move direction for its own units only — run
       // the two mover classes in separate passes.
       const normal = moveItems(
-        items,
+        faced,
         direction,
         runtime,
         (item) => isMover(item) && !hasProp(item, 'reverse'),
@@ -100,9 +111,23 @@ export const STEP_STAGES: StepStage[] = [
         false,
         true,
       )
+      // `returnolddir`: a reverse mover's queued entry carries its
+      // ORIGINAL facing — the engine's stored DIR stays the input
+      // direction even after a successful reversed move.
+      const reverseIds = new Set<number>()
+      for (const item of faced)
+        if (isMover(item) && hasProp(item, 'reverse')) reverseIds.add(item.id)
+      const restored = reverseIds.size
+        ? flipped.items.map((item) =>
+            reverseIds.has(item.id) && item.dir !== direction
+              ? { ...item, dir: direction }
+              : item,
+          )
+        : flipped.items
       return {
-        items: flipped.items,
-        changed: normal.moved || flipped.moved,
+        items: restored,
+        changed:
+          normal.moved || flipped.moved || faced.some((f, i) => f !== items[i]),
       }
     },
   },
@@ -111,14 +136,6 @@ export const STEP_STAGES: StepStage[] = [
     sync: { kind: 'reuse-rules' },
     run: (items, runtime) => {
       const moved = applyMoveAdjective(items, runtime)
-      return { items: moved.items, changed: moved.moved }
-    },
-  },
-  {
-    name: 'gravity',
-    sync: { kind: 'reapply-properties' },
-    run: (items, runtime) => {
-      const moved = applyFall(items, runtime)
       return { items: moved.items, changed: moved.moved }
     },
   },
@@ -197,6 +214,27 @@ export const STEP_STAGES: StepStage[] = [
     name: 'write',
     sync: { kind: 'recollect-rules' },
     run: (items, runtime) => applyWrite(items, runtime),
+  },
+  {
+    // Official `bonus` pickup sits in the post-`make` you-sweep inside
+    // block() — after every destruction and creation check — so a unit
+    // made onto a `you` this turn is collected immediately.
+    name: 'bonus',
+    sync: { kind: 'reuse-rules' },
+    run: (items, runtime) => applyBonusPickup(items, runtime),
+  },
+  {
+    // Official `fallblock()` is invoked by the native frame AFTER
+    // `block()` — i.e. after moveblock's shift/tele and every
+    // interaction/creation check — so a unit shifted onto a ledge column
+    // falls in the same turn, and a faller landing on a `defeat` tile
+    // survives until next turn's block().
+    name: 'gravity',
+    sync: { kind: 'reapply-properties' },
+    run: (items, runtime) => {
+      const moved = applyFall(items, runtime)
+      return { items: moved.items, changed: moved.moved }
+    },
   },
 ]
 

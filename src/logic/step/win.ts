@@ -1,7 +1,7 @@
 import { keyForLayer } from '../helpers.js'
 import { matchesRuleObjectWord } from '../rule-match.js'
 
-import { hasProp, isYouLike, resolveLevelPropsGlobal } from './shared.js'
+import { hasLatchedFloat, isYouLike, resolveLevelPropsGlobal } from './shared.js'
 
 import type { RuleRuntime } from '../rule-runtime.js'
 import type { Item, Property } from '../types.js'
@@ -30,10 +30,12 @@ export const checkWin = (
   const youLayers = new Set<number>()
   const winLayers = new Set<number>()
   for (const item of items) {
+    // The layer key is the latched `values[FLOAT]` (official `floating()`)
+    // — a float rule formed this turn doesn't re-layer the win check.
     if (isYouLike(item))
-      youLayers.add(keyForLayer(item.x, item.y, width, hasProp(item, 'float')))
+      youLayers.add(keyForLayer(item.x, item.y, width, hasLatchedFloat(item)))
     if (hasWinLike(item))
-      winLayers.add(keyForLayer(item.x, item.y, width, hasProp(item, 'float')))
+      winLayers.add(keyForLayer(item.x, item.y, width, hasLatchedFloat(item)))
   }
   for (const key of youLayers) if (winLayers.has(key)) return true
 
@@ -67,7 +69,7 @@ export const checkWin = (
   const levelYou =
     levelProps.has('you') || levelProps.has('you2') || levelProps.has('3d')
   const floatOk = (item: Item): boolean =>
-    hasProp(item, 'float') === levelFloat
+    hasLatchedFloat(item) === levelFloat
 
   if (levelYou) {
     for (const rule of runtime.buckets.isProperty) {

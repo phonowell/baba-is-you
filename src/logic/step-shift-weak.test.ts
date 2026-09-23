@@ -109,7 +109,7 @@ test('step removes WEAK YOU when blocked during movement', () => {
   assert.equal(result.state.status, 'lose')
 })
 
-test('step keeps WEAK MOVE object when blocked', () => {
+test('step removes WEAK MOVE object when fully blocked', () => {
   const level: LevelData = {
     title: 'weak-move-blocked',
     width: 7,
@@ -135,12 +135,13 @@ test('step keeps WEAK MOVE object when blocked', () => {
 
   const state = createInitialState(level, 0)
   const result = step(state, 'right')
-  const rock = result.state.items.find(
-    (item) => !item.isText && item.name === 'rock',
+  // Officially a `weak` mover that is still blocked after the state-3
+  // flip retry shatters at state 4 (verified against the oracle: the
+  // rock is deleted, not merely stopped).
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'rock'),
+    false,
   )
-
-  assert.equal(rock?.x, 0)
-  assert.equal(rock?.dir, 'right')
 })
 
 test('step removes WEAK object when sharing a cell', () => {

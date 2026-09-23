@@ -87,7 +87,13 @@ export const applyMore = (
         x: nx,
         y: ny,
         props: [],
+        converted: true,
+        spawned: true,
       }
+      // Official `copy()`→`create()`→`addunit`→`statusblock` re-latches
+      // the copy's float from live rules — the source's turn-start latch
+      // doesn't carry over.
+      delete copy.floatLatch
       spawned.push(copy)
       const landed = byCell.get(key)
       if (landed) landed.push(copy)

@@ -1,8 +1,6 @@
-import {
-  isSubjectWord,
-  parseTermChainsWithNext,
-  uniqueTerms,
-} from './rules-parse.js'
+import { isSubjectWord, parseTermChainsWithNext } from './rules-parse.js'
+
+import type { ParsedTerm } from './rules-parse.js'
 
 import {
   asConditionObjectWord,
@@ -12,6 +10,7 @@ import {
   INFIX_CONDITION_WORDS,
   POSTFIX_CONDITION_WORDS,
   PROPERTY_WORDS,
+  RULE_OPERATOR_WORDS,
 } from './types.js'
 
 import type { ReadTermsAt, ScannedTerm } from './rules-parse-terms.js'
@@ -24,9 +23,24 @@ type SubjectPattern = {
   // Cell span (read positions, end-exclusive) this subject's phrase
   // occupies — used to attribute rule text cells for override marking.
   span: { start: number; end: number }
+  // Unit ids spelling this subject word — the official `ids[1]` the
+  // unstable-word-rule guard inspects for non-`text_x` sources.
+  subjectSourceIds?: readonly number[]
 }
 
 const CONDITION_OPERATOR_WORDS = INFIX_CONDITION_WORDS
+
+// Words that can legally continue a sentence after a subject phrase —
+// `and` extends the subject list, operators open the predicate, infix
+// conditions attach a parameter. Any other word stacked on the same
+// cell belongs to a parse variant that officially fails (its `not` /
+// postfix variants promote differently and are not modelled here).
+const SENTENCE_CONTINUATION_WORDS = new Set<string>([
+  'and',
+  'not',
+  ...RULE_OPERATOR_WORDS,
+  ...INFIX_CONDITION_WORDS,
+])
 
 // Type-3 condition words attach to the subject with no parameter — the
 // same slot `lonely` occupies: `BABA IDLE IS YOU`.
@@ -69,29 +83,27 @@ export const collectSubjectPatterns = (
   maxDepth: number,
 ): SubjectPattern[] => {
   const result: SubjectPattern[] = []
-  const seen = new Set<string>()
 
   const addPattern = (subject: SubjectPattern): void => {
-    const key = `${subject.subjectNegated ? '!' : ''}${subject.subject}:${stringifyCondition(
-      subject.condition,
-    )}`
-    if (seen.has(key)) return
-    seen.add(key)
+    // No dedupe: officially each `and`-conjunct lands its own feature
+    // entry, so `a and a is p` counts `a is p` twice (same stacking rule
+    // as duplicated object terms). Distinct parse chains are distinct
+    // official sentences and likewise keep their own copies.
     result.push(subject)
   }
 
   const addSubjectTerms = (
-    subjectTerms: Array<{ word: string; negated: boolean }>,
+    subjectTerms: readonly ParsedTerm[],
     span: { start: number; end: number },
     condition?: RuleCondition,
   ): void => {
-    const subjects = uniqueTerms([subjectTerms])
-    for (const subject of subjects) {
+    for (const subject of subjectTerms) {
       addPattern({
         subject: asSubjectWord(subject.word),
         ...(subject.negated ? { subjectNegated: true } : {}),
         ...(condition ? { condition } : {}),
         span,
+        subjectSourceIds: subject.sourceIds,
       })
     }
   }
@@ -151,12 +163,34 @@ export const collectSubjectPatterns = (
         true,
         true,
       )
-      const subjects = uniqueTerms(subjectChains.chains.map((c) => c.terms))
-      const conditionTerms = uniqueTerms([chain.terms])
+      // Keep every chain term: distinct formations carry their own
+      // `ids[1]` sources — merging them could drop the `text_x` card that
+      // rescues an otherwise-unstable `x is word` (official `findwordunits`
+      // scans each featureindex entry separately).
+      const subjects = subjectChains.chains.flatMap((chain) => chain.terms)
+      const conditionTerms = chain.terms
+      // No resolvable condition object: the phrase fails at the same
+      // point a stacked dead word's resume would land, and official
+      // `finals` dedupes identical sentences (same unit ids), so the
+      // bare `x is y` is emitted once here for both cases.
       if (!subjects.length) {
         addSubjectTerms(conditionTerms, { start: 1, end: chain.next })
         continue
       }
+      // Officially every word stacked on the condition cell spawns its
+      // own sentence-start attempt; a dead word there (a noun/property —
+      // anything that can't continue the subject phrase) fails its
+      // variant, and parsing resumes at the failure point, so each
+      // would-be condition object still emits a bare `x is y` rule.
+      // `baba {near|keke} keke is push` therefore also yields
+      // `keke is push` (Queue level 218 — `keke is push` at step 144).
+      if (
+        nextTerms.some(
+          (term) =>
+            term !== conditionTerm && !SENTENCE_CONTINUATION_WORDS.has(term.word),
+        )
+      )
+        addSubjectTerms(conditionTerms, { start: 1, end: chain.next })
       const spanEnd = Math.max(
         chain.next + conditionTerm.span + nots.offset,
         ...subjectChains.chains.map((subjectChain) => subjectChain.next),
@@ -191,6 +225,7 @@ export const collectSubjectPatterns = (
             ...(subject.negated ? { subjectNegated: true } : {}),
             condition,
             span: { start: 1, end: spanEnd },
+            subjectSourceIds: subject.sourceIds,
           })
         }
       }

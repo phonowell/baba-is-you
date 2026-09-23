@@ -10,7 +10,6 @@ import {
   isPredicateWordForIs,
   keyFor,
   parseTermChainsWithNext,
-  uniqueTerms,
 } from './rules-parse.js'
 import {
   collectBridgedSubjectPatterns,
@@ -51,9 +50,13 @@ const RULE_SCAN_DIRS: Array<[number, number]> = [
 // A produced rule plus the ids of the text items that form its phrase.
 // Rendering uses `cells` to strike out overridden rules: a text item is
 // marked when it participates in an overridden rule and no active one.
+// `subjectSourceIds` records which units spelled the subject word — the
+// official `ids[1]` entry — so the unstable-word-rule guard can tell a
+// `text_x` card from a `word`-prop object spelling its own noun.
 export type RuleInstance = {
   rule: Rule
   cells: number[]
+  subjectSourceIds: readonly number[]
 }
 
 const conditionWords = (condition?: RuleCondition): string[] => {
@@ -68,8 +71,11 @@ export const collectRuleInstances = (
   width: number,
   height: number,
 ): RuleInstance[] => {
-  const grid = new Map<number, string[]>()
+  const grid = new Map<number, LevelItem[]>()
   const textAt = new Map<number, LevelItem[]>()
+  // Letter item ids per cell — the source ids (`unitids`) of spelled
+  // subject words for the unstable-word-rule check.
+  const letterIdsAt = new Map<number, number[]>()
   const letterCells = collectLetterCells(items, width, height)
   for (const item of items) {
     // `word` objects act as their noun in rule text (they contribute the
@@ -90,8 +96,12 @@ export const collectRuleInstances = (
     const isLetter = item.isText && isLetterName(item.name)
     if (!isLetter) {
       const list = grid.get(key) ?? []
-      list.push(item.name)
+      list.push(item)
       grid.set(key, list)
+    } else {
+      const ids = letterIdsAt.get(key) ?? []
+      ids.push(item.id)
+      letterIdsAt.set(key, ids)
     }
     if (item.isText) {
       const cellItems = textAt.get(key) ?? []
@@ -127,6 +137,22 @@ export const collectRuleInstances = (
       byEnd.push(spelled)
       spelledByEnd.set(spelled.endKey, byEnd)
     }
+  }
+
+  // A spelled word's source ids are the letter units along its run —
+  // always more than one cell's worth (or a text-named note), so spelled
+  // subjects are never unstable-word-rule suspects.
+  const spelledSourceIds = new Map<SpelledWord, number[]>()
+  for (const spelled of spelledWords) {
+    const [sdx, sdy] = RULE_SCAN_DIRS[spelled.dir] ?? [1, 0]
+    const sx = spelled.startKey % width
+    const sy = (spelled.startKey - sx) / width
+    const ids: number[] = []
+    for (let i = 0; i < spelled.span; i += 1)
+      ids.push(
+        ...(letterIdsAt.get(keyFor(sx + sdx * i, sy + sdy * i, width)) ?? []),
+      )
+    spelledSourceIds.set(spelled, ids)
   }
 
   const maxDepth = width + height
@@ -198,22 +224,30 @@ export const collectRuleInstances = (
         const key = subjectCellAt(position)
         if (key === undefined) return []
         const terms: ScannedTerm[] = []
-        for (const word of grid.get(key) ?? [])
-          terms.push({ word, span: 1 })
+        for (const item of grid.get(key) ?? [])
+          terms.push({ word: item.name, span: 1, sourceIds: [item.id] })
         for (const spelled of spelledByEnd.get(key) ?? [])
           if (spelled.dir === dirIndex)
-            terms.push({ word: spelled.word, span: spelled.span })
+            terms.push({
+              word: spelled.word,
+              span: spelled.span,
+              sourceIds: spelledSourceIds.get(spelled) ?? [],
+            })
         return terms
       }
       const readObjectTermsAt = (position: number): ScannedTerm[] => {
         const key = objectCellAt(position)
         if (key === undefined) return []
         const terms: ScannedTerm[] = []
-        for (const word of grid.get(key) ?? [])
-          terms.push({ word, span: 1 })
+        for (const item of grid.get(key) ?? [])
+          terms.push({ word: item.name, span: 1, sourceIds: [item.id] })
         for (const spelled of spelledByStart.get(key) ?? [])
           if (spelled.dir === dirIndex)
-            terms.push({ word: spelled.word, span: spelled.span })
+            terms.push({
+              word: spelled.word,
+              span: spelled.span,
+              sourceIds: spelledSourceIds.get(spelled) ?? [],
+            })
         return terms
       }
 
@@ -236,7 +270,11 @@ export const collectRuleInstances = (
         false,
         false,
       )
-      const objectTerms = uniqueTerms(objectChains.chains.map((c) => c.terms))
+      // Officially every `and`-conjunct lands its own `addoption` call —
+      // `x is shift and shift` enters `features` twice and the duplicated
+      // rule stacks (double belts move riders twice). Keep per-chain,
+      // per-term occurrences instead of deduping by word.
+      const objectTerms = objectChains.chains.flatMap((chain) => chain.terms)
       if (!objectTerms.length) continue
 
       // Cells of the full object phrase — the union of every produced
@@ -290,16 +328,134 @@ export const collectRuleInstances = (
                 cells.push(textItem.id)
             }
           }
-          instances.push({ rule, cells })
+          instances.push({
+            rule,
+            cells,
+            subjectSourceIds: subject.subjectSourceIds ?? [],
+          })
         }
       }
     }
   }
 
-  return instances
+  return pruneUnstableWordInstances(instances, items)
 }
 
-const ruleDedupeKey = (rule: Rule): string =>
+const isWordPropRule = (rule: Rule): boolean =>
+  rule.kind === 'is-property' &&
+  rule.object === 'word' &&
+  !rule.objectNegated
+
+// Official `findwordunits` recursion guard (rules.lua): an `x is word`
+// rule whose subject word is spelled by a single unit that is not the
+// `text_x` card — a `word`-prop object naming itself — is unstable. The
+// rescue scan only consults word rules whose subject is the suspect's
+// own, `all`, or a `not` phrase; among those, `all`, `group*`, and
+// `mimic` copies rescue outright, as do `not`-phrases naming a different
+// subject — anything else must cite a real `text_x` tile. An unrescued
+// suspect kills every `x is word`/`not x is word` rule and the parse
+// re-runs without the word prop it carried (the official `never` conds +
+// `code(true)`), collapsing dependent rules the object spelled
+// (e.g. `belt is shift` in Canister).
+const pruneUnstableWordInstances = (
+  instances: RuleInstance[],
+  items: readonly LevelItem[],
+): RuleInstance[] => {
+  const wordInstances: RuleInstance[] = []
+  for (const instance of instances)
+    if (isWordPropRule(instance.rule)) wordInstances.push(instance)
+  if (!wordInstances.length) return instances
+
+  const itemsById = new Map<number, LevelItem>()
+  for (const item of items) itemsById.set(item.id, item)
+
+  const rawSubject = (rule: Rule): string =>
+    rule.subjectNegated ? `not ${rule.subject}` : rule.subject
+
+  const suspects: RuleInstance[] = []
+  // Every `x is word` formation is a potential rescuer — the official scan
+  // inspects each featureindex["word"] entry's full id list for a
+  // `text_<subject>` tile; `cells` holds exactly those text ids.
+  const rescuers: Array<{
+    raw: string
+    negated: boolean
+    citesSubjectText: boolean
+    mimic: boolean
+  }> = []
+  for (const instance of wordInstances) {
+    const { rule } = instance
+    const negated = rule.subjectNegated ?? false
+    rescuers.push({
+      raw: rawSubject(rule),
+      negated,
+      citesSubjectText:
+        !negated &&
+        instance.cells.some((id) => {
+          const item = itemsById.get(id)
+          return (
+            item !== undefined && item.isText && item.name === rule.subject
+          )
+        }),
+      mimic: false,
+    })
+    const sources = instance.subjectSourceIds
+    if (sources.length !== 1) continue
+    const unit = itemsById.get(sources[0]!)
+    // `ids[1][1]` named `text_x` (or `text_x` for `not x`) is a real card.
+    if (unit !== undefined && unit.isText && unit.name === rule.subject)
+      continue
+    suspects.push(instance)
+  }
+  if (!suspects.length) return instances
+
+  // `x mimic y` copies of `y is word` enter featureindex["word"] carrying
+  // the "mimic" tag, which rescues any suspect they are scanned for.
+  const deduped: Rule[] = []
+  const seen = new Set<string>()
+  for (const { rule } of instances) {
+    const key = ruleDedupeKey(rule)
+    if (seen.has(key)) continue
+    seen.add(key)
+    deduped.push(rule)
+  }
+  const expanded = expandMimicRules(deduped)
+  for (const rule of expanded.slice(deduped.length)) {
+    if (!isWordPropRule(rule)) continue
+    rescuers.push({
+      raw: rawSubject(rule),
+      negated: rule.subjectNegated ?? false,
+      citesSubjectText: false,
+      mimic: true,
+    })
+  }
+
+  const nuked = new Set<string>()
+  for (const suspect of suspects) {
+    const subject = suspect.rule.subject
+    const suspectRaw = rawSubject(suspect.rule)
+    // Officially the rescue scan only consults word rules whose subject is
+    // the suspect's own, `all`, or a `not …` phrase.
+    const stable = rescuers.some(
+      (rescuer) =>
+        (rescuer.raw === subject ||
+          rescuer.raw === 'all' ||
+          rescuer.negated) &&
+        (rescuer.mimic ||
+          rescuer.raw === 'all' ||
+          rescuer.raw.startsWith('group') ||
+          (rescuer.negated && rescuer.raw !== suspectRaw) ||
+          rescuer.citesSubjectText),
+    )
+    if (!stable) nuked.add(subject)
+  }
+  if (!nuked.size) return instances
+  return instances.filter(
+    (instance) =>
+      !isWordPropRule(instance.rule) || !nuked.has(instance.rule.subject),
+  )
+}
+
+export const ruleDedupeKey = (rule: Rule): string =>
   `${rule.subjectNegated ? '!' : ''}${rule.subject}:${stringifyCondition(
     rule.condition,
   )}:${rule.kind}:${rule.objectNegated ? '!' : ''}${rule.object}`

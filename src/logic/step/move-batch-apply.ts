@@ -6,54 +6,73 @@ import {
   moveOne,
   removeOne,
 } from './move-core.js'
-import { keyFor, MOVE_DELTAS } from './shared.js'
+import { keyFor } from './shared.js'
 
 import type { Arrow, BatchMoveContext } from './move-batch-runtime.js'
-import type { Item } from '../types.js'
-
-const arrowDelta = (
-  arrow: Arrow,
-): { dx: number; dy: number } => {
-  const [dx, dy] = MOVE_DELTAS[arrow.dir]
-  return { dx, dy }
-}
+import type { Direction, Item } from '../types.js'
 
 export const applyBatchMovement = (
   context: BatchMoveContext,
   arrows: Map<number, Arrow>,
+  commits: Array<{
+    id: number
+    dir: Direction
+    x: number
+    y: number
+    arrow: boolean
+  }>,
 ): void => {
-  const movingIds: number[] = []
   const swapIds = new Set<number>()
   for (const [id, arrow] of arrows.entries()) {
     if (arrow.status !== 'moving') continue
     if (context.removed.has(id)) continue
-    movingIds.push(id)
     if (context.swapIds.has(id)) swapIds.add(id)
   }
 
-  // Plain movers go first so swap movers see the settled destination
-  // cell — a target that vacated under its own arrow must not be dragged
-  // back into the mover's old cell.
+  // Commits drain in official movelist insertion order, except that swap
+  // movers still resolve last — a target that vacated under its own
+  // arrow must not be dragged back into the mover's old cell.
   const ordered = [
-    ...movingIds.filter((id) => !swapIds.has(id)),
-    ...movingIds.filter((id) => swapIds.has(id)),
+    ...commits.filter((c) => !(c.arrow && swapIds.has(c.id))),
+    ...commits.filter((c) => c.arrow && swapIds.has(c.id)),
   ]
 
-  for (const id of ordered) {
+  for (const commit of ordered) {
+    const id = commit.id
     const item = context.byId.get(id)
-    const arrow = arrows.get(id)
-    if (!item || !arrow) continue
+    // `byId` keeps dead entries (official mmf objects stay queryable) —
+    // a unit removed this pass must not execute its entry.
+    if (!item || context.removed.has(id)) continue
 
-    if (item.dir !== arrow.dir) {
-      item.dir = arrow.dir
+    if (!commit.arrow) {
+      // Queued push entry — official `update` teleports to the absolute
+      // destination and turns the unit's facing to the entry's dir.
+      if (item.dir !== commit.dir) {
+        item.dir = commit.dir
+        context.status.changed = true
+      }
+      if (moveOne(context, item, commit.x, commit.y))
+        context.status.changed = true
+      continue
+    }
+
+    const arrow = arrows.get(id)
+    // Push/pull arrows commit their entry at queue time; if the pending
+    // resolution later failed, the entry never officially existed.
+    if (!arrow || arrow.status !== 'moving') continue
+
+    if (item.dir !== commit.dir) {
+      item.dir = commit.dir
       context.status.changed = true
     }
 
-    const { dx, dy } = arrowDelta(arrow)
+    // The queued destination is absolute (computed on the planning
+    // board): even if an earlier commit displaced the unit, its own
+    // entry still lands at origin+dir.
     const oldX = item.x
     const oldY = item.y
-    const nx = item.x + dx
-    const ny = item.y + dy
+    const nx = commit.x
+    const ny = commit.y
 
     // Empty-branch specials at the destination cell (official check()
     // empty case): `x eat empty`, an open/shut lock pair, or
@@ -135,5 +154,17 @@ export const applyBatchMovement = (
       if (moveOne(context, target, oldX, oldY))
         context.status.changed = true
     }
+  }
+
+  // Official state-3 `updatedir(unitid, newdir_)` is unconditional: a
+  // move/chill mover whose flip attempt also failed keeps the REVERSED
+  // facing even though it never moved.
+  for (const [id, arrow] of arrows) {
+    if (arrow.status !== 'stopped' || !arrow.flipped) continue
+    const item = context.byId.get(id)
+    if (!item || context.removed.has(id) || item.dir === arrow.dir)
+      continue
+    item.dir = arrow.dir
+    context.status.changed = true
   }
 }

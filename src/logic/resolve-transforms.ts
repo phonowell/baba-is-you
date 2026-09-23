@@ -5,7 +5,7 @@ import {
 } from './empty.js'
 import { resolveRuleTargets } from './helpers.js'
 import { isLetterName } from './letter-words.js'
-import { matchesRuleSubject } from './rule-match.js'
+import { GROUP_NOUNS, matchesRuleSubject } from './rule-match.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
 import {
@@ -21,15 +21,23 @@ const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
   if (target === 'empty') return null
 
   if (target === 'text') {
-    return {
+    const transformed: LevelItem = {
       ...item,
       name: item.isText ? 'text' : item.name,
       isText: true,
       originName: item.originName ?? item.name,
+      converted: true,
     }
+    // A transform yields a fresh unit id officially — `objectdata`
+    // resets with it, so tele exhaustion does not carry over.
+    delete transformed.teleported
+    // `addunit`→`statusblock` latches the new unit's float from live
+    // rules — the source's turn-start latch doesn't carry over.
+    delete transformed.floatLatch
+    return transformed
   }
 
-  return {
+  const transformed: LevelItem = {
     ...item,
     name: target,
     isText: false,
@@ -37,7 +45,11 @@ const toTransformed = (item: LevelItem, target: string): LevelItem | null => {
     // records it so `x is revert` can transform back. Once set it stays
     // sticky across further transforms.
     originName: item.originName ?? item.name,
+    converted: true,
   }
+  delete transformed.teleported
+  delete transformed.floatLatch
+  return transformed
 }
 
 // `x is revert` converts the entity back to the kind it originally was
@@ -68,6 +80,8 @@ const createFromEmpty = (
       x,
       y,
       isText: true,
+      converted: true,
+      spawned: true,
     }
   }
 
@@ -77,6 +91,8 @@ const createFromEmpty = (
     x,
     y,
     isText: false,
+    converted: true,
+    spawned: true,
   }
 }
 
@@ -129,13 +145,109 @@ export const applyTransforms = (
     (rule) => rule.kind === 'become',
   )
 
+  // Candidate prefilter by subject kind: negated and `all`/`group*`
+  // subjects are wildcards the matcher must see; concrete subjects can
+  // only match a same-named non-text item, `text` subject only text.
+  // Filtering in source order matters — the first collected variant
+  // becomes the source's new identity.
+  const couldBeSubjectOf = (item: LevelItem, rule: Rule): boolean => {
+    if (
+      rule.subjectNegated === true ||
+      rule.subject === 'all' ||
+      GROUP_NOUNS.has(rule.subject)
+    )
+      return true
+    if (item.isText) return rule.subject === 'text'
+    return rule.subject === item.name
+  }
+  const isCandidatesFor = (item: LevelItem): Rule[] =>
+    isTransformRules.filter((rule) => couldBeSubjectOf(item, rule))
+  const becomeCandidatesFor = (item: LevelItem): Rule[] =>
+    becomeRules.filter((rule) => couldBeSubjectOf(item, rule))
+  // Only object-negated rules can self-delete or protect an `x is all`
+  // spawn — precompute so items without any skip the scans outright.
+  const negatedIsRules = isTransformRules.filter(
+    (rule) => rule.objectNegated === true,
+  )
+  const negatedBecomeRules = becomeRules.filter(
+    (rule) => rule.objectNegated === true,
+  )
+  // `x is all` materialized lazily: `x is not b` protects object b from
+  // the spawn (official createall_single), and co-occupant names are
+  // skipped — both only matter once an `all` target actually resolves.
+  let namesByCellCache: Map<number, Set<string>> | undefined
+  const namesAtCell = (item: LevelItem): Set<string> | undefined => {
+    if (!namesByCellCache) {
+      namesByCellCache = new Map()
+      for (const unit of items) {
+        if (unit.isText) continue
+        const key = unit.y * width + unit.x
+        const list = namesByCellCache.get(key) ?? new Set()
+        list.add(unit.name)
+        namesByCellCache.set(key, list)
+      }
+    }
+    // The source's own name is skipped by the `all` loop anyway, so the
+    // cell set can include it without changing the verdict.
+    return namesByCellCache.get(item.y * width + item.x)
+  }
+
   for (const item of items) {
-    const resolveTargets = (rules: Rule[]) =>
-      resolveRuleTargets(item, rules, (candidate, rule) =>
-        matchesRuleSubject(candidate, rule, context),
-      )
-    const isTargets = resolveTargets(isTransformRules)
-    const becomeTargets = resolveTargets(becomeRules)
+    // Official `flags[CONVERTED]`: units the engine spawned (has/more/
+    // make/write drops, earlier transforms) can never be a transform
+    // source — `conversion()` skips them outright.
+    if (item.converted) {
+      next.push(item)
+      continue
+    }
+
+    // `x is not x` is the official `error` conversion (convert.lua): the
+    // unit deletes itself outright — a paradox, not a veto like `x is not
+    // y`, and `x is x` cannot suppress it (rules.lua's protect pass only
+    // rewrites rules whose object passes getmat, which `not x` fails).
+    // `empty`/`level`/`all`/`group` subjects take different official
+    // branches (destroylevel / no unitlist) and stay unmodelled; `text is
+    // not text` wipes every text unit via the shared unitlists["text"].
+    const selfDeleted = (rules: Rule[]) =>
+      rules.some((rule) => {
+        if (!matchesRuleSubject(item, rule, context)) return false
+        // `not s is not o` expands officially (rules.lua addoption) into
+        // one `i is not o` rule per objectlist name i ≠ s — the i === o
+        // member is the same error conversion, so every o-typed unit
+        // paradoxes. `not o is not o` omits o from the expansion, so o
+        // survives; special-noun subjects (all/text/empty/…) never
+        // expand. Text units can't match a negated subject at all.
+        if (rule.subjectNegated === true)
+          return (
+            !isSpecialNounWord(rule.subject) &&
+            item.name === rule.object &&
+            item.name !== rule.subject
+          )
+        return (
+          (rule.object as string) === (rule.subject as string) &&
+          (!isSpecialNounWord(rule.subject) || rule.subject === 'text')
+        )
+      })
+    if (
+      (negatedIsRules.length || negatedBecomeRules.length) &&
+      (selfDeleted(negatedIsRules) || selfDeleted(negatedBecomeRules))
+    ) {
+      changed = true
+      continue
+    }
+
+    const isCandidates = isCandidatesFor(item)
+    const becomeCandidates = becomeCandidatesFor(item)
+    const isTargets = resolveRuleTargets(
+      item,
+      isCandidates,
+      (candidate, rule) => matchesRuleSubject(candidate, rule, context),
+    )
+    const becomeTargets = resolveRuleTargets(
+      item,
+      becomeCandidates,
+      (candidate, rule) => matchesRuleSubject(candidate, rule, context),
+    )
     if (!isTargets.length && !becomeTargets.length) {
       next.push(item)
       continue
@@ -144,24 +256,9 @@ export const applyTransforms = (
     const transformedByKey = new Map<string, LevelItem>()
     const spawnedByKey = new Map<string, LevelItem>()
     let vetoed = false
-    // `x is not b` rules protect object b from an `x is all` spawn
-    // (official createall_single checks `x is not b` before creating).
-    const negated = new Set<string>()
-    for (const rule of isTransformRules) {
-      if (rule.objectNegated && matchesRuleSubject(item, rule, context))
-        negated.add(rule.object)
-    }
-    const namesAtCell = new Set(
-      items
-        .filter(
-          (other) =>
-            other.id !== item.id &&
-            other.x === item.x &&
-            other.y === item.y &&
-            !other.isText,
-        )
-        .map((other) => other.name),
-    )
+    // `x is not b` rules protecting the `all` spawn are per-item (the
+    // matcher can gate on conditions) — resolved on first `all` target.
+    let negated: Set<string> | undefined
     const collectVariants = (targets: string[], vetoOnIdentity: boolean) => {
       for (const target of targets) {
         const resolved = resolveTransformTarget(item, target)
@@ -169,9 +266,16 @@ export const applyTransforms = (
         // object name at the cell — it is additive, not a transform,
         // so it never participates in the identity veto below.
         if (resolved === 'all') {
+          if (!negated) {
+            negated = new Set()
+            for (const rule of negatedIsRules)
+              if (matchesRuleSubject(item, rule, context))
+                negated.add(rule.object)
+          }
+          const coOccupants = namesAtCell(item)
           for (const name of allTargets) {
             if (name === item.name || negated.has(name)) continue
-            if (namesAtCell.has(name)) continue
+            if (coOccupants?.has(name)) continue
             const variant = toTransformed(item, name)
             if (variant) spawnedByKey.set(`0:${name}`, variant)
           }
@@ -196,8 +300,11 @@ export const applyTransforms = (
     collectVariants(becomeTargets, false)
 
     const spawned = Array.from(spawnedByKey.values())
+    // `x is all` stack-mates are official `createall_single` products —
+    // they go through create(), so they carry `new` like any drop.
     const pushSpawned = () => {
-      for (const variant of spawned) next.push({ ...variant, id: nextId++ })
+      for (const variant of spawned)
+        next.push({ ...variant, id: nextId++, spawned: true })
       if (spawned.length) changed = true
     }
 
@@ -306,7 +413,15 @@ export const applyTransforms = (
             ])
             for (const name of allTargets) {
               if (emptyNegated.has(name)) continue
-              next.push({ id: nextId, name, x, y, isText: false })
+              next.push({
+                id: nextId,
+                name,
+                x,
+                y,
+                isText: false,
+                converted: true,
+                spawned: true,
+              })
               nextId += 1
               changed = true
             }

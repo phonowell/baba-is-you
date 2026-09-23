@@ -195,11 +195,11 @@ test('state carries overridden text ids that track the live board', () => {
     ),
   )
 
-  // A step that changes nothing keeps the same marks (still equal to a
-  // fresh recompute on the same items). `up` pushes the veto column into
-  // the wall — the whole chain is blocked, so the board does not change.
+  // `up` pushes the veto column into the wall — the whole chain is
+  // blocked, so no unit moves, but officially take-1 still writes the
+  // pushed facing onto the `you` unit, so the step reports changed.
   const idle = step(moved.state, 'up')
-  assert.equal(idle.changed, false)
+  assert.equal(idle.changed, true)
   assert.deepEqual(
     [...(idle.state.overriddenTextIds ?? [])].sort(),
     [...collectOverriddenTextIds(idle.state.items, 6, 6)].sort(),

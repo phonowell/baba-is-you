@@ -1,13 +1,17 @@
 import { resolveEmptyPropsByCell } from '../empty.js'
 import { keyFor } from '../helpers.js'
-import { matchesRuleSubject } from '../rule-match.js'
+import { GROUP_NOUNS, matchesRuleSubject } from '../rule-match.js'
+import { ruleDedupeKey } from '../rules.js'
 
 import { moveItemsBatch } from './move-batch.js'
+import { isLockedFor } from './move-core.js'
 import { moveItems } from './move-single.js'
 import {
   buildGrid,
+  hasLatchedFloat,
   hasProp,
   MOVE_DELTAS,
+  resolveLevelProps,
   resolveLevelPropsGlobal,
   reverseDirection,
   splitByFloatLayer,
@@ -332,6 +336,72 @@ export const applyMoveAdjective = (
   // the move/chill reasons — only they bounce off obstacles; `auto`,
   // `nudge*` and `fear` just stop (and die if `weak`).
   const turn = runtime.context.turn ?? 0
+  // Official take order (movement.lua): `move`/`auto`/`chill` resolve in
+  // take 2 in that group order, then each `nudge<dir>` is its own take —
+  // and within a rule group units queue in creation (unitid) order via
+  // `findall`, NOT row-major. A unit listed by several groups joins the
+  // earliest take (`been_seen` dedup), and takes 2-6 each drain the
+  // movelist separately before the next group starts.
+  const TAKE_INDEX: Record<string, number> = {
+    nudgeright: 3,
+    nudgeup: 4,
+    nudgeleft: 5,
+    nudgedown: 6,
+  }
+  const takeIndexOf = (item: Item): number => {
+    if (hasProp(item, 'move')) return 0
+    if (hasProp(item, 'auto')) return 1
+    if (hasProp(item, 'chill')) return 2
+    const nudge = item.props.find((prop) => prop in TAKE_INDEX)
+    return nudge ? TAKE_INDEX[nudge]! : 0
+  }
+  // Official `moves`: `add_moving_units` dedups a unit into ONE mover
+  // entry via `been_seen`, but every additional active rule instance that
+  // lists it bumps `moves` — two identical `wall is move` formations make
+  // each wall queue two moves per turn. `ruleCounts` holds the per-rule
+  // instance multiplicity that feature dedup would otherwise erase.
+  const SELF_MOVE_PROPS = new Set([
+    'move',
+    'auto',
+    'chill',
+    'nudgeright',
+    'nudgeup',
+    'nudgeleft',
+    'nudgedown',
+  ])
+  // Same subject partition as `applyProperties`/`createRuleBuckets`,
+  // pre-filtered to self-move objects: concrete subjects by name, `text`
+  // subject for text entities, wildcard for negated/`all`/`group*`.
+  const moveByName = new Map<string, Rule[]>()
+  const moveText: Rule[] = []
+  const moveWildcard: Rule[] = []
+  for (const rule of runtime.buckets.isProperty) {
+    if (rule.objectNegated || !SELF_MOVE_PROPS.has(rule.object)) continue
+    if (
+      rule.subjectNegated === true ||
+      rule.subject === 'all' ||
+      GROUP_NOUNS.has(rule.subject)
+    )
+      moveWildcard.push(rule)
+    else if (rule.subject === 'text') moveText.push(rule)
+    else {
+      const list = moveByName.get(rule.subject) ?? []
+      list.push(rule)
+      moveByName.set(rule.subject, list)
+    }
+  }
+  const movesOf = (item: Item): number => {
+    let count = 0
+    const tally = (rules: readonly Rule[]): void => {
+      for (const rule of rules)
+        if (matchesRuleSubject(item, rule, context))
+          count += runtime.ruleCounts.get(ruleDedupeKey(rule)) ?? 1
+    }
+    tally(item.isText ? moveText : (moveByName.get(item.name) ?? []))
+    // Wildcard subjects (all/group*/negated) can never match text.
+    if (!item.isText) tally(moveWildcard)
+    return Math.max(count, 1)
+  }
   const selfMovers = items
     .filter(
       (item) =>
@@ -343,19 +413,24 @@ export const applyMoveAdjective = (
         !hasProp(item, 'broken') &&
         !hasProp(item, 'still'),
     )
-    .sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id)
+    .sort((a, b) => takeIndexOf(a) - takeIndexOf(b) || a.id - b.id)
     .map((item) => {
+      const takeIndex = takeIndexOf(item)
       const nudge = item.props.find((prop) => prop in NUDGE_PROPS)
       const isMove = hasProp(item, 'move') || hasProp(item, 'chill')
-      const dir = hasProp(item, 'chill')
-        ? chillDirection(turn, item.id)
-        : nudge
-          ? (NUDGE_PROPS[nudge] ?? 'right')
-          : (item.dir ?? 'right')
+      // Take-2 movers move in their facing dir (chill gets a fresh random
+      // facing each turn); nudge movers ignore facing for their fixed dir.
+      const dir =
+        takeIndex <= 2
+          ? hasProp(item, 'chill')
+            ? chillDirection(turn, item.id)
+            : (item.dir ?? 'right')
+          : (NUDGE_PROPS[nudge ?? 'nudgeright'] ?? 'right')
       return {
         id: item.id,
         dir: hasProp(item, 'reverse') ? reverseDirection(dir) : dir,
         isMove,
+        moves: movesOf(item),
       }
     })
 
@@ -495,7 +570,7 @@ export const applyMoveAdjective = (
           !hasProp(target, 'phantom') &&
           !queued.has(target.id)
         ) {
-          movers.push({ id: target.id, dir, isMove: false })
+          movers.push({ id: target.id, dir, isMove: false, moves: 1 })
           queued.add(target.id)
         }
       }
@@ -506,11 +581,51 @@ export const applyMoveAdjective = (
     return { items, moved: aimed }
   const moved = moveItemsBatch(items, runtime, movers)
 
+  // Official `still_moving`: movers with queued moves left re-enter the
+  // next take's drain — each extra move is a fresh collision pass that
+  // re-reads the unit's current facing (`update` rewrote it during the
+  // previous move). A mover that failed to move drops out instead of
+  // re-queueing (its `solved` flag stays false). Movers escalated past
+  // state 0 re-enter at state 10: pushes still resolve but the move/
+  // chill flip-retry is skipped — a blocked extra move just stops.
+  let stillItems = moved.items
+  let stillMoved = false
+  const escalated = moved.escalated
+  let pending = selfMovers.filter((mover) => mover.moves > 1)
+  while (pending.length) {
+    const before = new Map(stillItems.map((item) => [item.id, item]))
+    const round = pending.flatMap((mover) => {
+      const item = before.get(mover.id)
+      if (!item) return []
+      return [
+        {
+          id: mover.id,
+          dir: item.dir ?? mover.dir,
+          isMove: mover.isMove && !escalated.has(mover.id),
+          moves: mover.moves - 1,
+        },
+      ]
+    })
+    if (!round.length) break
+    const extra = moveItemsBatch(stillItems, runtime, round)
+    stillItems = extra.items
+    stillMoved ||= extra.moved
+    for (const id of extra.escalated) escalated.add(id)
+    const after = new Map(stillItems.map((item) => [item.id, item]))
+    pending = round.flatMap((mover) => {
+      const prev = before.get(mover.id)
+      const item = after.get(mover.id)
+      if (!prev || !item || (item.x === prev.x && item.y === prev.y))
+        return []
+      return mover.moves > 1 ? [{ ...mover, moves: mover.moves - 1 }] : []
+    })
+  }
+
   // Fear movers carry `moves = maxfear`: the official take loop moves the
   // unit that many cells, each a full collision resolution — replay the
   // extra steps as fresh one-mover batches against the moved board.
-  let fearItems = moved.items
-  let fearMoved = false
+  let fearItems = stillItems
+  let fearMoved = stillMoved
   for (const mover of verbMovers) {
     for (let stepIndex = 1; stepIndex < mover.moves; stepIndex += 1) {
       const extra = moveItemsBatch(fearItems, runtime, [
@@ -679,7 +794,9 @@ export const applyBack = (
     if (prevX < 0 || prevY < 0 || prevX >= width || prevY >= height)
       return item
     moved = true
-    return { ...item, x: prevX, y: prevY }
+    // Official marks back-restored units as tele-exhausted
+    // (`objectdata[id].tele = 1` on the "update" restore path).
+    return { ...item, x: prevX, y: prevY, teleported: true }
   })
   return moved ? { items: next, moved } : { items, moved: false }
 }
@@ -700,6 +817,17 @@ export const applyShift = (
       width,
       height,
     ).has('shift')
+  // The rider sweep is gated by `floating_level(unit)` (movement.lua:433):
+  // only units on the level's float layer ride — the unit side reads the
+  // latched `values[FLOAT]`, the level side stays a fresh rule read.
+  const levelFloat =
+    levelShift &&
+    resolveLevelPropsGlobal(
+      runtime.buckets.level,
+      runtime.context,
+      width,
+      height,
+    ).has('float')
   if (!levelShift && !items.some((item) => hasProp(item, 'shift')))
     return { items, moved: false }
 
@@ -708,72 +836,166 @@ export const applyShift = (
   const byId = new Map<number, Item>()
   for (const item of shiftedItems) byId.set(item.id, item)
 
-  const movers: Array<{ id: number; dir: Direction; isMove: boolean }> = []
+  const movers: Array<{
+    id: number
+    dir: Direction
+    isMove: boolean
+    isShift?: boolean
+  }> = []
   let facingChanged = false
 
-  // Row-major cell order, matching the predecessor's `select` iteration;
-  // shift only affects items in the same float layer (e.g. a grounded belt
-  // does not move floating text).
-  const cellKeys = Array.from(byCell.keys()).sort((a, b) => a - b)
-  for (const cellKey of cellKeys) {
-    const cellItems = byCell.get(cellKey) ?? []
+  // Official take-8 iterates the `is shift` units themselves (belt id
+  // order, via findallfeature→findall over unitlists): each belt queues
+  // every unit sharing its cell and float layer, so a rider on a lower-id
+  // belt moves before one on a higher-id belt. A unit standing on several
+  // belts gains one queued move per belt (official `been_seen` bumps
+  // `moves`). `updatedir` at state 0 turns the rider to the belt's facing
+  // even when the shift itself is blocked.
+  //
+  // `findallfeature` walks the feature list once per rule instance, so a
+  // belt qualifies once per matching rule — `belt is shift and shift` or
+  // a duplicated formation conveys its riders twice per turn. Subjects
+  // that `findall` can't enumerate (`all`, `empty`, `level`, negated)
+  // never produce belts even though they grant the prop.
+  const shiftRules = runtime.rules.filter(
+    (rule) =>
+      rule.kind === 'is-property' &&
+      !rule.objectNegated &&
+      !rule.subjectNegated &&
+      rule.object === 'shift' &&
+      rule.subject !== 'all' &&
+      rule.subject !== 'empty' &&
+      rule.subject !== 'level',
+  )
+  // Subject-indexed so a belt only evaluates rules that can name it:
+  // concrete subjects by name, plus the `group*`/`text` special cases.
+  const shiftByName = new Map<string, Rule[]>()
+  const shiftGroupRules: Rule[] = []
+  const shiftTextRules: Rule[] = []
+  for (const rule of shiftRules) {
+    if (GROUP_NOUNS.has(rule.subject)) shiftGroupRules.push(rule)
+    else if (rule.subject === 'text') shiftTextRules.push(rule)
+    else {
+      const list = shiftByName.get(rule.subject) ?? []
+      list.push(rule)
+      shiftByName.set(rule.subject, list)
+    }
+  }
+  const beltShiftCount = (item: Item): number => {
+    let count = 0
+    const tally = (rules: readonly Rule[]): void => {
+      for (const rule of rules)
+        if (matchesRuleSubject(item, rule, runtime.context))
+          count += runtime.ruleCounts.get(ruleDedupeKey(rule)) ?? 1
+    }
+    tally(shiftByName.get(item.name) ?? [])
+    tally(item.isText ? shiftTextRules : shiftGroupRules)
+    return count
+  }
+  // Rider queue gate is `isstill_or_locked` → `cantmove`: `still`,
+  // `locked<beltdir>` and level-hold cancel the queue; `sleep` does NOT
+  // (belts convey sleepers — verified against the oracle).
+  const levelHeldIds = new Set<number>()
+  if (
+    runtime.buckets.level.some(
+      (rule) => !rule.objectNegated && rule.object === 'hold',
+    )
+  ) {
+    for (const item of shiftedItems) {
+      const atBorder =
+        item.x === 0 ||
+        item.y === 0 ||
+        item.x === width - 1 ||
+        item.y === height - 1
+      if (!atBorder) continue
+      const levelProps = resolveLevelProps(
+        runtime.buckets.level,
+        runtime.context,
+        item.x,
+        item.y,
+      )
+      if (hasLatchedFloat(item) !== levelProps.has('float')) continue
+      if (levelProps.has('hold')) levelHeldIds.add(item.id)
+    }
+  }
+  const belts = shiftedItems
+    .filter((item) => hasProp(item, 'shift'))
+    .sort((a, b) => a.id - b.id)
+  const shiftCounts = new Map<number, number>()
+  for (const belt of belts) {
+    const beltLive = byId.get(belt.id)
+    if (!beltLive) continue
+    const multiplicity = beltShiftCount(beltLive)
+    if (multiplicity === 0) continue
+    const direction = beltLive.dir ?? 'right'
+    const cellItems = byCell.get(keyFor(belt.x, belt.y, width)) ?? []
     for (const layer of splitByFloatLayer(cellItems)) {
-      const shifts = layer.filter((item) => hasProp(item, 'shift'))
-      const firstShift = shifts[0]
-      if (!firstShift) continue
+      if (!layer.some((item) => item.id === belt.id)) continue
+      for (const item of layer) {
+        if (item.id === belt.id) continue
+        const live = byId.get(item.id)
+        if (!live) continue
+        if (hasProp(live, 'still')) continue
+        if (isLockedFor(live, direction)) continue
+        if (levelHeldIds.has(live.id)) continue
 
-      for (let n = 0; n < shifts.length; n += 1) {
-        const shift = shifts[n]
-        if (!shift) continue
-
-        const shiftLive = byId.get(shift.id)
-        if (!shiftLive) continue
-        const direction = shiftLive.dir ?? 'right'
-
-        for (const item of layer) {
-          if (item.id === shift.id) continue
-          if (n > 0 && item.id !== firstShift.id) continue
-
-          const live = byId.get(item.id)
-          if (!live) continue
-          if (hasProp(live, 'sleep') || hasProp(live, 'still')) continue
-
-          if (live.dir !== direction) {
-            live.dir = direction
-            facingChanged = true
-          }
-
-          movers.push({
-            id: item.id,
-            dir: direction,
-            isMove: false,
-          })
+        if (live.dir !== direction) {
+          live.dir = direction
+          facingChanged = true
         }
+
+        shiftCounts.set(
+          item.id,
+          (shiftCounts.get(item.id) ?? 0) + multiplicity,
+        )
+        movers.push({ id: item.id, dir: direction, isMove: false, isShift: true })
       }
     }
   }
 
   if (levelShift && levelDir) {
-    const queued = new Set(movers.map((mover) => mover.id))
+    // Officially the level-shift sweep inserts a fresh moving_units entry
+    // per unit with no `been_seen` dedup — a belt rider ALSO queued by
+    // `level is shift` holds two entries and so moves twice. `updatedir`
+    // runs before the still/sleep gate: every floating_level unit turns
+    // to the room's facing even when it cannot move.
     for (const item of shiftedItems) {
-      if (queued.has(item.id)) continue
-      if (hasProp(item, 'sleep') || hasProp(item, 'still')) continue
+      if (hasLatchedFloat(item) !== levelFloat) continue
       if (item.dir !== levelDir) {
         item.dir = levelDir
         facingChanged = true
       }
-      movers.push({ id: item.id, dir: levelDir, isMove: false })
+      if (hasProp(item, 'sleep') || hasProp(item, 'still')) continue
+      shiftCounts.set(item.id, (shiftCounts.get(item.id) ?? 0) + 1)
+      movers.push({ id: item.id, dir: levelDir, isMove: false, isShift: true })
     }
   }
 
   if (!movers.length) return { items, moved: facingChanged }
 
   const shiftedResult = moveItemsBatch(shiftedItems, runtime, movers)
+  // `been_seen` multiplicity: each extra queued entry is another step —
+  // officially the mover re-enters still_moving at state 10, so a failed
+  // extra move just stops (no flip) and the direction stays as queued.
+  let multiItems = shiftedResult.items
+  let multiMoved = shiftedResult.moved
+  for (const [id, count] of shiftCounts) {
+    for (let n = 1; n < count; n += 1) {
+      const live = multiItems.find((item) => item.id === id)
+      if (!live) break
+      const extra = moveItemsBatch(multiItems, runtime, [
+        { id, dir: live.dir ?? 'right', isMove: false, isShift: true },
+      ])
+      multiItems = extra.items
+      multiMoved ||= extra.moved
+      if (!extra.moved) break
+    }
+  }
   // Official `moveblock` runs again at the end of the turn: every unit
   // resting on a `shift` belt adopts that belt's facing — which is what
   // steers a `x is move` unit riding a conveyor, not the belt that
   // delivered it there.
-  const steered = shiftedResult.items.map((item) => ({ ...item }))
+  const steered = multiItems.map((item) => ({ ...item }))
   const steeredIds = new Set<number>()
   const restByCell = buildGrid(steered, width)
   const restById = new Map<number, Item>()
@@ -797,6 +1019,6 @@ export const applyShift = (
   }
   return {
     items: steered,
-    moved: shiftedResult.moved || facingChanged,
+    moved: multiMoved || facingChanged,
   }
 }

@@ -1,4 +1,4 @@
-import { buildGrid, hasProp, resolveLevelProps } from './shared.js'
+import { hasLatchedFloat, hasProp, resolveLevelProps } from './shared.js'
 
 import type { RuleMatchContext } from '../rule-match.js'
 import type { Item, Rule } from '../types.js'
@@ -57,8 +57,15 @@ export const applyTeleport = (
   moved: boolean
 } => {
   // `level is tele`: the room teleports every unit to a random interior
-  // cell (official `action == "tele"` on the level entity).
-  if (resolveLevelProps(levelRules, context, 0, 0).has('tele')) {
+  // cell (official `action == "tele"` on the level entity). Prefilter so
+  // levels without the rule skip the props evaluation entirely.
+  const hasTeleLevelRule = levelRules.some(
+    (rule) => !rule.objectNegated && rule.object === 'tele',
+  )
+  if (
+    hasTeleLevelRule &&
+    resolveLevelProps(levelRules, context, 0, 0).has('tele')
+  ) {
     const rng = createRng(seed)
     let moved = false
     const next = items.map((item) => {
@@ -71,83 +78,84 @@ export const applyTeleport = (
     return { items: next, moved }
   }
 
-  if (!items.some((item) => hasProp(item, 'tele')))
-    return { items, moved: false }
+  // Count pads on the input first — most boards have no tele pads, so the
+  // clone pass below is only worth it once two pads actually exist.
+  let padCount = 0
+  for (const item of items) if (hasProp(item, 'tele')) padCount += 1
+  if (padCount < 2) return { items, moved: false }
 
   const next = items.map((item) => ({ ...item }))
-  const byCell = buildGrid(next, width)
-  const cellKeys = Array.from(byCell.keys()).sort((a, b) => a - b)
+  const pads = next.filter((item) => hasProp(item, 'tele'))
 
-  const padsByCell = new Map<
-    number,
-    { x: number; y: number; floatLayers: Set<boolean> }
-  >()
-  const padList: Array<{ x: number; y: number }> = []
-  for (const key of cellKeys) {
-    const list = byCell.get(key)
-    if (!list?.length) continue
-
-    const teleItems = list.filter((item) => hasProp(item, 'tele'))
-    if (!teleItems.length) continue
-
-    const sample = teleItems[0]
-    if (!sample) continue
-
-    const floatLayers = new Set<boolean>()
-    for (const teleItem of teleItems)
-      floatLayers.add(hasProp(teleItem, 'float'))
-
-    padsByCell.set(key, { x: sample.x, y: sample.y, floatLayers })
-    padList.push({ x: sample.x, y: sample.y })
-  }
-
-  if (padList.length < 2) return { items, moved: false }
+  // Official `getname`: text units all share the rule name "text".
+  const ruleName = (item: Item): string => (item.isText ? 'text' : item.name)
 
   const rng = createRng(seed)
-  const destinations = new Map<number, { x: number; y: number }>()
+  let moved = false
 
-  for (const key of cellKeys) {
-    const list = byCell.get(key)
-    if (!list?.length) continue
+  // Official effectblock iterates the tele pads themselves; each pad sends
+  // the units on its cell to a random *same-name* pad. Pad positions are
+  // read live — a pad teleported by an earlier pad processes its new cell.
+  // Destination candidates are board-ordered so recorded replays stay
+  // stable (the official pick order is creation order, but the RNG stream
+  // differs anyway — only determinism matters here).
+  const padCellOrder = (item: Item): number => item.y * width + item.x
 
-    const pad = padsByCell.get(key)
-    if (!pad) continue
-
-    for (const floatLayer of [true, false]) {
-      if (!pad.floatLayers.has(floatLayer)) continue
-
-      const hasTeleLayer = list.some(
-        (item) =>
-          hasProp(item, 'tele') && hasProp(item, 'float') === floatLayer,
-      )
-      if (!hasTeleLayer) continue
-
-      const candidates = padList.filter(
-        (candidate) => candidate.x !== pad.x || candidate.y !== pad.y,
-      )
-      if (!candidates.length) continue
-
-      for (const item of list) {
-        if (hasProp(item, 'tele')) continue
-        if (hasProp(item, 'float') !== floatLayer) continue
-
-        const dest = candidates[rng(0, candidates.length)]
-        if (!dest) continue
-        destinations.set(item.id, dest)
-      }
+  // Occupant index kept live across teleports so each pad only scans its
+  // own cell instead of the whole board.
+  const byCell = new Map<number, Item[]>()
+  for (const item of next) {
+    const key = item.y * width + item.x
+    const bucket = byCell.get(key)
+    if (bucket) bucket.push(item)
+    else byCell.set(key, [item])
+  }
+  const relocate = (target: Item, x: number, y: number): void => {
+    const from = byCell.get(target.y * width + target.x)
+    if (from) {
+      const index = from.indexOf(target)
+      if (index >= 0) from.splice(index, 1)
     }
+    const toKey = y * width + x
+    const to = byCell.get(toKey)
+    if (to) to.push(target)
+    else byCell.set(toKey, [target])
+    target.x = x
+    target.y = y
   }
 
-  if (!destinations.size) return { items, moved: false }
+  for (const pad of pads) {
+    const padName = ruleName(pad)
+    const destinations = pads
+      .filter((other) => other.id !== pad.id && ruleName(other) === padName)
+      .sort((a, b) => padCellOrder(a) - padCellOrder(b))
+    if (!destinations.length) continue
 
-  let moved = false
-  for (const item of next) {
-    const dest = destinations.get(item.id)
-    if (!dest) continue
+    // Occupants are re-read at the pad's live position; the slice keeps
+    // iteration stable while targets relocate out of the bucket.
+    const occupants = byCell.get(pad.y * width + pad.x)
+    if (!occupants) continue
+    for (const target of occupants.slice()) {
+      if (target.id === pad.id) continue
+      // `objectdata[id].tele` marks units already teleported this turn
+      // (and units restored by `back`); it resets each turn via
+      // `clearPerTurnFlags`, matching the official `smallclear()`.
+      if (target.teleported) continue
+      // A unit whose rule name matches the pad's is never sent (this also
+      // keeps text units on text pads and same-name pads in place).
+      if (ruleName(target) === padName) continue
+      if (hasProp(target, 'still')) continue
+      // Official `floating(v,unitid)` compares the LATCHED
+      // `values[FLOAT]` — a float rule formed this turn (e.g. a push
+      // completing `x is float`) can't flip pad parity until next turn.
+      if (hasLatchedFloat(target) !== hasLatchedFloat(pad)) continue
 
-    item.x = dest.x
-    item.y = dest.y
-    moved = true
+      const dest = destinations[rng(0, destinations.length)]
+      if (!dest) continue
+      relocate(target, dest.x, dest.y)
+      target.teleported = true
+      moved = true
+    }
   }
 
   return { items: next, moved }

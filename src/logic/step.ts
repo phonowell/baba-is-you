@@ -2,7 +2,11 @@ import { resolveEmptyPropsByCell } from './empty.js'
 import { applyProperties } from './resolve.js'
 import { collectRuleRuntime, createRuleRuntime } from './rule-runtime.js'
 import { STEP_STAGES } from './step/phase-list.js'
-import { advanceLevelRoom, levelPushPullDelta } from './step/shared.js'
+import {
+  advanceLevelRoom,
+  hasProp,
+  levelPushPullDelta,
+} from './step/shared.js'
 import { checkWin, hasAnyYou } from './step/win.js'
 
 import type { RuleRuntime } from './rule-runtime.js'
@@ -119,6 +123,52 @@ const contextExtras = (
   ...(runtime.context.turn !== undefined ? { turn: runtime.context.turn } : {}),
 })
 
+// Official `statusblock()` (blocks.lua:373-384, invoked at the top of
+// `movecommand`): `unit.values[FLOAT]` is written once per turn from the
+// rules parsed at the END of the previous turn — positions can't change
+// between turns, so the step-start property pass computes exactly those.
+// Every `floating()` layer check reads this latch rather than live rules,
+// so a float rule formed mid-turn only takes effect on the next step.
+// This is the single resample point — mid-turn prop refreshes leave it
+// alone.
+const latchTurnStartFloat = (items: Item[]): Item[] => {
+  if (
+    items.every(
+      (item) => (item.floatLatch ?? false) === hasProp(item, 'float'),
+    )
+  )
+    return items
+  return items.map((item) =>
+    (item.floatLatch ?? false) === hasProp(item, 'float')
+      ? item
+      : { ...item, floatLatch: hasProp(item, 'float') },
+  )
+}
+
+// `addunit` runs `statusblock({id})` on freshly created units
+// (tools.lua:889 → syntax.lua:86): a unit spawned/converted mid-turn
+// latches its float from the rules live at creation — approximated by the
+// first property pass the new item undergoes. `undefined` marks "not yet
+// latched"; once written the value never resamples until the next step.
+const initNewFloatLatch = (items: StepPhaseItems): Item[] => {
+  if (!items.some((item) => (item as Item).floatLatch === undefined))
+    return items as Item[]
+  return items.map((item) => {
+    const unit = item as Item
+    if (unit.floatLatch !== undefined) return unit
+    return { ...unit, floatLatch: hasProp(unit, 'float') }
+  })
+}
+
+// Property passes are the only moments a mid-turn-created item can latch
+// its float (its own rules can't exist before it does) — wrap every
+// applyProperties so latch-less items pick up `floatLatch` from their
+// freshly resolved props.
+const applyFrameProperties = (
+  items: StepPhaseItems,
+  runtime: RuleRuntime,
+): Item[] => initNewFloatLatch(applyProperties(items, runtime))
+
 const resolveFrame = (
   items: StepPhaseItems,
   width: number,
@@ -127,7 +177,7 @@ const resolveFrame = (
 ): StepFrame => {
   const runtime = collectRuleRuntime(items, width, height, extras)
   return {
-    items: applyProperties(items, runtime),
+    items: applyFrameProperties(items, runtime),
     runtime,
     ruleSourceItems: items,
   }
@@ -144,6 +194,7 @@ const rebindFrameWithSameRules = (
     frame.runtime.height,
     frame.runtime.overriddenTextIds,
     contextExtras(frame.runtime),
+    frame.runtime.ruleCounts,
   )
   return {
     items,
@@ -163,9 +214,10 @@ const refreshProperties = (
     frame.runtime.height,
     frame.runtime.overriddenTextIds,
     contextExtras(frame.runtime),
+    frame.runtime.ruleCounts,
   )
   return {
-    items: applyProperties(items, reboundRuntime),
+    items: applyFrameProperties(items, reboundRuntime),
     runtime: reboundRuntime,
     ruleSourceItems: frame.ruleSourceItems,
   }
@@ -187,9 +239,11 @@ const synchronizeStageFrame = (
         frame.runtime.width,
         frame.runtime.height,
         frame.runtime.overriddenTextIds,
+        undefined,
+        frame.runtime.ruleCounts,
       )
       return {
-        items: applyProperties(items, reboundRuntime),
+        items: applyFrameProperties(items, reboundRuntime),
         runtime: reboundRuntime,
         ruleSourceItems: items,
       }
@@ -304,14 +358,36 @@ const resolveStepFrame = (state: GameState, idle: boolean): StepFrame => {
       state.height,
       overridden,
       extras,
+      state.ruleCounts,
     )
     return {
-      items: applyProperties(state.items, runtime),
+      items: applyFrameProperties(state.items, runtime),
       runtime,
       ruleSourceItems: state.items,
     }
   }
   return resolveFrame(state.items, state.width, state.height, extras)
+}
+
+// Official `flags[CONVERTED]`, `unit.new` and `objectdata[].tele` are
+// within-turn guards: `create()` marks engine-spawned units, `conversion()`
+// marks converted sources and `moveblock` marks teleported units — then
+// `smallclear()` wipes `objectdata` and the native frame loop clears the
+// unit flags before the next turn. Without the reset a `has`/`make` drop
+// would stay conversion-immune (and `weak`-sweep-exempt) forever, and a
+// unit standing on a tele pad would teleport only once ever instead of
+// every turn.
+const clearPerTurnFlags = (items: Item[]): Item[] => {
+  if (!items.some((item) => item.converted || item.spawned || item.teleported))
+    return items
+  return items.map((item) => {
+    if (!item.converted && !item.spawned && !item.teleported) return item
+    const cleared = { ...item }
+    delete cleared.converted
+    delete cleared.spawned
+    delete cleared.teleported
+    return cleared
+  })
 }
 
 const runStages = (
@@ -320,6 +396,13 @@ const runStages = (
   direction: Direction | null,
 ): StepResult => {
   let rulesStale = false
+
+  if (frame.items.some((item) => item.converted || item.spawned || item.teleported))
+    frame = { ...frame, items: clearPerTurnFlags(frame.items) }
+
+  // `statusblock()` at movecommand entry: the float latch is sampled here
+  // and only here — mid-turn rule changes never touch it.
+  frame = { ...frame, items: latchTurnStartFloat(frame.items) }
 
   // The produced frame's index is `state.turn + 1`; the predecessor seeds
   // tele RNG with its history length, which is the same value.
@@ -424,6 +507,7 @@ const runStages = (
     rules: frame.runtime.rules,
     overriddenTextIds: frame.runtime.overriddenTextIds,
     rulesSourceItems: frame.ruleSourceItems,
+    ruleCounts: frame.runtime.ruleCounts,
     status: didWin ? 'win' : didLose ? 'lose' : 'playing',
     turn: state.turn + 1,
     ...(roomChanged ||

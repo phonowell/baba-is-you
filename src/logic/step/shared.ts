@@ -13,6 +13,15 @@ export const keyFor = (x: number, y: number, width: number): number =>
 export const hasProp = (item: Item, prop: Item['props'][number]): boolean =>
   item.props.includes(prop)
 
+// Official `unit.values[FLOAT]` — the per-unit float LATCH `floating()`
+// reads instead of live rules: `statusblock()` samples it once at
+// `movecommand` entry (blocks.lua:373-384), so a float rule formed
+// mid-turn doesn't change layer checks until the next step. Use this for
+// unit-vs-unit (and unit-vs-empty/level) layer parity; `empty`/`level`
+// pseudo-units have no latch — their float stays a fresh rule read.
+export const hasLatchedFloat = (item: Item): boolean =>
+  item.floatLatch === true
+
 // `you`/`you2`/`3d` are the official control layers — all respond to input
 // and count for win/defeat/lose checks.
 const YOU_LIKE_PROPS = new Set(['you', 'you2', '3d'])
@@ -330,8 +339,8 @@ export const levelPushPullDelta = (
 }
 
 export const splitByFloatLayer = (items: Item[]): Item[][] => {
-  const floating = items.filter((item) => hasProp(item, 'float'))
-  const grounded = items.filter((item) => !hasProp(item, 'float'))
+  const floating = items.filter((item) => hasLatchedFloat(item))
+  const grounded = items.filter((item) => !hasLatchedFloat(item))
   const result: Item[][] = []
   if (floating.length) result.push(floating)
   if (grounded.length) result.push(grounded)
@@ -360,14 +369,14 @@ export const carryHeldRiders = (
     const dx = holder.x - origin.x
     const dy = holder.y - origin.y
     if (dx === 0 && dy === 0) continue
-    const holderFloat = hasProp(holder, 'float')
+    const holderFloat = hasLatchedFloat(holder)
     for (const rider of items) {
       if (rider.id === holder.id || removed.has(rider.id)) continue
       if (uncarryable.has(rider.id)) continue
       const seat = before.get(rider.id)
       if (!seat || seat.x !== origin.x || seat.y !== origin.y) continue
       if (rider.x !== seat.x || rider.y !== seat.y) continue
-      if (hasProp(rider, 'float') !== holderFloat) continue
+      if (hasLatchedFloat(rider) !== holderFloat) continue
       const nx = rider.x + dx
       const ny = rider.y + dy
       if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue
@@ -416,6 +425,8 @@ export const appendHasSpawns = (
           y: item.y,
           isText: true,
           props: [],
+          converted: true,
+          spawned: true,
           ...(item.dir ? { dir: item.dir } : {}),
         })
         continue
@@ -428,6 +439,8 @@ export const appendHasSpawns = (
         y: item.y,
         isText: false,
         props: [],
+        converted: true,
+        spawned: true,
         ...(item.dir ? { dir: item.dir } : {}),
       })
     }

@@ -19,7 +19,7 @@ const createItem = (
   y,
   isText,
 })
-test('step does not report changed for blocked move with BABA IS BABA', () => {
+test('step reports changed when a blocked YOU move rewrites facing', () => {
   const level: LevelData = {
     title: 'identity-transform-blocked',
     width: 5,
@@ -41,8 +41,12 @@ test('step does not report changed for blocked move with BABA IS BABA', () => {
 
   const state = createInitialState(level, 0)
   const result = step(state, 'right')
+  const baba = result.state.items.find((item) => item.id === 1)
 
-  assert.equal(result.changed, false)
+  // Official take-1 runs updatedir() even for a cancelled move.
+  assert.equal(result.changed, true)
+  assert.equal(baba?.x, 0)
+  assert.equal(baba?.dir, 'right')
 })
 
 test('step sets status lose when all YOU are defeated', () => {

@@ -25,6 +25,8 @@ export const applyMake = (
           y: source.y,
           isText: true,
           props: [],
+          converted: true,
+          spawned: true,
           ...(source.dir ? { dir: source.dir } : {}),
         }
       }
@@ -36,6 +38,8 @@ export const applyMake = (
         y: source.y,
         isText: false,
         props: [],
+        converted: true,
+        spawned: true,
         ...(source.dir ? { dir: source.dir } : {}),
       }
     },

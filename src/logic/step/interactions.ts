@@ -5,12 +5,14 @@ import { matchesRuleObjectWord, matchesRuleSubject } from '../rule-match.js'
 import {
   appendHasSpawns,
   buildGrid,
+  hasLatchedFloat,
   hasProp,
   isYouLike,
   resolveLevelPropsGlobal,
   splitByFloatLayer,
 } from './shared.js'
 
+import { ruleDedupeKey } from '../rules.js'
 import type { RuleRuntime } from '../rule-runtime.js'
 import type { Item } from '../types.js'
 
@@ -42,7 +44,6 @@ const applyOpenShut = (
 }
 
 const INTERACTION_PROPS = new Set([
-  'bonus',
   'boom',
   'defeat',
   'hot',
@@ -52,6 +53,49 @@ const INTERACTION_PROPS = new Set([
   'sink',
   'weak',
 ])
+
+// Official `bonus` pickup lives in the post-`make` you-sweep inside
+// block(): a `you`/`you2`/`3d` unit collects same-layer `bonus` units on
+// its cell. Modelled as its own stage so make/write products landing on
+// a you are picked up in the same turn.
+export const applyBonusPickup = (
+  items: Item[],
+  runtime: RuleRuntime,
+): { items: Item[]; changed: boolean } => {
+  const bonusRules = runtime.buckets.isProperty.filter(
+    (rule) => rule.object === 'bonus' && !rule.objectNegated,
+  )
+  if (!bonusRules.length) return { items, changed: false }
+  if (!items.some((item) => isYouLike(item))) return { items, changed: false }
+
+  const { width } = runtime
+  const byCell =
+    runtime.context.items === items
+      ? (runtime.context.byCell as Map<number, Item[]>)
+      : buildGrid(items, width)
+
+  const removed = new Set<number>()
+  for (const you of items) {
+    if (!isYouLike(you)) continue
+    const cell = byCell.get(keyFor(you.x, you.y, width)) ?? []
+    for (const item of cell) {
+      // Official `findtype(b,x,y,0)` passes unitid 0 — no self-exclusion:
+      // a `you`+`bonus` unit collects itself (floating(self,self) is true,
+      // issafe fails) and is deleted in the same sweep.
+      if (removed.has(item.id)) continue
+      if (!hasProp(item, 'bonus')) continue
+      if (hasLatchedFloat(item) !== hasLatchedFloat(you)) continue
+      // Official `issafe(d)`: a `safe` bonus is never collected.
+      if (hasProp(item, 'safe')) continue
+      removed.add(item.id)
+    }
+  }
+  if (!removed.size) return { items, changed: false }
+  return {
+    items: items.filter((item) => !removed.has(item.id)),
+    changed: true,
+  }
+}
 
 export const applyInteractions = (
   items: Item[],
@@ -100,6 +144,78 @@ export const applyInteractions = (
     }
   }
 
+  // Official `handledels` applies each sweep immediately — later checks
+  // only see survivors, so every presence/occupancy test filters out
+  // units already marked removed.
+  const live = (item: Item): boolean => !removed.has(item.id)
+
+  // Pass order mirrors the official block() sweep sequence: sink → boom
+  // → weak → melt → defeat → shut/open → eat (bonus sits in the
+  // post-make you-sweep, modelled by a separate stage after `write`).
+  if (presentProps.has('sink')) {
+    for (const list of byCell.values()) {
+      for (const layer of splitByFloatLayer(list)) {
+        if (layer.length < 2) continue
+        // Official sink: each sinker deletes its unsafe same-layer
+        // cellmates, then dies itself only if something actually sank —
+        // a lone sinker or a both-`safe` pairing leaves it in place.
+        for (const sinker of layer) {
+          if (!live(sinker) || !hasProp(sinker, 'sink')) continue
+          const sinkerSafe = !removable(sinker)
+          let sunk = false
+          for (const other of layer) {
+            if (other.id === sinker.id || !live(other)) continue
+            const otherSafe = !removable(other)
+            if (sinkerSafe && otherSafe) continue
+            if (!otherSafe) markRemoved(other)
+            if (!sinkerSafe) sunk = true
+          }
+          if (sunk) markRemoved(sinker)
+        }
+      }
+    }
+  }
+
+  // `boom` detonates a (count-1)-cell square around each source: a
+  // single `x is boom` rule only destroys the source's own cell;
+  // stacked boom rules widen the blast. Sources already dead at the
+  // sweep (e.g. sunk) never detonate, but a source killed mid-sweep by
+  // another boom still fires — chain reactions propagate. `safe`
+  // sources detonate and survive; `safe` victims are immune.
+  if (presentProps.has('boom')) {
+    const boomRules = runtime.buckets.isProperty.filter(
+      (rule) => rule.object === 'boom' && !rule.objectNegated,
+    )
+    const sources = items.filter(
+      (item) => hasProp(item, 'boom') && !removed.has(item.id),
+    )
+    for (const source of sources) {
+      // Officially `count` is hasfeature_count — rule *instances*, so
+      // duplicated `x is boom` formations each widen the blast.
+      const count = boomRules
+        .filter((rule) => matchesRuleSubject(source, rule, ruleContext))
+        .reduce(
+          (sum, rule) => sum + (runtime.ruleCounts.get(ruleDedupeKey(rule)) ?? 1),
+          0,
+        )
+      const dim = count - 1
+      const sourceFloat = hasLatchedFloat(source)
+      for (let dy = -dim; dy <= dim; dy += 1) {
+        for (let dx = -dim; dx <= dim; dx += 1) {
+          const cell =
+            byCell.get(keyFor(source.x + dx, source.y + dy, width)) ?? []
+          for (const victim of cell) {
+            if (victim.id === source.id || !live(victim)) continue
+            if (hasLatchedFloat(victim) !== sourceFloat) continue
+            if (hasProp(victim, 'safe')) continue
+            markRemoved(victim)
+          }
+        }
+      }
+      if (removable(source)) markRemoved(source)
+    }
+  }
+
   for (const list of byCell.values()) {
     // A cell can only interact when some resident carries an interaction
     // prop — or when eat rules exist and a same-layer pair is possible
@@ -114,40 +230,36 @@ export const applyInteractions = (
 
     for (const layer of splitByFloatLayer(list)) {
       if (!layer.length) continue
-      const occupied = layer.length > 1
+      const liveCount = () =>
+        layer.reduce((n, item) => n + (live(item) ? 1 : 0), 0)
 
-      if (occupied && presentProps.has('sink')) {
-        const hasSink = layer.some((item) => hasProp(item, 'sink'))
-        if (hasSink) {
-          for (const item of layer) markRemoved(item)
-        }
-      }
-
-      if (presentProps.has('defeat') && layer.some((item) => hasProp(item, 'defeat'))) {
+      // Official block() order: the `weak` sweep runs before melt/defeat
+      // — a weak unit sharing a cell with anything on its float layer
+      // shatters first, so e.g. a weak `defeat` skull breaks instead of
+      // killing the `you` that stepped onto it. Units spawned this turn
+      // (official `unit.new`) are exempt until the next turn.
+      if (presentProps.has('weak') && liveCount() > 1) {
         for (const item of layer) {
-          if (isYouLike(item)) markRemoved(item)
-        }
-      }
-
-      // `bonus` is a pickup: a you-like unit touching it removes the
-      // bonus (without ending the level).
-      if (
-        presentProps.has('bonus') &&
-        layer.some((item) => isYouLike(item)) &&
-        layer.some((item) => hasProp(item, 'bonus'))
-      ) {
-        for (const item of layer) {
-          if (hasProp(item, 'bonus')) markRemoved(item)
+          if (hasProp(item, 'weak') && !item.spawned) markRemoved(item)
         }
       }
 
       if (
         presentProps.has('hot') &&
         presentProps.has('melt') &&
-        layer.some((item) => hasProp(item, 'hot'))
+        layer.some((item) => live(item) && hasProp(item, 'hot'))
       ) {
         for (const item of layer) {
           if (hasProp(item, 'melt')) markRemoved(item)
+        }
+      }
+
+      if (
+        presentProps.has('defeat') &&
+        layer.some((item) => live(item) && hasProp(item, 'defeat'))
+      ) {
+        for (const item of layer) {
+          if (isYouLike(item)) markRemoved(item)
         }
       }
 
@@ -180,29 +292,6 @@ export const applyInteractions = (
           }
         }
       }
-
-      if (occupied && presentProps.has('weak')) {
-        for (const item of layer) {
-          if (hasProp(item, 'weak')) markRemoved(item)
-        }
-      }
-    }
-  }
-
-  // `boom` detonates its whole 3x3 neighbourhood — every unit in the
-  // eight surrounding cells plus itself goes.
-  if (presentProps.has('boom')) {
-    for (const source of items) {
-      if (!hasProp(source, 'boom')) continue
-      markRemoved(source)
-      for (let dy = -1; dy <= 1; dy += 1) {
-        for (let dx = -1; dx <= 1; dx += 1) {
-          if (dx === 0 && dy === 0) continue
-          const cell =
-            byCell.get(keyFor(source.x + dx, source.y + dy, width)) ?? []
-          for (const item of cell) markRemoved(item)
-        }
-      }
     }
   }
 
@@ -223,8 +312,10 @@ export const applyInteractions = (
     )
     const levelFloat = levelProps.has('float')
     const levelSafe = levelProps.has('safe')
+    // `floating_level`: the unit side is the latched `values[FLOAT]`; the
+    // level pseudo-unit's float stays a fresh rule read.
     const floatOk = (item: Item): boolean =>
-      hasProp(item, 'float') === levelFloat
+      hasLatchedFloat(item) === levelFloat
     const levelYou =
       levelProps.has('you') || levelProps.has('you2') || levelProps.has('3d')
     const eProps = resolveActiveEmptyProps(

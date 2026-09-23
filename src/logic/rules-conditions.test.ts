@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import { collectRules } from './rules.js'
+import { collectRuleInstances, collectRules } from './rules.js'
 
 import type { LevelItem } from './types.js'
 
@@ -222,4 +222,52 @@ test('collectRules binds NOT after a condition word to its object', () => {
   const keys = toRuleKeys(items, 6, 1)
 
   assert.deepEqual(keys, ['baba:property:win[on:!skull]'])
+})
+
+// `{cond|noun} noun is prop` with no subject ahead of the condition
+// cell: the dead stacked word's resume and the failed condition parse
+// land on the same sentence, and official `finals` dedupes identical
+// unit-id sequences — the bare rule is emitted once. Multiplicity is
+// behaviour (stacked `is move`/`is shift` count), so the count matters.
+test('collectRuleInstances emits a subjectless dead-word promotion only once', () => {
+  const items = [
+    createText(1, 'near', 0, 0),
+    createText(2, 'keke', 0, 0),
+    createText(3, 'keke', 1, 0),
+    createText(4, 'is', 2, 0),
+    createText(5, 'push', 3, 0),
+  ]
+
+  const matches = collectRuleInstances(items, 4, 1).filter(
+    (instance) =>
+      instance.rule.subject === 'keke' &&
+      !instance.rule.subjectNegated &&
+      instance.rule.kind === 'is-property' &&
+      instance.rule.object === 'push' &&
+      !instance.rule.objectNegated &&
+      instance.rule.condition === undefined,
+  )
+
+  assert.equal(matches.length, 1)
+})
+
+// The same stacked dead word behind a real subject keeps its promotion:
+// the failed `keke` variant resumes on the would-be condition object and
+// emits its own bare rule alongside the conditional one.
+test('collectRules keeps dead-word promotion beside a real subject', () => {
+  const items = [
+    createText(1, 'baba', 0, 0),
+    createText(2, 'near', 1, 0),
+    createText(3, 'keke', 1, 0),
+    createText(4, 'keke', 2, 0),
+    createText(5, 'is', 3, 0),
+    createText(6, 'push', 4, 0),
+  ]
+
+  const keys = toRuleKeys(items, 5, 1)
+
+  assert.deepEqual(keys, [
+    'baba:property:push[near:keke]',
+    'keke:property:push',
+  ])
 })

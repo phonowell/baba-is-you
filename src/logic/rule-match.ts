@@ -14,6 +14,10 @@ export type RuleMatchContext = {
   groupMembers: GroupMembers
   height: number
   items: MatchItem[]
+  // `poweredstatus` analogue: the `X IS POWER*` verdict is board-global
+  // (officially cached per turn, cleared by smallclear — for us the
+  // context lifetime is one rule pass, which is shorter).
+  poweredStatus: Map<string, boolean>
   rules: Rule[]
   width: number
   // Turn-level extras for postfix conditions: `idle` is the official
@@ -25,16 +29,29 @@ export type RuleMatchContext = {
 
 export const GROUP_NOUNS = new Set(['group', 'group2', 'group3'])
 
+// `level` units (the map-icon object, reachable only via `x is level`)
+// are nameless officially: `getmetadata` skips `level`/`path`/
+// `specialobject`, so `getname` returns "" and the unit sits in
+// `unitlists[""]` — it matches no subject or object word, not even
+// `all` or `not x`. The display name stays 'level'; rule matching must
+// see through it. The `id: -1` pseudo-item in `resolveLevelProps` is the
+// level ENTITY evaluating `level is x <cond>` — exempt from this.
+const isLevelIcon = (item: MatchItem): boolean =>
+  !item.isText && item.name === 'level' && item.id !== -1
+
 export const matchesRuleObjectWord = (
   item: MatchItem,
   word: string,
   groupMembers: GroupMembers,
 ): boolean => {
+  if (isLevelIcon(item)) return false
   if (word === 'text') return item.isText
   if (word === 'empty') return false
   if (word === 'all') return !item.isText
   if (GROUP_NOUNS.has(word))
     return !item.isText && (groupMembers.get(word)?.has(item.name) ?? false)
+  // Only the level-entity pseudo-item reaches this branch — real `level`
+  // units already early-returned via isLevelIcon.
   if (word === 'level') return !item.isText && item.name === 'level'
   if (item.isText) return false
   return item.name === word
@@ -63,7 +80,7 @@ const resolveGroupMembers = (
     const set = memberSet(rule.object)
     if (rule.subject === 'all') {
       for (const item of items) {
-        if (item.isText) continue
+        if (item.isText || item.name === 'level') continue
         set.add(item.name)
       }
       continue
@@ -96,6 +113,7 @@ export const createRuleMatchContext = (
     groupMembers: resolveGroupMembers(items, rules),
     height,
     items,
+    poweredStatus: new Map(),
     rules,
     width,
     ...(extras?.idle !== undefined ? { idle: extras.idle } : {}),
@@ -240,21 +258,23 @@ const matchesWithout = (
 
 // `feeling` takes a property parameter and asks whether the subject's own
 // `X IS <prop>` rule currently holds — the official implementation walks
-// featureindex for a matching rule and re-tests its conditions. Depth is
-// bounded so `X FEELING WIN IS WIN` self-references terminate.
+// featureindex for a matching rule and re-tests its conditions. Rules
+// already under test in this chain (`visited`) are skipped, so
+// `X FEELING WIN IS WIN` self-references terminate — the official
+// `checkedconds` guard.
 const matchesFeeling = (
   item: MatchItem,
   object: string,
   objectNegated: boolean,
   context: RuleMatchContext,
-  depth: number,
+  visited: Set<Rule>,
 ): boolean => {
-  if (depth > 3) return false
   for (const rule of context.rules) {
     if (rule.kind !== 'is-property') continue
     if (rule.object !== object || (rule.objectNegated ?? false) !== objectNegated)
       continue
-    if (matchesRuleSubject(item, rule, context, depth + 1)) return true
+    if (visited.has(rule)) continue
+    if (matchesRuleSubject(item, rule, context, visited)) return true
   }
   return false
 }
@@ -303,7 +323,7 @@ const matchesCondition = (
   item: MatchItem,
   rule: Rule,
   context: RuleMatchContext,
-  depth: number,
+  visited: Set<Rule>,
 ): boolean => {
   const { condition } = rule
   if (!condition) return true
@@ -340,18 +360,33 @@ const matchesCondition = (
       // `powered*` asks whether a matching `X IS POWER*` rule is active
       // for some unit — the official featureindex lookup. Checking props
       // would miss sources whose props resolve in the same pass.
+      // `checkedconds` parity: candidates already under test in this
+      // chain are skipped (`x powered is power` self-references end
+      // instead of recursing), and negated subjects never source power.
+      // The verdict is board-global, so the `poweredstatus` cache is
+      // written only from a top-level eval — a chain-truncated verdict
+      // must not leak into the memo.
       const prop = POWERED_PROPS[condition.kind]
-      matched =
-        prop !== undefined &&
-        context.rules.some(
+      const cached = prop === undefined
+        ? undefined
+        : context.poweredStatus.get(prop)
+      if (cached !== undefined) {
+        matched = cached
+      } else if (prop !== undefined) {
+        const topLevel = visited.size === 1
+        matched = context.rules.some(
           (candidate) =>
             candidate.kind === 'is-property' &&
             candidate.object === prop &&
             !candidate.objectNegated &&
+            !candidate.subjectNegated &&
+            !visited.has(candidate) &&
             context.items.some((unit) =>
-              matchesRuleSubject(unit, candidate, context, depth + 1),
+              matchesRuleSubject(unit, candidate, context, visited),
             ),
         )
+        if (topLevel) context.poweredStatus.set(prop, matched)
+      }
     }
     return condition.negated ? !matched : matched
   }
@@ -455,7 +490,7 @@ const matchesCondition = (
       condition.object,
       objectNegated,
       context,
-      depth,
+      visited,
     )
     return condition.negated ? !matched : matched
   }
@@ -483,12 +518,13 @@ export const matchesRuleSubject = (
   item: MatchItem,
   rule: Rule,
   context: RuleMatchContext,
-  depth = 0,
+  visiting?: Set<Rule>,
 ): boolean => {
   const subjectNegated = rule.subjectNegated ?? false
 
   let matched = false
-  if (rule.subject === 'text') matched = item.isText
+  if (isLevelIcon(item)) matched = false
+  else if (rule.subject === 'text') matched = item.isText
   else if (rule.subject === 'empty') matched = false
   else if (rule.subject === 'all') matched = !item.isText
   else if (GROUP_NOUNS.has(rule.subject))
@@ -503,5 +539,13 @@ export const matchesRuleSubject = (
   // so `not baba is you` does not make text into `you`.
   if (subjectNegated) matched = !matched && !item.isText
   if (!matched) return false
-  return matchesCondition(item, rule, context, depth)
+  // Unconditional rules match on the subject test alone — skip the
+  // chain-set allocation entirely (the common case).
+  if (!rule.condition) return true
+  // `testcond` marks the evaluated rule's conds at entry: within one
+  // condition chain a rule is tested at most once, which is what makes
+  // powered/feeling re-entry terminate.
+  const visited = visiting ?? new Set<Rule>()
+  visited.add(rule)
+  return matchesCondition(item, rule, context, visited)
 }

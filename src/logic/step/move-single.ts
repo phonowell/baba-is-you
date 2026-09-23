@@ -2,7 +2,7 @@ import { appendEmptyHasSpawns, resolveEmptyPropsByCell } from '../empty.js'
 
 import { createEatsPredicates, isLockedFor } from './move-core.js'
 import { createSingleMoveRuntime } from './move-single-runtime.js'
-import { appendHasSpawns, buildGrid, carryHeldRiders, hasProp, MOVE_DELTAS, resolveLevelProps } from './shared.js'
+import { appendHasSpawns, buildGrid, carryHeldRiders, hasLatchedFloat, MOVE_DELTAS, resolveLevelProps } from './shared.js'
 import { keyFor } from '../helpers.js'
 
 import type { RuleRuntime } from '../rule-runtime.js'
@@ -66,6 +66,9 @@ export const moveItems = (
   // `level is hold` pins — unlike `still` (which allows self-movement),
   // a pinned unit can't move under its own power either.
   const pinnedIds = new Set<number>()
+  // `x is hold` carrying needs a pre-move seat snapshot — skip building
+  // it entirely when no unit carries the prop (the common case).
+  let hasHolder = false
 
   for (const item of next) {
     byId.set(item.id, item)
@@ -85,6 +88,7 @@ export const moveItems = (
       else if (prop === 'weak') weakIds.add(item.id)
       else if (prop === 'still') stillIds.add(item.id)
       else if (prop === 'phantom') phantomIds.add(item.id)
+      else if (prop === 'hold') hasHolder = true
     }
   }
 
@@ -127,7 +131,7 @@ export const moveItems = (
         item.x,
         item.y,
       )
-      if (hasProp(item, 'float') !== levelProps.has('float')) continue
+      if (hasLatchedFloat(item) !== levelProps.has('float')) continue
       if (!levelProps.has('hold')) continue
       pinnedIds.add(item.id)
       stillIds.add(item.id)
@@ -150,33 +154,38 @@ export const moveItems = (
     runtime.context,
     emptyPropsAt,
   )
+  const engineContext = {
+    byId,
+    deadEmptyCells,
+    eats,
+    eatsEmpty,
+    emptyPropsAt,
+    grid,
+    height,
+    moverIds,
+    moved,
+    movePass: 0,
+    passMoved: new Set<number>(),
+    passDeparted: new Map<number, Item[]>(),
+    passOrigins: new Map<number, number>(),
+    pushQueued: new Set<string>(),
+    deferredIds: new Set<number>(),
+    openIds,
+    phantomIds,
+    pullIds,
+    pushIds,
+    removed,
+    removedItems,
+    status,
+    stopIds,
+    swapIds,
+    weakIds,
+    width,
+    shutIds,
+    stillIds,
+  }
   const engine = createSingleMoveRuntime(
-    {
-      byId,
-      deadEmptyCells,
-      eats,
-      eatsEmpty,
-      emptyPropsAt,
-      grid,
-      height,
-      moverIds,
-      moved,
-      moveWave: 0,
-      movedWave: new Map(),
-      openIds,
-      phantomIds,
-      pullIds,
-      pushIds,
-      removed,
-      removedItems,
-      status,
-      stopIds,
-      swapIds,
-      weakIds,
-      width,
-      shutIds,
-      stillIds,
-    },
+    engineContext,
     direction,
     isMovePhase,
     fallMode,
@@ -210,26 +219,45 @@ export const moveItems = (
     }
   }
 
-  // Row-major (y,x) mover order, matching the predecessor's cell iteration.
-  movers.sort((a, b) => a.y - b.y || a.x - b.x || a.id - b.id)
+  // Official mover order is unitid order — `findall` walks `unitlists`
+  // in creation order, and each mover's movelist drains before the next
+  // is checked, so a front same-direction mover vacates its cell for a
+  // trailing mover to follow into.
+  movers.sort((a, b) => a.id - b.id)
 
   // `hold` carrying needs each entity's pre-move seat — snapshot before
-  // the mover loop mutates positions.
+  // the mover loop mutates positions (only when a holder exists).
   const before = new Map<number, { x: number; y: number }>()
-  for (const item of next) before.set(item.id, { x: item.x, y: item.y })
+  if (hasHolder)
+    for (const item of next) before.set(item.id, { x: item.x, y: item.y })
 
   // Official movement is a multi-pass state machine: a mover whose check
   // fails retires for the pass but retries after later movers resolve —
   // e.g. a fruit held by a shut door advances once a trailing mover's
   // push annihilates the door. Loop to a fixpoint; a `weak` mover that
   // still cannot move after the dust settles shatters on contact.
+  //
+  // Each pass emulates one official take iteration: the board is frozen
+  // for checks (`passMoved`/`passDeparted`), deferred specials drain at
+  // pass end, and a mover whose front cell needs a push only defers —
+  // officially it advances to state 1 and pushes next iteration.
   let weakCrash: number[] = []
   let progress = true
+  let pass = 0
   while (progress) {
     progress = false
+    engineContext.movePass = pass
+    pass += 1
+    engineContext.passMoved.clear()
+    engineContext.passDeparted.clear()
+    engineContext.passOrigins.clear()
+    engineContext.pushQueued.clear()
+    engineContext.deferredIds.clear()
     for (const mover of movers) {
       const id = mover.id
-      if (moved.has(id) || removed.has(id)) continue
+      // A removed mover keeps its queue entry: the corpse still runs its
+      // check (push/pull side-effects apply) but never lands itself.
+      if (moved.has(id)) continue
       // `cantmove` (still / level-hold pin / locked dir) blocks the move
       // but not the turn: official `updatedir` still aims the unit at the
       // input.
@@ -239,7 +267,7 @@ export const moveItems = (
         stillIds.has(id) ||
         (moverItem && isLockedFor(moverItem, direction))
       ) {
-        if (moverItem && moverItem.dir !== direction) {
+        if (!fallMode && moverItem && moverItem.dir !== direction) {
           moverItem.dir = direction
           status.anyMoved = true
         }
@@ -248,9 +276,12 @@ export const moveItems = (
       if (!engine.canMoveRoot(id)) {
         const item = byId.get(id)
         // A blocked `weak` mover shatters — deferred until a pass makes
-        // no progress so a freed cell still admits it first.
-        if (item && weakIds.has(id) && !isMovePhase && !fallMode)
-          weakCrash.push(id)
+        // no progress so a freed cell still admits it first. A mover
+        // that only deferred its push is still live, not crashed.
+        if (
+          item && weakIds.has(id) && !isMovePhase && !fallMode &&
+          !engineContext.deferredIds.has(id)
+        ) weakCrash.push(id)
         continue
       }
 
@@ -258,7 +289,18 @@ export const moveItems = (
       progress = true
     }
 
+    // Drain deferred lock/eat specials — official drain happens at the
+    // end of each take iteration; a kill can free cells for movers that
+    // failed this pass, so a firing forces another round.
+    if (engine.drainSpecials()) progress = true
+    // A deferred push means a mover is still live (official state 1)
+    // even though nothing moved — keep iterating so it resolves.
+    if (engineContext.deferredIds.size) progress = true
+    // `weak` shatters only once a pass produced nothing at all — pushes
+    // resolved, specials drained, no deferrals pending (officially the
+    // crash fires at state ≥ 4, after every retry is exhausted).
     if (!progress && weakCrash.length) {
+      let crashed = false
       for (const id of weakCrash) {
         if (moved.has(id) || removed.has(id)) continue
         const item = byId.get(id)
@@ -266,10 +308,12 @@ export const moveItems = (
         removed.add(id)
         removedItems.push(item)
         status.anyMoved = true
+        crashed = true
       }
+      weakCrash = []
       // The removals may have freed cells for other movers — run the
       // pass once more before declaring the fixpoint.
-      progress = weakCrash.length > 0
+      progress = crashed
     }
     weakCrash = []
   }
@@ -284,7 +328,10 @@ export const moveItems = (
     status.anyMoved = true
   }
 
-  if (carryHeldRiders(before, next, removed, width, height, stillIds))
+  if (
+    hasHolder &&
+    carryHeldRiders(before, next, removed, width, height, stillIds)
+  )
     status.anyMoved = true
 
   const survivors = next.filter((item) => !removed.has(item.id))

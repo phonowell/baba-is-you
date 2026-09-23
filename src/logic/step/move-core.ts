@@ -1,20 +1,36 @@
 import { matchesRuleObjectWord, matchesRuleSubject } from '../rule-match.js'
-import { hasProp, keyFor } from './shared.js'
+import { hasLatchedFloat, hasProp, keyFor, MOVE_DELTAS } from './shared.js'
 
 import type { RuleMatchContext } from '../rule-match.js'
 import type { Direction, Item, Rule } from '../types.js'
 
 export type MoveCoreContext = {
   byId: Map<number, Item>
-  // Push-wave bookkeeping for the single-move engine. The official engine
-  // resolves a whole push chain against the frozen board — queued updates
-  // apply only when the mover's movelist drains — so a companion displaced
-  // out of the pusher's own cell is not yet at the target cell when the
-  // next stacked unit evaluates it. `moveWave` tags the current root push;
-  // `movedWave` records which wave last displaced each unit, letting
-  // forward-target lookups skip this wave's arrivals.
-  moveWave: number
-  movedWave: Map<number, number>
+  // Frozen-board bookkeeping for the single-move engine. The official
+  // engine resolves a whole take iteration against the board as it was —
+  // queued moves apply only when the iteration's movelist drains — so a
+  // unit displaced during this pass still occupies its origin cell for
+  // every later check, while the cell it lands in does not count it yet.
+  // `movePass` is the current fixpoint iteration (≈ official take
+  // iteration); `passMoved`/`passDeparted` reset each pass, matching the
+  // per-iteration movelist drain.
+  movePass: number
+  passMoved: Set<number>
+  passDeparted: Map<number, Item[]>
+  // First-departure origin per unit this pass (id → origin cell key) —
+  // the frozen-board position a re-queued push/pull applies its delta
+  // from (officially every movelist entry teleports the unit to its
+  // queued origin + direction, so a unit pushed by two chains in one
+  // drain moves twice).
+  passOrigins: Map<number, number>
+  // Official `pushedunits` dedup — `${pusher cell key}:${unit id}` — one
+  // queued move per (pusher origin, target) pair per pass.
+  pushQueued: Set<string>
+  // Root movers that deferred a push this pass (official state-0 →
+  // state-1 advance) — they produced no movement but are still live, so
+  // the fixpoint must run another iteration; a `weak` deferrer is not
+  // yet a crash.
+  deferredIds: Set<number>
   // `x eat y` resolves at move time (official `eat` specials): the
   // mover consumes a same-float-layer, non-`safe` target on entry —
   // even a `stop` target never blocks an eater. Absent eat rules make
@@ -67,9 +83,10 @@ export const createEatsPredicates = (
   if (!eatRules.length) return { eats: () => false, eatsEmpty: () => false }
   const eats = (mover: Item, target: Item): boolean => {
     // Official gates: `issafe` on the target protects it, and `floating`
-    // requires matching float layers.
+    // requires matching float layers (latched `values[FLOAT]`, not the
+    // live rule set).
     if (hasProp(target, 'safe')) return false
-    if (hasProp(mover, 'float') !== hasProp(target, 'float')) return false
+    if (hasLatchedFloat(mover) !== hasLatchedFloat(target)) return false
     // `hasfeature` evaluates the rule's conditions at the destination
     // cell (`x+ox,y+oy`), not the mover's current position.
     const atTarget = { ...mover, x: target.x, y: target.y }
@@ -89,8 +106,10 @@ export const createEatsPredicates = (
     const props = emptyPropsAt(x, y)
     // `issafe(2)`/`floating(unitid,2)`: the cell's own `empty is safe`
     // protects it and `empty is float` sets the pseudo-unit's layer.
+    // Unit side is the latched float; the empty side stays a fresh rule
+    // read — `floating()` calls `hasfeature` for pseudo-unit 2.
     if (props.has('safe')) return false
-    if (hasProp(mover, 'float') !== props.has('float')) return false
+    if (hasLatchedFloat(mover) !== props.has('float')) return false
     const atCell = { ...mover, x, y }
     for (const rule of eatRules) {
       if (rule.subjectNegated || rule.objectNegated) continue
@@ -125,7 +144,7 @@ export const isLockCollision = (
   target: Item,
 ): boolean =>
   isOpenShutPair(context, mover, target) &&
-  hasProp(mover, 'float') === hasProp(target, 'float') &&
+  hasLatchedFloat(mover) === hasLatchedFloat(target) &&
   (!hasProp(mover, 'safe') || !hasProp(target, 'safe'))
 
 // Official empty-branch specials (movement.lua ~1131): an open/shut
@@ -139,7 +158,7 @@ export const emptyLockHit = (
 ): boolean =>
   ((context.openIds.has(mover.id) && emptyProps.has('shut')) ||
     (context.shutIds.has(mover.id) && emptyProps.has('open'))) &&
-  hasProp(mover, 'float') === emptyProps.has('float') &&
+  hasLatchedFloat(mover) === emptyProps.has('float') &&
   (!hasProp(mover, 'safe') || !emptyProps.has('safe'))
 
 // Official empty-branch `weak`: the empty cell crumbles on entry (its
@@ -151,7 +170,7 @@ export const emptyWeakHit = (
 ): boolean =>
   emptyProps.has('weak') &&
   !emptyProps.has('safe') &&
-  hasProp(mover, 'float') === emptyProps.has('float')
+  hasLatchedFloat(mover) === emptyProps.has('float')
 
 export const removeOne = (context: MoveCoreContext, item: Item): boolean => {
   if (context.removed.has(item.id)) return false
@@ -160,7 +179,10 @@ export const removeOne = (context: MoveCoreContext, item: Item): boolean => {
   if (hasProp(item, 'safe')) return false
   context.removed.add(item.id)
   context.removedItems.push(item)
-  context.byId.delete(item.id)
+  // Dead units stay queryable by id — like the official `mmf` object —
+  // because a killed mover's `moving_units` entry keeps processing its
+  // state machine (its push side-effects still apply). Grid removal is
+  // what makes it stop blocking.
 
   const cellKey = keyFor(item.x, item.y, context.width)
   const cellItems = context.grid.get(cellKey) ?? []
@@ -186,6 +208,17 @@ export const moveOne = (
     oldList.filter((other) => other.id !== item.id),
   )
 
+  // First departure this pass: record the unit at its origin cell so
+  // forward lookups keep seeing it (officially it stays there until the
+  // iteration's movelist drains), and remember the origin for re-queued
+  // push deltas.
+  if (!context.passMoved.has(item.id)) {
+    context.passOrigins.set(item.id, oldKey)
+    const departed = context.passDeparted.get(oldKey)
+    if (departed === undefined) context.passDeparted.set(oldKey, [item])
+    else departed.push(item)
+  }
+
   item.x = nx
   item.y = ny
 
@@ -193,9 +226,82 @@ export const moveOne = (
   const newList = context.grid.get(newKey) ?? []
   newList.push(item)
   context.grid.set(newKey, newList)
-  context.movedWave.set(item.id, context.moveWave)
+  context.passMoved.add(item.id)
   return true
 }
+
+type EmptyPullContext = MoveCoreContext & {
+  emptyPropsAt: (x: number, y: number) => ReadonlySet<string>
+  swapIds: Set<number>
+  pinnedIds?: Set<number>
+}
+
+// Official `empty is pull` (movement.lua check(): the pull scan on a
+// unit-free cell returns pseudo-unit 2 when `empty` is pullable there).
+// The dragged empty pulls the cell behind IT, so the pull propagates
+// through consecutive pull-empties until it reaches real pullable
+// cargo — which lands on the last vacated pull-empty cell. `still`/
+// `locked<dir>` empties refuse (official `estop`) and end the chain, as
+// does a unit-free non-pull cell or the board edge.
+export const traceEmptyPullCargo = (
+  context: EmptyPullContext,
+  occupants: (x: number, y: number) => readonly Item[],
+  x: number,
+  y: number,
+  dir: Direction,
+): Item[] => {
+  const [dx, dy] = MOVE_DELTAS[dir]
+  const pullable = (cx: number, cy: number): boolean => {
+    const props = context.emptyPropsAt(cx, cy)
+    return (
+      props.has('pull') &&
+      !props.has('still') &&
+      !props.has(LOCKED_PROPS[dir])
+    )
+  }
+  if (!inBounds(context, x, y) || occupants(x, y).length || !pullable(x, y))
+    return []
+  let cx = x - dx
+  let cy = y - dy
+  while (inBounds(context, cx, cy)) {
+    const cell = occupants(cx, cy)
+    if (cell.length)
+      return cell.filter((unit) => context.pullIds.has(unit.id))
+    if (!pullable(cx, cy)) return []
+    cx -= dx
+    cy -= dy
+  }
+  return []
+}
+
+// The root empty pull is validated officially (trypush on the
+// pseudo-unit): its landing cell is the mover's own — still physically
+// occupied until the movelist drains — where the puller itself is
+// exempt (`hms[i] ~= pusherid`) but any other solid occupant vetoes the
+// pull. Pushable or prop-free co-occupants don't veto; the push
+// side-effect itself is unmodelled.
+export const emptyPullRootBlocked = (
+  context: EmptyPullContext,
+  occupants: (x: number, y: number) => readonly Item[],
+  mover: Item,
+  dir: Direction,
+): boolean =>
+  occupants(mover.x, mover.y).some((unit) => {
+    if (unit.id === mover.id || context.phantomIds.has(unit.id))
+      return false
+    const cantMove =
+      context.stillIds.has(unit.id) ||
+      isLockedFor(unit, dir) ||
+      (context.pinnedIds?.has(unit.id) ?? false)
+    if (context.swapIds.has(unit.id) && !cantMove) return false
+    if (
+      context.weakIds.has(unit.id) &&
+      hasLatchedFloat(unit) === hasLatchedFloat(mover)
+    )
+      return false
+    if (context.pushIds.has(unit.id) && !cantMove) return false
+    return context.stopIds.has(unit.id) || context.pullIds.has(unit.id) || cantMove
+  })
 
 const NO_ITEMS: Item[] = []
 

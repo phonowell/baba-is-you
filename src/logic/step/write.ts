@@ -23,6 +23,8 @@ export const applyWrite = (
         y: source.y,
         isText: true,
         props: [],
+        converted: true,
+        spawned: true,
         ...(source.dir ? { dir: source.dir } : {}),
       }
     },

@@ -224,6 +224,48 @@ test('step POWERED requires a live power source', () => {
   assert.equal(findObject(result.state, 'baba')?.x, 1)
 })
 
+test('step POWERED skips a self-referencing power rule', () => {
+  // `powered bolt is power` is the only power rule: official testcond
+  // marks a rule's conds in checkedconds at entry, so the candidate is
+  // skipped inside its own powered scan — no unbounded recursion, and a
+  // rule cannot source its own power (the [352] ELECTRICITY sweep crash).
+  const selfRef: LevelData = {
+    title: 'powered-self-ref',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'flag', 1, 0, false),
+      createItem(9, 'bolt', 5, 0, false),
+      ...ruleRow(3, 2, ['baba', 'is', 'you']),
+      ...ruleRow(20, 2, ['powered', 'bolt', 'is', 'power'], 4),
+      ...ruleRow(30, 3, ['powered', 'flag', 'is', 'win']),
+    ],
+  }
+  const result = step(createInitialState(selfRef, 0), 'right')
+  assert.equal(result.state.status, 'playing')
+  assert.equal(
+    (findObject(result.state, 'bolt') as { props?: string[] })?.props?.includes(
+      'power',
+    ),
+    false,
+  )
+
+  // With a real source the chain still resolves: `cog is power` powers
+  // the bolt rule, so `powered flag is win` fires.
+  const sourced: LevelData = {
+    ...selfRef,
+    title: 'powered-self-ref-sourced',
+    items: [
+      ...selfRef.items,
+      createItem(8, 'cog', 6, 0, false),
+      ...ruleRow(40, 3, ['cog', 'is', 'power'], 5),
+    ],
+  }
+  const won = step(createInitialState(sourced, 0), 'right')
+  assert.equal(won.state.status, 'win')
+})
+
 test('step IDLE grants the rule only on wait turns', () => {
   const level: LevelData = {
     title: 'idle',
@@ -398,6 +440,24 @@ test('step BONUS is picked up on you-touch without winning', () => {
   assert.equal(findObject(result.state, 'star'), undefined)
 })
 
+test('step BONUS deletes a you unit that is itself bonus', () => {
+  // Official `findtype(b, x, y, 0)` does not exclude the scanning unit:
+  // a `you`+`bonus` unit finds itself, floating(self, self) passes, and
+  // it is removed by its own pickup.
+  const level: LevelData = {
+    title: 'bonus-self-pickup',
+    width: 6,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      ...ruleRow(3, 2, ['baba', 'is', 'you']),
+      ...ruleRow(10, 3, ['baba', 'is', 'bonus']),
+    ],
+  }
+  const result = step(createInitialState(level, 0), 'right')
+  assert.equal(findObject(result.state, 'baba'), undefined)
+})
+
 test('step END and DONE complete the level on you-touch', () => {
   const endLevel: LevelData = {
     title: 'end-touch',
@@ -515,6 +575,9 @@ test('step BOOM destroys its neighbourhood', () => {
       createItem(4, 'wall', 4, 0, false),
       ...ruleRow(5, 1, ['baba', 'is', 'you']),
       ...ruleRow(10, 2, ['skull', 'is', 'boom']),
+      // Officially dim = rule count - 1: a second `skull is boom`
+      // instance widens the blast to the 3x3 neighbourhood.
+      ...ruleRow(20, 2, ['skull', 'is', 'boom'], 4),
     ],
   }
   // skull is boom — it detonates immediately, taking its neighbours.
@@ -583,7 +646,7 @@ test('step FOLLOW steers a MOVE unit toward its target', () => {
       createItem(2, 'keke', 4, 0, false, 'right'),
       ...ruleRow(3, 1, ['baba', 'is', 'you']),
       ...ruleRow(10, 2, ['keke', 'follow', 'baba']),
-      ...ruleRow(15, 1, ['keke', 'is', 'move']),
+      ...ruleRow(15, 2, ['keke', 'is', 'move'], 4),
     ],
   }
   // The aim lands before the move take: keke chases baba leftward even

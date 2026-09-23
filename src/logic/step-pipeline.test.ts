@@ -29,7 +29,6 @@ test('STEP_STAGES exposes gameplay-first stage names and sync semantics', () => 
     [
       'player-move',
       'auto-move',
-      'gravity',
       'shift',
       'direction-faces',
       'transform',
@@ -39,6 +38,8 @@ test('STEP_STAGES exposes gameplay-first stage names and sync semantics', () => 
       'teleport',
       'make',
       'write',
+      'bonus',
+      'gravity',
     ],
   )
 
@@ -47,16 +48,17 @@ test('STEP_STAGES exposes gameplay-first stage names and sync semantics', () => 
     [
       'reapply-properties',
       'reuse-rules',
+      'recollect-rules',
+      'reuse-rules',
+      'recollect-rules',
+      'reuse-rules',
+      'recollect-rules',
+      'recollect-rules',
+      'recollect-rules',
+      'recollect-rules',
+      'recollect-rules',
+      'reuse-rules',
       'reapply-properties',
-      'recollect-rules',
-      'reuse-rules',
-      'recollect-rules',
-      'reuse-rules',
-      'recollect-rules',
-      'recollect-rules',
-      'recollect-rules',
-      'recollect-rules',
-      'recollect-rules',
     ],
   )
 })

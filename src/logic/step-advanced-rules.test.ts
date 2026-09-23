@@ -179,7 +179,7 @@ test('step SWAP mover swaps with non-blocking win target', () => {
   assert.equal(result.state.status, 'playing')
 })
 
-test('step teleports across different TELE object types', () => {
+test('step TELE does not pair pads of different object types', () => {
   const level: LevelData = {
     title: 'tele-cross-type',
     width: 8,
@@ -206,7 +206,9 @@ test('step teleports across different TELE object types', () => {
     (item) => !item.isText && item.name === 'baba',
   )
 
-  assert.equal(baba?.x, 5)
+  // `flag is tele` has no second flag pad, so baba stays on the pad —
+  // the lone rock pad is not a same-name destination.
+  assert.equal(baba?.x, 1)
   assert.equal(baba?.y, 0)
 })
 
@@ -416,4 +418,192 @@ test('step steers a unit resting on a shift belt to the belt facing', () => {
   assert.equal(rock?.x, 2)
   assert.equal(rock?.y, 0)
   assert.equal(rock?.dir, 'down')
+})
+
+test('x is not x deletes its units outright (official error conversion)', () => {
+  // convert.lua turns `baba is not baba` into an "error" target — a
+  // paradox delete, not a veto. Rocks elsewhere stay; the same-name
+  // transform protection (`x is x`) cannot suppress it either.
+  const level: LevelData = {
+    title: 'self-negation-delete',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'baba', 2, 0, false),
+      createItem(3, 'rock', 4, 0, false),
+      // rules: baba is you, baba is not baba
+      createItem(4, 'baba', 0, 2, true),
+      createItem(5, 'is', 1, 2, true),
+      createItem(6, 'you', 2, 2, true),
+      createItem(7, 'baba', 0, 3, true),
+      createItem(8, 'is', 1, 3, true),
+      createItem(9, 'not', 2, 3, true),
+      createItem(10, 'baba', 3, 3, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), 'right')
+
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'baba'),
+    false,
+  )
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'rock'),
+    true,
+  )
+})
+
+test('x is x does not protect against x is not x', () => {
+  const level: LevelData = {
+    title: 'self-negation-overrides-identity',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      // rules: baba is baba, baba is not baba
+      createItem(2, 'baba', 0, 2, true),
+      createItem(3, 'is', 1, 2, true),
+      createItem(4, 'baba', 2, 2, true),
+      createItem(5, 'baba', 0, 3, true),
+      createItem(6, 'is', 1, 3, true),
+      createItem(7, 'not', 2, 3, true),
+      createItem(8, 'baba', 3, 3, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), null)
+
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'baba'),
+    false,
+  )
+})
+
+test('conditional x is not x deletes only the matching units', () => {
+  // `baba on flag is not baba` removes the on-flag baba only.
+  const level: LevelData = {
+    title: 'conditional-self-negation',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'flag', 1, 0, false),
+      createItem(3, 'baba', 1, 0, false),
+      // rules: baba on flag is not baba
+      createItem(4, 'baba', 0, 2, true),
+      createItem(5, 'on', 1, 2, true),
+      createItem(6, 'flag', 2, 2, true),
+      createItem(7, 'is', 3, 2, true),
+      createItem(8, 'not', 4, 2, true),
+      createItem(9, 'baba', 5, 2, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), null)
+  const babas = result.state.items.filter(
+    (item) => !item.isText && item.name === 'baba',
+  )
+
+  assert.equal(babas.length, 1)
+  assert.equal(babas[0]?.x, 0)
+})
+
+test('not x is not y paradoxes y units (official per-type expansion)', () => {
+  // rules.lua `addoption` expands `not baba is not keke` into one
+  // `i is not keke` rule per objectlist name i ≠ baba — the `keke is not
+  // keke` member is the error conversion, so kekes die while baba and
+  // rock live.
+  const level: LevelData = {
+    title: 'negated-subject-self-negation',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'keke', 2, 0, false),
+      createItem(3, 'rock', 4, 0, false),
+      // rules: baba is you, not baba is not keke
+      createItem(4, 'baba', 0, 2, true),
+      createItem(5, 'is', 1, 2, true),
+      createItem(6, 'you', 2, 2, true),
+      createItem(7, 'not', 0, 3, true),
+      createItem(8, 'baba', 1, 3, true),
+      createItem(9, 'is', 2, 3, true),
+      createItem(10, 'not', 3, 3, true),
+      createItem(11, 'keke', 4, 3, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), null)
+
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'keke'),
+    false,
+  )
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'baba'),
+    true,
+  )
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'rock'),
+    true,
+  )
+})
+
+test('not x is not x omits x from the expansion — x survives', () => {
+  // `not baba is not baba` expands to `i is not baba` for i ≠ baba only;
+  // no `baba is not baba` is produced, so baba is not paradoxed.
+  const level: LevelData = {
+    title: 'negated-subject-self-excluded',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      createItem(2, 'keke', 2, 0, false),
+      // rules: baba is you, not baba is not baba
+      createItem(3, 'baba', 0, 2, true),
+      createItem(4, 'is', 1, 2, true),
+      createItem(5, 'you', 2, 2, true),
+      createItem(6, 'not', 0, 3, true),
+      createItem(7, 'baba', 1, 3, true),
+      createItem(8, 'is', 2, 3, true),
+      createItem(9, 'not', 3, 3, true),
+      createItem(10, 'baba', 4, 3, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), null)
+
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'baba'),
+    true,
+  )
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'keke'),
+    true,
+  )
+})
+
+test('x is not y stays a veto — it deletes nothing on its own', () => {
+  const level: LevelData = {
+    title: 'cross-negation-is-veto-only',
+    width: 8,
+    height: 4,
+    items: [
+      createItem(1, 'baba', 0, 0, false),
+      // rules: baba is not rock
+      createItem(2, 'baba', 0, 2, true),
+      createItem(3, 'is', 1, 2, true),
+      createItem(4, 'not', 2, 2, true),
+      createItem(5, 'rock', 3, 2, true),
+    ],
+  }
+
+  const result = step(createInitialState(level, 0), null)
+
+  assert.equal(
+    result.state.items.some((item) => !item.isText && item.name === 'baba'),
+    true,
+  )
 })

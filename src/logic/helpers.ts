@@ -22,6 +22,7 @@ export const resolveRuleTargets = <T>(
   rules: Rule[],
   matchesRule: (item: T, rule: Rule) => boolean,
 ): string[] => {
+  if (!rules.length) return []
   const yes = new Set<string>()
   const no = new Set<string>()
 

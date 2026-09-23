@@ -511,6 +511,8 @@ export const appendEmptyHasSpawns = (
           y,
           isText: true,
           props: [],
+          converted: true,
+          spawned: true,
           ...(dir ? { dir } : {}),
         })
         continue
@@ -522,6 +524,8 @@ export const appendEmptyHasSpawns = (
         y,
         isText: false,
         props: [],
+        converted: true,
+        spawned: true,
         ...(dir ? { dir } : {}),
       })
     }

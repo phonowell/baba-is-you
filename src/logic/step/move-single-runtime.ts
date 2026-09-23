@@ -1,5 +1,6 @@
 import {
   emptyLockHit,
+  emptyPullRootBlocked,
   emptyWeakHit,
   getLiveCellItems,
   inBounds,
@@ -8,8 +9,9 @@ import {
   LOCKED_PROPS,
   moveOne,
   removeOne,
+  traceEmptyPullCargo,
 } from './move-core.js'
-import { hasProp, keyFor, MOVE_DELTAS } from './shared.js'
+import { hasLatchedFloat, hasProp, keyFor, MOVE_DELTAS } from './shared.js'
 
 import type { MoveCoreContext } from './move-core.js'
 import type { Direction, Item } from '../types.js'
@@ -39,6 +41,7 @@ export const createSingleMoveRuntime = (
   canMove: (id: number, visiting: Set<number>) => boolean
   canMoveRoot: (id: number) => boolean
   doMove: (id: number) => void
+  drainSpecials: () => boolean
 } => {
   const [dx, dy] = MOVE_DELTAS[direction]
 
@@ -71,41 +74,151 @@ export const createSingleMoveRuntime = (
   const isMoveEntity = (id: number): boolean =>
     isMovePhase && context.moverIds.has(id)
 
-  // The official engine resolves a whole push chain against the frozen
-  // board: each pushed unit's `check` sees its target cell as it was at
-  // the start of the chain — a companion already queued out of the shared
-  // cell is not yet at the destination. We apply moves eagerly instead, so
-  // a unit that landed at the queried cell during THIS root push must be
-  // skipped. In a direction-locked phase any such unit arrived from the
-  // querying unit's own cell (a stacked companion); units displaced by
-  // earlier root pushes carry an older wave tag and still block normally.
-  const liveForward = (x: number, y: number): Item[] =>
-    getLiveCellItems(context, x, y).filter(
-      (target) => context.movedWave.get(target.id) !== context.moveWave,
+  // The official engine resolves a whole take iteration against the
+  // frozen board: queued moves only apply when the iteration's movelist
+  // drains, so a unit displaced during THIS pass still occupies its
+  // origin cell for every later check — and the cell it lands in does
+  // not count it yet. We apply moves eagerly instead: skip this-pass
+  // arrivals at the queried cell and re-include this-pass departures.
+  const liveForward = (x: number, y: number): Item[] => {
+    const occupants = getLiveCellItems(context, x, y).filter(
+      (target) => !context.passMoved.has(target.id),
     )
+    const departed = context.passDeparted.get(keyFor(x, y, context.width))
+    if (departed === undefined) return occupants
+    for (const target of departed) {
+      if (
+        context.passMoved.has(target.id) &&
+        !context.removed.has(target.id)
+      )
+        occupants.push(target)
+    }
+    return occupants
+  }
+
+  // A pulled unit resolves its landing cell with the puller exempt —
+  // officially `pulling and (hms[i] ~= pusherid)` contributes result 0:
+  // the puller is still physically present until the movelist drains but
+  // never blocks, pushes, or swaps with its cargo. The flag is consumed
+  // by the entry's own front-cell evaluation; nested checks see null.
+  let pullExempt: number | null = null
+
+  // Official `move()` specials defer to the movelist drain: a `lock` or
+  // `eat` special is dodged entirely when its target already left the
+  // impact cell or holds any queued move entry — so a same-direction
+  // chain lets the leader escape instead of annihilating. We resolve
+  // eagerly instead: specials are recorded at landing and fired when the
+  // pass drains (end of the fixpoint iteration), skipped whenever the
+  // target actually moved. `weak` specials never dodge — they stay
+  // immediate. If a lock does fire, the unsafe mover dies at its ORIGIN
+  // (`gone` skipped the position update), so the has-drop lands there.
+  const deferredSpecials: Array<{
+    moverId: number
+    targetId: number
+    x: number
+    y: number
+    originX: number
+    originY: number
+    kind: 'lock' | 'eat'
+  }> = []
+
+  const drainSpecials = (): boolean => {
+    let fired = false
+    for (const spec of deferredSpecials) {
+      const target = context.byId.get(spec.targetId)
+      if (
+        target === undefined ||
+        context.removed.has(spec.targetId) ||
+        context.passMoved.has(spec.targetId) ||
+        target.x !== spec.x ||
+        target.y !== spec.y
+      )
+        continue
+      if (spec.kind === 'eat') {
+        if (removeOne(context, target)) {
+          context.status.anyMoved = true
+          fired = true
+        }
+        continue
+      }
+      // Officially `gone` skips the pair's later specials — once the
+      // mover is dead (by this pair or anything else) its remaining
+      // queued locks never fire.
+      if (context.removed.has(spec.moverId)) continue
+      if (removeOne(context, target)) {
+        context.status.anyMoved = true
+        fired = true
+      }
+      const mover = context.byId.get(spec.moverId)
+      if (mover !== undefined) {
+        // The mover tentatively landed when the special was queued;
+        // roll it back to the origin cell so its death (and has-drop)
+        // happens where the official `gone` path leaves it.
+        if (mover.x !== spec.originX || mover.y !== spec.originY)
+          moveOne(context, mover, spec.originX, spec.originY)
+        if (removeOne(context, mover)) {
+          context.moved.add(spec.moverId)
+          context.status.anyMoved = true
+        }
+      }
+    }
+    deferredSpecials.length = 0
+    return fired
+  }
 
   let waveDepth = 0
   // Official `addaction` resolves pulled units breadth-first: every pull
   // target in the vacated cell updates before any of them drags the cell
   // behind IT. Queue pulls and drain them at the root so a pulled unit's
-  // own pull never runs ahead of its siblings' moves.
-  const pullQueue: number[] = []
-  const queuePulls = (targets: Item[]): void => {
+  // own pull never runs ahead of its siblings' moves. Only the root
+  // mover's direct pull targets are `gated` — officially they pass a
+  // `trypush`/`dopush` destination check — while cargo queued by pushed
+  // or already-pulled units is appended unconditionally.
+  const pullQueue: Array<{
+    id: number
+    pullerId: number
+    gated: boolean
+  }> = []
+  const queuePulls = (
+    targets: Item[],
+    pullerId: number,
+    gated: boolean,
+  ): void => {
     for (const target of targets) {
       if (context.moved.has(target.id) || context.removed.has(target.id))
         continue
-      pullQueue.push(target.id)
+      pullQueue.push({ id: target.id, pullerId, gated })
     }
   }
 
+  // Pass-0 root checks defer push resolution (official state-0 → state-1
+  // transition); nested checks inside `doMove` (waveDepth > 0) are the
+  // dopush path and push freely.
+  const deferPushThisPass = (): boolean =>
+    context.movePass === 0 && waveDepth === 0
+
   // Root-level `canMove` checks each want a fresh visiting set; one scratch
   // set cleared per call replaces the per-call allocation (the recursion
-  // is synchronous, so sharing is safe).
+  // is synchronous, so sharing is safe). `checkRootId` attributes a nested
+  // deferral back to the take-mover being evaluated.
   const visitingScratch = new Set<number>()
+  let checkRootId = -1
   const canMoveRoot = (id: number): boolean => {
-    if (waveDepth === 0) context.moveWave++
     visitingScratch.clear()
+    checkRootId = id
     return canMove(id, visitingScratch)
+  }
+
+  // Frozen pass-start position: a unit that already departed this pass
+  // is officially still at its origin for every later check — a re-queued
+  // push evaluates and lands from there, not from its live cell.
+  const frozenX = (item: Item): number => {
+    const key = context.passOrigins.get(item.id)
+    return key === undefined ? item.x : key % context.width
+  }
+  const frozenY = (item: Item): number => {
+    const key = context.passOrigins.get(item.id)
+    return key === undefined ? item.y : (key - (key % context.width)) / context.width
   }
 
   const canMove = (id: number, visiting: Set<number>): boolean => {
@@ -116,13 +229,26 @@ export const createSingleMoveRuntime = (
     if (!item) return false
     if (isLockedFor(item, direction)) return false
 
-    const nx = item.x + dx
-    const ny = item.y + dy
+    const nx = frozenX(item) + dx
+    const ny = frozenY(item) + dy
     if (!inBounds(context, nx, ny)) return false
 
     let throughEmptyPush = false
     let targets = liveForward(nx, ny)
+    // Consume the puller exemption: it applies only to this unit's own
+    // front cell, where the departed puller still counts as present but
+    // never obstructs its cargo.
+    const exemptId = pullExempt
+    pullExempt = null
+    const exemptHere =
+      exemptId !== null &&
+      targets.some((target) => target.id === exemptId)
+    if (exemptHere)
+      targets = targets.filter((target) => target.id !== exemptId)
     if (!targets.length) {
+      // The cell officially still holds the puller — free to enter, with
+      // no empty-pseudo verdict attached.
+      if (exemptHere) return true
       // `x eat empty` frees the cell outright (official `valid=false`
       // skips the whole empty-block verdict).
       if (context.eatsEmpty(item, nx, ny)) return true
@@ -168,7 +294,7 @@ export const createSingleMoveRuntime = (
       // through them with no push/pull/stop interaction at all.
       if (context.phantomIds.has(target.id)) continue
       const sameLayer =
-        hasProp(item, 'float') === hasProp(target, 'float')
+        hasLatchedFloat(item) === hasLatchedFloat(target)
       // Official special order: `lock` (open/shut) then `eat` — both set
       // `valid=false`, so a consumed target never blocks, not even with
       // `stop`/`pull`/`still`. Removal happens in `doMove` on success.
@@ -228,17 +354,24 @@ export const createSingleMoveRuntime = (
         !pushable &&
         (stopLike || pullable) &&
         !weakShatters
-      ) {
-        // A blocker that is itself a mover this phase (e.g. WALL IS YOU
-        // plus WALL IS STOP) only blocks if it cannot vacate its cell —
-        // the predecessor defers to the blocker's own pending arrow.
-        if (context.moverIds.has(target.id)) {
-          if (!canMove(target.id, visiting)) return false
-          continue
-        }
+      )
+        // The board is frozen for the whole pass — a blocker that is
+        // itself a mover still occupies the cell until the drain, so it
+        // always blocks; a trailing mover follows on a later pass.
         return false
-      }
       if (pushable) pushTargets.push(target)
+    }
+
+    // Officially a take-mover whose check meets a pushable obstacle does
+    // NOT resolve the push in its first (state-0) pass — it advances
+    // state and retries next iteration, so its movelist entry lands in
+    // a later drain and same-pass specials against it cannot dodge.
+    // Only root take-movers defer: nested resolution (push chains,
+    // gated pulls inside `doMove`) is the official dopush path, which
+    // pushes freely at any state.
+    if (deferPushThisPass() && pushTargets.length) {
+      context.deferredIds.add(checkRootId)
+      return false
     }
 
     for (const target of pushTargets) {
@@ -250,21 +383,38 @@ export const createSingleMoveRuntime = (
     return true
   }
 
-  const doMoveInner = (id: number): void => {
-    if (context.moved.has(id) || context.removed.has(id)) return
-
+  const doMoveInner = (id: number, isWaveRoot: boolean): void => {
     const item = context.byId.get(id)
     if (!item) return
+    // A killed mover's `moving_units` entry keeps processing its state
+    // machine on the stale position: its push/pull/swap side-effects
+    // still resolve (official dopush), but the corpse never lands and
+    // its queued specials are inert at drain (`unit.flags[DEAD]`).
+    const deadMover = context.removed.has(id)
 
-    const oldX = item.x
-    const oldY = item.y
-    const nx = item.x + dx
-    const ny = item.y + dy
+    // Re-queued units resolve from their frozen pass-start cell —
+    // officially the second movelist entry teleports them to
+    // queuedOrigin + dir, wherever they actually sit now.
+    const oldX = frozenX(item)
+    const oldY = frozenY(item)
+    const nx = oldX + dx
+    const ny = oldY + dy
 
     let throughEmptyPush = false
     let frontTargets = liveForward(nx, ny)
-    const frontCellEmpty = !frontTargets.length
-    if (!frontTargets.length) {
+    const exemptId = pullExempt
+    pullExempt = null
+    const exemptHere =
+      exemptId !== null &&
+      frontTargets.some((target) => target.id === exemptId)
+    if (exemptHere)
+      frontTargets = frontTargets.filter(
+        (target) => target.id !== exemptId,
+      )
+    // The vacated puller still occupies the cell officially — the landing
+    // is not an empty cell, so no empty-pseudo specials apply.
+    const frontCellEmpty = !frontTargets.length && !exemptHere
+    if (frontCellEmpty) {
       let lookX = nx
       let lookY = ny
       while (emptyForwardsPush(lookX, lookY)) {
@@ -311,13 +461,39 @@ export const createSingleMoveRuntime = (
     // falling unit itself.
     const pullTargets = fallMode
       ? []
-      : getLiveCellItems(context, behindX, behindY).filter((target) =>
+      : liveForward(behindX, behindY).filter((target) =>
           context.pullIds.has(target.id),
         )
+    // `empty is pull` (official check() returns pseudo-unit 2 for a
+    // pullable unit-free cell): the dragged empty pulls the cell behind
+    // IT, propagating through consecutive pull-empties until real cargo.
+    // The chain resolves only when the root empty's landing cell — the
+    // mover's own — holds no vetoing co-occupant; the cargo itself is a
+    // nested pull and lands unconditionally.
+    const emptyPullTargets = fallMode
+      ? []
+      : emptyPullRootBlocked(context, liveForward, item, direction)
+        ? []
+        : traceEmptyPullCargo(
+            context,
+            liveForward,
+            behindX,
+            behindY,
+            direction,
+          )
+    const queueAllPulls = (): void => {
+      queuePulls(pullTargets, item.id, isWaveRoot)
+      queuePulls(emptyPullTargets, item.id, false)
+    }
 
     for (const target of pushTargets) {
-      if (context.moved.has(target.id) || context.removed.has(target.id))
-        continue
+      if (context.removed.has(target.id)) continue
+      // Official `pushedunits` dedup keys (pusher origin cell, unit): a
+      // unit can be queued once per pusher cell per pass — pushed twice
+      // by two chains, both entries apply in drain order.
+      const qkey = `${keyFor(oldX, oldY, context.width)}:${target.id}`
+      if (context.pushQueued.has(qkey)) continue
+      context.pushQueued.add(qkey)
       if (!canMoveRoot(target.id)) {
         if (context.weakIds.has(target.id) && !isMoveEntity(target.id))
           if (removeOne(context, target)) context.status.anyMoved = true
@@ -325,6 +501,25 @@ export const createSingleMoveRuntime = (
         continue
       }
       doMove(target.id)
+    }
+
+    if (deadMover) {
+      // The corpse's own move is inert — but its queued swap teleports
+      // and pull cargo still resolve, like the official dopush running
+      // inside a dead mover's check.
+      for (const target of swapTargets) {
+        if (context.moved.has(target.id) || context.removed.has(target.id))
+          continue
+        const targetLive = context.byId.get(target.id)
+        if (!targetLive) continue
+        if (moveOne(context, targetLive, oldX, oldY)) {
+          context.moved.add(targetLive.id)
+          context.status.anyMoved = true
+        }
+      }
+      queueAllPulls()
+      context.moved.add(id)
+      return
     }
 
     // Empty-branch specials at the landing cell (official check()): the
@@ -343,53 +538,75 @@ export const createSingleMoveRuntime = (
       if (lockHit && removeOne(context, item)) {
         context.moved.add(item.id)
         context.status.anyMoved = true
-        queuePulls(pullTargets)
+        queueAllPulls()
         return
       }
     }
 
     const openShutTargets = throughEmptyPush
       ? []
-      : getLiveCellItems(context, nx, ny).filter((target) =>
-          isLockCollision(context, item, target),
+      : liveForward(nx, ny).filter(
+          (target) =>
+            target.id !== exemptId &&
+            isLockCollision(context, item, target),
         )
 
     if (openShutTargets.length) {
-      // Official lock: an unsafe mover dies at its origin (`gone` skips
-      // the position update); a `safe` mover survives and still lands.
-      if (removeOne(context, item)) {
-        context.moved.add(item.id)
-        context.status.anyMoved = true
-      } else if (moveOne(context, item, nx, ny)) {
+      // Lock specials defer to the pass drain — the pair annihilates
+      // only if the target never actually moves this pass.
+      for (const target of openShutTargets)
+        deferredSpecials.push({
+          moverId: item.id,
+          targetId: target.id,
+          x: nx,
+          y: ny,
+          originX: oldX,
+          originY: oldY,
+          kind: 'lock',
+        })
+      if (moveOne(context, item, nx, ny)) {
         context.moved.add(item.id)
         context.status.anyMoved = true
       }
 
-      for (const target of openShutTargets)
-        if (removeOne(context, target)) context.status.anyMoved = true
-
-      queuePulls(pullTargets)
+      queueAllPulls()
 
       return
     }
 
-    if (item.dir !== direction) item.dir = direction
+    // `fallblock` lands via `update(unitid,x,y)` — no facing write; every
+    // other move path turns the unit toward its travel direction.
+    if (!fallMode && item.dir !== direction) item.dir = direction
     if (moveOne(context, item, nx, ny)) {
       context.moved.add(item.id)
       context.status.anyMoved = true
 
-      // `x eat y` specials: whatever the mover stepped onto is consumed.
-      // `fallblock` additionally shatters same-layer `weak` units on every
-      // cell the faller passes through or lands on — they die mid-fall,
-      // before the interaction phase could ever see the overlap.
-      for (const target of getLiveCellItems(context, nx, ny)) {
-        if (target.id === item.id) continue
+      // `x eat y` specials: whatever the mover stepped onto is consumed
+      // — deferred like locks, so a target that still vacates this pass
+      // dodges the bite. `fallblock` additionally shatters same-layer
+      // `weak` units on every cell the faller passes through or lands
+      // on — those die mid-fall immediately, before the interaction
+      // phase could ever see the overlap.
+      for (const target of liveForward(nx, ny)) {
+        if (target.id === item.id || target.id === exemptId) continue
         const weakVictim =
           fallMode &&
           context.weakIds.has(target.id) &&
-          hasProp(item, 'float') === hasProp(target, 'float')
-        if (!context.eats(item, target) && !weakVictim) continue
-        if (removeOne(context, target)) context.status.anyMoved = true
+          hasLatchedFloat(item) === hasLatchedFloat(target)
+        if (weakVictim) {
+          if (removeOne(context, target)) context.status.anyMoved = true
+          continue
+        }
+        if (!context.eats(item, target)) continue
+        deferredSpecials.push({
+          moverId: item.id,
+          targetId: target.id,
+          x: nx,
+          y: ny,
+          originX: oldX,
+          originY: oldY,
+          kind: 'eat',
+        })
       }
     }
 
@@ -404,25 +621,37 @@ export const createSingleMoveRuntime = (
       }
     }
 
-    queuePulls(pullTargets)
+    queueAllPulls()
   }
 
   // The wave tag spans one whole root push (nested pushes, pulls and
   // swaps included) — matching the official frozen-board resolution.
   const doMove = (id: number): void => {
     const root = waveDepth === 0
-    if (root) context.moveWave++
     waveDepth++
     try {
-      doMoveInner(id)
+      doMoveInner(id, root)
       if (!root) return
       // Breadth-first drain: each pulled unit's own pull chain enqueues
-      // behind its siblings, matching the official addaction queue.
+      // behind its siblings, matching the official addaction queue. The
+      // root mover's direct pull targets still verify the landing cell
+      // (official `trypush`); nested cargo lands unconditionally —
+      // officially it is queued before its own dopush resolves, so a
+      // failed push there only leaves the pushed unit behind.
       for (let i = 0; i < pullQueue.length; i++) {
-        const pid = pullQueue[i]!
-        if (context.moved.has(pid) || context.removed.has(pid)) continue
-        if (!canMoveRoot(pid)) continue
-        doMoveInner(pid)
+        const entry = pullQueue[i]!
+        if (context.moved.has(entry.id) || context.removed.has(entry.id))
+          continue
+        if (entry.gated) {
+          pullExempt = entry.pullerId
+          visitingScratch.clear()
+          const clear = canMove(entry.id, visitingScratch)
+          pullExempt = null
+          if (!clear) continue
+        }
+        pullExempt = entry.pullerId
+        doMoveInner(entry.id, false)
+        pullExempt = null
       }
     } finally {
       waveDepth--
@@ -430,5 +659,5 @@ export const createSingleMoveRuntime = (
     }
   }
 
-  return { canMove, canMoveRoot, doMove }
+  return { canMove, canMoveRoot, doMove, drainSpecials }
 }

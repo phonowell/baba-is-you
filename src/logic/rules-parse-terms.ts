@@ -1,6 +1,10 @@
 export type ParsedTerm = {
   negated: boolean
   word: string
+  // Ids of the units the term was scanned from — the official sentence's
+  // `wid`. A `word`-prop object contributes itself here, which is how the
+  // unstable-word-rule guard tells it apart from a real `text_x` card.
+  sourceIds: readonly number[]
 }
 
 export type ParsedTermChain = {
@@ -24,6 +28,9 @@ type ParseChainWithNextResult = {
 export type ScannedTerm = {
   word: string
   span: number
+  // Unit ids producing this word: one text/word-object id for ordinary
+  // terms, the run's letter-unit ids for spelled words.
+  sourceIds: readonly number[]
 }
 
 export type ReadTermsAt = (position: number) => readonly ScannedTerm[]
@@ -45,12 +52,21 @@ const parseTermOptions = (
 ): Array<ParsedTerm & { next: number }> => {
   const result = new Map<string, ParsedTerm & { next: number }>()
 
-  const addOption = (word: string, negated: boolean, next: number): void => {
+  // Distinct source units make distinct official sentences — a rule whose
+  // subject is spelled by a `word` object is a separate feature entry from
+  // one spelled by the stacked `text_x` card.
+  const addOption = (
+    word: string,
+    negated: boolean,
+    next: number,
+    sourceIds: readonly number[],
+  ): void => {
     if (!isValidWord(word)) return
-    result.set(`${word}:${negated ? '1' : '0'}:${next}`, {
+    result.set(`${word}:${negated ? '1' : '0'}:${next}:${sourceIds.join(',')}`, {
       word,
       negated,
       next,
+      sourceIds,
     })
   }
 
@@ -59,7 +75,8 @@ const parseTermOptions = (
     const hasTrailingNot =
       allowTrailingNot &&
       findTerm(readTermsAt(position + term.span), 'not') !== undefined
-    if (!hasTrailingNot) addOption(term.word, false, position + term.span)
+    if (!hasTrailingNot)
+      addOption(term.word, false, position + term.span, term.sourceIds)
   }
 
   let leadingOffset = 0
@@ -71,7 +88,12 @@ const parseTermOptions = (
     leadingNots += 1
     const negated = leadingNots % 2 === 1
     for (const term of readTermsAt(position + leadingOffset))
-      addOption(term.word, negated, position + leadingOffset + term.span)
+      addOption(
+        term.word,
+        negated,
+        position + leadingOffset + term.span,
+        term.sourceIds,
+      )
   }
 
   if (allowTrailingNot) {
@@ -90,6 +112,7 @@ const parseTermOptions = (
           term.word,
           trailingNots % 2 === 1,
           position + trailingOffset,
+          term.sourceIds,
         )
       }
     }
@@ -133,7 +156,13 @@ export const parseTermChainsWithNext = (
     const andTerm = findTerm(nextTerms, 'and')
     if (!andTerm) {
       chains.push({
-        terms: [{ word: option.word, negated: option.negated }],
+        terms: [
+          {
+            word: option.word,
+            negated: option.negated,
+            sourceIds: option.sourceIds,
+          },
+        ],
         next: option.next,
       })
       continue
@@ -153,7 +182,11 @@ export const parseTermChainsWithNext = (
       for (const chain of rest.chains) {
         chains.push({
           terms: [
-            { word: option.word, negated: option.negated },
+            {
+              word: option.word,
+              negated: option.negated,
+              sourceIds: option.sourceIds,
+            },
             ...chain.terms,
           ],
           next: chain.next,
@@ -161,7 +194,13 @@ export const parseTermChainsWithNext = (
       }
     } else {
       chains.push({
-        terms: [{ word: option.word, negated: option.negated }],
+        terms: [
+          {
+            word: option.word,
+            negated: option.negated,
+            sourceIds: option.sourceIds,
+          },
+        ],
         next: option.next,
       })
     }

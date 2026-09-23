@@ -5,7 +5,7 @@ import { createEatsPredicates } from './move-core.js'
 
 import { applyBatchMovement } from './move-batch-apply.js'
 import { resolveBatchArrows } from './move-batch-runtime.js'
-import { appendHasSpawns, buildGrid, carryHeldRiders, hasProp, resolveLevelProps } from './shared.js'
+import { appendHasSpawns, buildGrid, carryHeldRiders, hasLatchedFloat, resolveLevelProps } from './shared.js'
 
 import type { RuleRuntime } from '../rule-runtime.js'
 import type { Direction, Item } from '../types.js'
@@ -13,8 +13,13 @@ import type { Direction, Item } from '../types.js'
 export const moveItemsBatch = (
   items: Item[],
   runtime: RuleRuntime,
-  movers: Array<{ id: number; dir: Direction; isMove: boolean }>,
-): { items: Item[]; moved: boolean } => {
+  movers: Array<{
+    id: number
+    dir: Direction
+    isMove: boolean
+    isShift?: boolean
+  }>,
+): { items: Item[]; moved: boolean; escalated: Set<number> } => {
   const { height, rules, width } = runtime
   const next = items.map((item) => ({ ...item }))
   const byId = new Map<number, Item>()
@@ -31,6 +36,9 @@ export const moveItemsBatch = (
   // `level is hold` pins — unlike `still`, a pinned unit can't move under
   // its own power either.
   const pinnedIds = new Set<number>()
+  // `x is hold` carrying needs a pre-move seat snapshot — skipped when no
+  // unit carries the prop (the common case).
+  let hasHolder = false
 
   for (const item of next) {
     byId.set(item.id, item)
@@ -44,6 +52,7 @@ export const moveItemsBatch = (
       else if (prop === 'still') stillIds.add(item.id)
       else if (prop === 'phantom') phantomIds.add(item.id)
       else if (prop === 'swap') swapIds.add(item.id)
+      else if (prop === 'hold') hasHolder = true
     }
   }
 
@@ -81,7 +90,7 @@ export const moveItemsBatch = (
         item.x,
         item.y,
       )
-      if (hasProp(item, 'float') !== levelProps.has('float')) continue
+      if (hasLatchedFloat(item) !== levelProps.has('float')) continue
       if (!levelProps.has('hold')) continue
       pinnedIds.add(item.id)
       stillIds.add(item.id)
@@ -117,8 +126,12 @@ export const moveItemsBatch = (
       emptyPropsByCell.get(keyFor(x, y, width)) ?? EMPTY_PROPS,
     grid: buildGrid(next, width),
     height,
-    moveWave: 0,
-    movedWave: new Map(),
+    movePass: 0,
+    passMoved: new Set<number>(),
+    passDeparted: new Map<number, Item[]>(),
+    passOrigins: new Map<number, number>(),
+    pushQueued: new Set<string>(),
+    deferredIds: new Set<number>(),
     openIds,
     phantomIds,
     pinnedIds,
@@ -136,12 +149,22 @@ export const moveItemsBatch = (
   }
 
   const before = new Map<number, { x: number; y: number }>()
-  for (const item of next) before.set(item.id, { x: item.x, y: item.y })
+  if (hasHolder)
+    for (const item of next) before.set(item.id, { x: item.x, y: item.y })
 
-  const arrows = resolveBatchArrows(context, movers)
-  applyBatchMovement(context, arrows)
+  const { arrows, commits } = resolveBatchArrows(context, movers)
+  applyBatchMovement(context, arrows, commits)
 
-  if (carryHeldRiders(before, next, removed, width, height, stillIds))
+  // Movers whose arrow needed more than the first check — official
+  // `data.state > 0` at solve time, so their still_moving re-entry runs
+  // at state 10 (no flip-retry).
+  const escalated = new Set<number>()
+  for (const [id, arrow] of arrows) if (arrow.escalated) escalated.add(id)
+
+  if (
+    hasHolder &&
+    carryHeldRiders(before, next, removed, width, height, stillIds)
+  )
     status.changed = true
 
   const survivors = next.filter((item) => !removed.has(item.id))
@@ -165,6 +188,7 @@ export const moveItemsBatch = (
     : spawned
 
   return {
+    escalated,
     items: dropped.items,
     moved: status.changed || spawned.changed || dropped.changed,
   }
