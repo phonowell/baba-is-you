@@ -124,11 +124,11 @@ store plus called on resize (60 ms debounce) and initial mount.
   `enter-game`/`return-to-menu`). The preview canvas is painted by
   `menu-preview.ts` (pixel-sprite board thumbnail). Cells with no bound
   golden dim (`hasSolution`).
-- **Game** (`app-game-view.ts`): board container, toolbar, outcome
-  overlay, reference dialog (controls + active rules), the
-  replay-confirm modal, hover tip. The toolbar splits into two
-  clusters — level badge + the bulb-marked Solution verb (when a golden
-  is bound)
+- **Game** (`app-game-view.ts`): board container, the bottom chrome
+  stack (active-rules strip above the toolbar), outcome overlay,
+  reference dialog (controls only), the replay-confirm modal, hover
+  tip. The toolbar splits into two clusters — level badge + the
+  bulb-marked Solution verb (when a golden is bound)
   on the left, the elastic status line (empty unless a Solution replay
   is running) + Controls on the right.
   Rebuilt on board signature change; cheap fields update in place.

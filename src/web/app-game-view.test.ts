@@ -138,24 +138,34 @@ const updateView = (
     ...update,
   })
 
-test('game view shows active rules on the board HUD, not in the controls dialog', () => {
+test('game view lists active rules in a strip above the bottom toolbar, not in the controls dialog', () => {
   const view = createGameView({ document: createFakeDocument() })
   const root = view.root as unknown as FakeElement
 
   updateView(view, stateWithRules())
 
-  // The HUD lives on the board wrap so it floats over the board itself.
+  // The strip lives in the bottom chrome stack ahead of the toolbar —
+  // off the board, riding directly above the bar.
+  const stack = findByClass(root, 'game-bottom-stack')
   const boardWrap = findByClass(root, 'board-wrap')
   const hud = findByClass(root, 'rules-hud')
-  assert.ok(boardWrap && hud)
-  assert.equal(hud.parentElement, boardWrap)
+  const toolbar = findByClass(root, 'game-toolbar')
+  assert.ok(stack && boardWrap && hud && toolbar)
+  assert.equal(stack.parentElement, root)
+  assert.equal(hud.parentElement, stack)
+  assert.equal(toolbar.parentElement, stack)
+  assert.ok(stack.children.indexOf(hud) < stack.children.indexOf(toolbar))
+  assert.equal(findByClass(boardWrap, 'rules-hud'), null)
   assert.equal(hud.attributes.has('hidden'), false)
   assert.equal(hud.attributes.get('aria-label'), 'Active rules')
 
   const hudList = findByClass(hud, 'rules-hud-list')
   assert.ok(hudList)
-  assert.match(hudList.innerHTML, /<li>BABA IS YOU<\/li>/)
-  assert.match(hudList.innerHTML, /<li>FLAG IS WIN<\/li>/)
+  // Two stacked subject/object pairs cross into four rules.
+  assert.deepEqual(
+    hudList.children.map((li) => li.textContent),
+    ['BABA IS WIN', 'BABA IS YOU', 'FLAG IS WIN', 'FLAG IS YOU'],
+  )
 
   // The dialog is controls-only now: no rules list may remain in it.
   const dialog = findByClass(root, 'reference-dialog')
@@ -188,6 +198,30 @@ test('game view keeps a vanished rule as a ghost row and hides an empty HUD', ()
   )
   assert.equal(ghosts.children[0]?.className, 'rules-broken')
   assert.equal(hud.attributes.has('hidden'), false)
+})
+
+test('game view reuses rule chip elements so layout shifts can FLIP-animate', () => {
+  const view = createGameView({ document: createFakeDocument() })
+  const root = view.root as unknown as FakeElement
+  const hudList = findByClass(root, 'rules-hud-list')
+  const ghosts = findByClass(root, 'rules-ghosts')
+  assert.ok(hudList && ghosts)
+
+  updateView(view, stateWithRules())
+  const chipFor = (line: string) =>
+    hudList.children.find((li) => li.textContent === line)
+  const youChip = chipFor('BABA IS YOU')
+  const winChip = chipFor('FLAG IS WIN')
+  assert.ok(youChip && winChip)
+
+  // FLAG IS WIN collapses: the survivor keeps its element (the FLIP
+  // slide needs node identity), the broken chips move to the ghost row.
+  const level = parseLevel('title Shrink; size 3x1; Baba 0,0; Is 1,0; You 2,0')
+  updateView(view, createInitialState(level, 0))
+
+  assert.equal(hudList.children.at(-1), youChip)
+  assert.ok(ghosts.children.includes(winChip))
+  assert.equal(winChip.className, 'rules-broken')
 })
 
 test('game view hides the rules HUD when no rules exist', () => {

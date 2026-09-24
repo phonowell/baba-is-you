@@ -183,11 +183,22 @@ body.game-3d-fullscreen .reference-backdrop::before {
   transition: color 320ms ease-out;
 }
 
-.game-toolbar {
+/* Bottom chrome: the rules strip and the verb bar share one fixed
+   column pinned to the screen's lower edge, so the strip always rides
+   directly above the bar however tall the bar wraps. The stack itself
+   lets clicks through — only the bar's row claims pointer events. */
+.game-bottom-stack {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.game-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -196,9 +207,9 @@ body.game-3d-fullscreen .reference-backdrop::before {
   padding-right: calc(16px + env(safe-area-inset-right, 0px));
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   padding-left: calc(16px + env(safe-area-inset-left, 0px));
-  /* No bar: the row floats bare over the board like the rules HUD —
+  pointer-events: auto;
+  /* No bar: the row floats bare over the board like the rules strip —
      badge, status line and buttons each carry their own chip. */
-  z-index: 100;
   /* Slides up when the game view mounts (mode or board change). */
   animation: toolbar-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -623,25 +634,31 @@ body.game-3d-fullscreen .board.board-3d {
 }
 
 /* ── Rules tracker HUD ───────────────────────────────────────────
-   Bare quest-tracker slot floating top-left on the board — the
-   container carries no panel; each rule row is its own glass chip.
-   pointer-events stays off so the board keeps every swipe; long rule
-   sets dissolve at the bottom edge instead of clipping mid-row. */
+   A horizontal chip strip centered in the bottom stack, directly above
+   the toolbar — the container carries no panel; each rule is its own
+   glass chip wrapping in reading order. pointer-events stays off so
+   the board keeps every swipe; rule sets past ~3 rows dissolve at the
+   lower edge instead of clipping mid-row. */
 .rules-hud {
-  position: absolute;
-  top: calc(14px + env(safe-area-inset-top, 0px));
-  left: calc(14px + env(safe-area-inset-left, 0px));
-  z-index: 30;
-  width: max-content;
-  max-width: min(250px, 48vw);
-  max-height: min(58vh, 430px);
+  align-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 5px 7px;
+  max-width: min(720px, 100%);
+  /* Header row + ~3 chip rows, then the strip dissolves into the bar. */
+  max-height: 106px;
   overflow: hidden;
-  padding: 0;
+  margin: 0 0 8px;
+  padding: 0 12px;
+  padding-left: calc(12px + env(safe-area-inset-left, 0px));
+  padding-right: calc(12px + env(safe-area-inset-right, 0px));
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 84%, transparent 100%);
-  /* Slides in from the board edge when rules (re)appear — unhiding
-     replays it, so a returning tracker re-announces itself. */
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 78%, transparent 100%);
+  /* Rises into place when rules (re)appear — unhiding replays it, so a
+     returning tracker re-announces itself. */
   animation: hud-in 380ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
@@ -649,12 +666,18 @@ body.game-3d-fullscreen .board.board-3d {
   display: none;
 }
 
+/* The strip's header takes its own row (flex-basis forces the wrap):
+   a centered small-caps label flanked by mirrored ornament wings —
+   the ◆-and-hairline motif panel headers wear, drawn symmetric. */
 .rules-hud-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 0 0 7px;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
   padding: 0 2px;
+  flex-basis: 100%;
+  flex-shrink: 0;
   color: var(--accent);
   font-size: 10px;
   font-weight: 700;
@@ -665,27 +688,45 @@ body.game-3d-fullscreen .board.board-3d {
   text-shadow: 0 1px 3px rgb(10 14 22 / 60%);
 }
 
-.rules-hud-title::before {
+/* Tracking leaves a trailing gap after the last letter — the indent
+   puts it back so the word reads truly centered between the wings. */
+.rules-hud-text {
+  text-indent: 0.22em;
+}
+
+/* Each wing is diamond-inward, hairline-outward; the right wing is the
+   same box flipped, which mirrors the gradient's fade for free. */
+.rules-hud-wing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: normal;
+}
+
+.rules-hud-wing::before {
+  content: '';
+  width: 26px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(201 168 106 / 55%));
+}
+
+.rules-hud-wing::after {
   content: '◆';
   font-size: 0.8em;
 }
 
-.rules-hud-title::after {
-  content: '';
-  flex: 1;
-  min-width: 24px;
-  height: 1px;
-  background: linear-gradient(90deg, rgb(201 168 106 / 45%), transparent);
+.rules-hud-wing:last-child {
+  transform: scaleX(-1);
 }
 
+/* Both lists dissolve into the strip's single wrapping flow — active
+   chips and fading ghost chips share the same rows and gaps. */
 .rules-hud-list,
 .rules-ghosts {
+  display: contents;
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 /* Rule rows keep the serif voice the dialog list had — incantations,
@@ -719,10 +760,6 @@ body.game-3d-fullscreen .board.board-3d {
     transform: translateX(-5px);
     box-shadow: 0 0 14px rgb(240 214 138 / 55%);
   }
-}
-
-.rules-ghosts {
-  margin-top: 4px;
 }
 
 /* Broken rules linger one beat: struck-out chips fading left, matching
@@ -865,9 +902,9 @@ body.game-3d-fullscreen .board.board-3d {
   100% { opacity: 1; transform: none; }
 }
 
-/* The rules tracker slides out of the board's left edge. */
+/* The rules strip settles upward into place above the bottom bar. */
 @keyframes hud-in {
-  0% { opacity: 0; transform: translateX(-16px); }
+  0% { opacity: 0; transform: translateY(10px); }
   100% { opacity: 1; transform: none; }
 }
 
@@ -1830,11 +1867,11 @@ body.game-3d-fullscreen .reference-header .btn {
   /* App edges land on different physical edges once rotated: the
      toolbar's bottom is the physical left, its right is the physical
      bottom (home bar), its left is the physical top (notch). The rules
-     HUD's top/left map the same way: app top → physical right, app
-     left → physical top. */
+     strip's side insets map the same way: app right → physical bottom,
+     app left → physical top. */
   .rules-hud {
-    top: calc(14px + env(safe-area-inset-right, 0px));
-    left: calc(14px + env(safe-area-inset-top, 0px));
+    padding-left: calc(12px + env(safe-area-inset-top, 0px));
+    padding-right: calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   .game-toolbar {

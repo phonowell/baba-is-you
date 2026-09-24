@@ -1,10 +1,7 @@
 import { GAMEPAD_CONTROLS } from '../view/input-gamepad.js'
 import { GAME_CONTROLS, GAME_TOUCH_CONTROLS } from '../view/input.js'
 import { renderRules } from '../view/render-helpers.js'
-import {
-  renderReferenceControlsHtml,
-  renderRulesLinesHtml,
-} from '../view/render-html.js'
+import { renderReferenceControlsHtml } from '../view/render-html.js'
 
 import type { GameState } from '../logic/types.js'
 import type { BoardHoverTipElements } from './app-hover.js'
@@ -162,18 +159,34 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   const hoverTipNamesEl = createElement(document, 'span', 'board-hover-names')
   hoverTipEl.append(hoverTipCoordEl, hoverTipNamesEl)
 
-  // Live rules tracker — the translucent HUD panel floating on the
-  // board. Fresh rules flash in; broken ones linger one beat as struck-
-  // out ghosts so a collapsed rule is felt, not just absent.
+  // Live rules tracker — a horizontal chip strip riding in the bottom
+  // stack just above the toolbar. Fresh rules flash in; broken ones
+  // linger one beat as struck-out ghosts so a collapsed rule is felt,
+  // not just absent.
   const rulesHudEl = createElement(document, 'aside', 'rules-hud')
   rulesHudEl.setAttribute('aria-label', 'Active rules')
   rulesHudEl.setAttribute('hidden', '')
   const rulesHudTitle = createElement(document, 'h3', 'rules-hud-title')
-  rulesHudTitle.textContent = 'Rules'
+  // Symmetric wings flank the label: a hairline fading outward and a
+  // gold diamond hugging the text. Decorative only — kept out of the
+  // accessible name.
+  const titleWingLeft = createElement(document, 'span', 'rules-hud-wing')
+  const titleWingRight = createElement(document, 'span', 'rules-hud-wing')
+  titleWingLeft.setAttribute('aria-hidden', 'true')
+  titleWingRight.setAttribute('aria-hidden', 'true')
+  const titleText = createElement(document, 'span', 'rules-hud-text')
+  titleText.textContent = 'Rules'
+  rulesHudTitle.append(titleWingLeft, titleText, titleWingRight)
   const rulesHudListEl = createElement(document, 'ul', 'rules-hud-list')
   const rulesGhostListEl = createElement(document, 'ul', 'rules-ghosts')
   rulesHudEl.append(rulesHudTitle, rulesHudListEl, rulesGhostListEl)
-  boardWrap.append(boardEl, hoverTipEl, rulesHudEl)
+
+  // Bottom chrome stack: anchoring the rules strip and the verb bar in
+  // one fixed column means the strip sits directly above the bar
+  // however tall the bar wraps — no hard-coded bar height.
+  const bottomStackEl = createElement(document, 'div', 'game-bottom-stack')
+  bottomStackEl.append(rulesHudEl, toolbar)
+  boardWrap.append(boardEl, hoverTipEl)
 
   const referenceBackdropEl = createElement(document, 'div', 'reference-backdrop')
   referenceBackdropEl.dataset.role = 'reference-backdrop'
@@ -315,7 +328,7 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
   replayConfirmBackdropEl.append(replayConfirmDialogEl)
 
   root.append(
-    toolbar,
+    bottomStackEl,
     boardWrap,
     outcomeBackdropEl,
     referenceBackdropEl,
@@ -324,7 +337,29 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
 
   let lastBoardWidth = -1
   let lastBoardHeight = -1
-  let prevRuleLines: string[] = []
+  // Live chips keyed by rule line — elements persist across updates so
+  // layout shifts can FLIP-animate instead of remounting the strip.
+  let ruleChips: { line: string; el: HTMLElement }[] = []
+
+  // FLIP core: `translate` (not `transform`) is tweened so the
+  // fresh/broken keyframes keep their own transforms. Both helpers are
+  // inert under the fake DOM, which lacks geometry and WAAPI.
+  const measureChip = (el: HTMLElement): DOMRect | undefined =>
+    el.getBoundingClientRect?.()
+  const playSlide = (
+    el: HTMLElement,
+    first: DOMRect | undefined,
+  ): void => {
+    const last = measureChip(el)
+    if (!first || !last) return
+    const dx = first.left - last.left
+    const dy = first.top - last.top
+    if (!dx && !dy) return
+    el.animate?.(
+      [{ translate: `${dx}px ${dy}px` }, { translate: '0px 0px' }],
+      { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' },
+    )
+  }
 
   return {
     root,
@@ -395,37 +430,73 @@ export const createGameView = (options: CreateGameViewOptions): GameView => {
         boardEl.style.setProperty('--board-width', String(state.width))
         boardEl.style.setProperty('--board-height', String(state.height))
       }
-      // Rules tracker: rebuilt every turn — a handful of <li>s, cheap.
-      // Lines that just formed get a .rules-fresh flash; lines that just
-      // collapsed drop into the ghost list as struck-out rows fading out
-      // over ~1s, so a broken rule is felt rather than silently absent.
+      // Rules tracker, FLIP-animated: surviving lines keep their chip
+      // elements, so positions measured before and after the mutation
+      // play back as slides. Fresh lines flash in with .rules-fresh;
+      // broken lines move to the ghost row struck out and fade ~1s —
+      // a collapsed rule is felt, not just absent.
       const ruleLines = renderRules(state.rules)
       const activeLines =
         ruleLines.length === 1 && ruleLines[0] === '(no rules)'
           ? []
           : ruleLines
-      const freshLines = new Set(
-        activeLines.filter((line) => !prevRuleLines.includes(line)),
-      )
-      const brokenLines = prevRuleLines.filter(
-        (line) => !activeLines.includes(line),
-      )
-      prevRuleLines = activeLines
 
-      rulesHudListEl.innerHTML = renderRulesLinesHtml(ruleLines)
-      for (const li of Array.from(rulesHudListEl.children ?? [])) {
-        if (li.textContent && freshLines.has(li.textContent)) {
-          li.classList.add('rules-fresh')
+      // First — chip positions before the mutation.
+      const firstRects = new Map<HTMLElement, DOMRect>()
+      for (const { el } of ruleChips) {
+        const rect = measureChip(el)
+        if (rect) firstRects.set(el, rect)
+      }
+
+      // Last — reuse elements for surviving lines (each consumed once,
+      // so duplicate lines stay paired), build chips for new lines, and
+      // retire collapsed lines to the ghost row.
+      const pool = ruleChips.slice()
+      const nextChips: typeof ruleChips = []
+      for (const line of activeLines) {
+        const ix = pool.findIndex((chip) => chip.line === line)
+        const chip = ix >= 0 ? pool[ix] : undefined
+        if (chip) {
+          pool.splice(ix, 1)
+          chip.el.className = ''
+          nextChips.push(chip)
+        } else {
+          const el = createElement(document, 'li')
+          el.textContent = line
+          el.classList.add('rules-fresh')
+          nextChips.push({ line, el })
         }
       }
-      for (const line of brokenLines) {
-        const ghost = createElement(document, 'li', 'rules-broken')
-        ghost.textContent = line
-        rulesGhostListEl.append(ghost)
+      for (const chip of pool) {
+        chip.el.className = 'rules-broken'
+        rulesGhostListEl.append(chip.el)
         // Fake-DOM tests lack Element.remove — the optional call keeps
-        // the sweep harmless there while browsers drop the faded row.
-        setTimeout(() => ghost.remove?.(), 1100)
+        // the sweep harmless there while browsers drop the faded chip.
+        setTimeout(() => {
+          // The ghost's departure shrinks the strip — slide the
+          // survivors to their new spots instead of letting them jump.
+          const els = ruleChips.map((c) => c.el)
+          const before = els.map(measureChip)
+          chip.el.remove?.()
+          for (const [i, el] of els.entries()) playSlide(el, before[i])
+        }, 1100)
       }
+      // Appending in target order re-seats surviving chips — but only
+      // when the lineup actually changed, so a steady turn never
+      // re-inserts nodes (re-insertion would restart their CSS
+      // animations and read as phantom FLIP deltas).
+      const nextEls = nextChips.map((chip) => chip.el)
+      const unchanged =
+        pool.length === 0 &&
+        nextEls.length === rulesHudListEl.children.length &&
+        nextEls.every((el, i) => el === rulesHudListEl.children[i])
+      if (!unchanged) rulesHudListEl.append(...nextEls)
+      ruleChips = nextChips
+
+      // Invert + Play — slide every kept chip by its position delta.
+      for (const chip of nextChips) playSlide(chip.el, firstRects.get(chip.el))
+      for (const chip of pool) playSlide(chip.el, firstRects.get(chip.el))
+
       rulesHudEl.toggleAttribute(
         'hidden',
         activeLines.length === 0 &&
