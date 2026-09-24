@@ -503,11 +503,16 @@ export const createBoard3dRendererRuntime = (
     const frameIx =
       Math.floor(performance.now() / SPRITE_FRAME_MS) % SPRITE_FRAME_COUNT
     if (frameIx === lastSpriteFrameIx && !idleMotionPending) return
+    // `lastSpriteFrameIx` tracks the frame slot already consumed, not the
+    // last one that rendered — recording it only on the render branch left
+    // a zero-change fire's slot stale, so the same-slot dedupe above could
+    // not catch the follow-up fires and re-ran the full advance scan.
+    const firstFire = lastSpriteFrameIx < 0
+    lastSpriteFrameIx = frameIx
     // Re-advancing an unchanged index is idempotent, so the frame swap can
     // safely share a fire that only exists for idle re-poses.
     const framesChanged = advanceSpriteFrames(frameIx)
-    if (framesChanged > 0 || idleMotionPending || lastSpriteFrameIx < 0) {
-      lastSpriteFrameIx = frameIx
+    if (framesChanged > 0 || idleMotionPending || firstFire) {
       needsRender = true
       ensureFrame()
     }

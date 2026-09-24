@@ -748,6 +748,50 @@ test('board-3d runtime dedupes sprite timer fires inside the same frame slot', (
   assert.equal(advances.length, 1)
 })
 
+test('board-3d runtime dedupes a consumed frame slot even when nothing changed', () => {
+  const timers: Array<() => void> = []
+  const advances: number[] = []
+  const runtime = createRuntime({
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    // A zero-change advance still consumes the frame slot — the dedupe
+    // must record it or the next same-slot fire re-runs the whole scan.
+    advanceSpriteFrames: (frameIx) => {
+      advances.push(frameIx)
+      return 0
+    },
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    cancelTimer: () => undefined,
+  })
+  const container = createContainer()
+  runtime.mount(container)
+
+  const realNow = performance.now
+  try {
+    performance.now = () => 0
+    timers[0]!()
+    performance.now = () => 500
+    timers[0]!()
+    // Second fire inside the same 500ms slot: already consumed, so the
+    // advance scan must not run again.
+    performance.now = () => 750
+    timers[0]!()
+    performance.now = () => 1000
+    timers[0]!()
+    performance.now = () => 1250
+    timers[0]!()
+  } finally {
+    performance.now = realNow
+  }
+
+  assert.deepEqual(advances, [0, 1, 2])
+})
+
 test('board-3d runtime re-poses idle nodes on every timer fire within a frame slot', () => {
   const callbacks: FrameRequestCallback[] = []
   const timers: Array<() => void> = []
