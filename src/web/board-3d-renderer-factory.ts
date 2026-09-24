@@ -1,4 +1,5 @@
-import { Group, PlaneGeometry } from 'three'
+import { Group, InstancedMesh, Matrix4, Mesh, PlaneGeometry } from 'three'
+import type { Object3D } from 'three'
 
 import { CLAY_PRESET } from './clay-config.js'
 import { BOARD3D_LAYOUT_CONFIG } from './board-3d-config-layout.js'
@@ -17,6 +18,7 @@ import {
 import { disposeBoard3dRendererResources } from './board-3d-renderer-dispose.js'
 import { createBoard3dRendererScene } from './board-3d-renderer-scene.js'
 import { createBoard3dRendererViewController } from './board-3d-renderer-view.js'
+import { createBoard3dQuality } from './board-3d-quality.js'
 import { createShadowTexture } from './board-3d-textures.js'
 import {
   createEntityNode,
@@ -47,6 +49,7 @@ export const createBoard3dRendererFactoryDeps = () => {
     world,
     entityGroup,
     skyTexture,
+    aoPass,
   } = scene
 
   const shadowGeometry = new PlaneGeometry(
@@ -105,6 +108,20 @@ export const createBoard3dRendererFactoryDeps = () => {
     shadowTexture,
   )
 
+  // Adaptive quality ladder: sustained sub-budget frame pacing (measured
+  // across consecutive animating ticks inside the runtime) steps the
+  // pixel-ratio ceiling and AO samples down one tier at a time. Capable
+  // devices never trip the EMA and keep the authored preset.
+  const quality = createBoard3dQuality({
+    setPixelRatioCap: viewController.setPixelRatioCap,
+    setAoSamples: (samples) => {
+      aoPass.configuration.aoSamples = samples
+    },
+    setMsaa: (samples) => {
+      composer.multisampling = samples
+    },
+  })
+
   return {
     renderer,
     composer,
@@ -146,6 +163,47 @@ export const createBoard3dRendererFactoryDeps = () => {
       const changed = cardBatches.flush(nodes, dirty)
       shadowBatch.flush(nodes, dirty)
       return changed
+    },
+    quality,
+    // Shader warm-up stand-ins: one instance per material family a board
+    // frame can hit — voxel toon, textured plate lid + vertex-colored
+    // walls, card outlines, blob shadow, particles — so the postfx chain
+    // and every card program compile during a menu-idle render instead of
+    // inside the first visible board frame. Zero-scale matrices keep them
+    // rasterization-free; shared geometry/materials stay in the caches.
+    prewarmScene: (render: () => void): void => {
+      const zeroScale = new Matrix4().makeScale(0, 0, 0)
+      const standIns: Object3D[] = []
+      const addCard = (item: Item): void => {
+        const visual = getVisual(item)
+        const mesh = new InstancedMesh(visual.geometry, visual.material, 1)
+        mesh.setMatrixAt(0, zeroScale)
+        mesh.instanceMatrix.needsUpdate = true
+        mesh.castShadow = true
+        mesh.frustumCulled = false
+        const outline = new Mesh(visual.geometry, visual.outlineMaterial)
+        outline.frustumCulled = false
+        standIns.push(mesh, outline)
+      }
+      addCard({ id: -1, name: 'baba', x: 0, y: 0, isText: false, dir: 'down', props: [] })
+      addCard({ id: -2, name: 'baba', x: 0, y: 0, isText: true, props: [] })
+      entityGroup.add(...standIns)
+      // The live batch meshes carry the patched materials — bump their
+      // count so a zeroed instance rasterizes once and compiles the
+      // program; skip any that already draw real content.
+      const warmed: InstancedMesh[] = []
+      for (const mesh of [shadowBatch.warmupMesh, effects.warmupMesh]) {
+        if (mesh.count === 0) {
+          mesh.count = 1
+          warmed.push(mesh)
+        }
+      }
+      try {
+        render()
+      } finally {
+        for (const mesh of warmed) mesh.count = 0
+        entityGroup.remove(...standIns)
+      }
     },
     viewController,
     disposeResources: (groundVisuals: Parameters<

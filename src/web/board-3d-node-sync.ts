@@ -209,10 +209,19 @@ export const syncEntityNodes = (state: GameState, deps: SyncEntityNodesDeps): vo
       node.specKey = visual.key
       node.mesh.material = visual.material
       node.mesh.geometry = visual.geometry
-      node.outline.geometry = visual.geometry
+      node.frameGeometries = visual.frameGeometries
+      // The merged instanced geometry keeps every frame; the rim needs the
+      // real geometry of the node's current frame — clamp in case the new
+      // spec runs shorter.
+      node.frameIndex =
+        visual.frameGeometries.length > 0
+          ? node.frameIndex % visual.frameGeometries.length
+          : 0
+      node.outline.geometry =
+        visual.frameGeometries[node.frameIndex] ?? visual.geometry
       node.outline.material = visual.outlineMaterial
       node.outlineTint = visual.outlineTint
-      node.frameGeometries = visual.frameGeometries
+      node.plate = visual.plate ?? null
     }
     const groundHug = isGroundHugItem(item)
     node.outline.visible = isYouLike(item)

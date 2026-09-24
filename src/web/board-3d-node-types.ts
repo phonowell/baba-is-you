@@ -15,6 +15,7 @@ import type { Item } from '../logic/types.js'
 import type {
   EntityOutlineTint,
   EntityVisual,
+  PlateBinding,
 } from './board-3d-renderer-materials.js'
 
 export type CardMaterial = MeshToonMaterial | MeshBasicMaterial
@@ -23,11 +24,21 @@ export type EntityMesh = Mesh<BufferGeometry, EntityMaterial>
 
 // One slot in an instanced batch (`board-3d-node-batches.ts`): `key`
 // identifies the batch so the flush can detect visual/frame migrations;
-// `release` returns the slot (zeroed, invisible) for reuse.
+// `casterKey` (spec + castShadow, no frame geometry) decides whether a
+// migration changed the shadow-map caster set; `release` returns the
+// slot (zeroed, invisible) for reuse.
 export type NodeBatchSlot = {
   key: string
+  casterKey: string
   index: number
   release: () => void
+  // Plate batches share one slot key across specs — the flush compares
+  // this against node.specKey to know when the per-instance atlas rect /
+  // wall tint must be rewritten. Unused by the per-spec batches.
+  specKey?: string
+  // Merged-frame voxel batches keep the last `aFrame` value written for
+  // this slot; the flush rewrites it when node.frameIndex moved.
+  frameIx?: number
 }
 
 // Whole-board celebration pulses (hop/slump): the runtime staggers them
@@ -61,7 +72,15 @@ export type EntityNode = {
   shadow: Mesh<PlaneGeometry, MeshBasicMaterial>
   shadowMaterial: MeshBasicMaterial
   specKey: string
+  // Atlas binding for text-plate nodes (null for voxels): the batch layer
+  // draws them through the single shared plate InstancedMesh — see
+  // `board-3d-plate-atlas.ts` and the `plate` key in node-batches.
+  plate: PlateBinding | null
   frameGeometries: BufferGeometry[]
+  // Current animation frame: the instanced batch reads it into the
+  // per-instance `aFrame` attribute; the outline shell swaps to the
+  // matching real geometry in frameGeometries.
+  frameIndex: number
   idleStretch: boolean
   idleFloat: boolean
   idlePhaseOffsetMs: number

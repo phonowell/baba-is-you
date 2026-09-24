@@ -92,7 +92,8 @@ type CreateBoard3dRendererRuntimeArgs = {
   scheduleTimer?: ScheduleTimer | null
   cancelTimer?: CancelTimer | null
   // Mirrors node transforms into the instanced batches; returns true when
-  // slot↔batch structure changed (the shadow map must re-render for it).
+  // the shadow-map caster set changed (node add/remove, spec or castShadow
+  // swap — pure wobble-frame migrations don't count).
   // `dirty` scopes matrix uploads: the nodes posed this tick, or null for
   // a full rewrite (post-sync, when transforms may be written directly).
   // Optional so headless tests can run without the batch layer.
@@ -100,6 +101,18 @@ type CreateBoard3dRendererRuntimeArgs = {
     nodes: ReadonlyMap<number, EntityNode>,
     dirty: ReadonlySet<EntityNode> | null,
   ) => boolean
+  // Adaptive quality ladder: sampled once per consecutive animating frame
+  // with the RAF gap; returns true when a tier drop was applied. `tier`
+  // reports the current ladder position for diagnostics.
+  // Optional so headless tests can run without it.
+  quality?: {
+    observeFrame: (gapMs: number, nowMs: number) => boolean
+    tier?: () => number
+  } | null
+  // Attaches throwaway meshes exercising the per-spec material programs
+  // during a warm-up render; called around the render, returns cleanup.
+  // Optional: without it prewarm compiles only the always-present passes.
+  prewarmScene?: (render: () => void) => void
   // Viewport size changes arrive via observer instead of per-tick layout
   // reads; return value unsubscribes, null falls back to per-tick reads.
   observeResize?: (
@@ -122,6 +135,16 @@ export type Board3dRendererRuntime = {
     rect: BoardPickRect,
   ) => { x: number; y: number } | null
   clearHover: () => void
+  // One-shot shader/program warm-up: renders a single frame so every
+  // program (postfx chain, toon/basic/outline, shadow depth) compiles at
+  // menu-idle instead of inside the first visible board frame. Runs before
+  // any mount — the canvas is still detached, so nothing is visible.
+  // Idempotent and dispose-safe.
+  prewarm: () => void
+  // Diagnostics for the browser probe: whether the warm-up render already
+  // ran, and the adaptive-quality ladder position (0 = authored preset).
+  isPrewarmed: () => boolean
+  qualityTier: () => number
 }
 
 export const createBoard3dRendererRuntime = (
@@ -150,6 +173,8 @@ export const createBoard3dRendererRuntime = (
     scheduleTimer = null,
     cancelTimer = null,
     syncBatches = null,
+    quality = null,
+    prewarmScene = null,
     observeResize,
   } = args
 
@@ -213,6 +238,12 @@ export const createBoard3dRendererRuntime = (
   // every slot; between syncs only posed nodes pay the upload.
   let batchAllDirty = true
   const posedNodes = new Set<EntityNode>()
+  // Adaptive-quality sampling state: only gaps between two consecutive
+  // animating ticks measure render pacing — idle-timer ticks arrive
+  // hundreds of ms apart and would fake a 4fps verdict.
+  let prevTickMs = 0
+  let prevTickAnimated = false
+  let prewarmed = false
 
   // A particle burst's launch point is the card's live tweened position.
   const nodeSpot = (node: EntityNode): BoardFxSpot => ({
@@ -316,7 +347,11 @@ export const createBoard3dRendererRuntime = (
     resizeDirty = false
 
     let hasAnimation = false
-    let posedAny = false
+    // Shadow-map gating splits "a node was posed" from "a caster actually
+    // moved": idle micro-motion (stretch/float) re-poses settled nodes but
+    // shifts the cast silhouette by sub-texel amounts — the blob shadow
+    // still updates through the batch, so the caster pass stays skipped.
+    let castersMoved = false
     const leavingDoneIds: number[] = []
     // One camera-facing basis serves every card this frame — the pose step
     // receives it lazily so an all-volume board never pays for it.
@@ -347,7 +382,7 @@ export const createBoard3dRendererRuntime = (
       ) {
         continue
       }
-      posedAny = true
+      if (!settled) castersMoved = true
       posedNodes.add(node)
       const step = applyNodePoseStep(
         node,
@@ -399,14 +434,26 @@ export const createBoard3dRendererRuntime = (
     // Particles and the mood timeline keep the frame loop alive on their own.
     if (effects?.update(nowMs)) hasAnimation = true
 
-    const structureChanged =
+    // Adaptive quality ladder: only the gap between two consecutive
+    // animating ticks measures real pacing. The cap keeps tab-switch /
+    // GC stalls out of the average; a downgrade re-renders this frame so
+    // the resized buffers never show a stale image.
+    if (hasAnimation && prevTickAnimated && nowMs - prevTickMs <= 100) {
+      if (quality?.observeFrame(nowMs - prevTickMs, nowMs)) needsRender = true
+    }
+    prevTickAnimated = hasAnimation
+    prevTickMs = nowMs
+
+    const castersChanged =
       syncBatches?.(nodes, batchAllDirty ? null : posedNodes) === true
     batchAllDirty = false
     posedNodes.clear()
     // Accumulate: a frame that skips the render must not drop the flag —
-    // the next rendered frame still has to refresh the map.
+    // the next rendered frame still has to refresh the map. A viewport
+    // resize alone doesn't move the light-space map, so it's absent here;
+    // a camera move re-faces billboards and counts via `cameraMoved`.
     shadowDirty ||=
-      posedAny || structureChanged || viewportChanged || nodesRemoved
+      castersMoved || castersChanged || cameraMoved || nodesRemoved
 
     if (needsRender || viewportChanged || hasAnimation || nodesRemoved) {
       const shadowMap = renderer.shadowMap
@@ -638,6 +685,25 @@ export const createBoard3dRendererRuntime = (
     container = null
   }
 
+  const prewarm = (): void => {
+    if (disposed || prewarmed) return
+    // One render against the (empty) board: compiles the whole postfx
+    // chain plus every material program already in the scene — the
+    // prewarmScene hook temporarily adds stand-ins for the per-spec card
+    // programs — and primes the shadow pass so its depth variants compile
+    // too. All of it happens while the canvas is detached from the DOM.
+    // prewarmed flips only on success: a failed warm render lets the next
+    // preload retry.
+    const warmRender = (): void => {
+      const shadowMap = renderer.shadowMap
+      if (shadowMap) shadowMap.needsUpdate = true
+      composer.render()
+    }
+    if (prewarmScene) prewarmScene(warmRender)
+    else warmRender()
+    prewarmed = true
+  }
+
   return {
     mount,
     sync,
@@ -645,5 +711,8 @@ export const createBoard3dRendererRuntime = (
     dispose,
     setHoverAtPoint,
     clearHover,
+    prewarm,
+    isPrewarmed: () => prewarmed,
+    qualityTier: () => quality?.tier?.() ?? 0,
   }
 }

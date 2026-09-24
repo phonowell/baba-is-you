@@ -68,7 +68,13 @@ export const createEntityNode = (
   // pose pass makes, so the rim tracks moves, wobble swaps and spawn/despawn
   // tweens for free. The idle tick pulses its scale/tint; hidden until sync
   // marks the item as a control layer.
-  const outline = new Mesh(visual.geometry, visual.outlineMaterial)
+  // The rim draws the real per-frame geometry — `visual.geometry` is the
+  // merged aFrameIx buffer for multi-frame specs and would show every
+  // frame at once.
+  const outline = new Mesh(
+    visual.frameGeometries[0] ?? visual.geometry,
+    visual.outlineMaterial,
+  )
   outline.scale.setScalar(YOU_OUTLINE_SCALE)
   outline.visible = isYouLike(item)
   mesh.add(outline)
@@ -98,7 +104,9 @@ export const createEntityNode = (
     shadow,
     shadowMaterial,
     specKey: visual.key,
+    plate: visual.plate ?? null,
     frameGeometries: visual.frameGeometries,
+    frameIndex: 0,
     idleStretch: idleStretchEnabledForItem(item),
     idleFloat: idleFloatEnabledForItem(item),
     idlePhaseOffsetMs: idlePhaseOffsetMsForItem(item),

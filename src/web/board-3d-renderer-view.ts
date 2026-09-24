@@ -48,6 +48,11 @@ type Board3dRendererViewDeps = {
 export type Board3dRendererViewController = {
   updateViewport: (container: HTMLElement, boardWidth: number, boardHeight: number) => boolean
   updateCamera: (container: HTMLElement, boardWidth: number, boardHeight: number) => void
+  // Adaptive quality: lowers the DPR ceiling mid-session when the device
+  // cannot hold frame budget. Re-applies buffer sizes against the stored
+  // viewport immediately — aspect/frustum are untouched. Returns whether
+  // the effective ratio changed (caller re-renders once).
+  setPixelRatioCap: (cap: number) => boolean
   applyReadabilityGuard: (state: GameState) => void
   // Effects layer mood channel: additive offsets on top of the
   // readability-computed baselines, driven per-frame while a win/lose
@@ -91,6 +96,7 @@ export const createBoard3dRendererViewController = (
   let viewportWidth = 0
   let viewportHeight = 0
   let devicePixelRatio = 1
+  let pixelRatioCap: number = MAX_DEVICE_PIXEL_RATIO
 
   const updateLightRig = (boardWidth: number, boardHeight: number): void => {
     updateRendererLightRig({
@@ -129,7 +135,7 @@ export const createBoard3dRendererViewController = (
   ): boolean => {
     const nextWidth = Math.max(1, Math.floor(container.clientWidth))
     const nextHeight = Math.max(1, Math.floor(container.clientHeight))
-    const nextRatio = Math.min(MAX_DEVICE_PIXEL_RATIO, window.devicePixelRatio || 1)
+    const nextRatio = Math.min(pixelRatioCap, window.devicePixelRatio || 1)
     if (
       nextWidth === viewportWidth &&
       nextHeight === viewportHeight &&
@@ -147,6 +153,19 @@ export const createBoard3dRendererViewController = (
     renderer.setSize(viewportWidth, viewportHeight, false)
     composer.setSize(viewportWidth, viewportHeight)
     updateCamera(container, boardWidth, boardHeight)
+    return true
+  }
+
+  const setPixelRatioCap = (cap: number): boolean => {
+    if (cap === pixelRatioCap) return false
+    pixelRatioCap = cap
+    if (viewportWidth === 0 || viewportHeight === 0) return false
+    const nextRatio = Math.min(pixelRatioCap, window.devicePixelRatio || 1)
+    if (nextRatio === devicePixelRatio) return false
+    devicePixelRatio = nextRatio
+    renderer.setPixelRatio(devicePixelRatio)
+    renderer.setSize(viewportWidth, viewportHeight, false)
+    composer.setSize(viewportWidth, viewportHeight)
     return true
   }
 
@@ -173,6 +192,7 @@ export const createBoard3dRendererViewController = (
   return {
     updateViewport,
     updateCamera,
+    setPixelRatioCap,
     applyReadabilityGuard,
     setFxMood,
   }

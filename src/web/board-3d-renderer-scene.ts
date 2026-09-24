@@ -24,6 +24,7 @@ import {
   VignetteEffect,
 } from 'postprocessing'
 import { N8AOPostPass } from 'n8ao'
+import type { N8AOPostPass as N8AOPostPassType } from 'n8ao'
 
 import { selectClayCameraTier } from './clay-config.js'
 import {
@@ -69,6 +70,8 @@ export type Board3dRendererScene = {
   bloomEffect: BloomEffect
   hueSaturationEffect: HueSaturationEffect
   vignetteEffect: VignetteEffect
+  // Exposed so the adaptive-quality ladder can retune AO live.
+  aoPass: N8AOPostPassType
   fog: FogExp2
   leftLight: DirectionalLight
   rightLight: DirectionalLight
@@ -210,6 +213,7 @@ export const createBoard3dRendererScene = (
     bloomEffect,
     hueSaturationEffect,
     vignetteEffect,
+    aoPass,
     leftLight,
     rightLight,
     world,

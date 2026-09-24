@@ -1,5 +1,7 @@
 import { BufferAttribute, BufferGeometry } from 'three'
 
+import type { Material } from 'three'
+
 import {
   WOBBLE_PHASES,
   spriteFrames,
@@ -328,6 +330,96 @@ export const buildVoxelVolumeGeometry = (
   geometry.setAttribute('color', new BufferAttribute(new Float32Array(soup.colors), 3))
   geometry.setIndex(soup.indices)
   return geometry
+}
+
+// Merges per-frame geometries into one buffer with an `aFrameIx` vertex
+// tag: the instanced batch draws it once while a per-instance `aFrame`
+// attribute collapses every triangle that does not belong to the
+// instance's current frame (the frame's verts collapse to the origin —
+// zero-area triangles never rasterize). That turns `spec × frames` batch
+// fragmentation back into one batch per spec, at the price of ~3× vertex
+// work on geometry that is only a few hundred verts.
+export const mergeFrameGeometries = (
+  frames: readonly BufferGeometry[],
+): BufferGeometry => {
+  let vertexTotal = 0
+  let indexTotal = 0
+  for (const geometry of frames) {
+    vertexTotal += geometry.getAttribute('position').count
+    indexTotal += geometry.getIndex()?.count ?? geometry.getAttribute('position').count
+  }
+  const positions = new Float32Array(vertexTotal * 3)
+  const normals = new Float32Array(vertexTotal * 3)
+  const colors = new Float32Array(vertexTotal * 3)
+  const frameIx = new Float32Array(vertexTotal)
+  const indices = new Uint32Array(indexTotal)
+  let vertexBase = 0
+  let indexBase = 0
+  for (let f = 0; f < frames.length; f += 1) {
+    const geometry = frames[f]
+    if (!geometry) continue
+    const position = geometry.getAttribute('position')
+    const vertexCount = position.count
+    positions.set(
+      (position.array as Float32Array).subarray(0, vertexCount * 3),
+      vertexBase * 3,
+    )
+    normals.set(
+      (geometry.getAttribute('normal').array as Float32Array).subarray(0, vertexCount * 3),
+      vertexBase * 3,
+    )
+    colors.set(
+      (geometry.getAttribute('color').array as Float32Array).subarray(0, vertexCount * 3),
+      vertexBase * 3,
+    )
+    frameIx.fill(f, vertexBase, vertexBase + vertexCount)
+    const index = geometry.getIndex()
+    if (index) {
+      for (let i = 0; i < index.count; i += 1) {
+        indices[indexBase + i] = vertexBase + index.getX(i)
+      }
+      indexBase += index.count
+    } else {
+      for (let v = 0; v < vertexCount; v += 1) {
+        indices[indexBase + v] = vertexBase + v
+      }
+      indexBase += vertexCount
+    }
+    vertexBase += vertexCount
+  }
+  const merged = new BufferGeometry()
+  merged.setAttribute('position', new BufferAttribute(positions, 3))
+  merged.setAttribute('normal', new BufferAttribute(normals, 3))
+  merged.setAttribute('color', new BufferAttribute(colors, 3))
+  merged.setAttribute('aFrameIx', new BufferAttribute(frameIx, 1))
+  merged.setIndex(new BufferAttribute(indices, 1))
+  return merged
+}
+
+// Vertex-shader patch for geometries produced by mergeFrameGeometries:
+// every vertex carries `aFrameIx` (which frame it belongs to); the batch's
+// per-instance `aFrame` picks the current frame and all other verts
+// collapse to the origin — degenerate triangles, never rasterized.
+// Applies to the lit material AND the shadow depth material so both
+// passes agree on the silhouette. Geometries without aFrameIx read the
+// attribute as 0 and stay fully visible.
+export const patchVoxelFrameSelect = (
+  material: Material,
+  cacheKey: string,
+): void => {
+  material.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        '#include <common>',
+        '#include <common>\nattribute float aFrameIx;\nattribute float aFrame;',
+      )
+      .replace(
+        '#include <begin_vertex>',
+        `#include <begin_vertex>
+\ttransformed *= 1.0 - step(0.5, abs(aFrameIx - aFrame));`,
+      )
+  }
+  material.customProgramCacheKey = () => cacheKey
 }
 
 // Flat slab volume: identical slices stacked behind the frame plane — the

@@ -28,7 +28,10 @@ test('getVisual builds animated voxel visuals for sprite items', () => {
 
   assert.equal(visual.key.startsWith('vox:object:baba'), true)
   assert.equal(visual.frameGeometries.length, 3)
-  assert.equal(visual.geometry, visual.frameGeometries[0])
+  // Multi-frame specs draw through one merged geometry tagged aFrameIx —
+  // the batch selects the frame per instance, so it is not frame 0's own.
+  assert.notEqual(visual.geometry, visual.frameGeometries[0])
+  assert.notEqual(visual.geometry.getAttribute('aFrameIx'), undefined)
   assert.equal(Array.isArray(visual.material), false)
 
   const again = store.getVisual(objectItem('baba', { props: ['you'] }))

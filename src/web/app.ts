@@ -29,6 +29,18 @@ const APP_DISPOSE_KEY = '__baba_is_you_web_dispose__'
 
 type AppGlobal = typeof globalThis & {
   __baba_is_you_web_dispose__?: () => void
+  __babaProbe?: () => {
+    mode: string
+    menuIndex: number
+    levelIndex: number
+    turn: number | null
+    status: string | null
+    ready: boolean
+    prewarmed: boolean
+    qualityTier: number | null
+    dpr: number | null
+    glCanvas: { w: number; h: number } | null
+  }
 }
 
 // Campaign boards parse on first index access: the menu only needs
@@ -318,14 +330,42 @@ const disposeApp = registerAppLifecycle({
     gamepadRuntime.dispose()
     replayDriver.dispose()
     delete appGlobal[APP_DISPOSE_KEY]
+    delete appGlobal.__babaProbe
   },
 })
 appGlobal[APP_DISPOSE_KEY] = disposeApp
 
+// Stable read surface for the CDP driver (scripts/cdp.ts) — wait:/eval:
+// conditions hang off this instead of reaching into app internals.
+appGlobal.__babaProbe = () => {
+  const view = appController.getViewState()
+  const canvas = drawState.gameView?.boardEl?.querySelector('canvas') ?? null
+  const renderer = board3d.renderer()
+  return {
+    mode: view.mode,
+    menuIndex: view.menuSelectedLevelIndex,
+    levelIndex: view.levelIndex,
+    turn: view.mode === 'game' ? view.state.turn : null,
+    status: view.mode === 'game' ? view.state.status : null,
+    ready: renderer !== null,
+    prewarmed: renderer?.isPrewarmed() ?? false,
+    qualityTier: renderer ? renderer.qualityTier() : null,
+    // Effective pixel ratio = drawing buffer / CSS size — a tier drop is
+    // visible here even without reading the ladder position.
+    dpr:
+      canvas && canvas.clientWidth > 0
+        ? +(canvas.width / canvas.clientWidth).toFixed(3)
+        : null,
+    glCanvas: canvas ? { w: canvas.width, h: canvas.height } : null,
+  }
+}
+
 draw()
 
-// Fetch + compile the 3D chunk while the menu sits idle — WebGL itself is
-// only instantiated on the first mountAndSync.
+// Fetch + compile the 3D chunk while the menu sits idle, then build the
+// renderer and pre-warm every shader program — the first board mount no
+// longer pays the compile storm on the critical path. The canvas stays
+// detached from the DOM until mount, so nothing is visible.
 const scheduleIdle =
   globalThis.requestIdleCallback?.bind(globalThis) ??
   ((callback: () => void) => globalThis.setTimeout(callback, 300))

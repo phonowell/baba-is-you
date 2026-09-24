@@ -61,8 +61,14 @@ span) with pitch/distance/look-at bias from `board-3d-config-camera.ts`.
   (`pixel-sprites/voxel.ts`): sprite layers at their own depth plus
   hand-authored front/back slices, per-face shading from
   `BOARD3D_VOXEL_CONFIG`.
-- **Card plates** — text/emoji/glyph labels render as rounded plates with a
-  painted `CanvasTexture` (`board-3d-textures.ts`), toon-shaded.
+- **Card plates** — text/emoji/glyph labels render as rounded plates whose
+  card faces paint into a shared canvas atlas (`board-3d-plate-atlas.ts`,
+  2048² growing to 4096²). Every atlas-bound plate draws through ONE
+  instanced batch: the lid samples its face via a per-instance pixel-space
+  cell origin (`aCell`, `uAtlasSize` divides to UV), and the vertex-coloured
+  wall shell multiplies by a per-instance `aTint` — so N text specs cost
+  two draws total instead of two each. Atlas overflow keeps the old
+  per-spec material pair as fallback.
 - **Facing arrows** — `pixel-sprites/arrows.ts` supplies a raised voxel
   overlay on directional units.
 - **Veto mark** — `pixel-sprites/cross.ts` paints a pixel X over cards in
@@ -101,10 +107,26 @@ Draw calls are instanced (`board-3d-node-batches.ts`): a node's real
 `mesh`/`shadow` stay outside the scene tree as pure transform carriers,
 and `InstancedMesh` batches mirror their matrices — one batch per
 `specKey | geometry | castShadow`, plus a single shadow batch with a
-per-instance opacity attribute. Frame/spec/shadow-cast changes migrate a
-slot automatically; freed slots come off a free-list. The you-rim rides
-along through `outlineAnchor`, a lazy `Object3D` the batch flush syncs to
-the node transform.
+per-instance opacity attribute. Atlas-bound plates collapse further into
+`plate|castShadow` batches carrying `aCell`/`aTint` instanced attributes;
+a plate↔plate spec swap rewrites those attributes in place and leaves the
+shadow caster set alone (the plate silhouette is spec-independent), while
+plate↔voxel swaps still migrate the slot.
+
+Multi-frame voxel specs never fragment on the frame axis: the three
+wobble/authored frame geometries merge into one buffer
+(`mergeFrameGeometries`) where every vertex carries an `aFrameIx` tag,
+and the batch stores the current frame as a per-instance `aFrame`
+attribute. A shared vertex-shader patch (`patchVoxelFrameSelect` — on
+both the toon material and the shadow-map `customDepthMaterial`)
+collapses every triangle that does not belong to the instance's frame
+into the origin, so one spec is always one batch in the lit, AO-depth,
+and shadow passes alike; a frame tick only rewrites the attribute, no
+slot migration. The non-instanced you-rim keeps swapping real per-frame
+geometry so the rim always matches the silhouette. Frame/spec/
+shadow-cast changes migrate a slot automatically; freed slots come off a
+free-list. The you-rim rides along through `outlineAnchor`, a lazy
+`Object3D` the batch flush syncs to the node transform.
 
 ## Ground
 
@@ -132,14 +154,29 @@ animation alone:
   a camera move (resize/readability guard) re-poses them because the
   billboard facing depends on the camera.
 - The shadow map is gated too: `renderer.shadowMap.autoUpdate = false`
-  and `needsUpdate` is set only on frames that actually move geometry
-  (pose steps, node add/remove, batch migration, viewport change) — a
-  sprite-frame-only tick redraws no shadow casters.
+  and `needsUpdate` is set only on frames that actually move casters
+  (meaningful pose steps, node add/remove, caster spec/flag migration,
+  viewport change) — idle-stretch/float re-poses, wobble frame steps and
+  mood frames all skip the caster pass.
 - Sprite wobble frames advance on a plain interval (`SPRITE_FRAME_MS`) only
   while mounted; each tick just marks the frame dirty — no timer runs
   after `unmount()`/`dispose()`.
 - Viewport size comes from a `ResizeObserver` (`observeResize` test seam,
   per-tick fallback without RO), so no forced layout read runs per frame.
+- **Adaptive quality** (`board-3d-quality.ts` + `board-3d-config-quality.ts`):
+  the runtime feeds the gap between *consecutive animating* frames into an
+  EMA (idle-timer ticks are excluded); sustained pacing over ~19ms drops
+  one ladder tier — pixel-ratio cap 1.4→1.2→1.0→0.85, N8AO samples
+  8→8→6→4, and composer MSAA 4→2 at the deepest tier — with a 900ms
+  cooldown and a one-way ratchet so capable devices keep the authored
+  preset. Samples are capped at 24ms so a lone GC stall can never trip
+  the ladder.
+- **Prewarm**: `LazyBoard3d.preload()` (scheduled on menu idle in
+  `app.ts`) builds the renderer early and calls `runtime.prewarm()`, which
+  renders one detached-canvas frame with `prewarmScene` stand-ins — every
+  material program (voxel toon, plate lid/walls, outline, blob shadow,
+  particles) plus the postfx chain and shadow depth variants compile
+  during menu idle instead of inside the first visible board frame.
 - `dispose()` cancels RAF/timers, runs `disposeBoard3dRendererResources`
   (geometries, materials, textures, composer, renderer) and blocks any
   post-dispose work.
@@ -195,8 +232,11 @@ src/web/
   board-3d-renderer-runtime.ts   mount/sync/unmount/dispose + RAF policy + hover
   board-3d-renderer-scene.ts     renderer/composer/lights/camera/sky
   board-3d-renderer-view.ts      viewport, camera tier, readability guard, fx mood
+  board-3d-quality.ts            adaptive quality ladder (frame-gap EMA → tier)
+  board-3d-config-quality.ts     ladder budgets/cooldown/tier table
   board-3d-renderer-camera.ts    camera fit
   board-3d-renderer-lighting.ts  light rig placement/shadow fit
+  board-3d-plate-atlas.ts         shared card-face atlas + aCell/aTint shaders
   board-3d-renderer-materials.ts Item → EntityVisual cache (voxel | plate)
   board-3d-renderer-dispose.ts   resource teardown
   board-3d-node-{create,pose,sync,types}.ts   entity node lifecycle

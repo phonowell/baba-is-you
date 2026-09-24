@@ -21,6 +21,11 @@ import {
 } from './board-3d-shared-item.js'
 import { youOutlinePulse } from './board-3d-shared-math.js'
 import { createCardTextures, getToonGradientMap } from './board-3d-textures.js'
+import {
+  createPlateAtlas,
+  patchPlateFrontUv,
+  patchPlateWallTint,
+} from './board-3d-plate-atlas.js'
 import { autotileAppliesTo, autotileSprite } from './pixel-sprites/autotile.js'
 import {
   SPRITE_GRID_SIZE,
@@ -33,6 +38,8 @@ import {
 } from './pixel-sprites/arrows.js'
 import {
   buildVoxelVolumeGeometry,
+  mergeFrameGeometries,
+  patchVoxelFrameSelect,
   slabVolume,
   spriteVolumes,
   voxelDrawRect,
@@ -107,6 +114,18 @@ export type EntityVisual = {
   fxColors: readonly string[]
   outlineMaterial: MeshBasicMaterial
   outlineTint: EntityOutlineTint
+  // Present on atlas-bound plate visuals: the batch layer routes these
+  // nodes into the single shared plate InstancedMesh and writes the
+  // per-instance atlas cell + wall tint instead of keying a batch per spec.
+  plate?: PlateBinding
+}
+
+// A text card bound into the shared plate atlas (`board-3d-plate-atlas.ts`):
+// origin is the card face's pixel-space cell origin in the atlas; tint is
+// the card's background colour fed to the wall group per instance.
+export type PlateBinding = {
+  origin: Float32Array
+  tint: Color
 }
 
 // The rim's pulse endpoints: the card's representative colour and its sRGB
@@ -139,15 +158,16 @@ export const advanceFrameMaps = <M extends { map: unknown }, T>(
   return changed
 }
 
-// Voxel nodes animate by swapping geometry rather than texture maps; only
-// nodes with multi-frame lists ever change. Each node reads the shared tick
-// through its own frame offset, so cards wobble out of phase with each
-// other. The outline shell rides the same swap or a you-card's rim would
-// keep showing last frame's silhouette. Kept DOM-free for tests.
+// Voxel nodes animate through one merged geometry tagged per frame; the
+// tick only advances `frameIndex` (a per-instance attribute the batch
+// writes on its next flush) and swaps the non-instanced outline shell's
+// real frame geometry so the rim keeps matching the silhouette. Each node
+// reads the shared tick through its own frame offset, so cards wobble out
+// of phase with each other. Kept DOM-free for tests.
 export const advanceNodeGeometries = (
   nodes: ReadonlyMap<
     number,
-    Pick<EntityNode, 'mesh' | 'outline' | 'frameGeometries' | 'idleFrameOffset'>
+    Pick<EntityNode, 'outline' | 'frameGeometries' | 'frameIndex' | 'idleFrameOffset'>
   >,
   frameIx: number,
 ): number => {
@@ -155,12 +175,12 @@ export const advanceNodeGeometries = (
   for (const node of nodes.values()) {
     const frames = node.frameGeometries
     if (!frames || frames.length < 2) continue
-    const next = frames[(frameIx + node.idleFrameOffset) % frames.length]
-    if (next !== undefined && node.mesh.geometry !== next) {
-      node.mesh.geometry = next
-      node.outline.geometry = next
-      changed += 1
-    }
+    const next = (frameIx + node.idleFrameOffset) % frames.length
+    if (next === node.frameIndex) continue
+    node.frameIndex = next
+    const outlineGeometry = frames[next]
+    if (outlineGeometry) node.outline.geometry = outlineGeometry
+    changed += 1
   }
   return changed
 }
@@ -182,16 +202,14 @@ export type Board3dRendererMaterialStore = {
   dispose: () => void
 }
 
-// Plate material group order — matches the material array in plateVisual:
-// front lid, back lid, then top/side/bottom wall strips.
-const PLATE_GROUP_FRONT = 0
-
 // Rounded-rect slab for text/emoji cards: an extruded rounded rectangle
-// whose triangles are regrouped by face normal into five material groups
-// (front lid, back lid, top/side/bottom wall strips). The wall strips shade
-// with the shared VOXEL_SHADE factors, so plates and sprite silhouette
-// slabs are the same card language — the rounded perimeter is the card's
-// actual silhouette, nothing can poke out misaligned.
+// regrouped into two material groups — the front lid (card texture) and
+// every other face merged into one vertex-coloured wall. The per-face
+// VOXEL_SHADE factors bake into the wall's vertex colours, so the five
+// material draws of the old regroup collapse to two while plates and
+// sprite silhouette slabs keep the same shading language. The rounded
+// perimeter is the card's actual silhouette — nothing pokes out
+// misaligned.
 const createPlateGeometry = (
   size: number,
   depth: number,
@@ -238,15 +256,13 @@ const createPlateGeometry = (
     else if (Math.abs(ny) > Math.abs(nx)) (ny > 0 ? top : bottom).push(t)
     else side.push(t)
   }
-  const buckets = [front, back, top, side, bottom]
-
   const geometry = new BufferGeometry()
   const outPos = new Float32Array(position.count * 3)
   const outNormal = new Float32Array(position.count * 3)
   const outUv = new Float32Array(uv.count * 2)
+  const outColor = new Float32Array(position.count * 3)
   let write = 0
-  let groupStart = 0
-  buckets.forEach((tris, groupIx) => {
+  const writeTris = (tris: number[], shade: number, lid: boolean): void => {
     for (const t of tris) {
       for (let v = 0; v < 3; v++) {
         const src = t * 3 + v
@@ -257,19 +273,27 @@ const createPlateGeometry = (
           [normal.getX(src), normal.getY(src), normal.getZ(src)],
           write * 3,
         )
-        if (groupIx === PLATE_GROUP_FRONT) {
+        outColor.set([shade, shade, shade], write * 3)
+        if (lid) {
           // Front lid UVs map the card texture 1:1 across the rounded face.
           outUv.set([(x + half) / size, (y + half) / size], write * 2)
         }
         write++
       }
     }
-    geometry.addGroup(groupStart, tris.length * 3, groupIx)
-    groupStart += tris.length * 3
-  })
+  }
+  writeTris(front, 1, true)
+  const wallStart = write
+  writeTris(back, VOXEL_SHADE.back, false)
+  writeTris(top, VOXEL_SHADE.top, false)
+  writeTris(side, VOXEL_SHADE.side, false)
+  writeTris(bottom, VOXEL_SHADE.bottom, false)
+  geometry.addGroup(0, front.length * 3, 0)
+  geometry.addGroup(wallStart, write - wallStart, 1)
   geometry.setAttribute('position', new BufferAttribute(outPos, 3))
   geometry.setAttribute('normal', new BufferAttribute(outNormal, 3))
   geometry.setAttribute('uv', new BufferAttribute(outUv, 2))
+  geometry.setAttribute('color', new BufferAttribute(outColor, 3))
   source.dispose()
   return geometry
 }
@@ -282,9 +306,60 @@ export const createBoard3dRendererMaterialStore = (
   const materialCache = new Map<string, CardMaterial>()
   const animatedFrames = new Map<CardMaterial, CanvasTexture[]>()
   const geometryCache = new Map<string, BufferGeometry>()
-  const edgeMaterialCache = new Map<string, MeshBasicMaterial>()
+  const wallMaterialCache = new Map<string, MeshBasicMaterial>()
   const plateMaterialCache = new Map<string, Material[]>()
   const visualCache = new Map<string, EntityVisual>()
+
+  // Shared plate atlas + the two materials every text card draws with:
+  // the lid samples its face out of the atlas via a per-instance cell
+  // index, the walls multiply the vertex-colour shading by a per-instance
+  // tint. Built lazily on the first plate — sprite-only flows and node
+  // tests never touch the DOM canvas. Specs only enter play through a
+  // sync, so atlas paints/uploads land on the entry frame.
+  type PlateAtlasBundle = {
+    atlas: ReturnType<typeof createPlateAtlas>
+    front: MeshBasicMaterial
+    wall: MeshBasicMaterial
+    bindings: Map<string, PlateBinding | null>
+  }
+  let plateBundle: PlateAtlasBundle | null = null
+  const plateAtlasBundle = (): PlateAtlasBundle => {
+    if (plateBundle) return plateBundle
+    const atlas = createPlateAtlas({ anisotropy: textureAnisotropy })
+    const front = new MeshBasicMaterial({
+      map: atlas.texture,
+      transparent: true,
+      alphaTest: CARD_MATERIAL_ALPHA_TEST,
+      side: DoubleSide,
+    })
+    patchPlateFrontUv(front, atlas.sizeUniform, 'plate-front')
+    const wall = new MeshBasicMaterial({ vertexColors: true })
+    patchPlateWallTint(wall, 'plate-wall')
+    plateBundle = { atlas, front, wall, bindings: new Map() }
+    return plateBundle
+  }
+
+  // Paints the spec's card face into the atlas and returns its
+  // per-instance binding. Null past atlas capacity — the plate falls back
+  // to per-spec materials rather than corrupting the shared texture.
+  const plateAtlasBind = (
+    spec: ReturnType<typeof cardSpecForItem>,
+  ): PlateBinding | null => {
+    const bundle = plateAtlasBundle()
+    const cached = bundle.bindings.get(spec.key)
+    if (cached !== undefined) return cached
+    const face = createCardTextures(spec, textureAnisotropy)[0]
+    let binding: PlateBinding | null = null
+    if (face) {
+      const origin = bundle.atlas.register(spec.key, face.image)
+      face.dispose()
+      if (origin !== null) {
+        binding = { origin, tint: new Color(spec.background) }
+      }
+    }
+    bundle.bindings.set(spec.key, binding)
+    return binding
+  }
 
   // Cel-banded toon surface: the shared gradient map quantizes N·L into a
   // few steps, which is the anime look.
@@ -293,13 +368,17 @@ export const createBoard3dRendererMaterialStore = (
   }
 
   // Voxel slabs share one vertex-colored material: every pixel's color is
-  // baked into the geometry's color attribute with per-face shading.
+  // baked into the geometry's color attribute with per-face shading. The
+  // frame-select patch lets one batch hold every wobble frame — merged
+  // geometries tag each vertex with aFrameIx, the per-instance aFrame
+  // attribute collapses all non-current triangles.
   const voxelMaterial = new MeshToonMaterial({
     vertexColors: true,
     ...toonSurface,
     emissive: new Color(CARD_MATERIAL_EMISSIVE_COLOR),
     emissiveIntensity: preset.materials.objectEmissiveIntensity,
   })
+  patchVoxelFrameSelect(voxelMaterial, 'voxel-frames')
   // BackSide shell materials for control-layer cards, one per spec: the
   // inflated copy peeks past the card's silhouette and shows as a rim.
   // Tinted the card colour's sRGB complement — the pulse lerps it back to
@@ -368,19 +447,19 @@ export const createBoard3dRendererMaterialStore = (
     return material
   }
 
-  // Plate edges shade exactly like the sprite slab's voxel faces — the
-  // card's own colour times the shared VOXEL_SHADE factors per face.
-  const edgeMaterial = (
+  // Plate walls shade exactly like the sprite slab's voxel faces — the
+  // card's own colour times the shared VOXEL_SHADE factors, but baked into
+  // the geometry's vertex colours so one material covers every wall face.
+  const wallMaterial = (
     spec: ReturnType<typeof cardSpecForItem>,
-    face: keyof typeof VOXEL_SHADE,
   ): MeshBasicMaterial => {
-    const key = `${spec.key}:${face}`
-    const cached = edgeMaterialCache.get(key)
+    const cached = wallMaterialCache.get(spec.key)
     if (cached) return cached
     const material = new MeshBasicMaterial({
-      color: new Color(spec.background).multiplyScalar(VOXEL_SHADE[face]),
+      color: new Color(spec.background),
     })
-    edgeMaterialCache.set(key, material)
+    material.vertexColors = true
+    wallMaterialCache.set(spec.key, material)
     return material
   }
 
@@ -474,7 +553,18 @@ export const createBoard3dRendererMaterialStore = (
       }
       return geometry
     })
-    const geometry = frameGeometries[0]
+    // Multi-frame specs draw through one merged geometry (per-instance
+    // aFrame selects the visible frame); single-frame specs keep the plain
+    // geometry — no aFrameIx tag, no batch clone.
+    const mergedKey = `${geoKeyPrefix}:merged`
+    let geometry = frameGeometries[0]
+    if (frameGeometries.length > 1) {
+      geometry = geometryCache.get(mergedKey)
+      if (!geometry) {
+        geometry = mergeFrameGeometries(frameGeometries)
+        geometryCache.set(mergedKey, geometry)
+      }
+    }
     if (!geometry) throw new Error(`No voxel geometry for ${spec.key}.`)
     const fxColors = fxColorsForSpec(spec)
     return {
@@ -491,16 +581,16 @@ export const createBoard3dRendererMaterialStore = (
   const plateVisual = (spec: ReturnType<typeof cardSpecForItem>): EntityVisual => {
     const key = `plate:${spec.key}`
     let material = plateMaterialCache.get(key)
+    let plate = plateBundle?.bindings.get(spec.key) ?? null
     if (!material) {
-      // Group order from createPlateGeometry: front/back lids, then
-      // top/side/bottom wall strips.
-      material = [
-        frontMaterial(spec),
-        edgeMaterial(spec, 'back'),
-        edgeMaterial(spec, 'top'),
-        edgeMaterial(spec, 'side'),
-        edgeMaterial(spec, 'bottom'),
-      ]
+      // Group order from createPlateGeometry: front lid, then the merged
+      // vertex-coloured wall. Atlas-bound plates draw through the shared
+      // instanced materials; overflow keeps the per-spec pair.
+      plate = plateAtlasBind(spec)
+      const bundle = plateAtlasBundle()
+      material = plate
+        ? [bundle.front, bundle.wall]
+        : [frontMaterial(spec), wallMaterial(spec)]
       plateMaterialCache.set(key, material)
     }
     const fxColors = fxColorsForSpec(spec)
@@ -512,6 +602,7 @@ export const createBoard3dRendererMaterialStore = (
       facingYaw: undefined,
       fxColors,
       ...outlineForSpec(spec, fxColors),
+      ...(plate ? { plate } : {}),
     }
   }
 
@@ -584,13 +675,20 @@ export const createBoard3dRendererMaterialStore = (
     textureCache.clear()
     for (const geometry of geometryCache.values()) geometry.dispose()
     geometryCache.clear()
-    for (const material of edgeMaterialCache.values()) material.dispose()
-    edgeMaterialCache.clear()
+    for (const material of wallMaterialCache.values()) material.dispose()
+    wallMaterialCache.clear()
     for (const entry of outlineCache.values()) entry.outlineMaterial.dispose()
     outlineCache.clear()
     plateMaterialCache.clear()
     visualCache.clear()
     voxelMaterial.dispose()
+    if (plateBundle) {
+      plateBundle.front.dispose()
+      plateBundle.wall.dispose()
+      plateBundle.atlas.dispose()
+      plateBundle.bindings.clear()
+      plateBundle = null
+    }
     plateGeometry.dispose()
   }
 

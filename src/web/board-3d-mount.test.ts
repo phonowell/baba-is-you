@@ -26,6 +26,9 @@ const makeRenderer = () => {
     dispose: () => calls.push('dispose'),
     setHoverAtPoint: () => null,
     clearHover: () => undefined,
+    prewarm: () => calls.push('prewarm'),
+    isPrewarmed: () => true,
+    qualityTier: () => 0,
   }
   return { renderer, calls }
 }
@@ -162,16 +165,17 @@ describe('createLazyBoard3d', () => {
     assert.deepEqual(calls.filter((c) => c.startsWith('mount')).length, 1)
   })
 
-  it('preload fetches the module without instantiating WebGL', async () => {
+  it('preload builds the renderer and warms shaders ahead of mount', async () => {
     let created = 0
     let loaded = 0
+    const { renderer, calls } = makeRenderer()
     const lazy = createLazyBoard3d({
       loadModule: () => {
         loaded += 1
         return Promise.resolve({
           createBoard3dRenderer: () => {
             created += 1
-            return makeRenderer().renderer
+            return renderer
           },
         })
       },
@@ -182,7 +186,37 @@ describe('createLazyBoard3d', () => {
     lazy.preload()
     await flush()
     assert.equal(loaded, 1)
-    assert.equal(created, 0)
-    assert.equal(lazy.renderer(), null)
+    // The renderer is built AND warmed at menu idle — the first board
+    // mount reuses it instead of paying construction + compile on entry.
+    assert.equal(created, 1)
+    assert.deepEqual(calls, ['prewarm'])
+    assert.equal(lazy.renderer(), renderer)
+
+    lazy.mountAndSync(board(), state())
+    await flush()
+    assert.equal(created, 1)
+    assert.deepEqual(calls.slice(-2), ['mount:DIV', 'sync:0'])
+  })
+
+  it('keeps the renderer cached when prewarm throws', async () => {
+    const { renderer, calls } = makeRenderer()
+    renderer.prewarm = () => {
+      throw new Error('gl lost')
+    }
+    const lazy = createLazyBoard3d({
+      loadModule: () =>
+        Promise.resolve({ createBoard3dRenderer: () => renderer }),
+      isCurrentBoard: () => true,
+      latestState: state,
+    })
+
+    lazy.preload()
+    await flush()
+    // A failed warm-up is best-effort: the renderer stays cached and the
+    // next mount still works — the first frame just pays compile as before.
+    assert.equal(lazy.renderer(), renderer)
+    lazy.mountAndSync(board(), state())
+    await flush()
+    assert.deepEqual(calls, ['mount:DIV', 'sync:0'])
   })
 })

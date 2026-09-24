@@ -13,7 +13,8 @@ export type LazyBoard3d = {
   dispose: () => void
   // 已就绪的渲染器（hover/射线拾取用），未加载时为 null。
   renderer: () => Board3dRendererRuntime | null
-  // 仅拉取/编译模块，不实例化 WebGL——菜单空闲时预热用。
+  // 菜单空闲时预热：建渲染器并跑一帧编译全部 shader——首次进关卡不再
+  // 卡 shader 编译风暴。canvas 尚未入 DOM，预热帧不可见。
   preload: () => void
 }
 
@@ -95,10 +96,19 @@ export const createLazyBoard3d = (options: LazyBoard3dOptions): LazyBoard3d => {
     },
     renderer: () => renderer,
     preload: () => {
-      // 预热失败不留毒化的缓存 Promise——后续挂载走 ensureRenderer 重试。
-      void loadModuleOnce().catch(() => {
-        modulePromise = null
-      })
+      void ensureRenderer()
+        .then((ready) => {
+          try {
+            ready.prewarm()
+          } catch {
+            // 预热只是优化项——失败意味着首帧照付编译成本，不影响渲染器。
+          }
+        })
+        .catch(() => {
+          // 加载/创建失败不留毒化的缓存 Promise——后续挂载重试。
+          modulePromise = null
+          rendererPromise = null
+        })
     },
   }
 }

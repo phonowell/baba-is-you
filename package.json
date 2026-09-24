@@ -18,6 +18,7 @@
   "name": "baba-is-you",
   "scripts": {
     "build": "tsx scripts/build-single-html.ts",
+    "cdp": "tsx scripts/cdp.ts",
     "build:deploy": "tsx scripts/build-single-html.ts --deploy",
     "build:fast": "tsx scripts/build-single-html.ts --fast",
     "check": "pnpm lint && pnpm type-check && pnpm test",

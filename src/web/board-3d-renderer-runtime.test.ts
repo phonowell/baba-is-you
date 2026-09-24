@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import { Group, PerspectiveCamera } from 'three'
+import type { InstancedMesh } from 'three'
 
 import { createBoard3dRendererRuntime } from './board-3d-renderer-runtime.js'
 
@@ -128,6 +129,8 @@ const createRuntime = (overrides: {
   scheduleTimer?: RuntimeArgs['scheduleTimer']
   cancelTimer?: RuntimeArgs['cancelTimer']
   syncBatches?: RuntimeArgs['syncBatches']
+  quality?: RuntimeArgs['quality']
+  prewarmScene?: RuntimeArgs['prewarmScene']
   observeResize?: RuntimeArgs['observeResize']
   shadowMap?: { enabled: boolean; autoUpdate: boolean; needsUpdate: boolean }
 }) => {
@@ -155,6 +158,7 @@ const createRuntime = (overrides: {
   const viewController = {
     updateViewport: overrides.viewUpdateViewport ?? (() => false),
     updateCamera: () => undefined,
+    setPixelRatioCap: () => false,
     applyReadabilityGuard: () => undefined,
     setFxMood: () => undefined,
   }
@@ -198,6 +202,9 @@ const createRuntime = (overrides: {
     })
   args.cancelTimer = overrides.cancelTimer ?? (() => undefined)
   if (overrides.syncBatches) args.syncBatches = overrides.syncBatches
+  if (overrides.quality !== undefined) args.quality = overrides.quality
+  if (overrides.prewarmScene !== undefined)
+    args.prewarmScene = overrides.prewarmScene
   if (overrides.observeResize !== undefined)
     args.observeResize = overrides.observeResize
 
@@ -498,6 +505,7 @@ test('board-3d runtime renders the leaving cleanup frame and removes finished no
   // opacity carrier rather than detaching meshes from the group.
   node.cardSlot = {
     key: 'card',
+    casterKey: 'card',
     index: 0,
     release: () => {
       cardReleased += 1
@@ -505,6 +513,7 @@ test('board-3d runtime renders the leaving cleanup frame and removes finished no
   }
   node.shadowSlot = {
     key: 'shadow',
+    casterKey: 'shadow',
     index: 0,
     release: () => {
       shadowReleased += 1
@@ -899,6 +908,7 @@ const createEffectsStub = (updateResult = false) => {
       calls.neutralMood += 1
     },
     update: () => updateResult,
+    warmupMesh: {} as InstancedMesh,
     clear: () => {
       calls.clear += 1
     },
@@ -1437,4 +1447,175 @@ test('board-3d runtime falls back to per-tick viewport reads without an observer
   tick(16)
   tick(32)
   assert.equal(viewportReads, 3)
+})
+
+test('board-3d runtime feeds the quality ladder only consecutive animating gaps', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const timers: Array<() => void> = []
+  const samples: number[] = []
+  const node = createNode()
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  // The pose gate skips settled nodes before the step runs — a moving
+  // node is what actually keeps the frame loop (and sampling) alive.
+  let animating = true
+  node.moving = true
+  const runtime = createRuntime({
+    nodes,
+    quality: {
+      observeFrame: (gapMs) => {
+        samples.push(gapMs)
+        return false
+      },
+    },
+    applyNodePoseStep: () => ({
+      animating,
+      finishedLeaving: false,
+    }),
+    syncNodes: () => undefined,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    advanceSpriteFrames: () => 0,
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+  runtime.mount(container)
+
+  const nextTick = (): FrameRequestCallback => {
+    const tick = callbacks.shift()
+    assert.ok(tick)
+    return tick
+  }
+  nextTick()(0)
+  // The first animating tick has no predecessor — nothing to measure.
+  nextTick()(33)
+  nextTick()(66)
+  assert.deepEqual(samples, [33, 33])
+
+  // A >100ms hole is a stall (tab switch, GC), not pacing — dropped.
+  nextTick()(200)
+  assert.equal(samples.length, 2)
+
+  // Animation ends: the RAF chain stops and sampling closes with it.
+  animating = false
+  node.moving = false
+  nextTick()(300)
+  assert.equal(samples.length, 2)
+  assert.equal(callbacks.length, 0)
+
+  // An idle-timer re-pose tick is a one-shot, not a pacing sample.
+  node.idleStretch = true
+  timers[0]?.()
+  nextTick()(316)
+  assert.equal(samples.length, 2)
+
+  // When animation resumes, the pairing restarts — the gap across the
+  // idle stretch is never sampled.
+  animating = true
+  node.idleStretch = false
+  node.moving = true
+  runtime.sync(createState(4, 4))
+  nextTick()(332)
+  assert.equal(samples.length, 2)
+  nextTick()(348)
+  assert.deepEqual(samples, [33, 33, 16])
+})
+
+test('board-3d runtime skips the shadow bake for idle-only re-poses', () => {
+  const callbacks: FrameRequestCallback[] = []
+  const timers: Array<() => void> = []
+  const renders: number[] = []
+  const shadowMap = { enabled: true, autoUpdate: false, needsUpdate: false }
+  const node = createNode()
+  const nodes = new Map<number, EntityNode>([[1, node]])
+  const runtime = createRuntime({
+    nodes,
+    shadowMap,
+    composerRender: () => {
+      renders.push(1)
+    },
+    applyNodePoseStep: () => ({
+      animating: false,
+      finishedLeaving: false,
+    }),
+    syncBatches: () => false,
+    syncNodes: () => undefined,
+    rebuildGround: (_world, _width, _height, visuals) => visuals,
+    advanceSpriteFrames: () => 0,
+    scheduleTimer: (callback) => {
+      timers.push(callback)
+      return timers.length
+    },
+    requestFrame: (callback) => {
+      callbacks.push(callback)
+      return callbacks.length
+    },
+  })
+  const container = createContainer()
+  runtime.mount(container)
+
+  const nextTick = (): FrameRequestCallback => {
+    const tick = callbacks.shift()
+    assert.ok(tick)
+    return tick
+  }
+  nextTick()(16)
+  assert.equal(renders.length, 1)
+  // First rendered frame seeds the map once, then consumes the dirty flag.
+  assert.equal(shadowMap.needsUpdate, true)
+  shadowMap.needsUpdate = false
+
+  // Idle stretch re-poses the node on the slow timer — the silhouette
+  // wobble is sub-texel, so the caster pass must not re-bake.
+  node.idleStretch = true
+  timers[0]?.()
+  nextTick()(32)
+  assert.equal(renders.length, 2)
+  assert.equal(shadowMap.needsUpdate, false)
+
+  // A real move (the caster translates) still re-bakes the next frame.
+  // idleStretch stays on so the slow timer keeps re-posing this node.
+  node.moving = true
+  timers[0]?.()
+  nextTick()(48)
+  assert.equal(renders.length, 3)
+  assert.equal(shadowMap.needsUpdate, true)
+})
+
+test('board-3d runtime prewarm renders once, primes shadows, and is dispose-safe', () => {
+  const renders: number[] = []
+  const wrapped: number[] = []
+  const shadowMap = { enabled: true, autoUpdate: false, needsUpdate: false }
+  const runtime = createRuntime({
+    shadowMap,
+    composerRender: () => {
+      renders.push(1)
+    },
+    prewarmScene: (render) => {
+      wrapped.push(1)
+      render()
+    },
+  })
+  runtime.prewarm()
+  runtime.prewarm()
+  assert.equal(wrapped.length, 1)
+  assert.equal(renders.length, 1)
+  assert.equal(shadowMap.needsUpdate, true)
+
+  runtime.dispose()
+
+  // A runtime disposed before warm-up never renders at all.
+  const dead = createRuntime({
+    composerRender: () => {
+      renders.push(1)
+    },
+  })
+  dead.dispose()
+  dead.prewarm()
+  assert.equal(renders.length, 1)
 })

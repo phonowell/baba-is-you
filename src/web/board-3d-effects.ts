@@ -117,6 +117,10 @@ export type Board3dEffects = {
   // Advances particles and the mood timeline; true while either is live so
   // the runtime keeps the RAF loop (and renders) going.
   update: (nowMs: number) => boolean
+  // The shared instanced particle mesh (always parented, usually count 0).
+  // The prewarm pass bumps its count to 1 for one render so the patched
+  // material's program compiles off the critical path.
+  warmupMesh: InstancedMesh
   clear: () => void
   dispose: () => void
 }
@@ -636,6 +640,7 @@ export const createBoard3dEffects = (
     playLose,
     neutralMood,
     update,
+    warmupMesh: instanced,
     clear,
     dispose,
   }

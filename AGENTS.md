@@ -34,6 +34,7 @@
 
 ## 核心命令
 - `pnpm check`：lint + type-check + test 一步验证（改动后默认先跑它）
+- `pnpm cdp '<query>' <op>...`：浏览器驱动 CLI（`scripts/cdp.ts` + `scripts/lib/browser.ts` 共享层——隔离 headless 实例 + CDP 直连；`eval:`/`probe`/`wait:`/`click`/`key:`/`shot:`；页面读 `window.__babaProbe()`。勿用 agent-browser——它会绑日常浏览器被劫持）
 - `pnpm build`：构建本地预览单文件（`release-local/baba-is-you.html`，无域名锁）
 - `pnpm build:fast`：同上但用快速 gzip（watch 循环用；产物仅调试用，勿部署）
 - `pnpm build:deploy`：构建部署版（`release/` 下壳 HTML + 受门控 bundle + `payloads/` 懒加载文件，仅 auvya.com 可运行）

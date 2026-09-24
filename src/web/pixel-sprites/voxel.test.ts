@@ -4,6 +4,8 @@ import test from 'node:test'
 import { advanceNodeGeometries } from '../board-3d-renderer-materials.js'
 import {
   buildVolumeCells,
+  buildVoxelVolumeGeometry,
+  mergeFrameGeometries,
   slabVolume,
   spriteVolumes,
   voxelDrawRect,
@@ -175,20 +177,51 @@ test('voxelDrawRect centers content bounds at uniform texel scale', () => {
   assert.ok(Math.abs(half.drawY - (0.5 + 6 / 12)) < 1e-6)
 })
 
-test('advanceNodeGeometries swaps mesh and outline geometry through the frame cycle', () => {
+test('mergeFrameGeometries tags vertices per frame and offsets indices', () => {
+  const g0 = buildVoxelVolumeGeometry({ frame: singleCell, palette: PALETTE }, options())
+  const g1 = buildVoxelVolumeGeometry({ frame: block2x2, palette: PALETTE }, options())
+  const g2 = buildVoxelVolumeGeometry({ frame: ring3x3, palette: PALETTE }, options())
+  const merged = mergeFrameGeometries([g0, g1, g2])
+
+  const n0 = g0.getAttribute('position').count
+  const n1 = g1.getAttribute('position').count
+  const n2 = g2.getAttribute('position').count
+  assert.equal(merged.getAttribute('position').count, n0 + n1 + n2)
+  assert.equal(merged.getAttribute('color').count, n0 + n1 + n2)
+
+  const tag = merged.getAttribute('aFrameIx')
+  assert.ok(tag)
+  assert.equal(tag.count, n0 + n1 + n2)
+  // The tag stream splits exactly on frame boundaries.
+  assert.equal(tag.getX(0), 0)
+  assert.equal(tag.getX(n0 - 1), 0)
+  assert.equal(tag.getX(n0), 1)
+  assert.equal(tag.getX(n0 + n1), 2)
+  assert.equal(tag.getX(n0 + n1 + n2 - 1), 2)
+
+  // Every merged vertex is referenced: the highest index equals the
+  // last vertex of the last frame.
+  const index = merged.getIndex()
+  assert.ok(index)
+  let max = 0
+  for (let i = 0; i < index.count; i += 1) max = Math.max(max, index.getX(i))
+  assert.equal(max, n0 + n1 + n2 - 1)
+})
+
+test('advanceNodeGeometries advances frameIndex and outline geometry through the cycle', () => {
   const g0 = { id: 'g0' }
   const g1 = { id: 'g1' }
   const g2 = { id: 'g2' }
   const animated = {
-    mesh: { geometry: g0 },
     outline: { geometry: g0 },
     frameGeometries: [g0, g1, g2],
+    frameIndex: 0,
     idleFrameOffset: 0,
   }
   const still = {
-    mesh: { geometry: g0 },
     outline: { geometry: g0 },
     frameGeometries: [g0],
+    frameIndex: 0,
     idleFrameOffset: 0,
   }
   const nodes = new Map([
@@ -197,11 +230,11 @@ test('advanceNodeGeometries swaps mesh and outline geometry through the frame cy
   ]) as never
 
   assert.equal(advanceNodeGeometries(nodes, 1), 1)
-  assert.equal(animated.mesh.geometry, g1)
+  assert.equal(animated.frameIndex, 1)
   assert.equal(animated.outline.geometry, g1)
   assert.equal(advanceNodeGeometries(nodes, 1), 0)
   assert.equal(advanceNodeGeometries(nodes, 2), 1)
-  assert.equal(animated.mesh.geometry, g2)
+  assert.equal(animated.frameIndex, 2)
   assert.equal(animated.outline.geometry, g2)
 })
 
@@ -210,15 +243,15 @@ test('advanceNodeGeometries staggers the cycle per node frame offset', () => {
   const g1 = { id: 'g1' }
   const g2 = { id: 'g2' }
   const inPhase = {
-    mesh: { geometry: g0 },
     outline: { geometry: g0 },
     frameGeometries: [g0, g1, g2],
+    frameIndex: 0,
     idleFrameOffset: 0,
   }
   const aheadTwo = {
-    mesh: { geometry: g0 },
     outline: { geometry: g0 },
     frameGeometries: [g0, g1, g2],
+    frameIndex: 0,
     idleFrameOffset: 2,
   }
   const nodes = new Map([
@@ -227,10 +260,14 @@ test('advanceNodeGeometries staggers the cycle per node frame offset', () => {
   ]) as never
 
   advanceNodeGeometries(nodes, 0)
-  assert.equal(inPhase.mesh.geometry, g0)
-  assert.equal(aheadTwo.mesh.geometry, g2)
+  assert.equal(inPhase.frameIndex, 0)
+  assert.equal(inPhase.outline.geometry, g0)
+  assert.equal(aheadTwo.frameIndex, 2)
+  assert.equal(aheadTwo.outline.geometry, g2)
 
   advanceNodeGeometries(nodes, 1)
-  assert.equal(inPhase.mesh.geometry, g1)
-  assert.equal(aheadTwo.mesh.geometry, g0)
+  assert.equal(inPhase.frameIndex, 1)
+  assert.equal(inPhase.outline.geometry, g1)
+  assert.equal(aheadTwo.frameIndex, 0)
+  assert.equal(aheadTwo.outline.geometry, g0)
 })
