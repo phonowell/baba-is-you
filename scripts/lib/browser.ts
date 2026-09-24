@@ -43,11 +43,21 @@ const BROWSERS = [
 export const serveDir = (root: string): Promise<Server> =>
   new Promise((res, rej) => {
     const s = createServer((rq, rs) => {
-      const p = path.join(
-        root,
-        decodeURIComponent(new URL(rq.url ?? '/', 'http://x').pathname),
-      )
-      if (!p.startsWith(root)) {
+      // resolve + boundary check (not bare startsWith — a sibling like
+      // `release-local-x` shares the prefix); decodeURIComponent throws on
+      // malformed escapes, which must not kill the process.
+      let p: string
+      try {
+        p = path.resolve(
+          root,
+          `.${decodeURIComponent(new URL(rq.url ?? '/', 'http://x').pathname)}`,
+        )
+      } catch {
+        rs.writeHead(400)
+        rs.end()
+        return
+      }
+      if (p !== root && !p.startsWith(root + path.sep)) {
         rs.writeHead(403)
         rs.end()
         return
@@ -93,6 +103,12 @@ export class Cdp {
         else p.res(m.result)
       }
     }
+    // A dead socket must fail in-flight ops — ws.send on a closed socket
+    // is silently dropped, so without this the CLI hangs forever.
+    c.ws.onclose = () => {
+      for (const p of c.pending.values()) p.rej(new Error('ws closed'))
+      c.pending.clear()
+    }
     return c
   }
 
@@ -102,6 +118,10 @@ export class Cdp {
   ): Promise<T> {
     const id = ++this.id
     return new Promise<T>((res, rej) => {
+      if (this.ws.readyState !== WebSocket.OPEN) {
+        rej(new Error('ws not open'))
+        return
+      }
       this.pending.set(id, { res: res as (v: unknown) => void, rej })
       this.ws.send(JSON.stringify({ id, method, params }))
     })
@@ -189,11 +209,14 @@ export const launchBrowser = async (): Promise<BrowserInstance> => {
       const port = Number((await readFile(portFile, 'utf8')).split('\n')[0])
       if (port > 0) return { proc, port, dir }
     }
-    if (proc.exitCode !== null)
+    if (proc.exitCode !== null) {
+      await rm(dir, { recursive: true, force: true }).catch(() => {})
       throw new Error(`browser exited early (${proc.exitCode})`)
+    }
     await sleep(100)
   }
   proc.kill()
+  await rm(dir, { recursive: true, force: true }).catch(() => {})
   throw new Error('DevToolsActivePort never appeared')
 }
 

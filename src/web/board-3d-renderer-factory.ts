@@ -67,8 +67,13 @@ export const createBoard3dRendererFactoryDeps = () => {
     textureAnisotropy,
   })
 
-  const getVisual = (item: Item, overridden?: boolean, tileMask?: number): EntityVisual =>
-    materialStore.getVisual(item, overridden, tileMask)
+  const getVisual = (
+    item: Item,
+    overridden?: boolean,
+    tileMask?: number,
+    active?: boolean,
+  ): EntityVisual =>
+    materialStore.getVisual(item, overridden, tileMask, active)
 
   const createNodeDeps: CreateEntityNodeDeps = {
     entityGroup,
@@ -181,6 +186,12 @@ export const createBoard3dRendererFactoryDeps = () => {
         mesh.instanceMatrix.needsUpdate = true
         mesh.castShadow = true
         mesh.frustumCulled = false
+        if (!item.isText) {
+          // Merged-frame batches shadow through a patched depth material —
+          // a different program than the default depth path the plate
+          // stand-in exercises — so warm it on the voxel stand-in too.
+          mesh.customDepthMaterial = cardBatches.frameDepthMaterial
+        }
         const outline = new Mesh(visual.geometry, visual.outlineMaterial)
         outline.frustumCulled = false
         standIns.push(mesh, outline)

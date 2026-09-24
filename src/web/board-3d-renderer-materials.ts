@@ -186,7 +186,12 @@ export const advanceNodeGeometries = (
 }
 
 export type Board3dRendererMaterialStore = {
-  getVisual: (item: Item, overridden?: boolean, tileMask?: number) => EntityVisual
+  getVisual: (
+    item: Item,
+    overridden?: boolean,
+    tileMask?: number,
+    active?: boolean,
+  ) => EntityVisual
   // Swaps every animated material to the given frame; returns how many
   // materials actually changed so the runtime can skip idle renders.
   advanceSpriteFrames: (frameIx: number) => number
@@ -457,8 +462,8 @@ export const createBoard3dRendererMaterialStore = (
     if (cached) return cached
     const material = new MeshBasicMaterial({
       color: new Color(spec.background),
+      vertexColors: true,
     })
-    material.vertexColors = true
     wallMaterialCache.set(spec.key, material)
     return material
   }

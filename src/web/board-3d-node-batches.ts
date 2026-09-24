@@ -102,6 +102,10 @@ export type EntityBatches = {
     nodes: ReadonlyMap<number, EntityNode>,
     dirty: ReadonlySet<EntityNode> | null,
   ) => boolean
+  // The patched depth material merged-frame batches render shadows with —
+  // exposed so prewarm can attach it to a stand-in and compile the program
+  // off the critical path (the batch's own program object is the same one).
+  frameDepthMaterial: MeshDepthMaterial
   dispose: () => void
 }
 
@@ -382,7 +386,7 @@ export const createEntityBatches = (parent: Group): EntityBatches => {
     batches.clear()
   }
 
-  return { flush, dispose }
+  return { flush, frameDepthMaterial, dispose }
 }
 
 export type ShadowBatch = {
@@ -540,5 +544,7 @@ export const createShadowBatch = (
     geometry.deleteAttribute('aOpacity')
   }
 
-  return { flush, warmupMesh: mesh, dispose }
+  // Getter, not a snapshot: grow() swaps the live mesh and a captured
+  // reference would point at a disposed one.
+  return { flush, get warmupMesh() { return mesh }, dispose }
 }
