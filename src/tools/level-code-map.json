@@ -11,7 +11,7 @@
  },
  "2": {
   "file": "189level",
-  "index": 148,
+  "index": 123,
   "name": ""
  },
  "3": {
@@ -26,7 +26,7 @@
  },
  "5": {
   "file": "90level",
-  "index": 75,
+  "index": 63,
   "name": ""
  },
  "6": {
@@ -41,17 +41,17 @@
  },
  "8": {
   "file": "243level",
-  "index": 189,
+  "index": 162,
   "name": ""
  },
  "9": {
   "file": "245level",
-  "index": 190,
+  "index": 163,
   "name": ""
  },
  "10": {
   "file": "117level",
-  "index": 100,
+  "index": 82,
   "name": ""
  },
  "Depths": {
@@ -106,7 +106,7 @@
  },
  "Finale": {
   "file": "203level",
-  "index": 159,
+  "index": 134,
   "name": ""
  },
  "Garden": {
@@ -116,7 +116,7 @@
  },
  "?": {
   "file": "78level",
-  "index": 67,
+  "index": 56,
   "name": ""
  },
  "Mountain": {
@@ -126,42 +126,42 @@
  },
  "Forest-3": {
   "file": "69level",
-  "index": 59,
+  "index": 50,
   "name": "keep out!"
  },
  "Forest-8": {
   "file": "98level",
-  "index": 83,
+  "index": 69,
   "name": "victory in the open"
  },
  "Forest-11": {
   "file": "248level",
-  "index": 193,
+  "index": 166,
   "name": "supermarket"
  },
  "Forest-6": {
   "file": "85level",
-  "index": 72,
+  "index": 61,
   "name": "canyon"
  },
  "Forest-D": {
   "file": "271level",
-  "index": 212,
+  "index": 183,
   "name": "salvage"
  },
  "Forest-C": {
   "file": "260level",
-  "index": 202,
+  "index": 174,
   "name": "passing through"
  },
  "Forest-E": {
   "file": "268level",
-  "index": 209,
+  "index": 180,
   "name": "insulation"
  },
  "Forest-A": {
   "file": "50level",
-  "index": 42,
+  "index": 35,
   "name": "nearly"
  },
  "Forest-Map": {
@@ -171,107 +171,107 @@
  },
  "Forest-1": {
   "file": "66level",
-  "index": 56,
+  "index": 47,
   "name": "renovating"
  },
  "Forest-4": {
   "file": "34level",
-  "index": 30,
+  "index": 27,
   "name": "baba doesn't respond"
  },
  "Forest-12": {
   "file": "67level",
-  "index": 57,
+  "index": 48,
   "name": "lock the door"
  },
  "Forest-Extra 1": {
   "file": "193level",
-  "index": 151,
+  "index": 126,
   "name": "crumbling floor"
  },
  "Forest-5": {
   "file": "57level",
-  "index": 48,
+  "index": 40,
   "name": "patrol"
  },
  "Forest-10": {
   "file": "315level",
-  "index": 250,
+  "index": 215,
   "name": "lovely house"
  },
  "Forest-13": {
   "file": "28level",
-  "index": 25,
+  "index": 22,
   "name": "factory"
  },
  "Forest-2": {
   "file": "246level",
-  "index": 191,
+  "index": 164,
   "name": "toolshed"
  },
  "Forest-7": {
   "file": "151level",
-  "index": 128,
+  "index": 105,
   "name": "concrete goals"
  },
  "Forest-9": {
   "file": "191level",
-  "index": 149,
+  "index": 124,
   "name": "moving floor"
  },
  "Forest-B": {
   "file": "257level",
-  "index": 200,
+  "index": 173,
   "name": "not quite"
  },
  "Forest-14": {
   "file": "233level",
-  "index": 180,
+  "index": 153,
   "name": "tiny pasture"
  },
  "Forest-Extra 2": {
   "file": "54level",
-  "index": 46,
+  "index": 38,
   "name": "skull house"
  },
  "Fall-Extra 3": {
   "file": "308level",
-  "index": 243,
+  "index": 210,
   "name": "deep pool"
  },
  "Fall-D": {
   "file": "307level",
-  "index": 242,
+  "index": 209,
   "name": "scenic pond"
  },
  "Fall-5": {
   "file": "194level",
-  "index": 152,
+  "index": 127,
   "name": "haunt"
  },
  "Fall-9": {
   "file": "35level",
-  "index": 31,
+  "index": 28,
   "name": "leaf chamber"
  },
  "Fall-12": {
   "file": "174level",
-  "index": 143,
+  "index": 118,
   "name": "dead end"
  },
  "Fall-11": {
   "file": "160level",
-  "index": 133,
+  "index": 108,
   "name": "catch"
  },
  "Fall-Extra 2": {
   "file": "138level",
-  "index": 117,
+  "index": 98,
   "name": "even less there"
  },
  "Fall-10": {
   "file": "137level",
-  "index": 116,
+  "index": 97,
   "name": "not there"
  },
  "Fall-Map": {
@@ -281,82 +281,82 @@
  },
  "Fall-3": {
   "file": "235level",
-  "index": 182,
+  "index": 155,
   "name": "rocky road"
  },
  "Fall-2": {
   "file": "221level",
-  "index": 173,
+  "index": 146,
   "name": "grand stream"
  },
  "Fall-8": {
   "file": "26level",
-  "index": 24,
+  "index": 21,
   "name": "ghost guard"
  },
  "Fall-7": {
   "file": "36level",
-  "index": 32,
+  "index": 29,
   "name": "ghost friend"
  },
  "Fall-6": {
   "file": "220level",
-  "index": 172,
+  "index": 145,
   "name": "crate square"
  },
  "Fall-A": {
   "file": "77level",
-  "index": 66,
+  "index": 55,
   "name": "literacy"
  },
  "Fall-B": {
   "file": "29level",
-  "index": 26,
+  "index": 23,
   "name": "broken playground"
  },
  "Fall-E": {
   "file": "70level",
-  "index": 60,
+  "index": 51,
   "name": "skeletal door"
  },
  "Fall-4": {
   "file": "62level",
-  "index": 53,
+  "index": 44,
   "name": "telephone"
  },
  "Fall-1": {
   "file": "238level",
-  "index": 184,
+  "index": 157,
   "name": "hop"
  },
  "Fall-Extra 1": {
   "file": "239level",
-  "index": 185,
+  "index": 158,
   "name": "jump"
  },
  "Fall-C": {
   "file": "269level",
-  "index": 210,
+  "index": 181,
   "name": "fetching"
  },
  "Lake-Extra 2": {
   "file": "314level",
-  "index": 249,
+  "index": 214,
   "name": "sunken temple"
  },
  "Lake-9": {
   "file": "236level",
-  "index": 183,
+  "index": 156,
   "name": "changeless"
  },
  "Lake-12": {
   "file": "30level",
-  "index": 27,
+  "index": 24,
   "name": "crab storage"
  },
  "Lake-11": {
   "file": "136level",
-  "index": 115,
+  "index": 96,
   "name": "jelly throne"
  },
  "Lake-8": {
@@ -366,27 +366,27 @@
  },
  "Lake-13": {
   "file": "166level",
-  "index": 137,
+  "index": 112,
   "name": "burglary"
  },
  "Lake-7": {
   "file": "15level",
-  "index": 15,
+  "index": 13,
   "name": "novice locksmith"
  },
  "Lake-6": {
   "file": "209level",
-  "index": 162,
+  "index": 136,
   "name": "lock"
  },
  "Lake-10": {
   "file": "210level",
-  "index": 163,
+  "index": 137,
   "name": "two doors"
  },
  "Lake-Extra 1": {
   "file": "211level",
-  "index": 164,
+  "index": 138,
   "name": "submerged ruins"
  },
  "Lake-4": {
@@ -401,12 +401,12 @@
  },
  "Lake-2": {
   "file": "212level",
-  "index": 165,
+  "index": 139,
   "name": "turns"
  },
  "Lake-1": {
   "file": "20level",
-  "index": 19,
+  "index": 17,
   "name": "icy waters"
  },
  "Lake-Map": {
@@ -416,7 +416,7 @@
  },
  "Lake-5": {
   "file": "93level",
-  "index": 78,
+  "index": 66,
   "name": "brick wall"
  },
  "Cavern-Map": {
@@ -426,127 +426,127 @@
  },
  "Cavern-Extra 1": {
   "file": "51level",
-  "index": 43,
+  "index": 36,
   "name": "coronation"
  },
  "Cavern-4": {
   "file": "95level",
-  "index": 80,
+  "index": 68,
   "name": "mouse hole"
  },
  "Cavern-7": {
   "file": "270level",
-  "index": 211,
+  "index": 182,
   "name": "backstage"
  },
  "Cavern-13": {
   "file": "122level",
-  "index": 104,
+  "index": 86,
   "name": "tunnel"
  },
  "Cavern-8": {
   "file": "101level",
-  "index": 86,
+  "index": 72,
   "name": "the heist"
  },
  "Cavern-2": {
   "file": "47level",
-  "index": 39,
+  "index": 33,
   "name": "peril at every turn"
  },
  "Cavern-11": {
   "file": "145level",
-  "index": 124,
+  "index": 101,
   "name": "trick door"
  },
  "Cavern-1": {
   "file": "148level",
-  "index": 126,
+  "index": 103,
   "name": "tour"
  },
  "Cavern-5": {
   "file": "146level",
-  "index": 125,
+  "index": 102,
   "name": "torn apart"
  },
  "Cavern-6": {
   "file": "46level",
-  "index": 38,
+  "index": 32,
   "name": "vital ingredients"
  },
  "Cavern-9": {
   "file": "109level",
-  "index": 92,
+  "index": 76,
   "name": "join the crew"
  },
  "Cavern-10": {
   "file": "119level",
-  "index": 102,
+  "index": 84,
   "name": "automaton"
  },
  "Cavern-12": {
   "file": "176level",
-  "index": 145,
+  "index": 120,
   "name": "trapped"
  },
  "Cavern-14": {
   "file": "178level",
-  "index": 146,
+  "index": 121,
   "name": "broken expectations"
  },
  "Cavern-3": {
   "file": "266level",
-  "index": 207,
+  "index": 179,
   "name": "pillarwork"
  },
  "Garden-10": {
   "file": "92level",
-  "index": 77,
+  "index": 65,
   "name": "adventurers"
  },
  "Garden-7": {
   "file": "150level",
-  "index": 127,
+  "index": 104,
   "name": "blockade"
  },
  "Garden-9": {
   "file": "130level",
-  "index": 111,
+  "index": 92,
   "name": "overgrowth"
  },
  "Garden-8": {
   "file": "91level",
-  "index": 76,
+  "index": 64,
   "name": "jaywalkers united"
  },
  "Garden-6": {
   "file": "89level",
-  "index": 74,
+  "index": 62,
   "name": "ruined orchard"
  },
  "Garden-5": {
   "file": "64level",
-  "index": 54,
+  "index": 45,
   "name": "maritime adventures"
  },
  "Garden-4": {
   "file": "124level",
-  "index": 105,
+  "index": 87,
   "name": "relaxing spot"
  },
  "Garden-3": {
   "file": "242level",
-  "index": 188,
+  "index": 161,
   "name": "sorting facility"
  },
  "Garden-1": {
   "file": "59level",
-  "index": 50,
+  "index": 42,
   "name": "condition"
  },
  "Garden-2": {
   "file": "94level",
-  "index": 79,
+  "index": 67,
   "name": "thicket"
  },
  "Garden-Map": {
@@ -556,57 +556,57 @@
  },
  "Garden-Extra 2": {
   "file": "142level",
-  "index": 121,
+  "index": 100,
   "name": "out at sea"
  },
  "Garden-Extra 1": {
   "file": "127level",
-  "index": 108,
+  "index": 90,
   "name": "secret garden"
  },
  "Chasm-Extra 3": {
   "file": "175level",
-  "index": 144,
+  "index": 119,
   "name": "broken"
  },
  "Chasm-F": {
   "file": "110level",
-  "index": 93,
+  "index": 77,
   "name": "lava flood"
  },
  "Chasm-E": {
   "file": "19level",
-  "index": 18,
+  "index": 16,
   "name": "looking for a heart"
  },
  "Chasm-I": {
   "file": "60level",
-  "index": 51,
+  "index": 43,
   "name": "lonely sight"
  },
  "Chasm-G": {
   "file": "18level",
-  "index": 17,
+  "index": 15,
   "name": "entropy"
  },
  "Chasm-C": {
   "file": "31level",
-  "index": 28,
+  "index": 25,
   "name": "elusive condition"
  },
  "Chasm-H": {
   "file": "25level",
-  "index": 23,
+  "index": 20,
   "name": "floodgates"
  },
  "Chasm-A": {
   "file": "21level",
-  "index": 20,
+  "index": 18,
   "name": "rocky prison"
  },
  "Chasm-D": {
   "file": "240level",
-  "index": 186,
+  "index": 159,
   "name": "treasury"
  },
  "Chasm-Map": {
@@ -616,67 +616,67 @@
  },
  "Chasm-Extra 1": {
   "file": "155level",
-  "index": 131,
+  "index": 106,
   "name": "metacognition"
  },
  "Chasm-Extra 2": {
   "file": "164level",
-  "index": 135,
+  "index": 110,
   "name": "multitool"
  },
  "Chasm-Extra 5": {
   "file": "156level",
-  "index": 132,
+  "index": 107,
   "name": "keke and the star"
  },
  "Chasm-Extra 4": {
   "file": "167level",
-  "index": 138,
+  "index": 113,
   "name": "alley"
  },
  "Chasm-Extra 7": {
   "file": "163level",
-  "index": 134,
+  "index": 109,
   "name": "automated doors"
  },
  "Chasm-Extra 6": {
   "file": "165level",
-  "index": 136,
+  "index": 111,
   "name": "visiting baba"
  },
  "Chasm-B": {
   "file": "241level",
-  "index": 187,
+  "index": 160,
   "name": "siege"
  },
  "???-C": {
   "file": "341level",
-  "index": 267,
+  "index": 226,
   "name": "Rewrite the rules"
  },
  "???-Extra 3": {
   "file": "196level",
-  "index": 154,
+  "index": 129,
   "name": "hazel den"
  },
  "???-Extra 2": {
   "file": "n2level",
-  "index": 269,
+  "index": 228,
   "name": "castle disaster"
  },
  "???-Extra 4": {
   "file": "n1level",
-  "index": 268,
+  "index": 227,
   "name": "baba has keke"
  },
  "???-Secret": {
   "file": "306level",
-  "index": 241,
+  "index": 208,
   "name": "orb"
  },
  "???-6": {
   "file": "75level",
-  "index": 65,
+  "index": 54,
   "name": "fireplace"
  },
  "???-ABC": {
@@ -686,32 +686,32 @@
  },
  "???-7": {
   "file": "247level",
-  "index": 192,
+  "index": 165,
   "name": "turn the corner"
  },
  "???-3": {
   "file": "84level",
-  "index": 71,
+  "index": 60,
   "name": "whoops"
  },
  "???-4": {
   "file": "227level",
-  "index": 177,
+  "index": 150,
   "name": "mean fence"
  },
  "???-8": {
   "file": "231level",
-  "index": 179,
+  "index": 152,
   "name": "vip area"
  },
  "???-10": {
   "file": "230level",
-  "index": 178,
+  "index": 151,
   "name": "tag team"
  },
  "???-12": {
   "file": "168level",
-  "index": 139,
+  "index": 114,
   "name": "ultimate maze"
  },
  "???-Map": {
@@ -721,17 +721,17 @@
  },
  "???-1": {
   "file": "192level",
-  "index": 150,
+  "index": 125,
   "name": "glitch"
  },
  "???-2": {
   "file": "197level",
-  "index": 155,
+  "index": 130,
   "name": "error"
  },
  "???-9": {
   "file": "250level",
-  "index": 194,
+  "index": 167,
   "name": "tense atmosphere"
  },
  "???-Depths": {
@@ -741,62 +741,62 @@
  },
  "???-11": {
   "file": "275level",
-  "index": 215,
+  "index": 185,
   "name": "security check"
  },
  "???-5": {
   "file": "141level",
-  "index": 120,
+  "index": 99,
   "name": "scale"
  },
  "???-Extra 1": {
   "file": "t1level",
-  "index": 270,
+  "index": 229,
   "name": "across"
  },
  "???-B": {
   "file": "340level",
-  "index": 266,
+  "index": 225,
   "name": "Write the rules"
  },
  "???-D": {
   "file": "337level",
-  "index": 264,
+  "index": 223,
   "name": "Written instructions"
  },
  "Ruins-6": {
   "file": "33level",
-  "index": 29,
+  "index": 26,
   "name": "love is out there"
  },
  "Ruins-2": {
   "file": "52level",
-  "index": 44,
+  "index": 37,
   "name": "tunnel vision"
  },
  "Ruins-7": {
   "file": "71level",
-  "index": 61,
+  "index": 52,
   "name": "perilous gang"
  },
  "Ruins-5": {
   "file": "23level",
-  "index": 21,
+  "index": 19,
   "name": "but where's the key"
  },
  "Ruins-3": {
   "file": "58level",
-  "index": 49,
+  "index": 41,
   "name": "a present for you"
  },
  "Ruins-1": {
   "file": "199level",
-  "index": 157,
+  "index": 132,
   "name": "fragility"
  },
  "Ruins-4": {
   "file": "17level",
-  "index": 16,
+  "index": 14,
   "name": "unreachable shores"
  },
  "Ruins-Map": {
@@ -806,37 +806,37 @@
  },
  "Ruins-9": {
   "file": "56level",
-  "index": 47,
+  "index": 39,
   "name": "walls of gold"
  },
  "Ruins-8": {
   "file": "72level",
-  "index": 62,
+  "index": 53,
   "name": "double moat"
  },
  "Ruins-Extra 1": {
   "file": "129level",
-  "index": 110,
+  "index": 91,
   "name": "further fields"
  },
  "Island-9": {
   "file": "319level",
-  "index": 253,
+  "index": 217,
   "name": "research facility"
  },
  "Island-Extra 5": {
   "file": "318level",
-  "index": 252,
+  "index": 216,
   "name": "dungeon"
  },
  "Island-0": {
   "file": "310level",
-  "index": 245,
+  "index": 212,
   "name": "poem"
  },
  "Island-8": {
   "file": "37level",
-  "index": 33,
+  "index": 30,
   "name": "tiny pond"
  },
  "Island-Map": {
@@ -846,42 +846,42 @@
  },
  "Island-1": {
   "file": "205level",
-  "index": 161,
+  "index": 135,
   "name": "float"
  },
  "Island-2": {
   "file": "218level",
-  "index": 170,
+  "index": 143,
   "name": "warm river"
  },
  "Island-Extra 1": {
   "file": "219level",
-  "index": 171,
+  "index": 144,
   "name": "boiling river"
  },
  "Island-3": {
   "file": "171level",
-  "index": 140,
+  "index": 115,
   "name": "bridge building"
  },
  "Island-4": {
   "file": "172level",
-  "index": 141,
+  "index": 116,
   "name": "bridge building?"
  },
  "Island-Extra 2": {
   "file": "173level",
-  "index": 142,
+  "index": 117,
   "name": "...bridges?"
  },
  "Island-6": {
   "file": "107level",
-  "index": 91,
+  "index": 75,
   "name": "assembly team"
  },
  "Island-Extra 6": {
   "file": "215level",
-  "index": 167,
+  "index": 140,
   "name": "evaporating river"
  },
  "Island-7": {
@@ -891,72 +891,72 @@
  },
  "Island-10": {
   "file": "68level",
-  "index": 58,
+  "index": 49,
   "name": "wireless connection"
  },
  "Island-Extra 4": {
   "file": "134level",
-  "index": 113,
+  "index": 94,
   "name": "dim signal"
  },
  "Island-11": {
   "file": "65level",
-  "index": 55,
+  "index": 46,
   "name": "prison"
  },
  "Island-5": {
   "file": "234level",
-  "index": 181,
+  "index": 154,
   "name": "victory spring"
  },
  "Island-Extra 3": {
   "file": "41level",
-  "index": 37,
+  "index": 31,
   "name": "tiny isle"
  },
  "Mountain-Extra 1": {
   "file": "48level",
-  "index": 40,
+  "index": 34,
   "name": "the floatiest platforms"
  },
  "Mountain-6": {
   "file": "118level",
-  "index": 101,
+  "index": 83,
   "name": "floaty platforms"
  },
  "Mountain-5": {
   "file": "120level",
-  "index": 103,
+  "index": 85,
   "name": "connector"
  },
  "Mountain-4": {
   "file": "116level",
-  "index": 99,
+  "index": 81,
   "name": "what is baba?"
  },
  "Mountain-8": {
   "file": "104level",
-  "index": 89,
+  "index": 73,
   "name": "tectonic movements"
  },
  "Mountain-7": {
   "file": "99level",
-  "index": 84,
+  "index": 70,
   "name": "seeking acceptance"
  },
  "Mountain-3": {
   "file": "195level",
-  "index": 153,
+  "index": 128,
   "name": "solitude"
  },
  "Mountain-2": {
   "file": "100level",
-  "index": 85,
+  "index": 71,
   "name": "love at first sight"
  },
  "Mountain-1": {
   "file": "105level",
-  "index": 90,
+  "index": 74,
   "name": "shuffle"
  },
  "Mountain-Map": {
@@ -971,27 +971,27 @@
  },
  "Depths-Extra 1": {
   "file": "274level",
-  "index": 214,
+  "index": 184,
   "name": "priority lane"
  },
  "Depths-4": {
   "file": "262level",
-  "index": 204,
+  "index": 176,
   "name": "collaborative effort"
  },
  "Depths-5": {
   "file": "265level",
-  "index": 206,
+  "index": 178,
   "name": "living lands"
  },
  "Depths-2": {
   "file": "251level",
-  "index": 195,
+  "index": 168,
   "name": "exercise hall"
  },
  "Depths-3": {
   "file": "263level",
-  "index": 205,
+  "index": 177,
   "name": "crushers"
  },
  "Depths-???": {
@@ -1001,7 +1001,7 @@
  },
  "Depths-1": {
   "file": "261level",
-  "index": 203,
+  "index": 175,
   "name": "cleaning service"
  },
  "Depths-Meta": {
@@ -1011,22 +1011,22 @@
  },
  "ABC-Extra 1": {
   "file": "281level",
-  "index": 220,
+  "index": 189,
   "name": "meteor strike"
  },
  "ABC-4": {
   "file": "280level",
-  "index": 219,
+  "index": 188,
   "name": "wall"
  },
  "ABC-1": {
   "file": "255level",
-  "index": 198,
+  "index": 171,
   "name": "lunar gallery"
  },
  "ABC-3": {
   "file": "253level",
-  "index": 197,
+  "index": 170,
   "name": "ab"
  },
  "ABC-???": {
@@ -1036,62 +1036,62 @@
  },
  "ABC-2": {
   "file": "252level",
-  "index": 196,
+  "index": 169,
   "name": "ba"
  },
  "ABC-5": {
   "file": "313level",
-  "index": 248,
+  "index": 213,
   "name": "stardrop"
  },
  "Meta-14": {
   "file": "279level",
-  "index": 218,
+  "index": 187,
   "name": "queue"
  },
  "Meta-Extra 3": {
   "file": "323level",
-  "index": 257,
+  "index": 219,
   "name": "power generator"
  },
  "Meta-Extra 2": {
   "file": "188level",
-  "index": 147,
+  "index": 122,
   "name": "triplets"
  },
  "Meta-12": {
   "file": "284level",
-  "index": 221,
+  "index": 190,
   "name": "tangle"
  },
  "Meta-8": {
   "file": "297level",
-  "index": 234,
+  "index": 201,
   "name": "mutual feelings"
  },
  "Meta-1": {
   "file": "288level",
-  "index": 225,
+  "index": 194,
   "name": "hot potato"
  },
  "Meta-2": {
   "file": "287level",
-  "index": 224,
+  "index": 193,
   "name": "adventure"
  },
  "Meta-4": {
   "file": "285level",
-  "index": 222,
+  "index": 191,
   "name": "canister"
  },
  "Meta-11": {
   "file": "289level",
-  "index": 226,
+  "index": 195,
   "name": "acrobatics"
  },
  "Meta-6": {
   "file": "132level",
-  "index": 112,
+  "index": 93,
   "name": "one-way entrance"
  },
  "Meta-Depths": {
@@ -1101,47 +1101,47 @@
  },
  "Meta-3": {
   "file": "302level",
-  "index": 238,
+  "index": 205,
   "name": "booby trap"
  },
  "Meta-13": {
   "file": "277level",
-  "index": 217,
+  "index": 186,
   "name": "the box"
  },
  "Meta-5": {
   "file": "291level",
-  "index": 228,
+  "index": 196,
   "name": "avalanche"
  },
  "Meta-7": {
   "file": "295level",
-  "index": 232,
+  "index": 199,
   "name": "bramblevine"
  },
  "Meta-15": {
   "file": "292level",
-  "index": 229,
+  "index": 197,
   "name": "breaking and entering"
  },
  "Meta-10": {
   "file": "303level",
-  "index": 239,
+  "index": 206,
   "name": "just no"
  },
  "Meta-9": {
   "file": "298level",
-  "index": 235,
+  "index": 202,
   "name": "delicate stars"
  },
  "Meta-Extra 1": {
   "file": "299level",
-  "index": 236,
+  "index": 203,
   "name": "hidden path"
  },
  "Meta-16": {
   "file": "309level",
-  "index": 244,
+  "index": 211,
   "name": "the return of scenic pond"
  },
  "Meta-Map": {
@@ -1151,7 +1151,7 @@
  },
  "Meta-Secret": {
   "file": "294level",
-  "index": 231,
+  "index": 198,
   "name": "a prize well earned"
  },
  "center-Map": {
@@ -1171,17 +1171,17 @@
  },
  "Space-9": {
   "file": "216level",
-  "index": 168,
+  "index": 141,
   "name": "platformer"
  },
  "Space-10": {
   "file": "226level",
-  "index": 176,
+  "index": 149,
   "name": "the pit"
  },
  "Space-4": {
   "file": "80level",
-  "index": 69,
+  "index": 58,
   "name": "please hold my key"
  },
  "Space-1": {
@@ -1196,22 +1196,22 @@
  },
  "Space-6": {
   "file": "111level",
-  "index": 94,
+  "index": 78,
   "name": "aiming high"
  },
  "Space-7": {
   "file": "112level",
-  "index": 95,
+  "index": 79,
   "name": "trio"
  },
  "Space-11": {
   "file": "115level",
-  "index": 98,
+  "index": 80,
   "name": "heavy words"
  },
  "Space-Extra 2": {
   "file": "125level",
-  "index": 106,
+  "index": 88,
   "name": "heavy cloud"
  },
  "Space-2": {
@@ -1221,747 +1221,747 @@
  },
  "Space-3": {
   "file": "13level",
-  "index": 13,
+  "index": 12,
   "name": "babas are you"
  },
  "Space-12": {
   "file": "82level",
-  "index": 70,
+  "index": 59,
   "name": "guardians"
  },
  "Space-8": {
   "file": "79level",
-  "index": 68,
+  "index": 57,
   "name": "bottleneck"
  },
  "Space-5": {
   "file": "201level",
-  "index": 158,
+  "index": 133,
   "name": "horror story"
  },
  "Space-13": {
   "file": "217level",
-  "index": 169,
+  "index": 142,
   "name": "sky hold"
  },
  "Space-Extra 1": {
   "file": "324level",
-  "index": 258,
+  "index": 220,
   "name": "existential crisis"
  },
  "Familiar-14": {
   "file": "y4level",
-  "index": 447,
+  "index": 389,
   "name": "Silly trick"
  },
  "Familiar-Island": {
   "file": "207level",
-  "index": 438,
+  "index": 380,
   "name": "Flight academy 3"
  },
  "Familiar-1": {
   "file": "44level",
-  "index": 296,
+  "index": 252,
   "name": "Baba needs friends"
  },
  "Familiar-2": {
   "file": "72level",
-  "index": 322,
+  "index": 276,
   "name": "Briar chute"
  },
  "Familiar-3": {
   "file": "114level",
-  "index": 361,
+  "index": 308,
   "name": "Bare"
  },
  "Familiar-5": {
   "file": "17level",
-  "index": 271,
+  "index": 230,
   "name": "Tangled passage"
  },
  "Familiar-8": {
   "file": "18level",
-  "index": 272,
+  "index": 231,
   "name": "Moonrise, sunset"
  },
  "Familiar-9": {
   "file": "67level",
-  "index": 318,
+  "index": 272,
   "name": "Treacherous wetlands"
  },
  "Familiar-12": {
   "file": "47level",
-  "index": 299,
+  "index": 255,
   "name": "Skull pile"
  },
  "Familiar-10": {
   "file": "62level",
-  "index": 313,
+  "index": 268,
   "name": "Sideways fireplace"
  },
  "Familiar-11": {
   "file": "79level",
-  "index": 328,
+  "index": 281,
   "name": "Matrix"
  },
  "Familiar-17": {
   "file": "135level",
-  "index": 381,
+  "index": 326,
   "name": "Parakeet bouncer"
  },
  "Familiar-16": {
   "file": "85level",
-  "index": 334,
+  "index": 286,
   "name": "Tropical weather"
  },
  "Familiar-13": {
   "file": "120level",
-  "index": 367,
+  "index": 312,
   "name": "Treehouse"
  },
  "Familiar-Extra 3": {
   "file": "125level",
-  "index": 372,
+  "index": 317,
   "name": "House house"
  },
  "Familiar-???": {
   "file": "200level",
-  "index": 431,
+  "index": 373,
   "name": "Cloud apartment"
  },
  "Familiar-7": {
   "file": "201level",
-  "index": 432,
+  "index": 374,
   "name": "Flight academy"
  },
  "Familiar-Extra 1": {
   "file": "202level",
-  "index": 433,
+  "index": 375,
   "name": "Flight academy 2"
  },
  "Familiar-6": {
   "file": "208level",
-  "index": 439,
+  "index": 381,
   "name": "Enter the infinity"
  },
  "Familiar-15": {
   "file": "209level",
-  "index": 440,
+  "index": 382,
   "name": "Monstrous walls"
  },
  "Star-Chasm": {
   "file": "182level",
-  "index": 418,
+  "index": 361,
   "name": "Outreach"
  },
  "Star-1": {
   "file": "80level",
-  "index": 329,
+  "index": 282,
   "name": "Harmful presence"
  },
  "Star-2": {
   "file": "84level",
-  "index": 333,
+  "index": 285,
   "name": "Under lock and key"
  },
  "Star-Extra 1": {
   "file": "81level",
-  "index": 330,
+  "index": 283,
   "name": "Destructive presence"
  },
  "Star-3": {
   "file": "90level",
-  "index": 338,
+  "index": 290,
   "name": "Forage"
  },
  "Star-4": {
   "file": "97level",
-  "index": 344,
+  "index": 295,
   "name": "Harvest party"
  },
  "Star-6": {
   "file": "50level",
-  "index": 302,
+  "index": 257,
   "name": "Set the stage"
  },
  "Star-7": {
   "file": "52level",
-  "index": 304,
+  "index": 259,
   "name": "Shiny ladder"
  },
  "Star-8": {
   "file": "66level",
-  "index": 317,
+  "index": 271,
   "name": "Sun Boulevard"
  },
  "Star-Extra 2": {
   "file": "94level",
-  "index": 341,
+  "index": 293,
   "name": "Milky Way"
  },
  "Star-9": {
   "file": "51level",
-  "index": 303,
+  "index": 258,
   "name": "Skygate"
  },
  "Star-Extra 3": {
   "file": "63level",
-  "index": 314,
+  "index": 269,
   "name": "Spaceport"
  },
  "Star-10": {
   "file": "107level",
-  "index": 354,
+  "index": 303,
   "name": "Rapid growth"
  },
  "Star-Extra 4": {
   "file": "119level",
-  "index": 366,
+  "index": 311,
   "name": "Sturdy flowers"
  },
  "Delicacy-15": {
   "file": "134level",
-  "index": 380,
+  "index": 325,
   "name": "Seasons"
  },
  "Delicacy-1": {
   "file": "19level",
-  "index": 273,
+  "index": 232,
   "name": "What does baba eat?"
  },
  "Delicacy-2": {
   "file": "20level",
-  "index": 274,
+  "index": 233,
   "name": "I was too hungry..."
  },
  "Delicacy-3": {
   "file": "21level",
-  "index": 275,
+  "index": 234,
   "name": "Blow the candles out"
  },
  "Delicacy-4": {
   "file": "24level",
-  "index": 278,
+  "index": 236,
   "name": "Delicious words"
  },
  "Delicacy-5": {
   "file": "48level",
-  "index": 300,
+  "index": 256,
   "name": "the end"
  },
  "Delicacy-7": {
   "file": "45level",
-  "index": 297,
+  "index": 253,
   "name": "Exactly as it says"
  },
  "Delicacy-6": {
   "file": "43level",
-  "index": 295,
+  "index": 251,
   "name": "Last snack"
  },
  "Delicacy-Extra 1": {
   "file": "69level",
-  "index": 319,
+  "index": 273,
   "name": "Lastest snack"
  },
  "Delicacy-8": {
   "file": "65level",
-  "index": 316,
+  "index": 270,
   "name": "Mixed identity"
  },
  "Delicacy-A": {
   "file": "23level",
-  "index": 277,
+  "index": 235,
   "name": "Appetizer"
  },
  "Delicacy-B": {
   "file": "58level",
-  "index": 310,
+  "index": 265,
   "name": "Starter course"
  },
  "Delicacy-C": {
   "file": "57level",
-  "index": 309,
+  "index": 264,
   "name": "Main course"
  },
  "Delicacy-D": {
   "file": "59level",
-  "index": 311,
+  "index": 266,
   "name": "Dessert"
  },
  "Delicacy-13": {
   "file": "112level",
-  "index": 359,
+  "index": 307,
   "name": "Former glory"
  },
  "Delicacy-14": {
   "file": "132level",
-  "index": 378,
+  "index": 323,
   "name": "How time flies...!"
  },
  "Delicacy-16": {
   "file": "133level",
-  "index": 379,
+  "index": 324,
   "name": "Sneaking about"
  },
  "Delicacy-9": {
   "file": "128level",
-  "index": 374,
+  "index": 319,
   "name": "Feeling dangerous"
  },
  "Delicacy-10": {
   "file": "127level",
-  "index": 373,
+  "index": 318,
   "name": "Dangerous feeling"
  },
  "Delicacy-11": {
   "file": "124level",
-  "index": 371,
+  "index": 316,
   "name": "Seasick"
  },
  "Delicacy-12": {
   "file": "129level",
-  "index": 375,
+  "index": 320,
   "name": "Once more with feeling!"
  },
  "Vehicle-18": {
   "file": "102level",
-  "index": 349,
+  "index": 299,
   "name": "Smelting facility"
  },
  "Vehicle-16": {
   "file": "121level",
-  "index": 368,
+  "index": 313,
   "name": "Planet Baba"
  },
  "Vehicle-8": {
   "file": "178level",
-  "index": 414,
+  "index": 357,
   "name": "Clockworld"
  },
  "Vehicle-5": {
   "file": "176level",
-  "index": 412,
+  "index": 355,
   "name": "Clockwork ghosts"
  },
  "Vehicle-10": {
   "file": "150level",
-  "index": 390,
+  "index": 335,
   "name": "Tapestries"
  },
  "Vehicle-22": {
   "file": "154level",
-  "index": 394,
+  "index": 338,
   "name": "Buzz"
  },
  "Vehicle-24": {
   "file": "148level",
-  "index": 388,
+  "index": 333,
   "name": "There and back"
  },
  "Vehicle-23": {
   "file": "145level",
-  "index": 385,
+  "index": 330,
   "name": "Midnight meeting"
  },
  "Vehicle-1": {
   "file": "105level",
-  "index": 352,
+  "index": 302,
   "name": "Electricity"
  },
  "Vehicle-2": {
   "file": "108level",
-  "index": 355,
+  "index": 304,
   "name": "Alpine meadow"
  },
  "Vehicle-3": {
   "file": "109level",
-  "index": 356,
+  "index": 305,
   "name": "Log cabin"
  },
  "Vehicle-4": {
   "file": "111level",
-  "index": 358,
+  "index": 306,
   "name": "Test chamber"
  },
  "Vehicle-13": {
   "file": "118level",
-  "index": 365,
+  "index": 310,
   "name": "Standby"
  },
  "Vehicle-14": {
   "file": "122level",
-  "index": 369,
+  "index": 314,
   "name": "Written in stone"
  },
  "Vehicle-17": {
   "file": "123level",
-  "index": 370,
+  "index": 315,
   "name": "Antigravity"
  },
  "Vehicle-19": {
   "file": "142level",
-  "index": 382,
+  "index": 327,
   "name": "What's that?"
  },
  "Vehicle-20": {
   "file": "143level",
-  "index": 383,
+  "index": 328,
   "name": "Where am I going?"
  },
  "Vehicle-21": {
   "file": "144level",
-  "index": 384,
+  "index": 329,
   "name": "Why all this?"
  },
  "Vehicle-9": {
   "file": "149level",
-  "index": 389,
+  "index": 334,
   "name": "Whoops Deluxe"
  },
  "Vehicle-11": {
   "file": "151level",
-  "index": 391,
+  "index": 336,
   "name": "Presenting credentials"
  },
  "Vehicle-15": {
   "file": "156level",
-  "index": 396,
+  "index": 340,
   "name": "Ventilation Shaft"
  },
  "Vehicle-12": {
   "file": "ph7level",
-  "index": 452,
+  "index": 392,
   "name": "Happy dance"
  },
  "Vehicle-Lake": {
   "file": "177level",
-  "index": 413,
+  "index": 356,
   "name": "Clockwords"
  },
  "Vehicle-6": {
   "file": "181level",
-  "index": 417,
+  "index": 360,
   "name": "Hangar"
  },
  "Vehicle-Extra 1": {
   "file": "131level",
-  "index": 377,
+  "index": 322,
   "name": "Pushing Uphill"
  },
  "Vehicle-Extra 2": {
   "file": "210level",
-  "index": 441,
+  "index": 383,
   "name": "Steep hill"
  },
  "Vehicle-Extra 3": {
   "file": "211level",
-  "index": 442,
+  "index": 384,
   "name": "Words eroded by time"
  },
  "Glitch-0": {
   "file": "1blevel",
-  "index": 450,
+  "index": 390,
   "name": "OOOOO OO O OOO"
  },
  "Glitch-8": {
   "file": "ph8level",
-  "index": 453,
+  "index": 393,
   "name": "Experiment"
  },
  "Glitch-7": {
   "file": "93level",
-  "index": 340,
+  "index": 292,
   "name": "Untouchable"
  },
  "Glitch-6": {
   "file": "ph17level",
-  "index": 451,
+  "index": 391,
   "name": "Gone fishing"
  },
  "Glitch-Extra 2": {
   "file": "183level",
-  "index": 419,
+  "index": 362,
   "name": "Garden? What garden?"
  },
  "Glitch-12": {
   "file": "116level",
-  "index": 363,
+  "index": 309,
   "name": "Returning home"
  },
  "Glitch-11": {
   "file": "74level",
-  "index": 324,
+  "index": 278,
   "name": "Firewall"
  },
  "Glitch-10": {
   "file": "73level",
-  "index": 323,
+  "index": 277,
   "name": "Worm study"
  },
  "Glitch-9": {
   "file": "71level",
-  "index": 321,
+  "index": 275,
   "name": "Time travel"
  },
  "Glitch-Space": {
   "file": "87level",
-  "index": 336,
+  "index": 288,
   "name": "ABAB CD EFG"
  },
  "Glitch-4": {
   "file": "99level",
-  "index": 346,
+  "index": 297,
   "name": "Treasure Chest"
  },
  "Glitch-3": {
   "file": "103level",
-  "index": 350,
+  "index": 300,
   "name": "Hidden blueprints"
  },
  "Glitch-2": {
   "file": "100level",
-  "index": 347,
+  "index": 298,
   "name": "Looking for hollow spots"
  },
  "Glitch-1": {
   "file": "98level",
-  "index": 345,
+  "index": 296,
   "name": "Cave of Mirages"
  },
  "Glitch-5": {
   "file": "147level",
-  "index": 387,
+  "index": 332,
   "name": "Secret clearing"
  },
  "Glitch-Extra 1": {
   "file": "146level",
-  "index": 386,
+  "index": 331,
   "name": "Private garden"
  },
  "Oddity-Finale": {
   "file": "203level",
-  "index": 434,
+  "index": 376,
   "name": "Cursed spa"
  },
  "Oddity-23": {
   "file": "190level",
-  "index": 422,
+  "index": 364,
   "name": "Baba Is Empty"
  },
  "Oddity-12": {
   "file": "82level",
-  "index": 331,
+  "index": 284,
   "name": "Hidden in the thicket"
  },
  "Oddity-10": {
   "file": "28level",
-  "index": 282,
+  "index": 240,
   "name": "Supply route"
  },
  "Oddity-15": {
   "file": "76level",
-  "index": 325,
+  "index": 279,
   "name": "Abduction!"
  },
  "Oddity-14": {
   "file": "95level",
-  "index": 342,
+  "index": 294,
   "name": "Waiting for you"
  },
  "Oddity-13": {
   "file": "77level",
-  "index": 326,
+  "index": 280,
   "name": "Dream secret"
  },
  "Oddity-11": {
   "file": "36level",
-  "index": 289,
+  "index": 246,
   "name": "Antique halls"
  },
  "Oddity-9": {
   "file": "37level",
-  "index": 290,
+  "index": 247,
   "name": "Haunted spa"
  },
  "Oddity-Extra 5": {
   "file": "a30level",
-  "index": 445,
+  "index": 387,
   "name": "Psychokinesis"
  },
  "Oddity-8": {
   "file": "30level",
-  "index": 284,
+  "index": 241,
   "name": "Magician's trick"
  },
  "Oddity-Extra 4": {
   "file": "60level",
-  "index": 312,
+  "index": 267,
   "name": "Bunker"
  },
  "Oddity-7": {
   "file": "27level",
-  "index": 281,
+  "index": 239,
   "name": "Shelter"
  },
  "Oddity-6": {
   "file": "26level",
-  "index": 280,
+  "index": 238,
   "name": "Unsettling"
  },
  "Oddity-5": {
   "file": "70level",
-  "index": 320,
+  "index": 274,
   "name": "Safety vest"
  },
  "Oddity-4": {
   "file": "32level",
-  "index": 286,
+  "index": 243,
   "name": "Warehouse"
  },
  "Oddity-3": {
   "file": "35level",
-  "index": 288,
+  "index": 245,
   "name": "Safety box"
  },
  "Oddity-2": {
   "file": "a22level",
-  "index": 444,
+  "index": 386,
   "name": "Guarding triplet"
  },
  "Oddity-1": {
   "file": "25level",
-  "index": 279,
+  "index": 237,
   "name": "I'm invincible!"
  },
  "Oddity-16": {
   "file": "33level",
-  "index": 287,
+  "index": 244,
   "name": "Mimicry"
  },
  "Oddity-17": {
   "file": "39level",
-  "index": 292,
+  "index": 248,
   "name": "Pay attention"
  },
  "Oddity-18": {
   "file": "40level",
-  "index": 293,
+  "index": 249,
   "name": "No duplicates"
  },
  "Oddity-19": {
   "file": "53level",
-  "index": 305,
+  "index": 260,
   "name": "Deep doors"
  },
  "Oddity-20": {
   "file": "54level",
-  "index": 306,
+  "index": 261,
   "name": "Cellar access"
  },
  "Oddity-21": {
   "file": "55level",
-  "index": 307,
+  "index": 262,
   "name": "Under the floor"
  },
  "Oddity-22": {
   "file": "104level",
-  "index": 351,
+  "index": 301,
   "name": "Fertile ground"
  },
  "Oddity-Extra 1": {
   "file": "152level",
-  "index": 392,
+  "index": 337,
   "name": "Reverse fate"
  },
  "Oddity-Extra 2": {
   "file": "212level",
-  "index": 443,
+  "index": 385,
   "name": "Reverse fate 2"
  },
  "Arcade-F": {
   "file": "168level",
-  "index": 405,
+  "index": 349,
   "name": "Teamwork is a must"
  },
  "Arcade-A": {
   "file": "161level",
-  "index": 400,
+  "index": 344,
   "name": "Baba Hour"
  },
  "Arcade-B": {
   "file": "160level",
-  "index": 399,
+  "index": 343,
   "name": "Baba Invaders"
  },
  "Arcade-C": {
   "file": "46level",
-  "index": 298,
+  "index": 254,
   "name": "Gravity chamber"
  },
  "Arcade-D": {
   "file": "167level",
-  "index": 404,
+  "index": 348,
   "name": "Snakeke"
  },
  "Arcade-E": {
   "file": "166level",
-  "index": 403,
+  "index": 347,
   "name": "Darkish Dungeon"
  },
  "Arcade-G": {
   "file": "56level",
-  "index": 308,
+  "index": 263,
   "name": "Jump up, Babastar"
  },
  "New adventures!-17": {
   "file": "199level",
-  "index": 430,
+  "index": 372,
   "name": "Seeing trouble"
  },
  "New adventures!-18": {
   "file": "197level",
-  "index": 428,
+  "index": 370,
   "name": "Cornered victory"
  },
  "New adventures!-14": {
   "file": "196level",
-  "index": 427,
+  "index": 369,
   "name": "Lesson in adjacency"
  },
  "New adventures!-16": {
   "file": "195level",
-  "index": 426,
+  "index": 368,
   "name": "Seeing double"
  },
  "New adventures!-12": {
   "file": "194level",
-  "index": 425,
+  "index": 367,
   "name": "Clear vision"
  },
  "New adventures!-15": {
   "file": "193level",
-  "index": 424,
+  "index": 366,
   "name": "Demolitionwork"
  },
  "New adventures!-13": {
   "file": "192level",
-  "index": 423,
+  "index": 365,
   "name": "Boom!"
  },
  "New adventures!-11": {
   "file": "174level",
-  "index": 410,
+  "index": 353,
   "name": "New members"
  },
  "New adventures!-9": {
   "file": "173level",
-  "index": 409,
+  "index": 352,
   "name": "Private club"
  },
  "New adventures!-2": {
   "file": "171level",
-  "index": 407,
+  "index": 350,
   "name": "Musical interlude"
  },
  "New adventures!-Arcade": {
@@ -1986,12 +1986,12 @@
  },
  "New adventures!-0": {
   "file": "42level",
-  "index": 294,
+  "index": 250,
   "name": "Baba's home"
  },
  "New adventures!-1": {
   "file": "130level",
-  "index": 376,
+  "index": 321,
   "name": "Who is it?"
  },
  "New adventures!-Glitch": {
@@ -2011,492 +2011,492 @@
  },
  "New adventures!-4": {
   "file": "164level",
-  "index": 401,
+  "index": 345,
   "name": "A simple maze"
  },
  "New adventures!-5": {
   "file": "165level",
-  "index": 402,
+  "index": 346,
   "name": "Another simple maze"
  },
  "New adventures!-7": {
   "file": "31level",
-  "index": 285,
+  "index": 242,
   "name": "Baba twins"
  },
  "New adventures!-8": {
   "file": "158level",
-  "index": 398,
+  "index": 342,
   "name": "Hedge maze"
  },
  "New adventures!-3": {
   "file": "172level",
-  "index": 408,
+  "index": 351,
   "name": "New friends!"
  },
  "New adventures!-10": {
   "file": "175level",
-  "index": 411,
+  "index": 354,
   "name": "Exclusive membership"
  },
  "New adventures!-Cavern": {
   "file": "179level",
-  "index": 415,
+  "index": 358,
   "name": "Colourful cavern"
  },
  "New adventures!-Garden": {
   "file": "180level",
-  "index": 416,
+  "index": 359,
   "name": "Conclusion"
  },
  "New adventures!-19": {
   "file": "204level",
-  "index": 435,
+  "index": 377,
   "name": "Advanced linguistics 1"
  },
  "New adventures!-20": {
   "file": "205level",
-  "index": 436,
+  "index": 378,
   "name": "Advanced linguistics 2"
  },
  "New adventures!-Ruins": {
   "file": "206level",
-  "index": 437,
+  "index": 379,
   "name": "Advanced linguistics 3"
  },
  "More unused levels-1": {
   "file": "300level",
-  "index": 533,
+  "index": 453,
   "name": "cannon"
  },
  "More unused levels-2": {
   "file": "296level",
-  "index": 532,
+  "index": 452,
   "name": "turmoil in the clouds"
  },
  "More unused levels-3": {
   "file": "112level",
-  "index": 514,
+  "index": 436,
   "name": "Thank you for playing!"
  },
  "More unused levels-Extra 1": {
   "file": "47ylevel",
-  "index": 561,
+  "index": 479,
   "name": "47"
  },
  "More unused levels-Extra 2": {
   "file": "48ylevel",
-  "index": 562,
+  "index": 480,
   "name": "48"
  },
  "More unused levels-Extra 3": {
   "file": "52ylevel",
-  "index": 563,
+  "index": 481,
   "name": "52"
  },
  "museum of unused levels-Extra 4": {
   "file": "115level",
-  "index": 517,
+  "index": 439,
   "name": "dangerous garden 2"
  },
  "museum of unused levels-17": {
   "file": "290level",
-  "index": 531,
+  "index": 451,
   "name": "mobile lawn"
  },
  "museum of unused levels-Map": {
   "file": "106level",
-  "index": 511,
+  "index": 434,
   "name": "boilerworks 2"
  },
  "museum of unused levels-2": {
   "file": "213level",
-  "index": 526,
+  "index": 446,
   "name": "move"
  },
  "museum of unused levels-16": {
   "file": "24level",
-  "index": 463,
+  "index": 399,
   "name": "cemetery"
  },
  "museum of unused levels-E": {
   "file": "45level",
-  "index": 477,
+  "index": 409,
   "name": "house e"
  },
  "museum of unused levels-D": {
   "file": "44level",
-  "index": 476,
+  "index": 408,
   "name": "house d"
  },
  "museum of unused levels-C": {
   "file": "43level",
-  "index": 475,
+  "index": 407,
   "name": "house c"
  },
  "museum of unused levels-B": {
   "file": "42level",
-  "index": 474,
+  "index": 406,
   "name": "house b"
  },
  "museum of unused levels-A": {
   "file": "41level",
-  "index": 473,
+  "index": 405,
   "name": "house a"
  },
  "museum of unused levels-25": {
   "file": "276level",
-  "index": 530,
+  "index": 450,
   "name": "train"
  },
  "museum of unused levels-10": {
   "file": "14level",
-  "index": 458,
+  "index": 397,
   "name": "the very locked hallway"
  },
  "museum of unused levels-14": {
   "file": "12level",
-  "index": 456,
+  "index": 395,
   "name": "separated by liquids"
  },
  "museum of unused levels-Extra 7": {
   "file": "321level",
-  "index": 535,
+  "index": 454,
   "name": "secure cottage"
  },
  "museum of unused levels-19": {
   "file": "63level",
-  "index": 487,
+  "index": 416,
   "name": "rusty door"
  },
  "museum of unused levels-21": {
   "file": "61level",
-  "index": 485,
+  "index": 414,
   "name": "quarters"
  },
  "museum of unused levels-5": {
   "file": "38level",
-  "index": 470,
+  "index": 402,
   "name": "public park rules"
  },
  "museum of unused levels-Extra 3": {
   "file": "46level",
-  "index": 478,
+  "index": 410,
   "name": "perfect crime b"
  },
  "museum of unused levels-Extra 2": {
   "file": "39level",
-  "index": 471,
+  "index": 403,
   "name": "perfect crime a"
  },
  "museum of unused levels-4": {
   "file": "80level",
-  "index": 493,
+  "index": 421,
   "name": "old sewer"
  },
  "museum of unused levels-Extra 9": {
   "file": "113level",
-  "index": 515,
+  "index": 437,
   "name": "fiery pit"
  },
  "museum of unused levels-Extra 8": {
   "file": "126level",
-  "index": 519,
+  "index": 441,
   "name": "boilerworks"
  },
  "museum of unused levels-7": {
   "file": "50level",
-  "index": 479,
+  "index": 411,
   "name": "beyond the river"
  },
  "museum of unused levels-18": {
   "file": "143level",
-  "index": 522,
+  "index": 444,
   "name": "apartment building"
  },
  "museum of unused levels-Extra 1": {
   "file": "88level",
-  "index": 499,
+  "index": 425,
   "name": "basics?"
  },
  "museum of unused levels-Space": {
   "file": "87level",
-  "index": 498,
+  "index": 424,
   "name": "basics!"
  },
  "museum of unused levels-9": {
   "file": "40level",
-  "index": 472,
+  "index": 404,
   "name": "dangerous garden"
  },
  "museum of unused levels-11": {
   "file": "74level",
-  "index": 492,
+  "index": 420,
   "name": "crossroads"
  },
  "museum of unused levels-12": {
   "file": "102level",
-  "index": 507,
+  "index": 431,
   "name": "factory worker"
  },
  "museum of unused levels-26": {
   "file": "267level",
-  "index": 529,
+  "index": 449,
   "name": "fortress2"
  },
  "museum of unused levels-15": {
   "file": "152level",
-  "index": 523,
+  "index": 445,
   "name": "fungal trial"
  },
  "museum of unused levels-24": {
   "file": "96level",
-  "index": 504,
+  "index": 428,
   "name": "harmony"
  },
  "museum of unused levels-20": {
   "file": "140level",
-  "index": 521,
+  "index": 443,
   "name": "heavy fortification"
  },
  "museum of unused levels-8": {
   "file": "26level",
-  "index": 465,
+  "index": 400,
   "name": "keke the guard"
  },
  "museum of unused levels-6": {
   "file": "86level",
-  "index": 497,
+  "index": 423,
   "name": "lift"
  },
  "museum of unused levels-3": {
   "file": "73level",
-  "index": 491,
+  "index": 419,
   "name": "moss on my doorstep"
  },
  "museum of unused levels-Extra 6": {
   "file": "82level",
-  "index": 495,
+  "index": 422,
   "name": "secure cottage prelude"
  },
  "museum of unused levels-23": {
   "file": "yylevel",
-  "index": 565,
+  "index": 483,
   "name": "tough liquids"
  },
  "museum of unused levels-27": {
   "file": "x103level",
-  "index": 542,
+  "index": 461,
   "name": "bodyguards"
  },
  "museum of unused levels-22": {
   "file": "x70level",
-  "index": 540,
+  "index": 459,
   "name": "trap classic"
  },
  "museum of unused levels-Extra 5": {
   "file": "107level",
-  "index": 512,
+  "index": 435,
   "name": "fungal trial 2"
  },
  "museum of unused levels-13": {
   "file": "89level",
-  "index": 500,
+  "index": 426,
   "name": "Got all this stuff here"
  },
  "museum of revisions-N": {
   "file": "125level",
-  "index": 518,
+  "index": 440,
   "name": "fallen words"
  },
  "museum of revisions-Extra 2": {
   "file": "y103level",
-  "index": 553,
+  "index": 471,
   "name": "maintenance tunnel"
  },
  "museum of revisions-12": {
   "file": "68level",
-  "index": 490,
+  "index": 418,
   "name": "wireless connection"
  },
  "museum of revisions-17": {
   "file": "328level",
-  "index": 536,
+  "index": 455,
   "name": "tunnel"
  },
  "museum of revisions-10": {
   "file": "62level",
-  "index": 486,
+  "index": 415,
   "name": "telephone"
  },
  "museum of revisions-19": {
   "file": "114level",
-  "index": 516,
+  "index": 438,
   "name": "fragile existence - old"
  },
  "museum of revisions-11": {
   "file": "92level",
-  "index": 501,
+  "index": 427,
   "name": "explorers"
  },
  "museum of revisions-15": {
   "file": "259level",
-  "index": 528,
+  "index": 448,
   "name": "double insulation"
  },
  "museum of revisions-3": {
   "file": "20level",
-  "index": 462,
+  "index": 398,
   "name": "covered by ice"
  },
  "museum of revisions-Extra 1": {
   "file": "56level",
-  "index": 483,
+  "index": 413,
   "name": "changeless b"
  },
  "museum of revisions-1": {
   "file": "55level",
-  "index": 482,
+  "index": 412,
   "name": "changeless a"
  },
  "museum of revisions-13": {
   "file": "103level",
-  "index": 508,
+  "index": 432,
   "name": "backstage"
  },
  "museum of revisions-9": {
   "file": "34level",
-  "index": 467,
+  "index": 401,
   "name": "baba does not respond"
  },
  "museum of revisions-18": {
   "file": "97level",
-  "index": 505,
+  "index": 429,
   "name": "baba fields"
  },
  "museum of revisions-6": {
   "file": "13level",
-  "index": 457,
+  "index": 396,
   "name": "babas are you"
  },
  "museum of revisions-2": {
   "file": "10level",
-  "index": 455,
+  "index": 394,
   "name": "affection"
  },
  "museum of revisions-5": {
   "file": "x59level",
-  "index": 539,
+  "index": 458,
   "name": "condition"
  },
  "museum of revisions-16": {
   "file": "x135level",
-  "index": 543,
+  "index": 462,
   "name": "endless corridor"
  },
  "museum of revisions-4": {
   "file": "x20level",
-  "index": 538,
+  "index": 457,
   "name": "icy waters"
  },
  "museum of revisions-7": {
   "file": "x98level",
-  "index": 541,
+  "index": 460,
   "name": "key in the open"
  },
  "museum of revisions-8": {
   "file": "x164level",
-  "index": 545,
+  "index": 464,
   "name": "multitool"
  },
  "museum of revisions-14": {
   "file": "x148level",
-  "index": 544,
+  "index": 463,
   "name": "tour"
  },
  "museum of revisions-C": {
   "file": "y85level",
-  "index": 552,
+  "index": 470,
   "name": "canyon"
  },
  "museum of revisions-D": {
   "file": "y7level",
-  "index": 547,
+  "index": 465,
   "name": "catch the thief!"
  },
  "museum of revisions-J": {
   "file": "y139level",
-  "index": 556,
+  "index": 474,
   "name": "cranny"
  },
  "museum of revisions-H": {
   "file": "y138level",
-  "index": 555,
+  "index": 473,
   "name": "even less there"
  },
  "museum of revisions-B": {
   "file": "y8level",
-  "index": 548,
+  "index": 466,
   "name": "locked in"
  },
  "museum of revisions-M": {
   "file": "y322level",
-  "index": 559,
+  "index": 477,
   "name": "majestic columns"
  },
  "museum of revisions-G": {
   "file": "y50level",
-  "index": 551,
+  "index": 469,
   "name": "nearly"
  },
  "museum of revisions-L": {
   "file": "y326level",
-  "index": 560,
+  "index": 478,
   "name": "orchestra pit"
  },
  "museum of revisions-A": {
   "file": "y128level",
-  "index": 554,
+  "index": 472,
   "name": "reunion"
  },
  "museum of revisions-K": {
   "file": "y39level",
-  "index": 549,
+  "index": 467,
   "name": "settlement"
  },
  "museum of revisions-Extra 3": {
   "file": "y40level",
-  "index": 550,
+  "index": 468,
   "name": "settlement 2"
  },
  "museum of revisions-E": {
   "file": "y317level",
-  "index": 558,
+  "index": 476,
   "name": "straw"
  },
  "museum of revisions-I": {
   "file": "y246level",
-  "index": 557,
+  "index": 475,
   "name": "toolshed"
  },
  "museum of revisions-Extra 4": {
   "file": "d68level",
-  "index": 537,
+  "index": 456,
   "name": "wireless connection 2"
  },
  "museum of revisions-F": {
   "file": "134level",
-  "index": 520,
+  "index": 442,
   "name": "dim signal"
  },
  "the museum-1": {
   "file": "spoilerlevel",
-  "index": 564,
+  "index": 482,
   "name": "warning!"
  },
  "the museum-M": {
   "file": "101level",
-  "index": 506,
+  "index": 430,
   "name": "Welcome to the museum!"
  }
 }

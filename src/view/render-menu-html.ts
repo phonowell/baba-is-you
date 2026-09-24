@@ -80,6 +80,13 @@ export const menuPositionHtml = (
 
 export const renderMenuHtml = (state: MenuHtmlState): string => {
   const total = state.levels.length
+  // The header count reports levels with a recorded solution — the same
+  // set the `no-solution` dimming splits out. An omitted flag is
+  // "unknown", not "has a solution".
+  const solvableCount = state.levels.reduce(
+    (count, level) => count + (level.hasSolution === true ? 1 : 0),
+    0,
+  )
   const selected = clamp(state.selectedLevelIndex, 0, Math.max(0, total - 1))
 
   const listRows: string[] = []
@@ -109,7 +116,7 @@ export const renderMenuHtml = (state: MenuHtmlState): string => {
     '<header class="menu-header">',
     '<h1 class="title">BABA IS YOU</h1>',
     '<div class="menu-flourish" aria-hidden="true">◆</div>',
-    `<p class="menu-count">${total} LEVELS</p>`,
+    `<p class="menu-count">${solvableCount} LEVELS</p>`,
     '</header>',
     '<div class="menu-main">',
     '<ol class="menu-grid" role="listbox" aria-label="Level list">',

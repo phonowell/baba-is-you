@@ -1,8 +1,10 @@
 #!/usr/bin/env tsx
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import { layoutSignature } from '../logic/helpers.js'
+import { levelHasWinCondition } from '../logic/level-admission.js'
 import { parseLevel } from '../logic/parse-level.js'
-import { runCliMain } from './cli.js'
+import { runCliMain, walkFiles } from './cli.js'
 import { createInitialState } from '../logic/state.js'
 import { parseLevelBinary } from './import-official-levels-binary.js'
 import { convertOneLevel } from './import-official-levels-convert.js'
@@ -11,6 +13,7 @@ import { loadCanonicalObjects } from './import-official-levels-object-table.js'
 import { verifyOfficialImportConsistency } from './import-official-levels-verify.js'
 import { parseLd } from './import-official-levels-parse.js'
 
+import type { LevelData } from '../logic/types.js'
 import type { ParsedLayer } from './import-official-levels-binary.js'
 import type { ConvertedLevel, TextTileCounts } from './import-official-levels-convert.js'
 import type { CanonicalObjectTable } from './import-official-levels-object-table.js'
@@ -20,11 +23,15 @@ import type { LdData } from './import-official-levels-parse.js'
 type InitialCapability = {
   hasYou: boolean
   hasWin: boolean
+  hasWinCondition: boolean
+  signature: string
 }
 
 type ImportFilterReason =
   | 'missing-you'
   | 'missing-you_text-win_text'
+  | 'missing-win'
+  | 'unreferenced'
   | 'many-facing_text'
   | 'unknown-card'
   | 'name-index'
@@ -102,7 +109,60 @@ const checkInitialCapability = (level: ConvertedLevel): InitialCapability => {
   return {
     hasYou: initialState.items.some((item) => item.props.includes('you')),
     hasWin: initialState.items.some((item) => item.props.includes('win')),
+    hasWinCondition: levelHasWinCondition(parsedLevel),
+    signature: layoutSignature(parsedLevel),
   }
+}
+
+// Overworld maps (`leveltype=1`) link their playable level files through
+// `[levels]` entries — `Nfile` names a sibling file in the same world.
+// A level file no map in its world links to is unreachable in the
+// official game: leftover dev rooms and superseded variants.
+export const collectMapReferences = (
+  parsed: readonly ParsedOfficialLevel[],
+): ReadonlySet<string> => {
+  const referenced = new Set<string>()
+  for (const entry of parsed) {
+    if (!isMapFile(entry.ld)) continue
+    const count = Number(entry.ld.general.get('levels') ?? 0)
+    for (let i = 0; i < count; i += 1) {
+      const target = entry.ld.levels.get(`${i}file`)
+      if (target) referenced.add(target.replace(/\.l$/i, '').toLowerCase())
+    }
+  }
+  return referenced
+}
+
+// A recorded winning replay proves a board is real playable content, so
+// an unreferenced level stays admitted when a golden covers its exact
+// layout (community solutions recorded on dev copies, e.g. baba/296level
+// "x is y 2"). Signatures are dir-blind layout identity, the same key
+// golden binding uses.
+export const loadGoldenLayoutSignatures = async (
+  goldensDir: string,
+): Promise<Set<string>> => {
+  const signatures = new Set<string>()
+  for (const file of walkFiles(goldensDir)) {
+    if (!file.endsWith('.json')) continue
+    const golden = JSON.parse(await fs.readFile(file, 'utf8')) as {
+      status?: string
+      level?: string
+      levelData?: LevelData
+    }
+    if (golden.status !== 'win') continue
+    const level =
+      golden.levelData ??
+      (golden.level
+        ? parseLevel(
+            await fs.readFile(
+              path.resolve(goldensDir, '..', golden.level),
+              'utf8',
+            ),
+          )
+        : undefined)
+    if (level) signatures.add(layoutSignature(level))
+  }
+  return signatures
 }
 
 export const loadParsedOfficialLevels = async (
@@ -157,14 +217,18 @@ export const collectConvertedLevels = (
   parsed: ParsedOfficialLevel[],
   global: ReturnType<typeof buildGlobalReference>,
   canon: CanonicalObjectTable,
+  goldenLayouts: ReadonlySet<string>,
 ): {
   converted: ConvertedLevel[]
   filteredOut: FilteredOutLevel[]
   filteredReasonCounts: Map<ImportFilterReason, number>
+  exempted: string[]
 } => {
   const converted: ConvertedLevel[] = []
   const filteredOut: FilteredOutLevel[] = []
   const filteredReasonCounts = new Map<ImportFilterReason, number>()
+  const exempted: string[] = []
+  const mapReferences = collectMapReferences(parsed)
   const countFilteredReason = (reason: ImportFilterReason): void => {
     filteredReasonCounts.set(reason, (filteredReasonCounts.get(reason) ?? 0) + 1)
   }
@@ -178,7 +242,8 @@ export const collectConvertedLevels = (
       global,
       canon,
     )
-    const { hasYou, hasWin } = checkInitialCapability(level)
+    const { hasYou, hasWin, hasWinCondition, signature } =
+      checkInitialCapability(level)
     const reasons: ImportFilterReason[] = []
     // Levels that never grant a `you` are official too — ending/interlude
     // rooms the map links into. They stay inert `playing` states, so they
@@ -188,6 +253,18 @@ export const collectConvertedLevels = (
       meta.textTiles.winTextCount === 0
     )
       reasons.push('missing-you_text-win_text')
+    // A level with no win-condition word can never form `x is win/end/
+    // done` — nothing on it can be beaten, so it is not admitted. (Dev
+    // test rooms like QUICKBABA/GROUPLEVEL trip this.)
+    if (!hasWinCondition) reasons.push('missing-win')
+    // Files no official map links to are unreachable in the real game.
+    // A recorded golden on the same layout exempts the level — the board
+    // demonstrably plays, it just isn't wired into an official hub.
+    const sourceBase = current.fileName.replace(/\.l$/i, '').toLowerCase()
+    if (!mapReferences.has(sourceBase)) {
+      if (goldenLayouts.has(signature)) exempted.push(current.fileName)
+      else reasons.push('unreferenced')
+    }
     if (meta.textTiles.facingTextCount >= FACING_TEXT_FILTER_THRESHOLD)
       reasons.push('many-facing_text')
     if (unknownTileKeys.length > 0) reasons.push('unknown-card')
@@ -208,13 +285,14 @@ export const collectConvertedLevels = (
     converted.push(level)
   }
 
-  return { converted, filteredOut, filteredReasonCounts }
+  return { converted, filteredOut, filteredReasonCounts, exempted }
 }
 
 const logImportSummary = (
   converted: ConvertedLevel[],
   filteredOut: FilteredOutLevel[],
   filteredReasonCounts: Map<ImportFilterReason, number>,
+  exempted: string[],
   chunkCount: number,
 ): void => {
   console.log(`Imported official levels: ${converted.length}`)
@@ -222,6 +300,8 @@ const logImportSummary = (
   const reasonOrder: ImportFilterReason[] = [
     'missing-you',
     'missing-you_text-win_text',
+    'missing-win',
+    'unreferenced',
     'many-facing_text',
     'unknown-card',
     'name-index',
@@ -230,6 +310,8 @@ const logImportSummary = (
     const count = filteredReasonCounts.get(reason) ?? 0
     console.log(`Filtered ${reason}: ${count}`)
   }
+  console.log(`Golden-exempted unreferenced: ${exempted.length}`)
+  for (const fileName of exempted) console.log(`exempted ${fileName}`)
   const missingWinCount = converted
     .map((level) => checkInitialCapability(level))
     .filter((capability) => !capability.hasWin).length
@@ -284,19 +366,25 @@ const main = async (): Promise<void> => {
     return
   }
 
+  const goldenLayouts = await loadGoldenLayoutSignatures(
+    path.resolve(cwd, 'goldens'),
+  )
   const converted: Array<ConvertedLevel & { world: string }> = []
   const filteredOut: FilteredOutLevel[] = []
   const filteredReasonCounts = new Map<ImportFilterReason, number>()
+  const exempted: string[] = []
   for (const world of WORLDS) {
     const result = collectConvertedLevels(
       parsed.filter((level) => level.world === world),
       global,
       canon,
+      goldenLayouts,
     )
     converted.push(
       ...result.converted.map((level) => ({ ...level, world })),
     )
     filteredOut.push(...result.filteredOut)
+    exempted.push(...result.exempted)
     for (const [reason, count] of result.filteredReasonCounts) {
       filteredReasonCounts.set(
         reason,
@@ -327,6 +415,7 @@ const main = async (): Promise<void> => {
     converted,
     filteredOut,
     filteredReasonCounts,
+    exempted,
     Math.ceil(converted.length / 50),
   )
 }

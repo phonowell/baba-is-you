@@ -9,6 +9,7 @@ import {
   isMapFile,
   loadParsedOfficialLevels,
   collectConvertedLevels,
+  loadGoldenLayoutSignatures,
 } from './import-official-levels.js'
 import { buildGlobalReference } from './import-official-levels-global-reference.js'
 import { loadCanonicalObjects } from './import-official-levels-object-table.js'
@@ -44,6 +45,11 @@ const main = async (): Promise<void> => {
   }
   const global = buildGlobalReference(parsed)
   const canon = await loadCanonicalObjects(dataRoot)
+  // Admission must replay identically to the import run — including the
+  // golden exemption — or converted[] stops aligning with levels[].
+  const goldenLayouts = await loadGoldenLayoutSignatures(
+    path.resolve(cwd, 'goldens'),
+  )
   const fileToIndex = new Map<string, number>()
   let cursor = 0
   for (const world of WORLDS) {
@@ -51,6 +57,7 @@ const main = async (): Promise<void> => {
       parsed.filter((p) => p.world === world),
       global,
       canon,
+      goldenLayouts,
     )
     for (const c of result.converted) {
       fileToIndex.set(`${world}:${c.source.replace(/\.l$/i, '')}`, cursor)

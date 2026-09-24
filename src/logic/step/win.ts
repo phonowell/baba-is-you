@@ -13,7 +13,7 @@ import type { Item, Property } from '../types.js'
 
 // `end`/`done` complete the level on contact like `win` — `end` is the
 // official ending trigger and `done` marks a finished room.
-const WIN_LIKE_PROPS = new Set<Property>(['win', 'end', 'done'])
+export const WIN_LIKE_PROPS = new Set<Property>(['win', 'end', 'done'])
 const WIN_LIKE_PROPS_LIST = [...WIN_LIKE_PROPS]
 
 const hasWinLike = (item: Item): boolean =>

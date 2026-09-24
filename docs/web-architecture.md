@@ -30,7 +30,7 @@ DOM events ──► app-events / app-pointer / app-gamepad   (raw input → Gam
 downstream consumer (`env.levels`, golden resolution, previews) sees a
 full `LevelData[]` while a session only pays the parse for boards it
 enters or previews. Menu titles come from a title-only scan of the same
-grammar (~0.2 ms for all 566 levels vs ~18 ms for full parses).
+grammar (~0.2 ms for all 484 levels vs ~18 ms for full parses).
 
 ## State & Actions
 
@@ -123,7 +123,8 @@ store plus called on resize (60 ms debounce) and initial mount.
   back to its campaign index (the reducer does the same translation on
   `enter-game`/`return-to-menu`). The preview canvas is painted by
   `menu-preview.ts` (pixel-sprite board thumbnail). Cells with no bound
-  golden dim (`hasSolution`).
+  golden dim (`hasSolution`); the header count reports that solvable
+  subset, not the grid total.
 - **Game** (`app-game-view.ts`): board container, the bottom chrome
   stack (active-rules strip above the toolbar), outcome overlay,
   reference dialog (controls only), the replay-confirm modal, hover

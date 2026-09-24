@@ -32,6 +32,21 @@ test('renderMenuHtml dims only levels explicitly marked unsolvable', () => {
   )
 })
 
+test('renderMenuHtml counts only levels with a recorded solution', () => {
+  const html = renderMenuHtml({
+    levels: [
+      { title: 'a', hasSolution: true },
+      { title: 'b', hasSolution: false },
+      { title: 'c', hasSolution: true },
+      // Flag omitted — "unknown" is not "has a solution".
+      { title: 'd' },
+    ],
+    selectedLevelIndex: 0,
+  })
+
+  assert.match(html, /<p class="menu-count">2 LEVELS<\/p>/)
+})
+
 test('orderMenuLevels leads solvable levels and trails known-unsolvable ones', () => {
   const order = orderMenuLevels([
     { hasSolution: false },
